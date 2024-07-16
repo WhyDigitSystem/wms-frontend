@@ -7,12 +7,17 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import SaveIcon from '@mui/icons-material/Save';
 import CommonListViewTable from './CommonListViewTable';
 import { useTheme } from '@mui/material/styles';
+import { showErrorToast, showSuccessToast } from 'utils/toastUtils';
+import { ToastContainer, toast } from 'react-toastify';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 
 const StateMaster = () => {
   const [orgId, setOrgId] = useState('1');
   const theme = useTheme();
   const anchorRef = useRef(null);
   const [formData, setFormData] = useState({
+    active: '',
     stateNo: '',
     stateCode: '',
     stateName: '',
@@ -36,7 +41,7 @@ const StateMaster = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData({ ...formData, [name]: value.toUpperCase() });
   };
 
   const handleClear = () => {
@@ -70,17 +75,32 @@ const StateMaster = () => {
     }
 
     if (Object.keys(errors).length === 0) {
-      const saveData = {};
-      console.log('DATA TO SAVE IS:', formData);
+      const saveData = {
+        country: formData.country,
+        stateCode: formData.stateCode,
+        stateName: formData.stateName,
+        stateNumber: formData.stateNo,
+        active: formData.active,
+        createdBy: 'karupu',
+        orgId: orgId,
+        region: ''
+      };
+      console.log('DATA TO SAVE IS:', saveData);
 
-      // axios
-      //   .post(`${process.env.REACT_APP_API_URL}/api/state`, formData)
-      //   .then((response) => {
-      //     console.log('Response:', response.data);
-      //   })
-      //   .catch((error) => {
-      //     console.error('Error:', error);
-      //   });
+      axios
+        .post(`${process.env.REACT_APP_API_URL}/api/commonmaster/state`, saveData)
+        .then((response) => {
+          if (response.data.statusFlag === 'Error') {
+            console.log('Response:', response.data);
+            showErrorToast(response.data.paramObjectsMap.errorMessage);
+          } else {
+            showSuccessToast(response.data.paramObjectsMap.message);
+          }
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          toast.error('An error occurred while saving the city');
+        });
     } else {
       setFieldErrors(errors);
     }
@@ -253,6 +273,9 @@ const StateMaster = () => {
               </Select>
               {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
             </FormControl>
+          </div>
+          <div className="col-md-3 mb-3">
+            <FormControlLabel value="start" control={<Checkbox />} label="Active" labelPlacement="end" />
           </div>
         </div>
       )}

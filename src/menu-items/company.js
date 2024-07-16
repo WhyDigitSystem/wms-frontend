@@ -23,7 +23,7 @@ const pages = {
       children: [
         {
           id: 'company',
-          title: 'Company',
+          title: 'Create Company',
           type: 'item',
           url: '/companysetup/createcompany'
           // target: true

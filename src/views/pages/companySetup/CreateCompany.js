@@ -27,7 +27,6 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 
 const CreateCompany = () => {
-  const [orgId, setOrgId] = useState('1');
   const theme = useTheme();
   const anchorRef = useRef(null);
 
@@ -128,17 +127,15 @@ const CreateCompany = () => {
     }
 
     if (Object.keys(errors).length === 0) {
+      console.log('DATA TO SAVE IS:', formData);
+
       axios
-        .put(`${process.env.REACT_APP_API_URL}/api/country`, formData)
+        .post(`${process.env.REACT_APP_API_URL}/api/commonmaster/company`, formData)
         .then((response) => {
           if (response.data.statusFlag === 'Error') {
             console.log('Response:', response.data);
             showErrorToast(response.data.paramObjectsMap.errorMessage);
           } else {
-            setFormData({
-              country: '',
-              countryCode: ''
-            });
             showSuccessToast(response.data.paramObjectsMap.message);
           }
         })

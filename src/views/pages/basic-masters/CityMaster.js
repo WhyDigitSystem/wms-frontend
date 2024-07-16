@@ -22,7 +22,9 @@ export const CityMaster = () => {
     cityName: '',
     state: '',
     country: '',
-    active: false
+    active: true,
+    createdBy: 'Karupu',
+    orgId: 1
   });
 
   const theme = useTheme();
@@ -58,7 +60,7 @@ export const CityMaster = () => {
       cityName: '',
       state: '',
       country: '',
-      active: false
+      active: true
     });
     setFieldErrors({
       cityCode: '',
@@ -84,8 +86,10 @@ export const CityMaster = () => {
     }
 
     if (Object.keys(errors).length === 0) {
+      console.log('DATA TO SAVE', formData);
+
       axios
-        .put(`${process.env.REACT_APP_API_URL}/api/city`, formData)
+        .put(`${process.env.REACT_APP_API_URL}/api/commonmaster/createUpdateCity`, formData)
         .then((response) => {
           if (response.data.statusFlag === 'Error') {
             console.log('Response:', response.data);

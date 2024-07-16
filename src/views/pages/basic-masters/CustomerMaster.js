@@ -17,6 +17,12 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import BrowserUpdatedIcon from '@mui/icons-material/BrowserUpdated';
 
 export const CustomerMaster = () => {
   const [orgId, setOrgId] = useState('1');
@@ -39,6 +45,45 @@ export const CustomerMaster = () => {
     orgId: 1,
     createdby: 'Karupu'
   });
+  const [value, setValue] = useState(0);
+  const [tableData1, setTableData1] = useState([
+    {
+      id: 1,
+      state: '',
+      businessPlace: '',
+      cityName: '',
+      address: '',
+      address2: '',
+      contactPerson: '',
+      contactPhoneNo: '',
+      contactEmail: ''
+    }
+  ]);
+
+  const handleAddRow = () => {
+    const newRow = {
+      id: Date.now(),
+      state: '',
+      gstIn: '',
+      stateCode: '',
+      contactPerson: '',
+      contactPhoneNo: '',
+      contactEmail: ''
+    };
+    setTableData([...tableData, newRow]);
+    setTableErrors([...tableErrors, { state: '', gstIn: '', stateCode: '', contactPerson: '', contactPhoneNo: '', contactEmail: '' }]);
+  };
+
+  const [tableErrors, setTableErrors] = useState([
+    {
+      state: '',
+      gstIn: '',
+      stateCode: '',
+      contactPerson: '',
+      contactPhoneNo: '',
+      contactEmail: ''
+    }
+  ]);
 
   const theme = useTheme();
   const anchorRef = useRef(null);
@@ -68,6 +113,13 @@ export const CustomerMaster = () => {
   ];
 
   const [listViewData, setListViewData] = useState([]);
+  const [tableData, setTableData] = useState([
+    { id: 1, state: '', gstIn: '', stateCode: '', contactPerson: '', contactPhoneNo: '', contactEmail: '' }
+  ]);
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
 
   // const handleInputChange = (e) => {
   //   const { name, value } = e.target;
@@ -134,6 +186,16 @@ export const CustomerMaster = () => {
       }
     } else {
       setFormData({ ...formData, [name]: value.toUpperCase() });
+    }
+  };
+
+  const handleDeleteRow = (id) => {
+    setTableData(tableData.filter((row) => row.id !== id));
+  };
+  const handleKeyDown = (e, row) => {
+    if (e.key === 'Tab' && row.id === tableData[tableData.length - 1].id) {
+      e.preventDefault();
+      handleAddRow();
     }
   };
 
@@ -244,7 +306,6 @@ export const CustomerMaster = () => {
   };
 
   const handleView = () => {
-    // getAllCustomer();
     setListView(!listView);
   };
 
@@ -612,6 +673,255 @@ export const CustomerMaster = () => {
                   label="Active"
                 />
               </div>
+            </div>
+            <div className="row mt-5">
+              <Box sx={{ width: '100%' }}>
+                <Tabs
+                  value={value}
+                  onChange={handleChange}
+                  textColor="secondary"
+                  indicatorColor="secondary"
+                  aria-label="secondary tabs example"
+                >
+                  <Tab value={0} label="Company" />
+                  <Tab value={1} label="Branch" />
+                </Tabs>
+              </Box>
+              <Box sx={{ padding: 2 }}>
+                {value === 0 && (
+                  <>
+                    <div className="row d-flex ml">
+                      <div className="mt-2">
+                        <Tooltip title="Add" placement="top">
+                          <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleAddRow}>
+                            <Avatar
+                              variant="rounded"
+                              sx={{
+                                ...theme.typography.commonAvatar,
+                                ...theme.typography.mediumAvatar,
+                                transition: 'all .2s ease-in-out',
+                                background: theme.palette.secondary.light,
+                                color: theme.palette.secondary.dark,
+                                '&[aria-controls="menu-list-grow"],&:hover': {
+                                  background: theme.palette.secondary.dark,
+                                  color: theme.palette.secondary.light
+                                }
+                              }}
+                              ref={anchorRef}
+                              aria-haspopup="true"
+                              color="inherit"
+                            >
+                              <AddIcon size="1.3rem" stroke={1.5} />
+                            </Avatar>
+                          </ButtonBase>
+                        </Tooltip>
+                      </div>
+                      {/* Table */}
+                      <div className="row mt-2">
+                        <div className="col-lg-12">
+                          <div className="table-responsive">
+                            <table className="table table-bordered">
+                              <thead>
+                                <tr style={{ backgroundColor: '#673AB7' }}>
+                                  <th className="px-2 py-2 text-white text-center">Action</th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                    S.No
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center">State</th>
+                                  <th className="px-2 py-2 text-white text-center">GST IN</th>
+                                  <th className="px-2 py-2 text-white text-center">State Code</th>
+                                  <th className="px-2 py-2 text-white text-center">Contact Person</th>
+                                  <th className="px-2 py-2 text-white text-center">Contact Phone No</th>
+                                  <th className="px-2 py-2 text-white text-center">Contact Email</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {tableData.map((row, index) => (
+                                  <tr key={row.id}>
+                                    <td className="border px-2 py-2">
+                                      <Tooltip title="Delete" placement="top">
+                                        <ButtonBase
+                                          sx={{ borderRadius: '12px', marginLeft: '10px' }}
+                                          onClick={() => handleDeleteRow(row.id)}
+                                        >
+                                          <Avatar
+                                            variant="rounded"
+                                            sx={{
+                                              ...theme.typography.commonAvatar,
+                                              ...theme.typography.mediumAvatar,
+                                              transition: 'all .2s ease-in-out',
+                                              background: theme.palette.secondary.light,
+                                              color: theme.palette.secondary.dark,
+                                              '&[aria-controls="menu-list-grow"],&:hover': {
+                                                background: theme.palette.secondary.dark,
+                                                color: theme.palette.secondary.light
+                                              }
+                                            }}
+                                            ref={anchorRef}
+                                            aria-haspopup="true"
+                                            color="inherit"
+                                          >
+                                            <DeleteIcon size="1.3rem" stroke={1.5} />
+                                          </Avatar>
+                                        </ButtonBase>
+                                      </Tooltip>
+                                    </td>
+                                    <td className=" px-2 py-2 text-center" style={{ width: '50px' }}>
+                                      {/* <input type="text" value={`${index + 1}`} readOnly style={{ width: '100%' }} /> */}
+                                      {index + 1}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.state}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, state: value } : r)));
+                                          setTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], state: !value ? 'State is required' : '' };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={tableErrors[index]?.state ? 'error' : 'form-control'}
+                                        //style={{ marginBottom: '10px' }}
+                                      />
+                                      {tableErrors[index]?.state && (
+                                        <div style={{ color: 'red', fontSize: '12px' }}>{tableErrors[index].state}</div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.gstIn}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, gstIn: value } : r)));
+                                          setTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], gstIn: !value ? 'Gst In is required' : '' };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={tableErrors[index]?.gstIn ? 'error' : 'form-control'}
+                                        // //style={{ marginBottom: '10px' }}
+                                      />
+                                      {tableErrors[index]?.gstIn && (
+                                        <div style={{ color: 'red', fontSize: '12px' }}>{tableErrors[index].gstIn}</div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.stateCode}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, stateCode: value } : r)));
+                                          setTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], stateCode: !value ? 'state Code is required' : '' };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={tableErrors[index]?.stateCode ? 'error' : ''}
+                                        //style={{ marginBottom: '10px' }}
+                                      />
+                                      {tableErrors[index]?.stateCode && (
+                                        <div style={{ color: 'red', fontSize: '12px' }}>{tableErrors[index].stateCode}</div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.contactPerson}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, contactPerson: value } : r)));
+                                          setTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              contactPerson: !value ? 'Contact Person is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={tableErrors[index]?.contactPerson ? 'error' : ''}
+                                        //style={{ marginBottom: '10px' }}
+                                      />
+                                      {tableErrors[index]?.contactPerson && (
+                                        <div style={{ color: 'red', fontSize: '12px' }}>{tableErrors[index].contactPerson}</div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.contactPhoneNo}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, contactPhoneNo: value } : r)));
+                                          setTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              contactPhoneNo: !value ? 'Contact PhoneNo is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={tableErrors[index]?.contactPhoneNo ? 'error' : ''}
+                                        //style={{ marginBottom: '10px' }}
+                                      />
+                                      {tableErrors[index]?.contactPhoneNo && (
+                                        <div style={{ color: 'red', fontSize: '12px' }}>{tableErrors[index].contactPhoneNo}</div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.contactEmail}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, contactEmail: value } : r)));
+                                          setTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              contactEmail: !value ? 'Contact Email is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        onKeyDown={(e) => handleKeyDown(e, row)}
+                                        className={tableErrors[index]?.contactEmail ? 'error' : ''}
+                                        //style={{ marginBottom: '10px' }}
+                                      />
+                                      {tableErrors[index]?.contactEmail && (
+                                        <div style={{ color: 'red', fontSize: '12px' }}>{tableErrors[index].contactEmail}</div>
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+                {value === 1 && (
+                  <>
+                    <p>coming soon</p>
+                  </>
+                )}
+              </Box>
             </div>
           </>
         )}

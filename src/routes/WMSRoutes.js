@@ -8,7 +8,8 @@ import MainLayout from 'layout/MainLayout';
 // login option 3 routing
 const AuthLogin3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Login3')));
 const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
-const CreateCompany = Loadable(lazy(() => import('views/pages/companySetup/CompanySetup')));
+const CreateCompany = Loadable(lazy(() => import('views/pages/companySetup/CreateCompany')));
+const CompanySetup = Loadable(lazy(() => import('views/pages/companySetup/CompanySetup')));
 const CountryMaster = Loadable(lazy(() => import('views/pages/basic-masters/CountryMaster')));
 const StateMaster = Loadable(lazy(() => import('views/pages/basic-masters/StateMaster')));
 const CityMaster = Loadable(lazy(() => import('views/pages/basic-masters/CityMaster')));
@@ -24,6 +25,10 @@ const WMSRoutes = {
     {
       path: '/companysetup/createcompany',
       element: <CreateCompany />
+    },
+    {
+      path: '/companysetup/companysetup',
+      element: <CompanySetup />
     },
     {
       path: '/basicmasters/countrymaster',
