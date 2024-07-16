@@ -766,9 +766,9 @@ export const CustomerMaster = () => {
                                         </ButtonBase>
                                       </Tooltip>
                                     </td>
-                                    <td className=" px-2 py-2 text-center" style={{ width: '50px' }}>
+                                    <td className="text-center">
                                       {/* <input type="text" value={`${index + 1}`} readOnly style={{ width: '100%' }} /> */}
-                                      {index + 1}
+                                      <div className="pt-2">{index + 1}</div>
                                     </td>
 
                                     <td className="border px-2 py-2">
@@ -822,11 +822,14 @@ export const CustomerMaster = () => {
                                           setTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, stateCode: value } : r)));
                                           setTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], stateCode: !value ? 'state Code is required' : '' };
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              stateCode: !value ? 'state Code is required' : ''
+                                            };
                                             return newErrors;
                                           });
                                         }}
-                                        className={tableErrors[index]?.stateCode ? 'error' : ''}
+                                        className={tableErrors[index]?.stateCode ? 'error' : 'form-control'}
                                         //style={{ marginBottom: '10px' }}
                                       />
                                       {tableErrors[index]?.stateCode && (
@@ -850,7 +853,7 @@ export const CustomerMaster = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        className={tableErrors[index]?.contactPerson ? 'error' : ''}
+                                        className={tableErrors[index]?.contactPerson ? 'error' : 'form-control'}
                                         //style={{ marginBottom: '10px' }}
                                       />
                                       {tableErrors[index]?.contactPerson && (
@@ -874,7 +877,7 @@ export const CustomerMaster = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        className={tableErrors[index]?.contactPhoneNo ? 'error' : ''}
+                                        className={tableErrors[index]?.contactPhoneNo ? 'error' : 'form-control'}
                                         //style={{ marginBottom: '10px' }}
                                       />
                                       {tableErrors[index]?.contactPhoneNo && (
@@ -899,7 +902,7 @@ export const CustomerMaster = () => {
                                           });
                                         }}
                                         onKeyDown={(e) => handleKeyDown(e, row)}
-                                        className={tableErrors[index]?.contactEmail ? 'error' : ''}
+                                        className={tableErrors[index]?.contactEmail ? 'error' : 'form-control'}
                                         //style={{ marginBottom: '10px' }}
                                       />
                                       {tableErrors[index]?.contactEmail && (
