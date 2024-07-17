@@ -691,7 +691,7 @@ export const CustomerMaster = () => {
                 {value === 0 && (
                   <>
                     <div className="row d-flex ml">
-                      <div className="mt-2">
+                      <div className="mb-1">
                         <Tooltip title="Add" placement="top">
                           <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleAddRow}>
                             <Avatar
@@ -741,7 +741,7 @@ export const CustomerMaster = () => {
                                     <td className="border px-2 py-2">
                                       <Tooltip title="Delete" placement="top">
                                         <ButtonBase
-                                          sx={{ borderRadius: '12px', marginLeft: '10px' }}
+                                          sx={{ borderRadius: '12px', marginLeft: '4px' }}
                                           onClick={() => handleDeleteRow(row.id)}
                                         >
                                           <Avatar

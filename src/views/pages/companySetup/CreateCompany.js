@@ -25,6 +25,7 @@ import Checkbox from '@mui/material/Checkbox';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
+import { encryptPassword } from 'views/utilities/encryptPassword';
 
 const CreateCompany = () => {
   const theme = useTheme();
@@ -127,10 +128,29 @@ const CreateCompany = () => {
     }
 
     if (Object.keys(errors).length === 0) {
-      console.log('DATA TO SAVE IS:', formData);
+      const saveData = {
+        address: '',
+        city: '',
+        companyCode: formData.companyCode,
+        companyName: formData.companyName,
+        country: '',
+        createdBy: 'Karupu',
+        currency: '',
+        email: formData.companyAdminEmail,
+        employeeCode: '',
+        employeeName: formData.companyAdminName,
+        mainCurrency: '',
+        note: '',
+        password: encryptPassword('Wds@20232'),
+        phone: '',
+        state: '',
+        webSite: '',
+        zip: ''
+      };
+      console.log('DATA TO SAVE IS:', saveData);
 
       axios
-        .post(`${process.env.REACT_APP_API_URL}/api/commonmaster/company`, formData)
+        .post(`${process.env.REACT_APP_API_URL}/api/commonmaster/company`, saveData)
         .then((response) => {
           if (response.data.statusFlag === 'Error') {
             console.log('Response:', response.data);

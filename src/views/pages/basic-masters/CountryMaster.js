@@ -11,16 +11,17 @@ import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from './CommonListViewTable';
 import axios from 'axios';
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState, useMemo, useEffect } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import { showErrorToast, showSuccessToast } from 'utils/toastUtils';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 
 export const CountryMaster = () => {
-  const [orgId, setOrgId] = useState('1');
   const [formData, setFormData] = useState({
     active: true,
     countryCode: '',
@@ -39,16 +40,57 @@ export const CountryMaster = () => {
   const [listView, setListView] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'code', header: 'Code', size: 140 },
+    { accessorKey: 'countryCode', header: 'Code', size: 140 },
     {
-      accessorKey: 'country',
+      accessorKey: 'countryName',
       header: 'Country',
       size: 140
     },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
-
   const [listViewData, setListViewData] = useState([]);
+
+  useEffect(() => {
+    getAllCountries();
+
+    if (listView) {
+      getAllCountries();
+    }
+  }, []);
+
+  const getAllCountries = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/country?orgid=1000000001`);
+      console.log('API Response:', response);
+
+      if (response.status === 200) {
+        setListViewData(response.data.paramObjectsMap.countryVO);
+      } else {
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const getCountryById = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/country/1000000002`);
+      console.log('API Response:', response);
+
+      if (response.status === 200) {
+        setListView(false);
+        const particularCountry = response.data.paramObjectsMap.Country;
+        setFormData({
+          countryCode: particularCountry.countryCode,
+          countryName: particularCountry.countryName
+        });
+      } else {
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -89,22 +131,19 @@ export const CountryMaster = () => {
       console.log('DATA TO SAVE IS:', formData);
 
       axios
-        .put(`${process.env.REACT_APP_API_URL}/api/commonmaster/country`, formData)
+        .post(`${process.env.REACT_APP_API_URL}/api/commonmaster/createUpdateCountry`, formData)
         .then((response) => {
           if (response.data.statusFlag === 'Error') {
             console.log('Response:', response.data);
             showErrorToast(response.data.paramObjectsMap.errorMessage);
           } else {
-            setFormData({
-              country: '',
-              countryCode: ''
-            });
             showSuccessToast(response.data.paramObjectsMap.message);
+            handleClear();
           }
         })
         .catch((error) => {
           console.error('Error:', error);
-          toast.error('An error occurred while saving the country');
+          showErrorToast('An error occurred while saving the country');
         });
     } else {
       setFieldErrors(errors);
@@ -301,7 +340,7 @@ export const CountryMaster = () => {
               columns={listViewColumns}
               // editCallback={editEmployee}
               blockEdit={true} // DISAPLE THE MODAL IF TRUE
-              // toEdit={getCustomerById}
+              toEdit={getCountryById}
             />
           </div>
         ) : (
@@ -333,60 +372,13 @@ export const CountryMaster = () => {
                   helperText={fieldErrors.countryName}
                 />
               </div>
-
-              {/* <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.country}>
-                  <InputLabel id="country-label">Country</InputLabel>
-                  <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
-                    <MenuItem value="India">India</MenuItem>
-                    <MenuItem value="USA">USA</MenuItem>
-                  </Select>
-                  {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
-                </FormControl>
-              </div> */}
+              <div className="col-md-3 mb-3">
+                <FormControlLabel value="start" control={<Checkbox />} label="Active" labelPlacement="end" />
+              </div>
             </div>
           </>
         )}
       </div>
-      {/* <Dialog open={editMode} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle style={{ fontSize: '20px' }}>Edit Country</DialogTitle>
-        <DialogContent>
-          <div className="col-md-8 mt-2 mb-3">
-            <TextField
-              label="Code"
-              variant="outlined"
-              size="small"
-              fullWidth
-              name="countryCode"
-              value={formData.countryCode}
-              onChange={handleInputChange}
-              error={!!fieldErrors.countryCode}
-              helperText={fieldErrors.countryCode}
-            />
-          </div>
-
-          <div className="col-md-8 mb-3">
-            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.country}>
-              <InputLabel id="country-label">Country</InputLabel>
-              <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
-                <MenuItem value="India">India</MenuItem>
-                <MenuItem value="USA">USA</MenuItem>
-              </Select>
-              {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
-            </FormControl>
-          </div>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Cancel
-          </Button>
-          <Button
-          // onClick={handleEditSave} color="primary"
-          >
-            Update
-          </Button>
-        </DialogActions>
-      </Dialog> */}
     </>
   );
 };

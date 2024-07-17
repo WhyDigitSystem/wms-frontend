@@ -25,9 +25,7 @@ const basicMasters = {
           id: 'countryMaster',
           title: 'Country',
           type: 'item',
-          url: '/basicmasters/countrymaster',
-          // target: true
-          breadcrumbs: true
+          url: '/basicmasters/countrymaster'
         },
         {
           id: 'stateMaster',
