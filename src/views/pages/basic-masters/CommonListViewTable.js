@@ -66,7 +66,7 @@ const CommonListViewTable = ({ data, columns, editCallback, countryVO, roleData,
 
   const handleButtonClick = (row) => {
     if (blockEdit) {
-      toEdit(row.original.id);
+      toEdit(row);
     } else {
       handleEditClick(row);
     }

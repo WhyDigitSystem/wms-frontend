@@ -1,59 +1,145 @@
-import React, { useRef, useState } from 'react';
-import axios from 'axios';
-import { TextField, FormControl, InputLabel, MenuItem, Select, Button, ButtonBase, Avatar, Tooltip, FormHelperText } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import CommonListViewTable from './CommonListViewTable';
+import SearchIcon from '@mui/icons-material/Search';
+import {
+  Avatar,
+  ButtonBase,
+  Tooltip,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Checkbox,
+  FormHelperText,
+  FormControlLabel
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { showErrorToast, showSuccessToast } from 'utils/toastUtils';
+import CommonListViewTable from './CommonListViewTable';
+import axios from 'axios';
+import { useRef, useState, useEffect } from 'react';
+import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
+import 'react-toastify/dist/ReactToastify.css';
+import { showErrorToast, showSuccessToast } from 'utils/toastUtils';
+import { getAllActiveCountries } from 'utils/CommonFunctions';
 
-const StateMaster = () => {
-  const [orgId, setOrgId] = useState('1');
+export const StateMaster = () => {
+  const [orgId, setOrgId] = useState(1000000001);
+  const [loginUserName, setLoginUserName] = useState('Karupu');
+  const [formData, setFormData] = useState({
+    active: true,
+    stateCode: '',
+    stateNo: '',
+    stateName: '',
+    country: ''
+  });
+  const [editId, setEditId] = useState('');
+  const [countryList, setCountryList] = useState([]);
+
   const theme = useTheme();
   const anchorRef = useRef(null);
-  const [formData, setFormData] = useState({
-    active: '',
-    stateNo: '',
-    stateCode: '',
-    stateName: '',
-    country: ''
-  });
 
   const [fieldErrors, setFieldErrors] = useState({
-    stateNo: '',
     stateCode: '',
+    stateNo: '',
     stateName: '',
     country: ''
   });
-
   const [listView, setListView] = useState(false);
-  const [listViewData, setListViewData] = useState([]);
   const listViewColumns = [
-    { accessorKey: 'stateCode', header: 'Code', size: 140 },
-    { accessorKey: 'stateName', header: 'State', size: 140 },
-    { accessorKey: 'country', header: 'Country', size: 140 }
+    { accessorKey: 'stateCode', header: 'State Code', size: 140 },
+    { accessorKey: 'stateNumber', header: 'State No', size: 140 },
+    { accessorKey: 'stateName', header: 'State Name', size: 140 },
+    { accessorKey: 'country', header: 'Country', size: 140 },
+    { accessorKey: 'active', header: 'Active', size: 140 }
   ];
+  const [listViewData, setListViewData] = useState([]);
+
+  useEffect(() => {
+    getAllStates();
+
+    const fetchData = async () => {
+      try {
+        const countryData = await getAllActiveCountries(orgId);
+        setCountryList(countryData);
+      } catch (error) {
+        console.error('Error fetching country data:', error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const getAllStates = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/state?orgid=${orgId}`);
+      if (response.status === 200) {
+        setListViewData(response.data.paramObjectsMap.stateVO);
+      } else {
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getStateById = async (row) => {
+    setEditId(row.original.id);
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/state/${row.original.id}`);
+      if (response.status === 200) {
+        setListView(false);
+        const particularState = response.data.paramObjectsMap.stateVO;
+
+        setFormData({
+          stateCode: particularState.stateCode,
+          stateNo: particularState.stateNumber,
+          stateName: particularState.stateName,
+          country: particularState.country,
+          active: particularState.active === 'Active' ? true : false
+        });
+      } else {
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value.toUpperCase() });
+    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const nameRegex = /^[A-Za-z ]*$/;
+    const numericRegex = /^[0-9]*$/;
+
+    if (name === 'stateCode' && !codeRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+    } else if (name === 'stateCode' && value.length > 3) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Max Lenght is 3' });
+    } else if (name === 'stateNo' && !numericRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+    } else if (name === 'stateNo' && value.length > 3) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Max Lenght is 3' });
+    } else if (name === 'stateName' && !nameRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+    } else {
+      setFormData({ ...formData, [name]: value.toUpperCase() });
+      setFieldErrors({ ...fieldErrors, [name]: '' });
+    }
   };
 
   const handleClear = () => {
     setFormData({
-      stateNo: '',
       stateCode: '',
+      stateNo: '',
       stateName: '',
-      country: ''
+      country: '',
+      active: true
     });
     setFieldErrors({
-      stateNo: '',
       stateCode: '',
+      stateNo: '',
       stateName: '',
       country: ''
     });
@@ -61,11 +147,11 @@ const StateMaster = () => {
 
   const handleSave = () => {
     const errors = {};
-    if (!formData.stateNo) {
-      errors.stateNo = 'State Number is required';
-    }
     if (!formData.stateCode) {
       errors.stateCode = 'State Code is required';
+    }
+    if (!formData.stateNo) {
+      errors.stateNo = 'State No is required';
     }
     if (!formData.stateName) {
       errors.stateName = 'State Name is required';
@@ -75,31 +161,32 @@ const StateMaster = () => {
     }
 
     if (Object.keys(errors).length === 0) {
-      const saveData = {
-        country: formData.country,
-        stateCode: formData.stateCode,
-        stateName: formData.stateName,
-        stateNumber: formData.stateNo,
+      const saveFormData = {
+        ...(editId && { id: editId }),
         active: formData.active,
-        createdBy: 'karupu',
+        stateCode: formData.stateCode,
+        stateNumber: formData.stateNo,
+        stateName: formData.stateName,
+        region: '',
+        country: formData.country,
         orgId: orgId,
-        region: ''
+        createdby: loginUserName
       };
-      console.log('DATA TO SAVE IS:', saveData);
 
       axios
-        .post(`${process.env.REACT_APP_API_URL}/api/commonmaster/state`, saveData)
+        .post(`${process.env.REACT_APP_API_URL}/api/commonmaster/state`, saveFormData)
         .then((response) => {
           if (response.data.statusFlag === 'Error') {
-            console.log('Response:', response.data);
             showErrorToast(response.data.paramObjectsMap.errorMessage);
           } else {
             showSuccessToast(response.data.paramObjectsMap.message);
+            handleClear();
+            getAllStates();
           }
         })
         .catch((error) => {
           console.error('Error:', error);
-          toast.error('An error occurred while saving the city');
+          showErrorToast('An error occurred while saving the state');
         });
     } else {
       setFieldErrors(errors);
@@ -107,8 +194,14 @@ const StateMaster = () => {
   };
 
   const handleView = () => {
-    // Implement view functionality
     setListView(!listView);
+  };
+
+  const handleCheckboxChange = (event) => {
+    setFormData({
+      ...formData,
+      active: event.target.checked
+    });
   };
 
   return (
@@ -220,7 +313,8 @@ const StateMaster = () => {
           <CommonListViewTable
             data={listViewData}
             columns={listViewColumns}
-            // Other props as needed
+            blockEdit={true} // DISAPLE THE MODAL IF TRUE
+            toEdit={getStateById}
           />
         </div>
       ) : (
@@ -268,14 +362,21 @@ const StateMaster = () => {
             <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.country}>
               <InputLabel id="country-label">Country</InputLabel>
               <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
-                <MenuItem value="INDIA">INDIA</MenuItem>
-                <MenuItem value="USA">USA</MenuItem>
+                {countryList.map((row) => (
+                  <MenuItem key={row.id} value={row.countryName}>
+                    {row.countryName}
+                  </MenuItem>
+                ))}
               </Select>
               {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
             </FormControl>
           </div>
           <div className="col-md-3 mb-3">
-            <FormControlLabel value="start" control={<Checkbox />} label="Active" labelPlacement="end" />
+            <FormControlLabel
+              control={<Checkbox checked={formData.active} onChange={handleCheckboxChange} />}
+              label="Active"
+              labelPlacement="end"
+            />
           </div>
         </div>
       )}

@@ -10,7 +10,9 @@ import basicMasters from './basicMasters';
 // ==============================|| MENU ITEMS ||============================== //
 
 const menuItems = {
-  items: [dashboard, pages, utilities, other, company, basicMasters]
+  // DEFAULT TEMPLATE MENU ITEMS
+  // items: [dashboard, pages, utilities, other, company, basicMasters]
+  items: [dashboard, company, basicMasters]
 };
 
 export default menuItems;

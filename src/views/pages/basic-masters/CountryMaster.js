@@ -22,13 +22,14 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 
 export const CountryMaster = () => {
+  const [orgId, setOrgId] = useState(1000000001);
+  const [loginUserName, setLoginUserName] = useState('Karupu');
   const [formData, setFormData] = useState({
     active: true,
     countryCode: '',
-    countryName: '',
-    orgId: 1,
-    createdby: 'Karupu'
+    countryName: ''
   });
+  const [editId, setEditId] = useState('');
 
   const theme = useTheme();
   const anchorRef = useRef(null);
@@ -51,11 +52,8 @@ export const CountryMaster = () => {
   const [listViewData, setListViewData] = useState([]);
 
   useEffect(() => {
+    console.log('LISTVIEW FIELD CURRENT VALUE IS', listView);
     getAllCountries();
-
-    if (listView) {
-      getAllCountries();
-    }
   }, []);
 
   const getAllCountries = async () => {
@@ -72,17 +70,21 @@ export const CountryMaster = () => {
       console.error('Error fetching data:', error);
     }
   };
-  const getCountryById = async () => {
+  const getCountryById = async (row) => {
+    console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
+    setEditId(row.original.id);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/country/1000000002`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/country/${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === 200) {
         setListView(false);
         const particularCountry = response.data.paramObjectsMap.Country;
+
         setFormData({
           countryCode: particularCountry.countryCode,
-          countryName: particularCountry.countryName
+          countryName: particularCountry.countryName,
+          active: particularCountry.active === 'Active' ? true : false
         });
       } else {
         console.error('API Error:', response.data);
@@ -128,10 +130,19 @@ export const CountryMaster = () => {
     }
 
     if (Object.keys(errors).length === 0) {
-      console.log('DATA TO SAVE IS:', formData);
+      const saveFormData = {
+        ...(editId && { id: editId }),
+        active: formData.active,
+        countryCode: formData.countryCode,
+        countryName: formData.countryName,
+        orgId: orgId,
+        createdby: loginUserName
+      };
+
+      console.log('DATA TO SAVE IS:', saveFormData);
 
       axios
-        .post(`${process.env.REACT_APP_API_URL}/api/commonmaster/createUpdateCountry`, formData)
+        .post(`${process.env.REACT_APP_API_URL}/api/commonmaster/createUpdateCountry`, saveFormData)
         .then((response) => {
           if (response.data.statusFlag === 'Error') {
             console.log('Response:', response.data);
@@ -139,6 +150,7 @@ export const CountryMaster = () => {
           } else {
             showSuccessToast(response.data.paramObjectsMap.message);
             handleClear();
+            getAllCountries();
           }
         })
         .catch((error) => {
@@ -151,7 +163,6 @@ export const CountryMaster = () => {
   };
 
   const handleView = () => {
-    // getAllCountry();
     setListView(!listView);
   };
 
@@ -163,71 +174,12 @@ export const CountryMaster = () => {
     });
   };
 
-  const columns = useMemo(
-    () => [
-      {
-        accessorKey: 'actions',
-        header: 'Actions',
-        size: 50,
-        muiTableHeadCellProps: {
-          align: 'center'
-        },
-        muiTableBodyCellProps: {
-          align: 'center'
-        },
-        enableSorting: false,
-        enableColumnOrdering: false,
-        enableEditing: false,
-        Cell: ({ row }) => (
-          <div>
-            {/* <IconButton onClick={() => handleViewRow(row)}>
-              <VisibilityIcon />
-            </IconButton> */}
-            {/* <IconButton onClick={() => handleEdit(row)}> */}
-            <IconButton>
-              <EditIcon />
-            </IconButton>
-          </div>
-        )
-      },
-      {
-        accessorKey: 'countryCode',
-        header: 'Code',
-        size: 50,
-        muiTableHeadCellProps: {
-          align: 'center'
-        },
-        muiTableBodyCellProps: {
-          align: 'center'
-        }
-      },
-      {
-        accessorKey: 'countryName',
-        header: 'Country',
-        size: 50,
-        muiTableHeadCellProps: {
-          align: 'center'
-        },
-        muiTableBodyCellProps: {
-          align: 'center'
-        }
-      }
-      // {
-      //   accessorKey: 'active',
-      //   header: 'Active',
-      //   size: 50,
-      //   muiTableHeadCellProps: {
-      //     align: 'center'
-      //   },
-      //   muiTableBodyCellProps: {
-      //     align: 'center'
-      //   },
-      //   Cell: ({ cell: { value } }) => <span>{value ? 'Active' : 'Active'}</span>
-      // }
-    ],
-    []
-  );
-
+  const handleCheckboxChange = (event) => {
+    setFormData({
+      ...formData,
+      active: event.target.checked
+    });
+  };
   return (
     <>
       <div>{/* <ToastContainer /> */}</div>
@@ -338,7 +290,6 @@ export const CountryMaster = () => {
             <CommonListViewTable
               data={listViewData}
               columns={listViewColumns}
-              // editCallback={editEmployee}
               blockEdit={true} // DISAPLE THE MODAL IF TRUE
               toEdit={getCountryById}
             />
@@ -373,7 +324,11 @@ export const CountryMaster = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControlLabel value="start" control={<Checkbox />} label="Active" labelPlacement="end" />
+                <FormControlLabel
+                  control={<Checkbox checked={formData.active} onChange={handleCheckboxChange} />}
+                  label="Active"
+                  labelPlacement="end"
+                />
               </div>
             </div>
           </>
