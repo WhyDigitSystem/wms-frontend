@@ -24,10 +24,13 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { showErrorToast, showSuccessToast } from 'utils/toastUtils';
 import { getAllActiveCountries } from 'utils/CommonFunctions';
+import ActionButton from 'utils/ActionButton';
+import { showToast } from 'utils/toast-component';
 
 export const StateMaster = () => {
   const [orgId, setOrgId] = useState(1000000001);
   const [loginUserName, setLoginUserName] = useState('Karupu');
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     active: true,
     stateCode: '',
@@ -161,6 +164,8 @@ export const StateMaster = () => {
     }
 
     if (Object.keys(errors).length === 0) {
+      setIsLoading(true);
+
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
@@ -176,17 +181,20 @@ export const StateMaster = () => {
       axios
         .post(`${process.env.REACT_APP_API_URL}/api/commonmaster/state`, saveFormData)
         .then((response) => {
-          if (response.data.statusFlag === 'Error') {
-            showErrorToast(response.data.paramObjectsMap.errorMessage);
-          } else {
-            showSuccessToast(response.data.paramObjectsMap.message);
+          if (response.data.status === true) {
+            setIsLoading(false);
             handleClear();
             getAllStates();
+            showToast('success', editId ? ' State Updated Successfully' : 'State created successfully');
+          } else {
+            showToast('error', response.data.paramObjectsMap.errorMessage || 'State creation failed');
+            setIsLoading(false);
           }
         })
         .catch((error) => {
           console.error('Error:', error);
-          showErrorToast('An error occurred while saving the state');
+          showToast('error', 'State creation failed');
+          setIsLoading(false);
         });
     } else {
       setFieldErrors(errors);
@@ -208,103 +216,10 @@ export const StateMaster = () => {
     <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
       <div className="row d-flex ml">
         <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-          <Tooltip title="Search" placement="top">
-            <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <SearchIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
-
-          <Tooltip title="Clear" placement="top">
-            {' '}
-            <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={handleClear}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <ClearIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
-
-          <Tooltip title="List View" placement="top">
-            {' '}
-            <ButtonBase sx={{ borderRadius: '12px' }} onClick={handleView}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <FormatListBulletedTwoToneIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
-          <Tooltip title="Save" placement="top">
-            {' '}
-            <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleSave}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <SaveIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
+          <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+          <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+          <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
         </div>
       </div>
 

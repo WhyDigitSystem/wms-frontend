@@ -15,8 +15,13 @@ import { ToastContainer, toast } from 'react-toastify';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import { showErrorToast, showSuccessToast } from 'utils/toastUtils';
+import ActionButton from 'utils/ActionButton';
+import { showToast } from 'utils/toast-component';
 
 export const CityMaster = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [editId, setEditId] = useState('');
+
   const [formData, setFormData] = useState({
     cityCode: '',
     cityName: '',
@@ -86,21 +91,27 @@ export const CityMaster = () => {
     }
 
     if (Object.keys(errors).length === 0) {
+      setIsLoading(true);
+
       console.log('DATA TO SAVE', formData);
 
       axios
         .put(`${process.env.REACT_APP_API_URL}/api/commonmaster/createUpdateCity`, formData)
         .then((response) => {
-          if (response.data.statusFlag === 'Error') {
+          if (response.data.status === true) {
             console.log('Response:', response.data);
-            showErrorToast(response.data.paramObjectsMap.errorMessage);
+            showToast('success', editId ? ' City Updated Successfully' : 'City created successfully');
+            handleClear();
+            setIsLoading(false);
           } else {
-            showSuccessToast(response.data.paramObjectsMap.message);
+            showToast('error', response.data.paramObjectsMap.errorMessage || 'City creation failed');
+            setIsLoading(false);
           }
         })
         .catch((error) => {
           console.error('Error:', error);
-          toast.error('An error occurred while saving the city');
+          showToast('error', 'City creation failed');
+          setIsLoading(false);
         });
     } else {
       setFieldErrors(errors);
@@ -119,169 +130,16 @@ export const CityMaster = () => {
     { accessorKey: 'active', header: 'Active', size: 140, Cell: ({ cell: { value } }) => (value ? 'Active' : 'Inactive') }
   ];
 
-  const columns = useMemo(
-    () => [
-      {
-        accessorKey: 'actions',
-        header: 'Actions',
-        size: 50,
-        muiTableHeadCellProps: {
-          align: 'center'
-        },
-        muiTableBodyCellProps: {
-          align: 'center'
-        },
-        enableSorting: false,
-        enableColumnOrdering: false,
-        enableEditing: false,
-        Cell: ({ row }) => (
-          <div>
-            <IconButton>
-              <EditIcon />
-            </IconButton>
-          </div>
-        )
-      },
-      {
-        accessorKey: 'cityCode',
-        header: 'Code',
-        size: 50,
-        muiTableHeadCellProps: { align: 'center' },
-        muiTableBodyCellProps: { align: 'center' }
-      },
-      {
-        accessorKey: 'cityName',
-        header: 'City',
-        size: 50,
-        muiTableHeadCellProps: { align: 'center' },
-        muiTableBodyCellProps: { align: 'center' }
-      },
-      {
-        accessorKey: 'state',
-        header: 'State',
-        size: 50,
-        muiTableHeadCellProps: { align: 'center' },
-        muiTableBodyCellProps: { align: 'center' }
-      },
-      {
-        accessorKey: 'country',
-        header: 'Country',
-        size: 50,
-        muiTableHeadCellProps: { align: 'center' },
-        muiTableBodyCellProps: { align: 'center' }
-      },
-      {
-        accessorKey: 'active',
-        header: 'Active',
-        size: 50,
-        muiTableHeadCellProps: { align: 'center' },
-        muiTableBodyCellProps: { align: 'center' },
-        Cell: ({ cell: { value } }) => <span>{value ? 'Active' : 'Inactive'}</span>
-      }
-    ],
-    []
-  );
-
   return (
     <>
       <div>{/* <ToastContainer /> */}</div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <Tooltip title="Search" placement="top">
-              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <SearchIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
-
-            <Tooltip title="Clear" placement="top">
-              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={handleClear}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <ClearIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
-
-            <Tooltip title="List View" placement="top">
-              <ButtonBase sx={{ borderRadius: '12px' }} onClick={handleView}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <FormatListBulletedTwoToneIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
-            <Tooltip title="Save" placement="top">
-              <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleSave}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <SaveIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
+            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
           </div>
         </div>
         {listView ? (
