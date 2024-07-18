@@ -780,7 +780,9 @@ export const CustomerMaster = () => {
                             <table className="table table-bordered">
                               <thead>
                                 <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center">Action</th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                    Action
+                                  </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
@@ -970,16 +972,20 @@ export const CustomerMaster = () => {
                       </div>
                       {/* Table */}
                       <div className="row mt-2">
-                        <div className="col-lg-12">
+                        <div className="col-lg-6">
                           <div className="table-responsive">
                             <table className="table table-bordered table-responsive">
                               <thead>
                                 <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center">Action</th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                    Action
+                                  </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">Branch Code</th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                    Branch Code
+                                  </th>
                                   <th className="px-2 py-2 text-white text-center">Branch</th>
                                 </tr>
                               </thead>
