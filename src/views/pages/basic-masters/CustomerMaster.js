@@ -46,42 +46,53 @@ export const CustomerMaster = () => {
     createdby: 'Karupu'
   });
   const [value, setValue] = useState(0);
-  const [tableData1, setTableData1] = useState([
+  const [branchTableData, setBranchTableData] = useState([
     {
       id: 1,
-      state: '',
-      businessPlace: '',
-      cityName: '',
-      address: '',
-      address2: '',
-      contactPerson: '',
-      contactPhoneNo: '',
-      contactEmail: ''
+      branchCode: '',
+      branch: ''
     }
   ]);
 
   const handleAddRow = () => {
     const newRow = {
       id: Date.now(),
-      state: '',
-      gstIn: '',
-      stateCode: '',
-      contactPerson: '',
-      contactPhoneNo: '',
-      contactEmail: ''
+      client: '',
+      clientCode: '',
+      clientType: '',
+      fifoFife: ''
     };
-    setTableData([...tableData, newRow]);
-    setTableErrors([...tableErrors, { state: '', gstIn: '', stateCode: '', contactPerson: '', contactPhoneNo: '', contactEmail: '' }]);
+    setClientTableData([...clientTableData, newRow]);
+    setClientTableErrors([...clientTableErrors, { client: '', clientCode: '', clientType: '', fifoFife: '' }]);
+  };
+  const handleAddRow1 = () => {
+    const newRow = {
+      id: Date.now(),
+      branchCode: '',
+      branch: ''
+    };
+    setBranchTableData([...branchTableData, newRow]);
+    setBranchTableErrors([
+      ...branchTableErrors,
+      {
+        branchCode: '',
+        branch: ''
+      }
+    ]);
   };
 
-  const [tableErrors, setTableErrors] = useState([
+  const [clientTableErrors, setClientTableErrors] = useState([
     {
-      state: '',
-      gstIn: '',
-      stateCode: '',
-      contactPerson: '',
-      contactPhoneNo: '',
-      contactEmail: ''
+      client: '',
+      clientCode: '',
+      clientType: '',
+      fifoFife: ''
+    }
+  ]);
+  const [branchTableErrors, setBranchTableErrors] = useState([
+    {
+      branchCode: '',
+      branch: ''
     }
   ]);
 
@@ -113,9 +124,7 @@ export const CustomerMaster = () => {
   ];
 
   const [listViewData, setListViewData] = useState([]);
-  const [tableData, setTableData] = useState([
-    { id: 1, state: '', gstIn: '', stateCode: '', contactPerson: '', contactPhoneNo: '', contactEmail: '' }
-  ]);
+  const [clientTableData, setClientTableData] = useState([{ id: 1, client: '', clientCode: '', clientType: '', fifoFife: '' }]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -190,12 +199,21 @@ export const CustomerMaster = () => {
   };
 
   const handleDeleteRow = (id) => {
-    setTableData(tableData.filter((row) => row.id !== id));
+    setClientTableData(clientTableData.filter((row) => row.id !== id));
   };
   const handleKeyDown = (e, row) => {
-    if (e.key === 'Tab' && row.id === tableData[tableData.length - 1].id) {
+    if (e.key === 'Tab' && row.id === clientTableData[clientTableData.length - 1].id) {
       e.preventDefault();
       handleAddRow();
+    }
+  };
+  const handleDeleteRow1 = (id) => {
+    setBranchTableData(branchTableData.filter((row) => row.id !== id));
+  };
+  const handleKeyDown1 = (e, row) => {
+    if (e.key === 'Tab' && row.id === branchTableData[branchTableData.length - 1].id) {
+      e.preventDefault();
+      handleAddRow1();
     }
   };
 
@@ -267,6 +285,45 @@ export const CustomerMaster = () => {
     if (!formData.gst) {
       errors.gst = 'GST is required';
     }
+
+    let clientTableDataValid = true;
+    const newTableErrors = clientTableData.map((row) => {
+      const rowErrors = {};
+      if (!row.client) {
+        rowErrors.client = 'Client is required';
+        clientTableDataValid = false;
+      }
+      if (!row.clientCode) {
+        rowErrors.clientCode = 'Client Code is required';
+        clientTableDataValid = false;
+      }
+      if (!row.clientType) {
+        rowErrors.clientType = 'Client Type is required';
+        clientTableDataValid = false;
+      }
+      if (!row.fifoFife) {
+        rowErrors.fifoFife = 'FIFO / FIFE is required';
+        clientTableDataValid = false;
+      }
+
+      return rowErrors;
+    });
+    setFieldErrors(errors);
+
+    setClientTableErrors(newTableErrors);
+
+    let branchTableDataValid = true;
+    const newTableErrors1 = branchTableData.map((row) => {
+      const rowErrors = {};
+      if (!row.branchCode) {
+        rowErrors.branchCode = 'Branch Code is required';
+        branchTableDataValid = false;
+      }
+      return rowErrors;
+    });
+    // setFieldErrors(errors);
+
+    setBranchTableErrors(newTableErrors1);
 
     if (Object.keys(errors).length === 0) {
       axios
@@ -674,7 +731,7 @@ export const CustomerMaster = () => {
                 />
               </div>
             </div>
-            <div className="row mt-5">
+            <div className="row mt-2">
               <Box sx={{ width: '100%' }}>
                 <Tabs
                   value={value}
@@ -683,7 +740,7 @@ export const CustomerMaster = () => {
                   indicatorColor="secondary"
                   aria-label="secondary tabs example"
                 >
-                  <Tab value={0} label="Company" />
+                  <Tab value={0} label="Client" />
                   <Tab value={1} label="Branch" />
                 </Tabs>
               </Box>
@@ -727,18 +784,16 @@ export const CustomerMaster = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">State</th>
-                                  <th className="px-2 py-2 text-white text-center">GST IN</th>
-                                  <th className="px-2 py-2 text-white text-center">State Code</th>
-                                  <th className="px-2 py-2 text-white text-center">Contact Person</th>
-                                  <th className="px-2 py-2 text-white text-center">Contact Phone No</th>
-                                  <th className="px-2 py-2 text-white text-center">Contact Email</th>
+                                  <th className="px-2 py-2 text-white text-center">Client</th>
+                                  <th className="px-2 py-2 text-white text-center">Client Code</th>
+                                  <th className="px-2 py-2 text-white text-center">Client Type</th>
+                                  <th className="px-2 py-2 text-white text-center">FIFO / FIFE</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {tableData.map((row, index) => (
+                                {clientTableData.map((row, index) => (
                                   <tr key={row.id}>
-                                    <td className="border px-2 py-2">
+                                    <td className="border px-2 py-2 text-center">
                                       <Tooltip title="Delete" placement="top">
                                         <ButtonBase
                                           sx={{ borderRadius: '12px', marginLeft: '4px' }}
@@ -774,139 +829,105 @@ export const CustomerMaster = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.state}
+                                        value={row.client}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, state: value } : r)));
-                                          setTableErrors((prev) => {
+                                          setClientTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, client: value } : r)));
+                                          setClientTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], state: !value ? 'State is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], client: !value ? 'Gst In is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={tableErrors[index]?.state ? 'error' : 'form-control'}
-                                        //style={{ marginBottom: '10px' }}
-                                      />
-                                      {tableErrors[index]?.state && (
-                                        <div style={{ color: 'red', fontSize: '12px' }}>{tableErrors[index].state}</div>
-                                      )}
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.gstIn}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, gstIn: value } : r)));
-                                          setTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], gstIn: !value ? 'Gst In is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={tableErrors[index]?.gstIn ? 'error' : 'form-control'}
+                                        className={clientTableErrors[index]?.client ? 'error form-control' : 'form-control'}
                                         // //style={{ marginBottom: '10px' }}
                                       />
-                                      {tableErrors[index]?.gstIn && (
-                                        <div style={{ color: 'red', fontSize: '12px' }}>{tableErrors[index].gstIn}</div>
+                                      {clientTableErrors[index]?.client && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {clientTableErrors[index].client}
+                                        </div>
                                       )}
                                     </td>
 
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.stateCode}
+                                        value={row.clientCode}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, stateCode: value } : r)));
-                                          setTableErrors((prev) => {
+                                          setClientTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, clientCode: value } : r))
+                                          );
+                                          setClientTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              stateCode: !value ? 'state Code is required' : ''
-                                            };
+                                            newErrors[index] = { ...newErrors[index], clientCode: !value ? 'clientCode is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={tableErrors[index]?.stateCode ? 'error' : 'form-control'}
-                                        //style={{ marginBottom: '10px' }}
+                                        className={clientTableErrors[index]?.clientCode ? 'error form-control' : 'form-control'}
                                       />
-                                      {tableErrors[index]?.stateCode && (
-                                        <div style={{ color: 'red', fontSize: '12px' }}>{tableErrors[index].stateCode}</div>
+                                      {clientTableErrors[index]?.clientCode && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {clientTableErrors[index].clientCode}
+                                        </div>
                                       )}
                                     </td>
 
                                     <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.contactPerson}
+                                      <select
+                                        value={row.clientType}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, contactPerson: value } : r)));
-                                          setTableErrors((prev) => {
+                                          setClientTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, clientType: value } : r))
+                                          );
+                                          setClientTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              contactPerson: !value ? 'Contact Person is required' : ''
+                                              clientType: !value ? 'State Code is required' : ''
                                             };
                                             return newErrors;
                                           });
                                         }}
-                                        className={tableErrors[index]?.contactPerson ? 'error' : 'form-control'}
-                                        //style={{ marginBottom: '10px' }}
-                                      />
-                                      {tableErrors[index]?.contactPerson && (
-                                        <div style={{ color: 'red', fontSize: '12px' }}>{tableErrors[index].contactPerson}</div>
+                                        className={clientTableErrors[index]?.clientType ? 'error form-control' : 'form-control'}
+                                      >
+                                        <option value="">Select Option</option>
+                                        <option value="Fixed">Fixed</option>
+                                        <option value="Open">Open</option>
+                                      </select>
+                                      {clientTableErrors[index]?.clientType && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {clientTableErrors[index].clientType}
+                                        </div>
                                       )}
                                     </td>
 
                                     <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.contactPhoneNo}
+                                      <select
+                                        value={row.fifoFife}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, contactPhoneNo: value } : r)));
-                                          setTableErrors((prev) => {
+                                          setClientTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, fifoFife: value } : r)));
+                                          setClientTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              contactPhoneNo: !value ? 'Contact PhoneNo is required' : ''
+                                              fifoFife: !value ? 'FIFE FIFO is required' : ''
                                             };
                                             return newErrors;
                                           });
                                         }}
-                                        className={tableErrors[index]?.contactPhoneNo ? 'error' : 'form-control'}
-                                        //style={{ marginBottom: '10px' }}
-                                      />
-                                      {tableErrors[index]?.contactPhoneNo && (
-                                        <div style={{ color: 'red', fontSize: '12px' }}>{tableErrors[index].contactPhoneNo}</div>
-                                      )}
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.contactEmail}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, contactEmail: value } : r)));
-                                          setTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              contactEmail: !value ? 'Contact Email is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        onKeyDown={(e) => handleKeyDown(e, row)}
-                                        className={tableErrors[index]?.contactEmail ? 'error' : 'form-control'}
-                                        //style={{ marginBottom: '10px' }}
-                                      />
-                                      {tableErrors[index]?.contactEmail && (
-                                        <div style={{ color: 'red', fontSize: '12px' }}>{tableErrors[index].contactEmail}</div>
+                                        className={clientTableErrors[index]?.fifoFife ? 'error form-control' : 'form-control'}
+                                      >
+                                        <option value="">Select Option</option>
+                                        <option value="FIFO">FIFO</option>
+                                        <option value="FIFE">FIFE</option>
+                                      </select>
+                                      {clientTableErrors[index]?.fifoFife && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {clientTableErrors[index].fifoFife}
+                                        </div>
                                       )}
                                     </td>
                                   </tr>
@@ -921,7 +942,123 @@ export const CustomerMaster = () => {
                 )}
                 {value === 1 && (
                   <>
-                    <p>coming soon</p>
+                    <div className="row d-flex ml">
+                      <div className="mb-1">
+                        <Tooltip title="Add" placement="top">
+                          <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleAddRow1}>
+                            <Avatar
+                              variant="rounded"
+                              sx={{
+                                ...theme.typography.commonAvatar,
+                                ...theme.typography.mediumAvatar,
+                                transition: 'all .2s ease-in-out',
+                                background: theme.palette.secondary.light,
+                                color: theme.palette.secondary.dark,
+                                '&[aria-controls="menu-list-grow"],&:hover': {
+                                  background: theme.palette.secondary.dark,
+                                  color: theme.palette.secondary.light
+                                }
+                              }}
+                              ref={anchorRef}
+                              aria-haspopup="true"
+                              color="inherit"
+                            >
+                              <AddIcon size="1.3rem" stroke={1.5} />
+                            </Avatar>
+                          </ButtonBase>
+                        </Tooltip>
+                      </div>
+                      {/* Table */}
+                      <div className="row mt-2">
+                        <div className="col-lg-12">
+                          <div className="table-responsive">
+                            <table className="table table-bordered table-responsive">
+                              <thead>
+                                <tr style={{ backgroundColor: '#673AB7' }}>
+                                  <th className="px-2 py-2 text-white text-center">Action</th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                    S.No
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center">Branch Code</th>
+                                  <th className="px-2 py-2 text-white text-center">Branch</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {branchTableData.map((row, index) => (
+                                  <tr key={row.id}>
+                                    <td className="border px-2 py-2 text-center">
+                                      <Tooltip title="Delete" placement="top">
+                                        <ButtonBase
+                                          sx={{ borderRadius: '12px', marginLeft: '4px' }}
+                                          onClick={() => handleDeleteRow1(row.id)}
+                                        >
+                                          <Avatar
+                                            variant="rounded"
+                                            sx={{
+                                              ...theme.typography.commonAvatar,
+                                              ...theme.typography.mediumAvatar,
+                                              transition: 'all .2s ease-in-out',
+                                              background: theme.palette.secondary.light,
+                                              color: theme.palette.secondary.dark,
+                                              '&[aria-controls="menu-list-grow"],&:hover': {
+                                                background: theme.palette.secondary.dark,
+                                                color: theme.palette.secondary.light
+                                              }
+                                            }}
+                                            ref={anchorRef}
+                                            aria-haspopup="true"
+                                            color="inherit"
+                                          >
+                                            <DeleteIcon size="1.3rem" stroke={1.5} />
+                                          </Avatar>
+                                        </ButtonBase>
+                                      </Tooltip>
+                                    </td>
+                                    <td className="text-center">
+                                      {/* <input type="text" value={`${index + 1}`} readOnly style={{ width: '100%' }} /> */}
+                                      <div className="pt-2">{index + 1}</div>
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <select
+                                        value={row.branchCode}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setBranchTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, branchCode: value } : r))
+                                          );
+                                          setBranchTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              branchCode: !value ? 'Branch Code is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        onKeyDown={(e) => handleKeyDown1(e, row)}
+                                        className={branchTableErrors[index]?.branchCode ? 'error form-control' : 'form-control'}
+                                      >
+                                        <option value="">Select Option</option>
+                                        <option value="Fixed">MAA</option>
+                                        <option value="Open">KA</option>
+                                      </select>
+                                      {branchTableErrors[index]?.branchCode && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {branchTableErrors[index].branchCode}
+                                        </div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">{row.branch}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </>
                 )}
               </Box>

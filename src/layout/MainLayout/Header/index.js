@@ -12,6 +12,7 @@ import NotificationSection from './NotificationSection';
 
 // assets
 import { IconMenu2 } from '@tabler/icons-react';
+import GlobalSection from './GlobalSection';
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
@@ -62,6 +63,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
 
       {/* notification & profile */}
       <NotificationSection />
+      <GlobalSection />
       <ProfileSection />
     </>
   );
