@@ -30,8 +30,7 @@ export const LocationTypeMaster = () => {
 
   const [formData, setFormData] = useState({
     active: true,
-    countryCode: '',
-    countryName: ''
+    storageType: ''
   });
   const [editId, setEditId] = useState('');
 
@@ -39,13 +38,12 @@ export const LocationTypeMaster = () => {
   const anchorRef = useRef(null);
 
   const [fieldErrors, setFieldErrors] = useState({
-    countryName: '',
-    countryCode: ''
+    storageType: ''
   });
   const [listView, setListView] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'countryCode', header: 'Code', size: 140 },
+    { accessorKey: 'storageType', header: 'Code', size: 140 },
     {
       accessorKey: 'countryName',
       header: 'Country',
@@ -57,10 +55,10 @@ export const LocationTypeMaster = () => {
 
   useEffect(() => {
     console.log('LISTVIEW FIELD CURRENT VALUE IS', listView);
-    getAllCountries();
+    getAllLocationTypes();
   }, []);
 
-  const getAllCountries = async () => {
+  const getAllLocationTypes = async () => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/country?orgid=1000000001`);
       console.log('API Response:', response);
@@ -74,7 +72,7 @@ export const LocationTypeMaster = () => {
       console.error('Error fetching data:', error);
     }
   };
-  const getCountryById = async (row) => {
+  const getLocationTypeById = async (row) => {
     console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
@@ -86,8 +84,7 @@ export const LocationTypeMaster = () => {
         const particularCountry = response.data.paramObjectsMap.Country;
 
         setFormData({
-          countryCode: particularCountry.countryCode,
-          countryName: particularCountry.countryName,
+          storageType: particularCountry.storageType,
           active: particularCountry.active === 'Active' ? true : false
         });
       } else {
@@ -100,12 +97,9 @@ export const LocationTypeMaster = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
 
-    if (name === 'countryCode' && !codeRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else if (name === 'countryName' && !nameRegex.test(value)) {
+    if (name === 'storageType' && !nameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else {
       setFormData({ ...formData, [name]: value.toUpperCase() });
@@ -115,22 +109,17 @@ export const LocationTypeMaster = () => {
 
   const handleClear = () => {
     setFormData({
-      countryName: '',
-      countryCode: ''
+      storageType: ''
     });
     setFieldErrors({
-      countryName: '',
-      countryCode: ''
+      storageType: ''
     });
   };
 
   const handleSave = () => {
     const errors = {};
-    if (!formData.countryCode) {
-      errors.countryCode = 'Country Code is required';
-    }
-    if (!formData.countryName) {
-      errors.countryName = 'Country is required';
+    if (!formData.storageType) {
+      errors.storageType = 'Location Type is required';
     }
 
     if (Object.keys(errors).length === 0) {
@@ -138,8 +127,7 @@ export const LocationTypeMaster = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        countryCode: formData.countryCode,
-        countryName: formData.countryName,
+        storageType: formData.storageType,
         orgId: orgId,
         createdby: loginUserName
       };
@@ -153,19 +141,19 @@ export const LocationTypeMaster = () => {
           if (response.data.status === true) {
             console.log('Response:', response.data);
 
-            showToast('success', editId ? ' Country Updated Successfully' : 'Country created successfully');
+            showToast('success', editId ? ' LocationType Updated Successfully' : 'LocationType created successfully');
 
             handleClear();
-            getAllCountries();
+            getAllLocationTypes();
             setIsLoading(false);
           } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Country creation failed');
+            showToast('error', response.data.paramObjectsMap.errorMessage || 'LocationType creation failed');
             setIsLoading(false);
           }
         })
         .catch((error) => {
           console.error('Error:', error);
-          showToast('error', 'Country creation failed');
+          showToast('error', 'LocationType creation failed');
 
           setIsLoading(false);
         });
@@ -181,8 +169,7 @@ export const LocationTypeMaster = () => {
   const handleClose = () => {
     setEditMode(false);
     setFormData({
-      country: '',
-      countryCode: ''
+      storageType: ''
     });
   };
 
@@ -215,7 +202,7 @@ export const LocationTypeMaster = () => {
               data={listViewData}
               columns={listViewColumns}
               blockEdit={true} // DISAPLE THE MODAL IF TRUE
-              toEdit={getCountryById}
+              toEdit={getLocationTypeById}
             />
           </div>
         ) : (
@@ -223,28 +210,15 @@ export const LocationTypeMaster = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Code"
+                  label="Storage Type"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="countryCode"
-                  value={formData.countryCode}
+                  name="storageType"
+                  value={formData.storageType}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.countryCode}
-                  helperText={fieldErrors.countryCode}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Name"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="countryName"
-                  value={formData.countryName}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.countryName}
-                  helperText={fieldErrors.countryName}
+                  error={!!fieldErrors.storageType}
+                  helperText={fieldErrors.storageType}
                 />
               </div>
               <div className="col-md-3 mb-3">

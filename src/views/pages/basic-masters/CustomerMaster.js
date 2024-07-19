@@ -637,29 +637,7 @@ export const CustomerMaster = () => {
                   <>
                     <div className="row d-flex ml">
                       <div className="mb-1">
-                        <Tooltip title="Add" placement="top">
-                          <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleAddRow}>
-                            <Avatar
-                              variant="rounded"
-                              sx={{
-                                ...theme.typography.commonAvatar,
-                                ...theme.typography.mediumAvatar,
-                                transition: 'all .2s ease-in-out',
-                                background: theme.palette.secondary.light,
-                                color: theme.palette.secondary.dark,
-                                '&[aria-controls="menu-list-grow"],&:hover': {
-                                  background: theme.palette.secondary.dark,
-                                  color: theme.palette.secondary.light
-                                }
-                              }}
-                              ref={anchorRef}
-                              aria-haspopup="true"
-                              color="inherit"
-                            >
-                              <AddIcon size="1.3rem" stroke={1.5} />
-                            </Avatar>
-                          </ButtonBase>
-                        </Tooltip>
+                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
                       </div>
                       {/* Table */}
                       <div className="row mt-2">
@@ -684,32 +662,7 @@ export const CustomerMaster = () => {
                                 {clientTableData.map((row, index) => (
                                   <tr key={row.id}>
                                     <td className="border px-2 py-2 text-center">
-                                      <Tooltip title="Delete" placement="top">
-                                        <ButtonBase
-                                          sx={{ borderRadius: '12px', marginLeft: '4px' }}
-                                          onClick={() => handleDeleteRow(row.id)}
-                                        >
-                                          <Avatar
-                                            variant="rounded"
-                                            sx={{
-                                              ...theme.typography.commonAvatar,
-                                              ...theme.typography.mediumAvatar,
-                                              transition: 'all .2s ease-in-out',
-                                              background: theme.palette.secondary.light,
-                                              color: theme.palette.secondary.dark,
-                                              '&[aria-controls="menu-list-grow"],&:hover': {
-                                                background: theme.palette.secondary.dark,
-                                                color: theme.palette.secondary.light
-                                              }
-                                            }}
-                                            ref={anchorRef}
-                                            aria-haspopup="true"
-                                            color="inherit"
-                                          >
-                                            <DeleteIcon size="1.3rem" stroke={1.5} />
-                                          </Avatar>
-                                        </ButtonBase>
-                                      </Tooltip>
+                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
                                     </td>
                                     <td className="text-center">
                                       {/* <input type="text" value={`${index + 1}`} readOnly style={{ width: '100%' }} /> */}
@@ -835,31 +788,8 @@ export const CustomerMaster = () => {
                   <>
                     <div className="row d-flex ml">
                       <div className="mb-1">
-                        <Tooltip title="Add" placement="top">
-                          <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleAddRow1}>
-                            <Avatar
-                              variant="rounded"
-                              sx={{
-                                ...theme.typography.commonAvatar,
-                                ...theme.typography.mediumAvatar,
-                                transition: 'all .2s ease-in-out',
-                                background: theme.palette.secondary.light,
-                                color: theme.palette.secondary.dark,
-                                '&[aria-controls="menu-list-grow"],&:hover': {
-                                  background: theme.palette.secondary.dark,
-                                  color: theme.palette.secondary.light
-                                }
-                              }}
-                              ref={anchorRef}
-                              aria-haspopup="true"
-                              color="inherit"
-                            >
-                              <AddIcon size="1.3rem" stroke={1.5} />
-                            </Avatar>
-                          </ButtonBase>
-                        </Tooltip>
+                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow1} />
                       </div>
-                      {/* Table */}
                       <div className="row mt-2">
                         <div className="col-lg-6">
                           <div className="table-responsive">
@@ -882,32 +812,7 @@ export const CustomerMaster = () => {
                                 {branchTableData.map((row, index) => (
                                   <tr key={row.id}>
                                     <td className="border px-2 py-2 text-center">
-                                      <Tooltip title="Delete" placement="top">
-                                        <ButtonBase
-                                          sx={{ borderRadius: '12px', marginLeft: '4px' }}
-                                          onClick={() => handleDeleteRow1(row.id)}
-                                        >
-                                          <Avatar
-                                            variant="rounded"
-                                            sx={{
-                                              ...theme.typography.commonAvatar,
-                                              ...theme.typography.mediumAvatar,
-                                              transition: 'all .2s ease-in-out',
-                                              background: theme.palette.secondary.light,
-                                              color: theme.palette.secondary.dark,
-                                              '&[aria-controls="menu-list-grow"],&:hover': {
-                                                background: theme.palette.secondary.dark,
-                                                color: theme.palette.secondary.light
-                                              }
-                                            }}
-                                            ref={anchorRef}
-                                            aria-haspopup="true"
-                                            color="inherit"
-                                          >
-                                            <DeleteIcon size="1.3rem" stroke={1.5} />
-                                          </Avatar>
-                                        </ButtonBase>
-                                      </Tooltip>
+                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow1(row.id)} />
                                     </td>
                                     <td className="text-center">
                                       {/* <input type="text" value={`${index + 1}`} readOnly style={{ width: '100%' }} /> */}

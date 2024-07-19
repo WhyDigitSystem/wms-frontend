@@ -29,7 +29,7 @@ const basicMasters = {
         },
         {
           id: 'stateMaster',
-          title: 'StateMaster',
+          title: 'State Master',
           type: 'item',
           url: '/basicmasters/statemaster'
         },
@@ -52,17 +52,17 @@ const basicMasters = {
           url: '/basicmasters/warehousemaster'
         },
         {
-          id: 'locationtypemaster',
+          id: 'locationTypeMaster',
           title: 'LocationType Master',
           type: 'item',
           url: '/basicmasters/locationtypemaster'
+        },
+        {
+          id: 'warehouseLocationMaster',
+          title: 'Warehouse Location Master',
+          type: 'item',
+          url: '/basicmasters/warehouselocationmaster'
         }
-        // {
-        //   id: 'editableTable',
-        //   title: 'Full Featured Crud Grid',
-        //   type: 'item',
-        //   url: '/basicmasters/editabletable'
-        // }
       ]
     }
   ]

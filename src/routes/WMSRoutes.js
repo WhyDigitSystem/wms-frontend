@@ -16,6 +16,7 @@ const CityMaster = Loadable(lazy(() => import('views/pages/basic-masters/CityMas
 const CustomerMaster = Loadable(lazy(() => import('views/pages/basic-masters/CustomerMaster')));
 const WarehouseMaster = Loadable(lazy(() => import('views/pages/basic-masters/WarehouseMaster')));
 const LocationTypeMaster = Loadable(lazy(() => import('views/pages/basic-masters/LocationTypeMaster')));
+const WarehouseLocationMaster = Loadable(lazy(() => import('views/pages/basic-masters/WarehouseLocationMaster')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
 
@@ -54,6 +55,10 @@ const WMSRoutes = {
     {
       path: '/basicmasters/locationtypemaster',
       element: <LocationTypeMaster />
+    },
+    {
+      path: '/basicmasters/warehouselocationmaster',
+      element: <WarehouseLocationMaster />
     }
   ]
 };
