@@ -30,6 +30,7 @@ export const CustomerMaster = () => {
   const [orgId, setOrgId] = useState('1');
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
+  const [loginUserName, setLoginUserName] = useState('Karupu');
 
   const [formData, setFormData] = useState({
     customer: '',
@@ -46,9 +47,8 @@ export const CustomerMaster = () => {
     state: '',
     city: '',
     gst: '',
-    active: false,
-    orgId: 1,
-    createdby: 'Karupu'
+    active: true,
+    orgId: 1
   });
   const [value, setValue] = useState(0);
   const [branchTableData, setBranchTableData] = useState([
@@ -121,7 +121,6 @@ export const CustomerMaster = () => {
     gst: ''
   });
   const [listView, setListView] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
     { accessorKey: 'customer', header: 'Customer', size: 140 },
     { accessorKey: 'shortName', header: 'Short Name', size: 140 },
@@ -135,71 +134,59 @@ export const CustomerMaster = () => {
     setValue(newValue);
   };
 
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-  //   const alphaNumericRegex = /^[A-Za-z0-9]*$/;
-  //   const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
-  //   const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-
-  //   if (name === 'customer' && !nameRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Only alphanumeric characters are allowed' });
-  //   } else if (name === 'shortName' && !nameRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Only alphanumeric characters are allowed' });
-  //   } else if (name === 'pan' && !alphaNumericRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Only alphabetic characters are allowed' });
-  //   } else if (name === 'pan' && value.length > 10) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else if (name === 'branchName' && !branchNameRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Only alphanumeric characters and @, _, -, * are allowed' });
-  //   }
-  //   // else if (type === 'checkbox') {
-  //   //   setFormData({ ...formData, [name]: checked });
-  //   // }
-  //   else {
-  //     setFormData({ ...formData, [name]: value.toUpperCase() });
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-  // };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    const nameRegex = /^[A-Za-z ]*$/;
+    const alphaNumericRegex = /^[A-Za-z0-9]*$/;
+    const numericRegex = /^[0-9]*$/;
+    const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
+    const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
 
-    const validationRules = {
-      customer: {
-        regex: /^[A-Za-z ]*$/,
-        errorMessage: 'Only alphabetic characters are allowed'
-      },
-      shortName: {
-        regex: /^[A-Za-z ]*$/,
-        errorMessage: 'Only alphabetic characters are allowed'
-      },
-      pan: {
-        regex: /^[A-Za-z0-9]*$/,
-        errorMessage: 'Only alphanumeric characters are allowed',
-        lengthCheck: (value) => value.length > 10,
-        lengthErrorMessage: 'PAN must be exactly 10 characters'
-      },
-      contactPerson: {
-        regex: /^[A-Za-z ]*$/,
-        errorMessage: 'Only alphabetic characters are allowed'
-      }
-    };
+    let errorMessage = '';
 
-    const rule = validationRules[name];
+    switch (name) {
+      case 'customer':
+      case 'shortName':
+        if (!nameRegex.test(value)) {
+          errorMessage = 'Only alphabetic characters are allowed';
+        }
+        break;
+      case 'pan':
+        if (!alphaNumericRegex.test(value)) {
+          errorMessage = 'Only alphanumeric characters are allowed';
+        } else if (value.length > 10) {
+          errorMessage = 'Invalid Format';
+        }
+        break;
+      case 'branchName':
+        if (!branchNameRegex.test(value)) {
+          errorMessage = 'Only alphanumeric characters and @, _, -, * are allowed';
+        }
+        break;
+      case 'mobile':
+        if (!numericRegex.test(value)) {
+          errorMessage = 'Only numeric characters are allowed';
+        } else if (value.length > 10) {
+          errorMessage = 'Invalid Format';
+        }
+        break;
+      case 'gst':
+        if (!alphaNumericRegex.test(value)) {
+          errorMessage = 'Only alphanumeric characters are allowed';
+        } else if (value.length > 15) {
+          errorMessage = 'Invalid Format';
+        }
+        break;
+      default:
+        break;
+    }
 
-    if (rule) {
-      if (!rule.regex.test(value)) {
-        setFieldErrors({ ...fieldErrors, [name]: rule.errorMessage });
-      } else if (rule.lengthCheck && rule.lengthCheck(value)) {
-        setFieldErrors({ ...fieldErrors, [name]: rule.lengthErrorMessage });
-      } else {
-        const { [name]: removedError, ...rest } = fieldErrors;
-        setFormData({ ...formData, [name]: value.toUpperCase() });
-        setFieldErrors(rest);
-      }
+    if (errorMessage) {
+      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
-      setFormData({ ...formData, [name]: value.toUpperCase() });
+      const updatedValue = name === 'email' ? value : value.toUpperCase();
+      setFormData({ ...formData, [name]: updatedValue });
+      setFieldErrors({ ...fieldErrors, [name]: '' });
     }
   };
 
@@ -238,8 +225,10 @@ export const CustomerMaster = () => {
       state: '',
       city: '',
       gst: '',
-      active: false
+      active: true
     });
+    setClientTableData([{ id: 1, client: '', clientCode: '', clientType: '', fifoFife: '' }]);
+    setBranchTableData([{ id: 1, branchCode: '', branchName: '' }]);
     setFieldErrors({
       customer: '',
       shortName: '',
@@ -289,6 +278,16 @@ export const CustomerMaster = () => {
     }
     if (!formData.gst) {
       errors.gst = 'GST is required';
+    } else if (formData.gst.length < 15) {
+      errors.gst = 'Invalid GST Format';
+    }
+    if (!formData.mobile) {
+      errors.mobile = 'mobile is required';
+    } else if (formData.mobile.length < 10) {
+      errors.mobile = 'Invalid Mobile Format';
+    }
+    if (formData.pan.length < 10) {
+      errors.pan = 'Invalid PAN Format';
     }
 
     let clientTableDataValid = true;
@@ -332,29 +331,48 @@ export const CustomerMaster = () => {
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
+      const clientVo = clientTableData.map((row) => ({
+        client: row.client,
+        clientCode: row.clientCode,
+        clientType: row.clientType,
+        fifoFife: row.fifoFife
+      }));
+      const branchVo = branchTableData.map((row) => ({
+        client: row.branchCode,
+        clientCode: row.branchName
+      }));
+
+      const saveFormData = {
+        ...(editId && { id: editId }),
+        active: formData.active,
+        customer: formData.customer,
+        shortName: formData.shortName,
+        pan: formData.pan,
+        contactPerson: formData.contactPerson,
+        mobile: formData.mobile,
+        gstReg: formData.gstReg,
+        email: formData.email,
+        groupOf: formData.groupOf,
+        tanNo: formData.tanNo,
+        address: formData.address,
+        country: formData.country,
+        state: formData.state,
+        city: formData.city,
+        gst: formData.gst,
+        clientVo: clientVo,
+        branchVo: branchVo,
+        orgId: orgId,
+        createdby: loginUserName
+      };
+
+      console.log('DATA TO SAVE IS:', saveFormData);
 
       axios
         .put(`${process.env.REACT_APP_API_URL}/api/customer`, formData)
         .then((response) => {
           if (response.data.status === true) {
             console.log('Response:', response.data);
-            setFormData({
-              customer: '',
-              shortName: '',
-              pan: '',
-              contactPerson: '',
-              mobile: '',
-              gstReg: '',
-              email: '',
-              groupOf: '',
-              tanNo: '',
-              address: '',
-              country: '',
-              state: '',
-              city: '',
-              gst: '',
-              active: false
-            });
+            handleClear();
             showToast('success', editId ? ' Customer Updated Successfully' : 'Customer created successfully');
             setIsLoading(false);
           } else {
@@ -377,7 +395,6 @@ export const CustomerMaster = () => {
   };
 
   const handleClose = () => {
-    setEditMode(false);
     setFormData({
       customer: '',
       shortName: '',
@@ -393,7 +410,7 @@ export const CustomerMaster = () => {
       state: '',
       city: '',
       gst: '',
-      active: false
+      active: true
     });
   };
 
@@ -791,6 +808,7 @@ export const CustomerMaster = () => {
                                             return newErrors;
                                           });
                                         }}
+                                        onKeyDown={(e) => handleKeyDown(e, row)}
                                         className={clientTableErrors[index]?.fifoFife ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
@@ -943,6 +961,7 @@ export const CustomerMaster = () => {
           </>
         )}
       </div>
+      <ToastContainer />
     </>
   );
 };
