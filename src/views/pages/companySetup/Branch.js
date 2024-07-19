@@ -19,7 +19,6 @@ import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { showErrorToast, showSuccessToast } from 'utils/toastUtils';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ActionButton from 'utils/ActionButton';
