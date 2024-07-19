@@ -14,7 +14,8 @@ const CountryMaster = Loadable(lazy(() => import('views/pages/basic-masters/Coun
 const StateMaster = Loadable(lazy(() => import('views/pages/basic-masters/StateMaster')));
 const CityMaster = Loadable(lazy(() => import('views/pages/basic-masters/CityMaster')));
 const CustomerMaster = Loadable(lazy(() => import('views/pages/basic-masters/CustomerMaster')));
-const FullFeaturedCrudGrid = Loadable(lazy(() => import('views/pages/basic-masters/FullFeaturedCrudGrid')));
+const WarehouseMaster = Loadable(lazy(() => import('views/pages/basic-masters/WarehouseMaster')));
+const LocationTypeMaster = Loadable(lazy(() => import('views/pages/basic-masters/LocationTypeMaster')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
 
@@ -47,8 +48,12 @@ const WMSRoutes = {
       element: <CustomerMaster />
     },
     {
-      path: '/basicmasters/editabletable',
-      element: <FullFeaturedCrudGrid />
+      path: '/basicmasters/warehousemaster',
+      element: <WarehouseMaster />
+    },
+    {
+      path: '/basicmasters/locationtypemaster',
+      element: <LocationTypeMaster />
     }
   ]
 };

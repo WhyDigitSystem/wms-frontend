@@ -46,11 +46,23 @@ const basicMasters = {
           url: '/basicmasters/customermaster'
         },
         {
-          id: 'editableTable',
-          title: 'Full Featured Crud Grid',
+          id: 'warehouseMaster',
+          title: 'Warehouse Master',
           type: 'item',
-          url: '/basicmasters/editabletable'
+          url: '/basicmasters/warehousemaster'
+        },
+        {
+          id: 'locationtypemaster',
+          title: 'LocationType Master',
+          type: 'item',
+          url: '/basicmasters/locationtypemaster'
         }
+        // {
+        //   id: 'editableTable',
+        //   title: 'Full Featured Crud Grid',
+        //   type: 'item',
+        //   url: '/basicmasters/editabletable'
+        // }
       ]
     }
   ]
