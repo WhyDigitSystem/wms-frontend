@@ -96,7 +96,8 @@ export const CellTypeMaster = () => {
 
   const handleClear = () => {
     setFormData({
-      cellCategory: ''
+      cellCategory: '',
+      active: true
     });
     setFieldErrors({
       cellCategory: ''

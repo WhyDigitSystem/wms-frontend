@@ -78,7 +78,7 @@ const WMSRoutes = {
     },
     {
       path: '/basicmasters/usercreationmaster',
-      element: <EmployeeMaster />
+      element: <UserCreationMaster />
     }
   ]
 };
