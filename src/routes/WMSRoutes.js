@@ -20,6 +20,7 @@ const WarehouseLocationMaster = Loadable(lazy(() => import('views/pages/basic-ma
 const LocationMappingMaster = Loadable(lazy(() => import('views/pages/basic-masters/LocationMappingMaster')));
 const CellTypeMaster = Loadable(lazy(() => import('views/pages/basic-masters/CellTypeMaster')));
 const EmployeeMaster = Loadable(lazy(() => import('views/pages/basic-masters/EmployeeMaster')));
+const UserCreationMaster = Loadable(lazy(() => import('views/pages/basic-masters/UserCreationMaster')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
 
@@ -65,7 +66,7 @@ const WMSRoutes = {
     },
     {
       path: '/basicmasters/locationmappingmaster',
-      element: <WarehouseLocationMaster />
+      element: <LocationMappingMaster />
     },
     {
       path: '/basicmasters/celltypemaster',
@@ -73,6 +74,10 @@ const WMSRoutes = {
     },
     {
       path: '/basicmasters/employeemaster',
+      element: <EmployeeMaster />
+    },
+    {
+      path: '/basicmasters/usercreationmaster',
       element: <EmployeeMaster />
     }
   ]

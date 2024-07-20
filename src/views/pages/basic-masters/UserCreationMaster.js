@@ -26,7 +26,7 @@ import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import GridOnIcon from '@mui/icons-material/GridOn';
 
-export const LocationMappingMaster = () => {
+export const UserCreationMaster = () => {
   const [orgId, setOrgId] = useState(1000000001);
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
@@ -37,23 +37,23 @@ export const LocationMappingMaster = () => {
     branch: '',
     warehouse: '',
     locationType: '',
-    clientType: '',
     rowNo: '',
-    levelNo: '',
-    client: '',
+    levelIdentity: '',
+    cellFrom: '',
+    cellTo: '',
     active: true,
     orgId: 1
   });
   const [value, setValue] = useState(0);
-  const [locationMappingTableData, setLocationMappingTableData] = useState([
+  const [locationTableData, setLocationTableData] = useState([
     {
       id: 1,
-      rowNo: '',
-      levelNo: '',
-      palletNo: '',
-      multiCore: '',
-      LocationStatus: '',
-      vasBinSeq: ''
+      location: '',
+      height: '',
+      weight: '',
+      cellCategory: '',
+      status: '',
+      core: ''
     }
   ]);
 
@@ -67,28 +67,28 @@ export const LocationMappingMaster = () => {
       status: '',
       core: ''
     };
-    setLocationMappingTableData([...locationMappingTableData, newRow]);
-    setLocationMappingTableErrors([
-      ...locationMappingTableErrors,
+    setLocationTableData([...locationTableData, newRow]);
+    setLocationTableErrors([
+      ...locationTableErrors,
       {
-        rowNo: '',
-        levelNo: '',
-        palletNo: '',
-        multiCore: '',
-        LocationStatus: '',
-        vasBinSeq: ''
+        location: '',
+        height: '',
+        weight: '',
+        cellCategory: '',
+        status: '',
+        core: ''
       }
     ]);
   };
 
-  const [locationMappingTableErrors, setLocationMappingTableErrors] = useState([
+  const [locationTableErrors, setLocationTableErrors] = useState([
     {
-      rowNo: '',
-      levelNo: '',
-      palletNo: '',
-      multiCore: '',
-      LocationStatus: '',
-      vasBinSeq: ''
+      location: '',
+      height: '',
+      weight: '',
+      cellCategory: '',
+      status: '',
+      core: ''
     }
   ]);
 
@@ -99,18 +99,19 @@ export const LocationMappingMaster = () => {
     branch: '',
     warehouse: '',
     locationType: '',
-    clientType: '',
     rowNo: '',
-    levelNo: '',
-    client: ''
+    levelIdentity: '',
+    cellFrom: '',
+    cellTo: ''
   });
   const listViewColumns = [
     { accessorKey: 'branch', header: 'Branch', size: 140 },
     { accessorKey: 'warehouse', header: 'Warehouse', size: 140 },
     { accessorKey: 'locationType', header: 'Location Type', size: 140 },
-    { accessorKey: 'clientType', header: 'Client Type', size: 140 },
     { accessorKey: 'rowNo', header: 'Row', size: 140 },
     { accessorKey: 'identityLevel', header: 'Identity Level', size: 140 },
+    { accessorKey: 'start', header: 'Start', size: 140 },
+    { accessorKey: 'end', header: 'End', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
@@ -122,6 +123,8 @@ export const LocationMappingMaster = () => {
       locationType: 'locationType1',
       rowNo: 'rowNo1',
       identityLevel: 'identityLevel1',
+      start: 'start1',
+      end: 'end1',
       active: 'Active'
     },
     {
@@ -131,6 +134,8 @@ export const LocationMappingMaster = () => {
       locationType: 'locationType2',
       rowNo: 'rowNo2',
       identityLevel: 'identityLevel2',
+      start: 'start2',
+      end: 'end1',
       active: 'Active'
     }
   ]);
@@ -167,10 +172,10 @@ export const LocationMappingMaster = () => {
   };
 
   const handleDeleteRow = (id) => {
-    setLocationMappingTableData(locationMappingTableData.filter((row) => row.id !== id));
+    setLocationTableData(locationTableData.filter((row) => row.id !== id));
   };
   const handleKeyDown = (e, row) => {
-    if (e.key === 'Tab' && row.id === locationMappingTableData[locationMappingTableData.length - 1].id) {
+    if (e.key === 'Tab' && row.id === locationTableData[locationTableData.length - 1].id) {
       e.preventDefault();
       handleAddRow();
     }
@@ -181,33 +186,33 @@ export const LocationMappingMaster = () => {
       branch: '',
       warehouse: '',
       locationType: '',
-      clientType: '',
       rowNo: '',
-      levelNo: '',
-      client: '',
+      levelIdentity: '',
+      cellFrom: '',
+      cellTo: '',
       active: true
     });
-    setLocationMappingTableData([
+    setLocationTableData([
       {
         id: 1,
-        rowNo: '',
-        levelNo: '',
-        palletNo: '',
-        multiCore: '',
-        LocationStatus: '',
-        vasBinSeq: ''
+        location: '',
+        height: '',
+        weight: '',
+        cellCategory: '',
+        status: '',
+        core: ''
       }
     ]);
     setFieldErrors({
       branch: '',
       warehouse: '',
       locationType: '',
-      clientType: '',
       rowNo: '',
-      levelNo: '',
-      client: ''
+      levelIdentity: '',
+      cellFrom: '',
+      cellTo: ''
     });
-    setLocationMappingTableErrors('');
+    setLocationTableErrors('');
   };
 
   const handleSave = () => {
@@ -224,52 +229,58 @@ export const LocationMappingMaster = () => {
     if (!formData.rowNo) {
       errors.rowNo = 'Row Number is required';
     }
-    if (!formData.levelNo) {
-      errors.levelNo = 'Level Identity is required';
+    if (!formData.levelIdentity) {
+      errors.levelIdentity = 'Level Identity is required';
+    }
+    if (!formData.cellFrom) {
+      errors.cellFrom = 'Cell From is required';
+    }
+    if (!formData.cellTo) {
+      errors.cellTo = 'Cell To is required';
     }
 
-    let locationMappingTableDataValid = true;
-    const newTableErrors = locationMappingTableData.map((row) => {
+    let locationTableDataValid = true;
+    const newTableErrors = locationTableData.map((row) => {
       const rowErrors = {};
-      if (!row.rowNo) {
-        rowErrors.rowNo = 'rowNo is required';
-        locationMappingTableDataValid = false;
+      if (!row.location) {
+        rowErrors.location = 'Location is required';
+        locationTableDataValid = false;
       }
-      if (!row.levelNo) {
-        rowErrors.levelNo = 'levelNo is required';
-        locationMappingTableDataValid = false;
+      if (!row.height) {
+        rowErrors.height = 'Height is required';
+        locationTableDataValid = false;
       }
-      if (!row.palletNo) {
-        rowErrors.palletNo = 'PalletNo is required';
-        locationMappingTableDataValid = false;
+      if (!row.weight) {
+        rowErrors.weight = 'Weight is required';
+        locationTableDataValid = false;
       }
-      if (!row.multiCore) {
-        rowErrors.multiCore = 'Multi Core is required';
-        locationMappingTableDataValid = false;
+      if (!row.cellCategory) {
+        rowErrors.cellCategory = 'Cell Category is required';
+        locationTableDataValid = false;
       }
-      if (!row.LocationStatus) {
-        rowErrors.LocationStatus = 'LocationStatus is required';
-        locationMappingTableDataValid = false;
+      if (!row.status) {
+        rowErrors.status = 'Status is required';
+        locationTableDataValid = false;
       }
-      if (!row.vasBinSeq) {
-        rowErrors.vasBinSeq = 'VasBinSeq is required';
-        locationMappingTableDataValid = false;
+      if (!row.core) {
+        rowErrors.core = 'Core is required';
+        locationTableDataValid = false;
       }
 
       return rowErrors;
     });
     setFieldErrors(errors);
-    setLocationMappingTableErrors(newTableErrors);
+    setLocationTableErrors(newTableErrors);
 
-    if (Object.keys(errors).length === 0 && locationMappingTableDataValid) {
+    if (Object.keys(errors).length === 0 && locationTableDataValid) {
       setIsLoading(true);
-      const locationVo = locationMappingTableData.map((row) => ({
-        rowNo: row.rowNo,
-        levelNo: row.levelNo,
-        palletNo: row.palletNo,
-        multiCore: row.multiCore,
-        LocationStatus: row.LocationStatus,
-        vasBinSeq: row.vasBinSeq
+      const locationVo = locationTableData.map((row) => ({
+        location: row.location,
+        height: row.height,
+        weight: row.weight,
+        cellCategory: row.cellCategory,
+        status: row.status,
+        core: row.core
       }));
 
       const saveFormData = {
@@ -279,7 +290,9 @@ export const LocationMappingMaster = () => {
         warehouse: formData.warehouse,
         locationType: formData.locationType,
         rowNo: formData.rowNo,
-        levelNo: formData.levelNo,
+        levelIdentity: formData.levelIdentity,
+        cellFrom: formData.cellFrom,
+        cellTo: formData.cellTo,
         locationVo: locationVo,
         orgId: orgId,
         createdby: loginUserName
@@ -293,16 +306,16 @@ export const LocationMappingMaster = () => {
           if (response.data.status === true) {
             console.log('Response:', response.data);
             handleClear();
-            showToast('success', editId ? ' LocationMapping Updated Successfully' : 'LocationMapping created successfully');
+            showToast('success', editId ? ' Warehouse Location Updated Successfully' : 'Warehouse Location created successfully');
             setIsLoading(false);
           } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'LocationMapping creation failed');
+            showToast('error', response.data.paramObjectsMap.errorMessage || 'Warehouse Location creation failed');
             setIsLoading(false);
           }
         })
         .catch((error) => {
           console.error('Error:', error);
-          showToast('error', 'LocationMapping creation failed');
+          showToast('error', 'Warehouse Location creation failed');
           setIsLoading(false);
         });
     } else {
@@ -319,10 +332,10 @@ export const LocationMappingMaster = () => {
       branch: '',
       warehouse: '',
       locationType: '',
-      clientType: '',
       rowNo: '',
-      levelNo: '',
-      client: '',
+      levelIdentity: '',
+      cellFrom: '',
+      cellTo: '',
       active: true
     });
   };
@@ -393,71 +406,58 @@ export const LocationMappingMaster = () => {
                   {fieldErrors.locationType && <FormHelperText error>{fieldErrors.locationType}</FormHelperText>}
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.clientType}>
-                  <InputLabel id="clientType-label">Client Type</InputLabel>
-                  <Select
-                    labelId="clientType-label"
-                    id="clientType"
-                    name="clientType"
-                    label="client Type"
-                    value={formData.clientType}
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="Client Type 1">Client Type 1</MenuItem>
-                    <MenuItem value="Client Type 2">Client Type 2</MenuItem>
-                  </Select>
-                  {fieldErrors.clientType && <FormHelperText error>{fieldErrors.clientType}</FormHelperText>}
-                </FormControl>
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.rowNo}>
-                  <InputLabel id="rowNo-label">Row No</InputLabel>
-                  <Select labelId="rowNo-label" id="rowNo" name="rowNo" label="Row No" value={formData.rowNo} onChange={handleInputChange}>
-                    <MenuItem value="Row No 1">Row No 1</MenuItem>
-                    <MenuItem value="Row No 2">Row No 2</MenuItem>
-                  </Select>
-                  {fieldErrors.rowNo && <FormHelperText error>{fieldErrors.rowNo}</FormHelperText>}
-                </FormControl>
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.levelNo}>
-                  <InputLabel id="levelNo-label">Level No</InputLabel>
-                  <Select
-                    labelId="levelNo-label"
-                    id="levelNo"
-                    name="levelNo"
-                    label="Level No"
-                    value={formData.levelNo}
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="levelNo 1">levelNo 1</MenuItem>
-                    <MenuItem value="levelNo 2">levelNo 2</MenuItem>
-                  </Select>
-                  {fieldErrors.levelNo && <FormHelperText error>{fieldErrors.levelNo}</FormHelperText>}
-                </FormControl>
+                <TextField
+                  label="Row No"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="rowNo"
+                  value={formData.rowNo}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.rowNo}
+                  helperText={fieldErrors.rowNo}
+                />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.client}>
-                  <InputLabel id="client-label">Client</InputLabel>
-                  <Select
-                    labelId="client-label"
-                    id="client"
-                    name="client"
-                    label="Client"
-                    value={formData.client}
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="Client 1">Client 1</MenuItem>
-                    <MenuItem value="Client 2">Client 2</MenuItem>
-                  </Select>
-                  {fieldErrors.client && <FormHelperText error>{fieldErrors.client}</FormHelperText>}
-                </FormControl>
+                <TextField
+                  label="Level Identity"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="levelIdentity"
+                  value={formData.levelIdentity}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.levelIdentity}
+                  helperText={fieldErrors.levelIdentity}
+                />
               </div>
-
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="Cell From"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="cellFrom"
+                  value={formData.cellFrom}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.cellFrom}
+                  helperText={fieldErrors.cellFrom}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="Cell To"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="cellTo"
+                  value={formData.cellTo}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.cellTo}
+                  helperText={fieldErrors.cellTo}
+                />
+              </div>
               <div className="col-md-3 mb-3">
                 <FormControlLabel
                   control={
@@ -506,20 +506,20 @@ export const LocationMappingMaster = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">Row No</th>
+                                  <th className="px-2 py-2 text-white text-center">Location</th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 130 }}>
-                                    Level No
+                                    Height(feet)
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 130 }}>
-                                    Pallet No
+                                    Weight(kg)
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">Multi Core</th>
-                                  <th className="px-2 py-2 text-white text-center">Location Status</th>
-                                  <th className="px-2 py-2 text-white text-center">VAS Bin Seq</th>
+                                  <th className="px-2 py-2 text-white text-center">Cell Category</th>
+                                  <th className="px-2 py-2 text-white text-center">Status</th>
+                                  <th className="px-2 py-2 text-white text-center">Core</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {locationMappingTableData.map((row, index) => (
+                                {locationTableData.map((row, index) => (
                                   <tr key={row.id}>
                                     <td className="border px-2 py-2 text-center">
                                       <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
@@ -531,152 +531,154 @@ export const LocationMappingMaster = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.rowNo}
+                                        value={row.location}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLocationMappingTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, rowNo: value } : r))
+                                          setLocationTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, location: value } : r))
                                           );
-                                          setLocationMappingTableErrors((prev) => {
+                                          setLocationTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], rowNo: !value ? 'Row No is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], location: !value ? 'Gst In is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={locationMappingTableErrors[index]?.rowNo ? 'error form-control' : 'form-control'}
+                                        className={locationTableErrors[index]?.location ? 'error form-control' : 'form-control'}
                                       />
-                                      {locationMappingTableErrors[index]?.rowNo && (
+                                      {locationTableErrors[index]?.location && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationMappingTableErrors[index].rowNo}
+                                          {locationTableErrors[index].location}
                                         </div>
                                       )}
                                     </td>
 
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="text"
-                                        value={row.levelNo}
+                                        type="number"
+                                        value={row.height}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLocationMappingTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, levelNo: value } : r))
-                                          );
-                                          setLocationMappingTableErrors((prev) => {
+                                          setLocationTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, height: value } : r)));
+                                          setLocationTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], levelNo: !value ? 'levelNo is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], height: !value ? 'height is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={locationMappingTableErrors[index]?.levelNo ? 'error form-control' : 'form-control'}
+                                        className={locationTableErrors[index]?.height ? 'error form-control' : 'form-control'}
                                       />
-                                      {locationMappingTableErrors[index]?.levelNo && (
+                                      {locationTableErrors[index]?.height && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationMappingTableErrors[index].levelNo}
+                                          {locationTableErrors[index].height}
                                         </div>
                                       )}
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="text"
-                                        value={row.palletNo}
+                                        type="number"
+                                        value={row.weight}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLocationMappingTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, palletNo: value } : r))
-                                          );
-                                          setLocationMappingTableErrors((prev) => {
+                                          setLocationTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, weight: value } : r)));
+                                          setLocationTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], palletNo: !value ? 'palletNo is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], weight: !value ? 'weight is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={locationMappingTableErrors[index]?.palletNo ? 'error form-control' : 'form-control'}
+                                        className={locationTableErrors[index]?.weight ? 'error form-control' : 'form-control'}
                                       />
-                                      {locationMappingTableErrors[index]?.palletNo && (
+                                      {locationTableErrors[index]?.weight && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationMappingTableErrors[index].palletNo}
+                                          {locationTableErrors[index].weight}
                                         </div>
                                       )}
                                     </td>
 
                                     <td className="border px-2 py-2">
                                       <select
-                                        value={row.multiCore}
+                                        value={row.cellCategory}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLocationMappingTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, multiCore: value } : r))
+                                          setLocationTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, cellCategory: value } : r))
                                           );
-                                          setLocationMappingTableErrors((prev) => {
+                                          setLocationTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              multiCore: !value ? 'Cell Category is required' : ''
+                                              cellCategory: !value ? 'Cell Category is required' : ''
                                             };
                                             return newErrors;
                                           });
                                         }}
-                                        className={locationMappingTableErrors[index]?.multiCore ? 'error form-control' : 'form-control'}
+                                        className={locationTableErrors[index]?.cellCategory ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        <option value="Single">Single</option>
-                                        <option value="Multi">Multi</option>
+                                        <option value="Acitve">Acitve</option>
+                                        <option value="In-Acitve">In-Acitve</option>
+                                        <option value="Block">Block</option>
+                                        <option value="Open">Way</option>
                                       </select>
-                                      {locationMappingTableErrors[index]?.multiCore && (
+                                      {locationTableErrors[index]?.cellCategory && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationMappingTableErrors[index].multiCore}
+                                          {locationTableErrors[index].cellCategory}
                                         </div>
                                       )}
                                     </td>
 
                                     <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.LocationStatus}
+                                      <select
+                                        value={row.status}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLocationMappingTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, LocationStatus: value } : r))
-                                          );
-                                          setLocationMappingTableErrors((prev) => {
+                                          setLocationTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, status: value } : r)));
+                                          setLocationTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              LocationStatus: !value ? 'LocationStatus is required' : ''
+                                              status: !value ? 'Status is required' : ''
                                             };
                                             return newErrors;
                                           });
                                         }}
-                                        className={
-                                          locationMappingTableErrors[index]?.LocationStatus ? 'error form-control' : 'form-control'
-                                        }
-                                      />
-                                      {locationMappingTableErrors[index]?.LocationStatus && (
+                                        className={locationTableErrors[index]?.status ? 'error form-control' : 'form-control'}
+                                      >
+                                        <option value="">Select Option</option>
+                                        <option value="True">True</option>
+                                        <option value="False">False</option>
+                                      </select>
+                                      {locationTableErrors[index]?.status && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationMappingTableErrors[index].LocationStatus}
+                                          {locationTableErrors[index].status}
                                         </div>
                                       )}
                                     </td>
                                     <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.vasBinSeq}
+                                      <select
+                                        value={row.core}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLocationMappingTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, vasBinSeq: value } : r))
-                                          );
-                                          setLocationMappingTableErrors((prev) => {
+                                          setLocationTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, core: value } : r)));
+                                          setLocationTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], vasBinSeq: !value ? 'vasBinSeq is required' : '' };
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              core: !value ? 'Core is required' : ''
+                                            };
                                             return newErrors;
                                           });
                                         }}
-                                        className={locationMappingTableErrors[index]?.vasBinSeq ? 'error form-control' : 'form-control'}
-                                      />
-                                      {locationMappingTableErrors[index]?.vasBinSeq && (
+                                        onKeyDown={(e) => handleKeyDown(e, row)}
+                                        className={locationTableErrors[index]?.core ? 'error form-control' : 'form-control'}
+                                      >
+                                        <option value="">Select Option</option>
+                                        <option value="True">True</option>
+                                        <option value="False">False</option>
+                                      </select>
+                                      {locationTableErrors[index]?.core && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationMappingTableErrors[index].vasBinSeq}
+                                          {locationTableErrors[index].core}
                                         </div>
                                       )}
                                     </td>
@@ -699,4 +701,4 @@ export const LocationMappingMaster = () => {
   );
 };
 
-export default LocationMappingMaster;
+export default UserCreationMaster;

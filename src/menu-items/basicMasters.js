@@ -80,6 +80,12 @@ const basicMasters = {
           title: 'Employee Master',
           type: 'item',
           url: '/basicmasters/employeemaster'
+        },
+        {
+          id: 'userCreationMaster',
+          title: 'User Creation Master',
+          type: 'item',
+          url: '/basicmasters/usercreationmaster'
         }
       ]
     }
