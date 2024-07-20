@@ -62,6 +62,24 @@ const basicMasters = {
           title: 'Warehouse Location Master',
           type: 'item',
           url: '/basicmasters/warehouselocationmaster'
+        },
+        {
+          id: 'locationMappingMaster',
+          title: 'LocationMapping Master',
+          type: 'item',
+          url: '/basicmasters/locationmappingmaster'
+        },
+        {
+          id: 'cellTypeMaster',
+          title: 'CellType Master',
+          type: 'item',
+          url: '/basicmasters/celltypemaster'
+        },
+        {
+          id: 'employeeMaster',
+          title: 'Employee Master',
+          type: 'item',
+          url: '/basicmasters/employeemaster'
         }
       ]
     }

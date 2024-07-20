@@ -26,7 +26,7 @@ import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import GridOnIcon from '@mui/icons-material/GridOn';
 
-export const WarehouseLocationMaster = () => {
+export const LocationMappingMaster = () => {
   const [orgId, setOrgId] = useState(1000000001);
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
@@ -701,4 +701,4 @@ export const WarehouseLocationMaster = () => {
   );
 };
 
-export default WarehouseLocationMaster;
+export default LocationMappingMaster;
