@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from './CommonListViewTable';
 import axios from 'axios';
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import IconButton from '@mui/material/IconButton';
@@ -24,71 +24,94 @@ import AddIcon from '@mui/icons-material/Add';
 import BrowserUpdatedIcon from '@mui/icons-material/BrowserUpdated';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
-import GridOnIcon from '@mui/icons-material/GridOn';
 
 export const UserCreationMaster = () => {
-  const [orgId, setOrgId] = useState(1000000001);
+  const [orgId, setOrgId] = useState('1');
   const [isLoading, setIsLoading] = useState(false);
-  const [listView, setListView] = useState(false);
   const [editId, setEditId] = useState('');
   const [loginUserName, setLoginUserName] = useState('Karupu');
 
   const [formData, setFormData] = useState({
-    branch: '',
-    warehouse: '',
-    locationType: '',
-    rowNo: '',
-    levelIdentity: '',
-    cellFrom: '',
-    cellTo: '',
+    employeeName: '',
+    employeeCode: '',
+    reportingTo: '',
+    userGroup: '',
+    email: '',
+    groupNo: '',
+    pwdExpDays: '',
+    password: '',
     active: true,
+    isFirstTime: true,
     orgId: 1
   });
   const [value, setValue] = useState(0);
-  const [locationTableData, setLocationTableData] = useState([
+  const [branchTableData, setBranchTableData] = useState([
     {
       id: 1,
-      location: '',
-      height: '',
-      weight: '',
-      cellCategory: '',
-      status: '',
-      core: ''
+      branchCode: '',
+      branch: ''
     }
   ]);
-
+  const [roleTableData, setRoleTableData] = useState([{ id: 1, role: '', startDate: '', endDate: '' }]);
+  const [clientTableData, setClientTableData] = useState([{ id: 1, customer: '', client: '' }]);
   const handleAddRow = () => {
     const newRow = {
       id: Date.now(),
-      location: '',
-      height: '',
-      weight: '',
-      cellCategory: '',
-      status: '',
-      core: ''
+      role: '',
+      startDate: '',
+      endDate: ''
     };
-    setLocationTableData([...locationTableData, newRow]);
-    setLocationTableErrors([
-      ...locationTableErrors,
+    setRoleTableData([...roleTableData, newRow]);
+    setRoleTableDataErrors([...roleTableDataErrors, { role: '', startDate: '', endDate: '' }]);
+  };
+  const handleAddRow1 = () => {
+    const newRow = {
+      id: Date.now(),
+      branchCode: '',
+      branch: ''
+    };
+    setBranchTableData([...branchTableData, newRow]);
+    setBranchTableErrors([
+      ...branchTableErrors,
       {
-        location: '',
-        height: '',
-        weight: '',
-        cellCategory: '',
-        status: '',
-        core: ''
+        branchCode: '',
+        branch: ''
+      }
+    ]);
+  };
+  const handleAddRow2 = () => {
+    const newRow = {
+      id: Date.now(),
+      customer: '',
+      client: ''
+    };
+    setClientTableData([...clientTableData, newRow]);
+    setClientTableErrors([
+      ...clientTableErrors,
+      {
+        customer: '',
+        client: ''
       }
     ]);
   };
 
-  const [locationTableErrors, setLocationTableErrors] = useState([
+  const [roleTableDataErrors, setRoleTableDataErrors] = useState([
     {
-      location: '',
-      height: '',
-      weight: '',
-      cellCategory: '',
-      status: '',
-      core: ''
+      role: '',
+      startDate: '',
+      endDate: ''
+    }
+  ]);
+  const [branchTableErrors, setBranchTableErrors] = useState([
+    {
+      branchCode: '',
+      branch: ''
+    }
+  ]);
+  const [clientTableErrors, setClientTableErrors] = useState([
+    {
+      customer: '',
+      client: ''
     }
   ]);
 
@@ -96,49 +119,31 @@ export const UserCreationMaster = () => {
   const anchorRef = useRef(null);
 
   const [fieldErrors, setFieldErrors] = useState({
-    branch: '',
-    warehouse: '',
-    locationType: '',
-    rowNo: '',
-    levelIdentity: '',
-    cellFrom: '',
-    cellTo: ''
+    employeeName: '',
+    employeeCode: '',
+    reportingTo: '',
+    userGroup: '',
+    email: '',
+    groupNo: '',
+    pwdExpDays: '',
+    active: '',
+    isFirstTime: '',
+    password: ''
   });
+  const [listView, setListView] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'branch', header: 'Branch', size: 140 },
-    { accessorKey: 'warehouse', header: 'Warehouse', size: 140 },
-    { accessorKey: 'locationType', header: 'Location Type', size: 140 },
-    { accessorKey: 'rowNo', header: 'Row', size: 140 },
-    { accessorKey: 'identityLevel', header: 'Identity Level', size: 140 },
-    { accessorKey: 'start', header: 'Start', size: 140 },
-    { accessorKey: 'end', header: 'End', size: 140 },
-    { accessorKey: 'active', header: 'Active', size: 140 }
+    { accessorKey: 'employeeName', header: 'Customer', size: 140 },
+    { accessorKey: 'employeeCode', header: 'Employee Code', size: 140 },
+    { accessorKey: 'reportingTo', header: 'Reporting To', size: 140 },
+    { accessorKey: 'userGroup', header: 'UserGroup', size: 140 },
+    { accessorKey: 'email', header: 'Email', size: 140 },
+    { accessorKey: 'groupNo', header: 'Group No', size: 140 },
+    { accessorKey: 'pwdExpDays', header: 'PWD Exp Days', size: 140 },
+    { accessorKey: 'active', header: 'Active', size: 140 },
+    { accessorKey: 'isFirstTime', header: 'IsFirstTime', size: 140 }
   ];
 
-  const [listViewData, setListViewData] = useState([
-    {
-      id: 1,
-      branch: 'Branch1',
-      warehouse: 'Warehouse1',
-      locationType: 'locationType1',
-      rowNo: 'rowNo1',
-      identityLevel: 'identityLevel1',
-      start: 'start1',
-      end: 'end1',
-      active: 'Active'
-    },
-    {
-      id: 2,
-      branch: 'Branch2',
-      warehouse: 'Warehouse2',
-      locationType: 'locationType2',
-      rowNo: 'rowNo2',
-      identityLevel: 'identityLevel2',
-      start: 'start2',
-      end: 'end1',
-      active: 'Active'
-    }
-  ]);
+  const [listViewData, setListViewData] = useState([]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -146,17 +151,45 @@ export const UserCreationMaster = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    const nameRegex = /^[A-Za-z ]*$/;
+    const alphaNumericRegex = /^[A-Za-z0-9]*$/;
     const numericRegex = /^[0-9]*$/;
-    const alphanumericRegex = /^[A-Za-z0-9]*$/;
-    const specialCharsRegex = /^[A-Za-z0-9@_\-*]*$/;
+    const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
+    const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
 
     let errorMessage = '';
 
     switch (name) {
-      case 'cellFrom':
-      case 'cellTo':
+      case 'customer':
+      case 'shortName':
+        if (!nameRegex.test(value)) {
+          errorMessage = 'Only alphabetic characters are allowed';
+        }
+        break;
+      case 'pan':
+        if (!alphaNumericRegex.test(value)) {
+          errorMessage = 'Only alphanumeric characters are allowed';
+        } else if (value.length > 10) {
+          errorMessage = 'Invalid Format';
+        }
+        break;
+      case 'branchName':
+        if (!branchNameRegex.test(value)) {
+          errorMessage = 'Only alphanumeric characters and @, _, -, * are allowed';
+        }
+        break;
+      case 'mobile':
         if (!numericRegex.test(value)) {
-          errorMessage = 'Only Numbers are allowed';
+          errorMessage = 'Only numeric characters are allowed';
+        } else if (value.length > 10) {
+          errorMessage = 'Invalid Format';
+        }
+        break;
+      case 'gst':
+        if (!alphaNumericRegex.test(value)) {
+          errorMessage = 'Only alphanumeric characters are allowed';
+        } else if (value.length > 15) {
+          errorMessage = 'Invalid Format';
         }
         break;
       default:
@@ -166,134 +199,192 @@ export const UserCreationMaster = () => {
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
-      setFormData({ ...formData, [name]: value });
+      const updatedValue = name === 'email' ? value : value.toUpperCase();
+      setFormData({ ...formData, [name]: updatedValue });
       setFieldErrors({ ...fieldErrors, [name]: '' });
     }
   };
 
+  const handleActiveChange = (event) => {
+    setFormData({
+      ...formData,
+      active: event.target.checked
+    });
+  };
+  const handleCheckboxChange = (event) => {
+    setFormData({
+      ...formData,
+      isFirstTime: event.target.checked
+    });
+  };
+
   const handleDeleteRow = (id) => {
-    setLocationTableData(locationTableData.filter((row) => row.id !== id));
+    setRoleTableData(roleTableData.filter((row) => row.id !== id));
   };
   const handleKeyDown = (e, row) => {
-    if (e.key === 'Tab' && row.id === locationTableData[locationTableData.length - 1].id) {
+    if (e.key === 'Tab' && row.id === roleTableData[roleTableData.length - 1].id) {
       e.preventDefault();
       handleAddRow();
+    }
+  };
+  const handleDeleteRow1 = (id) => {
+    setBranchTableData(branchTableData.filter((row) => row.id !== id));
+  };
+  const handleKeyDown1 = (e, row) => {
+    if (e.key === 'Tab' && row.id === branchTableData[branchTableData.length - 1].id) {
+      e.preventDefault();
+      handleAddRow1();
     }
   };
 
   const handleClear = () => {
     setFormData({
-      branch: '',
-      warehouse: '',
-      locationType: '',
-      rowNo: '',
-      levelIdentity: '',
-      cellFrom: '',
-      cellTo: '',
+      customer: '',
+      shortName: '',
+      pan: '',
+      contactPerson: '',
+      mobile: '',
+      gstReg: '',
+      email: '',
+      groupOf: '',
+      tanNo: '',
+      address: '',
+      employeeName: '',
+      state: '',
+      city: '',
+      gst: '',
       active: true
     });
-    setLocationTableData([
-      {
-        id: 1,
-        location: '',
-        height: '',
-        weight: '',
-        cellCategory: '',
-        status: '',
-        core: ''
-      }
-    ]);
+    setRoleTableData([{ id: 1, client: '', clientCode: '', clientType: '', fifoFife: '' }]);
+    setBranchTableData([{ id: 1, branchCode: '', branchName: '' }]);
     setFieldErrors({
-      branch: '',
-      warehouse: '',
-      locationType: '',
-      rowNo: '',
-      levelIdentity: '',
-      cellFrom: '',
-      cellTo: ''
+      customer: '',
+      shortName: '',
+      pan: '',
+      contactPerson: '',
+      mobile: '',
+      gstReg: '',
+      email: '',
+      groupOf: '',
+      tanNo: '',
+      address: '',
+      employeeName: '',
+      state: '',
+      city: '',
+      gst: ''
     });
-    setLocationTableErrors('');
   };
 
   const handleSave = () => {
     const errors = {};
-    if (!formData.branch) {
-      errors.branch = 'Branch is required';
+    if (!formData.customer) {
+      errors.customer = 'Customer is required';
     }
-    if (!formData.warehouse) {
-      errors.warehouse = 'Warehouse is required';
+    if (!formData.shortName) {
+      errors.shortName = 'Short Name is required';
     }
-    if (!formData.locationType) {
-      errors.locationType = 'Location Type is required';
+    if (!formData.contactPerson) {
+      errors.contactPerson = 'Contact Person is required';
     }
-    if (!formData.rowNo) {
-      errors.rowNo = 'Row Number is required';
+    if (!formData.email) {
+      errors.email = 'Email ID is required';
     }
-    if (!formData.levelIdentity) {
-      errors.levelIdentity = 'Level Identity is required';
+    if (!formData.groupOf) {
+      errors.groupOf = 'Group Of is required';
     }
-    if (!formData.cellFrom) {
-      errors.cellFrom = 'Cell From is required';
+    if (!formData.address) {
+      errors.address = 'Address is required';
     }
-    if (!formData.cellTo) {
-      errors.cellTo = 'Cell To is required';
+    if (!formData.employeeName) {
+      errors.employeeName = 'Employee Name is required';
+    }
+    if (!formData.state) {
+      errors.state = 'State is required';
+    }
+    if (!formData.city) {
+      errors.city = 'City is required';
+    }
+    if (!formData.gst) {
+      errors.gst = 'GST is required';
+    } else if (formData.gst.length < 15) {
+      errors.gst = 'Invalid GST Format';
+    }
+    if (!formData.mobile) {
+      errors.mobile = 'mobile is required';
+    } else if (formData.mobile.length < 10) {
+      errors.mobile = 'Invalid Mobile Format';
+    }
+    if (formData.pan.length < 10) {
+      errors.pan = 'Invalid PAN Format';
     }
 
-    let locationTableDataValid = true;
-    const newTableErrors = locationTableData.map((row) => {
+    let roleTableDataValid = true;
+    const newTableErrors = roleTableData.map((row) => {
       const rowErrors = {};
-      if (!row.location) {
-        rowErrors.location = 'Location is required';
-        locationTableDataValid = false;
+      if (!row.client) {
+        rowErrors.client = 'Client is required';
+        roleTableDataValid = false;
       }
-      if (!row.height) {
-        rowErrors.height = 'Height is required';
-        locationTableDataValid = false;
+      if (!row.clientCode) {
+        rowErrors.clientCode = 'Client Code is required';
+        roleTableDataValid = false;
       }
-      if (!row.weight) {
-        rowErrors.weight = 'Weight is required';
-        locationTableDataValid = false;
-      }
-      if (!row.cellCategory) {
-        rowErrors.cellCategory = 'Cell Category is required';
-        locationTableDataValid = false;
-      }
-      if (!row.status) {
-        rowErrors.status = 'Status is required';
-        locationTableDataValid = false;
-      }
-      if (!row.core) {
-        rowErrors.core = 'Core is required';
-        locationTableDataValid = false;
+      if (!row.clientType) {
+        rowErrors.clientType = 'Client Type is required';
+        roleTableDataValid = false;
       }
 
       return rowErrors;
     });
     setFieldErrors(errors);
-    setLocationTableErrors(newTableErrors);
 
-    if (Object.keys(errors).length === 0 && locationTableDataValid) {
+    setRoleTableDataErrors(newTableErrors);
+
+    let branchTableDataValid = true;
+    const newTableErrors1 = branchTableData.map((row) => {
+      const rowErrors = {};
+      if (!row.branchCode) {
+        rowErrors.branchCode = 'Branch Code is required';
+        branchTableDataValid = false;
+      }
+      return rowErrors;
+    });
+    // setFieldErrors(errors);
+
+    setBranchTableErrors(newTableErrors1);
+
+    if (Object.keys(errors).length === 0) {
       setIsLoading(true);
-      const locationVo = locationTableData.map((row) => ({
-        location: row.location,
-        height: row.height,
-        weight: row.weight,
-        cellCategory: row.cellCategory,
-        status: row.status,
-        core: row.core
+      const clientVo = roleTableData.map((row) => ({
+        client: row.client,
+        clientCode: row.clientCode,
+        clientType: row.clientType,
+        fifoFife: row.fifoFife
+      }));
+      const branchVo = branchTableData.map((row) => ({
+        client: row.branchCode,
+        clientCode: row.branchName
       }));
 
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        branch: formData.branch,
-        warehouse: formData.warehouse,
-        locationType: formData.locationType,
-        rowNo: formData.rowNo,
-        levelIdentity: formData.levelIdentity,
-        cellFrom: formData.cellFrom,
-        cellTo: formData.cellTo,
-        locationVo: locationVo,
+        customer: formData.customer,
+        shortName: formData.shortName,
+        pan: formData.pan,
+        contactPerson: formData.contactPerson,
+        mobile: formData.mobile,
+        gstReg: formData.gstReg,
+        email: formData.email,
+        groupOf: formData.groupOf,
+        tanNo: formData.tanNo,
+        address: formData.address,
+        employeeName: formData.employeeName,
+        state: formData.state,
+        city: formData.city,
+        gst: formData.gst,
+        clientVo: clientVo,
+        branchVo: branchVo,
         orgId: orgId,
         createdby: loginUserName
       };
@@ -301,21 +392,21 @@ export const UserCreationMaster = () => {
       console.log('DATA TO SAVE IS:', saveFormData);
 
       axios
-        .put(`${process.env.REACT_APP_API_URL}/api/location`, saveFormData)
+        .put(`${process.env.REACT_APP_API_URL}/api/customer`, formData)
         .then((response) => {
           if (response.data.status === true) {
             console.log('Response:', response.data);
             handleClear();
-            showToast('success', editId ? ' Warehouse Location Updated Successfully' : 'Warehouse Location created successfully');
+            showToast('success', editId ? ' Customer Updated Successfully' : 'Customer created successfully');
             setIsLoading(false);
           } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Warehouse Location creation failed');
+            showToast('error', response.data.paramObjectsMap.errorMessage || 'Customer creation failed');
             setIsLoading(false);
           }
         })
         .catch((error) => {
           console.error('Error:', error);
-          showToast('error', 'Warehouse Location creation failed');
+          showToast('error', 'Customer creation failed');
           setIsLoading(false);
         });
     } else {
@@ -329,18 +420,27 @@ export const UserCreationMaster = () => {
 
   const handleClose = () => {
     setFormData({
-      branch: '',
-      warehouse: '',
-      locationType: '',
-      rowNo: '',
-      levelIdentity: '',
-      cellFrom: '',
-      cellTo: '',
+      customer: '',
+      shortName: '',
+      pan: '',
+      contactPerson: '',
+      mobile: '',
+      gstReg: '',
+      email: '',
+      groupOf: '',
+      tanNo: '',
+      address: '',
+      employeeName: '',
+      state: '',
+      city: '',
+      gst: '',
       active: true
     });
   };
+
   return (
     <>
+      <div>{/* <ToastContainer /> */}</div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
@@ -358,121 +458,134 @@ export const UserCreationMaster = () => {
           <>
             <div className="row">
               <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.employeeName}>
+                  <InputLabel id="employeeName-label">Employee Name</InputLabel>
+                  <Select
+                    labelId="employeeName-label"
+                    label="EmployeeName"
+                    value={formData.employeeName}
+                    onChange={handleInputChange}
+                    name="employeeName"
+                  >
+                    <MenuItem value="Justin">Justin</MenuItem>
+                    <MenuItem value="Mani">Mani</MenuItem>
+                  </Select>
+                  {fieldErrors.employeeName && <FormHelperText>{fieldErrors.employeeName}</FormHelperText>}
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
                 <TextField
-                  label="Branch"
+                  label="EmployeeCode"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="branch"
-                  value={formData.branch}
+                  name="employeeCode"
+                  value={formData.employeeCode}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.branch}
-                  helperText={fieldErrors.branch}
+                  error={!!fieldErrors.employeeCode}
+                  helperText={fieldErrors.employeeCode}
                   disabled
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.warehouse}>
-                  <InputLabel id="warehouse-label">Warehouse</InputLabel>
+                <TextField
+                  label="Reporting To"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="reportingTo"
+                  value={formData.reportingTo}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.reportingTo}
+                  helperText={fieldErrors.reportingTo}
+                />
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.userGroup}>
+                  <InputLabel id="userGroup-label">User Group</InputLabel>
                   <Select
-                    labelId="warehouse-label"
-                    id="warehouse"
-                    name="warehouse"
-                    label="Warehouse"
-                    value={formData.warehouse}
+                    labelId="userGroup-label"
+                    label="UserGroup"
+                    value={formData.userGroup}
                     onChange={handleInputChange}
+                    name="userGroup"
                   >
-                    <MenuItem value="Warehouse 1">Warehouse 1</MenuItem>
-                    <MenuItem value="Warehouse 2">Warehouse 2</MenuItem>
+                    <MenuItem value="ADMIN">ADMIN</MenuItem>
+                    <MenuItem value="DEVELOPER">DEVELOPER</MenuItem>
                   </Select>
-                  {fieldErrors.warehouse && <FormHelperText error>{fieldErrors.warehouse}</FormHelperText>}
+                  {fieldErrors.userGroup && <FormHelperText>{fieldErrors.userGroup}</FormHelperText>}
                 </FormControl>
               </div>
 
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.locationType}>
-                  <InputLabel id="locationType-label">Location Type</InputLabel>
-                  <Select
-                    labelId="locationType-label"
-                    id="locationType"
-                    name="locationType"
-                    label="Location Type"
-                    value={formData.locationType}
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="Type 1">Type 1</MenuItem>
-                    <MenuItem value="Type 2">Type 2</MenuItem>
-                  </Select>
-                  {fieldErrors.locationType && <FormHelperText error>{fieldErrors.locationType}</FormHelperText>}
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
                 <TextField
-                  label="Row No"
+                  label="Email"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="rowNo"
-                  value={formData.rowNo}
+                  name="email"
+                  value={formData.email}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.rowNo}
-                  helperText={fieldErrors.rowNo}
+                  error={!!fieldErrors.email}
+                  helperText={fieldErrors.email}
                 />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Level Identity"
+                  label="Group No"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="levelIdentity"
-                  value={formData.levelIdentity}
+                  name="groupNo"
+                  value={formData.groupNo}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.levelIdentity}
-                  helperText={fieldErrors.levelIdentity}
+                  error={!!fieldErrors.groupNo}
+                  helperText={fieldErrors.groupNo}
                 />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Cell From"
+                  label="PWDExpDays"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="cellFrom"
-                  value={formData.cellFrom}
+                  name="pwdExpDays"
+                  value={formData.pwdExpDays}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.cellFrom}
-                  helperText={fieldErrors.cellFrom}
+                  error={!!fieldErrors.pwdExpDays}
+                  helperText={fieldErrors.pwdExpDays}
                 />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Cell To"
+                  label="Password"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="cellTo"
-                  value={formData.cellTo}
+                  type="password"
+                  name="password"
+                  value={formData.password}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.cellTo}
-                  helperText={fieldErrors.cellTo}
+                  error={!!fieldErrors.password}
+                  helperText={fieldErrors.password}
+                />
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControlLabel
+                  control={<Checkbox checked={formData.active} onChange={handleActiveChange} name="active" color="primary" />}
+                  label="Active"
                 />
               </div>
               <div className="col-md-3 mb-3">
                 <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={formData.active}
-                      onChange={() => setFormData({ ...formData, active: !formData.active })}
-                      color="primary"
-                    />
-                  }
-                  label="Active"
+                  control={<Checkbox checked={formData.isFirstTime} onChange={handleCheckboxChange} name="isFirstTime" color="primary" />}
+                  label="Is First Time"
                 />
               </div>
             </div>
-
-            <div className="row ">
+            <div className="row mt-2">
               <Box sx={{ width: '100%' }}>
                 <Tabs
                   value={value}
@@ -481,23 +594,23 @@ export const UserCreationMaster = () => {
                   indicatorColor="secondary"
                   aria-label="secondary tabs example"
                 >
-                  <Tab value={0} label="Location Details" />
+                  <Tab value={0} label="Roles" />
+                  <Tab value={1} label="Branch Accessible" />
+                  <Tab value={2} label="Client Access" />
                 </Tabs>
               </Box>
-              {/* <Box className="mt-4"> */}
-              <Box className="mt-2" sx={{ padding: 1 }}>
+              <Box sx={{ padding: 2 }}>
                 {value === 0 && (
                   <>
                     <div className="row d-flex ml">
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                        <ActionButton title="Fill Grid" icon={GridOnIcon} />
-                        <ActionButton title="Clear" icon={ClearIcon} />
                       </div>
+                      {/* Table */}
                       <div className="row mt-2">
                         <div className="col-lg-12">
                           <div className="table-responsive">
-                            <table className="table table-bordered" style={{ width: '100%' }}>
+                            <table className="table table-bordered">
                               <thead>
                                 <tr style={{ backgroundColor: '#673AB7' }}>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
@@ -506,179 +619,251 @@ export const UserCreationMaster = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">Location</th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 130 }}>
-                                    Height(feet)
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 130 }}>
-                                    Weight(kg)
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center">Cell Category</th>
-                                  <th className="px-2 py-2 text-white text-center">Status</th>
-                                  <th className="px-2 py-2 text-white text-center">Core</th>
+                                  <th className="px-2 py-2 text-white text-center">Role</th>
+                                  <th className="px-2 py-2 text-white text-center">Start Date</th>
+                                  <th className="px-2 py-2 text-white text-center">End Date</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {locationTableData.map((row, index) => (
+                                {roleTableData.map((row, index) => (
                                   <tr key={row.id}>
                                     <td className="border px-2 py-2 text-center">
                                       <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
                                     </td>
                                     <td className="text-center">
+                                      {/* <input type="text" value={`${index + 1}`} readOnly style={{ width: '100%' }} /> */}
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
 
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.location}
+                                        value={row.role}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLocationTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, location: value } : r))
-                                          );
-                                          setLocationTableErrors((prev) => {
+                                          setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, role: value } : r)));
+                                          setRoleTableDataErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], location: !value ? 'Gst In is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], role: !value ? 'Role is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={locationTableErrors[index]?.location ? 'error form-control' : 'form-control'}
+                                        className={roleTableDataErrors[index]?.role ? 'error form-control' : 'form-control'}
+                                        // //style={{ marginBottom: '10px' }}
                                       />
-                                      {locationTableErrors[index]?.location && (
+                                      {roleTableDataErrors[index]?.role && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationTableErrors[index].location}
+                                          {roleTableDataErrors[index].role}
                                         </div>
                                       )}
                                     </td>
 
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
-                                        value={row.height}
+                                        type="text"
+                                        value={row.startDate}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLocationTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, height: value } : r)));
-                                          setLocationTableErrors((prev) => {
+                                          setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, startDate: value } : r)));
+                                          setRoleTableDataErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], height: !value ? 'height is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], startDate: !value ? 'Start Date is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={locationTableErrors[index]?.height ? 'error form-control' : 'form-control'}
+                                        className={roleTableDataErrors[index]?.startDate ? 'error form-control' : 'form-control'}
                                       />
-                                      {locationTableErrors[index]?.height && (
+                                      {roleTableDataErrors[index]?.startDate && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationTableErrors[index].height}
+                                          {roleTableDataErrors[index].startDate}
                                         </div>
                                       )}
                                     </td>
+
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
-                                        value={row.weight}
+                                        type="text"
+                                        value={row.endDate}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLocationTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, weight: value } : r)));
-                                          setLocationTableErrors((prev) => {
+                                          setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, endDate: value } : r)));
+                                          setRoleTableDataErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], weight: !value ? 'weight is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], endDate: !value ? 'End Date is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={locationTableErrors[index]?.weight ? 'error form-control' : 'form-control'}
+                                        className={roleTableDataErrors[index]?.endDate ? 'error form-control' : 'form-control'}
                                       />
-                                      {locationTableErrors[index]?.weight && (
+                                      {roleTableDataErrors[index]?.endDate && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationTableErrors[index].weight}
+                                          {roleTableDataErrors[index].endDate}
                                         </div>
                                       )}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+                {value === 1 && (
+                  <>
+                    <div className="row d-flex ml">
+                      <div className="mb-1">
+                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow1} />
+                      </div>
+                      <div className="row mt-2">
+                        <div className="col-lg-6">
+                          <div className="table-responsive">
+                            <table className="table table-bordered table-responsive">
+                              <thead>
+                                <tr style={{ backgroundColor: '#673AB7' }}>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                    Action
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                    S.No
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                    Branch Code
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center">Branch</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {branchTableData.map((row, index) => (
+                                  <tr key={row.id}>
+                                    <td className="border px-2 py-2 text-center">
+                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow1(row.id)} />
+                                    </td>
+                                    <td className="text-center">
+                                      {/* <input type="text" value={`${index + 1}`} readOnly style={{ width: '100%' }} /> */}
+                                      <div className="pt-2">{index + 1}</div>
                                     </td>
 
                                     <td className="border px-2 py-2">
                                       <select
-                                        value={row.cellCategory}
+                                        value={row.branchCode}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLocationTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, cellCategory: value } : r))
+                                          setBranchTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, branchCode: value } : r))
                                           );
-                                          setLocationTableErrors((prev) => {
+                                          setBranchTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              cellCategory: !value ? 'Cell Category is required' : ''
+                                              branchCode: !value ? 'Branch Code is required' : ''
                                             };
                                             return newErrors;
                                           });
                                         }}
-                                        className={locationTableErrors[index]?.cellCategory ? 'error form-control' : 'form-control'}
+                                        onKeyDown={(e) => handleKeyDown1(e, row)}
+                                        className={branchTableErrors[index]?.branchCode ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        <option value="Acitve">Acitve</option>
-                                        <option value="In-Acitve">In-Acitve</option>
-                                        <option value="Block">Block</option>
-                                        <option value="Open">Way</option>
+                                        <option value="Fixed">MAA</option>
+                                        <option value="Open">KA</option>
                                       </select>
-                                      {locationTableErrors[index]?.cellCategory && (
+                                      {branchTableErrors[index]?.branchCode && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationTableErrors[index].cellCategory}
+                                          {branchTableErrors[index].branchCode}
+                                        </div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">{row.branch}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+                {value === 2 && (
+                  <>
+                    <div className="row d-flex ml">
+                      <div className="mb-1">
+                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow2} />
+                      </div>
+                      {/* Table */}
+                      <div className="row mt-2">
+                        <div className="col-lg-6">
+                          <div className="table-responsive">
+                            <table className="table table-bordered">
+                              <thead>
+                                <tr style={{ backgroundColor: '#673AB7' }}>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                    Action
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                    S.No
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center">Customer</th>
+                                  <th className="px-2 py-2 text-white text-center">Client</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {clientTableData.map((row, index) => (
+                                  <tr key={row.id}>
+                                    <td className="border px-2 py-2 text-center">
+                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+                                    </td>
+                                    <td className="text-center">
+                                      {/* <input type="text" value={`${index + 1}`} readOnly style={{ width: '100%' }} /> */}
+                                      <div className="pt-2">{index + 1}</div>
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.customer}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setClientTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, customer: value } : r)));
+                                          setClientTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], customer: !value ? 'Customer In is required' : '' };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={clientTableErrors[index]?.customer ? 'error form-control' : 'form-control'}
+                                        // //style={{ marginBottom: '10px' }}
+                                      />
+                                      {clientTableErrors[index]?.customer && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {clientTableErrors[index].customer}
                                         </div>
                                       )}
                                     </td>
 
                                     <td className="border px-2 py-2">
-                                      <select
-                                        value={row.status}
+                                      <input
+                                        type="text"
+                                        value={row.client}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLocationTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, status: value } : r)));
-                                          setLocationTableErrors((prev) => {
+                                          setClientTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, client: value } : r)));
+                                          setClientTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              status: !value ? 'Status is required' : ''
-                                            };
+                                            newErrors[index] = { ...newErrors[index], client: !value ? 'Client is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={locationTableErrors[index]?.status ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">Select Option</option>
-                                        <option value="True">True</option>
-                                        <option value="False">False</option>
-                                      </select>
-                                      {locationTableErrors[index]?.status && (
+                                        className={clientTableErrors[index]?.client ? 'error form-control' : 'form-control'}
+                                        // //style={{ marginBottom: '10px' }}
+                                      />
+                                      {clientTableErrors[index]?.client && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationTableErrors[index].status}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <select
-                                        value={row.core}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLocationTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, core: value } : r)));
-                                          setLocationTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              core: !value ? 'Core is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        onKeyDown={(e) => handleKeyDown(e, row)}
-                                        className={locationTableErrors[index]?.core ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">Select Option</option>
-                                        <option value="True">True</option>
-                                        <option value="False">False</option>
-                                      </select>
-                                      {locationTableErrors[index]?.core && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationTableErrors[index].core}
+                                          {clientTableErrors[index].client}
                                         </div>
                                       )}
                                     </td>
@@ -697,8 +882,8 @@ export const UserCreationMaster = () => {
           </>
         )}
       </div>
+      <ToastContainer />
     </>
   );
 };
-
 export default UserCreationMaster;
