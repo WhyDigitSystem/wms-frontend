@@ -21,11 +21,13 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
+import apiCalls from 'apicall';
 
 export const CountryMaster = () => {
   const [orgId, setOrgId] = useState(1000000001);
   const [loginUserName, setLoginUserName] = useState('Karupu');
   const [isLoading, setIsLoading] = useState(false);
+  const [data1, setData1] = useState([]);
 
   const [formData, setFormData] = useState({
     active: true,
@@ -56,8 +58,19 @@ export const CountryMaster = () => {
 
   useEffect(() => {
     console.log('LISTVIEW FIELD CURRENT VALUE IS', listView);
-    getAllCountries();
+    // getAllCountries();
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const result = await apiCalls('get', `/posts`);
+      setData1(result);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
 
   const getAllCountries = async () => {
     try {
