@@ -12,7 +12,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
-import { showErrorToast, showSuccessToast } from 'utils/toastUtils';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -143,16 +142,16 @@ export const WarehouseMaster = () => {
 
   const handleClear = () => {
     setFormData({
-      branch: '',
       warehouse: '',
       active: true
     });
     setClientTableData([{ id: 1, client: '', clientCode: '' }]);
     setBranchTableData([{ id: 1, customerBranchCode: '' }]);
     setFieldErrors({
-      branch: '',
       warehouse: ''
     });
+    setClientTableErrors(clientTableErrors.map(() => ({ client: '', clientCode: '' })));
+    setBranchTableErrors(branchTableErrors.map(() => ({ customerBranchCode: '' })));
   };
 
   const handleSave = () => {
