@@ -50,6 +50,8 @@ export const CityMaster = () => {
 
     if (name === 'cityCode' && !codeRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+    } else if (name === 'cityCode' && value.length > 3) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 3' });
     } else if (name === 'cityName' && !nameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else {
