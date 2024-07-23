@@ -86,6 +86,30 @@ const basicMasters = {
           title: 'User Creation Master',
           type: 'item',
           url: '/basicmasters/usercreationmaster'
+        },
+        {
+          id: 'buyerMaster',
+          title: 'Buyer Master',
+          type: 'item',
+          url: '/basicmasters/buyermaster'
+        },
+        {
+          id: 'carriermaster',
+          title: 'Carrier Master',
+          type: 'item',
+          url: '/basicmasters/carriermaster'
+        },
+        {
+          id: 'supplierMaster',
+          title: 'Supplier Master',
+          type: 'item',
+          url: '/basicmasters/suppliermaster'
+        },
+        {
+          id: 'externaldatamaster',
+          title: 'External Data Master',
+          type: 'item',
+          url: '/basicmasters/externaldatamaster'
         }
       ]
     }

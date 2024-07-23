@@ -4,6 +4,10 @@ import { lazy } from 'react';
 import Loadable from 'ui-component/Loadable';
 import MinimalLayout from 'layout/MinimalLayout';
 import MainLayout from 'layout/MainLayout';
+import BuyerMaster from 'views/pages/basic-masters/BuyerMaster';
+import CarrierMaster from 'views/pages/basic-masters/CarrierMaster';
+import SupplierMaster from 'views/pages/basic-masters/SupplierMaster';
+import ExternalDataMismatch from 'views/pages/basic-masters/ExternalDataMismatch';
 
 // login option 3 routing
 const AuthLogin3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Login3')));
@@ -79,6 +83,22 @@ const WMSRoutes = {
     {
       path: '/basicmasters/usercreationmaster',
       element: <UserCreationMaster />
+    },
+    {
+      path: '/basicmasters/buyermaster',
+      element: <BuyerMaster />
+    },
+    {
+      path: '/basicmasters/carriermaster',
+      element: <CarrierMaster />
+    },
+    {
+      path: '/basicmasters/suppliermaster',
+      element: <SupplierMaster />
+    },
+    {
+      path: '/basicmasters/externaldatamaster',
+      element: <ExternalDataMismatch />
     }
   ]
 };
