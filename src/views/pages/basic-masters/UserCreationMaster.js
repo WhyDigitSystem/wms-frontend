@@ -2,7 +2,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, FormHelperText, Tooltip, FormControlLabel, Checkbox } from '@mui/material';
+import { FormHelperText, Tooltip, FormControlLabel, Checkbox } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from './CommonListViewTable';
@@ -10,8 +10,6 @@ import axios from 'axios';
 import { useRef, useState, useMemo } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -21,9 +19,10 @@ import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import BrowserUpdatedIcon from '@mui/icons-material/BrowserUpdated';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
+import 'react-datepicker/dist/react-datepicker.css';
+import DatePicker from 'react-datepicker';
 
 export const UserCreationMaster = () => {
   const [orgId, setOrgId] = useState('1');
@@ -52,7 +51,7 @@ export const UserCreationMaster = () => {
       branch: ''
     }
   ]);
-  const [roleTableData, setRoleTableData] = useState([{ id: 1, role: '', startDate: '', endDate: '' }]);
+  const [roleTableData, setRoleTableData] = useState([{ id: 1, role: '', startDate: null, endDate: null }]);
   const [clientTableData, setClientTableData] = useState([{ id: 1, customer: '', client: '' }]);
   const handleAddRow = () => {
     const newRow = {
@@ -75,7 +74,7 @@ export const UserCreationMaster = () => {
       ...branchTableErrors,
       {
         branchCode: '',
-        branch: ''
+        branchCode: ''
       }
     ]);
   };
@@ -159,42 +158,42 @@ export const UserCreationMaster = () => {
 
     let errorMessage = '';
 
-    switch (name) {
-      case 'customer':
-      case 'shortName':
-        if (!nameRegex.test(value)) {
-          errorMessage = 'Only alphabetic characters are allowed';
-        }
-        break;
-      case 'pan':
-        if (!alphaNumericRegex.test(value)) {
-          errorMessage = 'Only alphanumeric characters are allowed';
-        } else if (value.length > 10) {
-          errorMessage = 'Invalid Format';
-        }
-        break;
-      case 'branchName':
-        if (!branchNameRegex.test(value)) {
-          errorMessage = 'Only alphanumeric characters and @, _, -, * are allowed';
-        }
-        break;
-      case 'mobile':
-        if (!numericRegex.test(value)) {
-          errorMessage = 'Only numeric characters are allowed';
-        } else if (value.length > 10) {
-          errorMessage = 'Invalid Format';
-        }
-        break;
-      case 'gst':
-        if (!alphaNumericRegex.test(value)) {
-          errorMessage = 'Only alphanumeric characters are allowed';
-        } else if (value.length > 15) {
-          errorMessage = 'Invalid Format';
-        }
-        break;
-      default:
-        break;
-    }
+    // switch (name) {
+    //   case 'customer':
+    //   case 'shortName':
+    //     if (!nameRegex.test(value)) {
+    //       errorMessage = 'Only alphabetic characters are allowed';
+    //     }
+    //     break;
+    //   case 'pan':
+    //     if (!alphaNumericRegex.test(value)) {
+    //       errorMessage = 'Only alphanumeric characters are allowed';
+    //     } else if (value.length > 10) {
+    //       errorMessage = 'Invalid Format';
+    //     }
+    //     break;
+    //   case 'branchName':
+    //     if (!branchNameRegex.test(value)) {
+    //       errorMessage = 'Only alphanumeric characters and @, _, -, * are allowed';
+    //     }
+    //     break;
+    //   case 'mobile':
+    //     if (!numericRegex.test(value)) {
+    //       errorMessage = 'Only numeric characters are allowed';
+    //     } else if (value.length > 10) {
+    //       errorMessage = 'Invalid Format';
+    //     }
+    //     break;
+    //   case 'gst':
+    //     if (!alphaNumericRegex.test(value)) {
+    //       errorMessage = 'Only alphanumeric characters are allowed';
+    //     } else if (value.length > 15) {
+    //       errorMessage = 'Invalid Format';
+    //     }
+    //     break;
+    //   default:
+    //     break;
+    // }
 
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
@@ -239,98 +238,74 @@ export const UserCreationMaster = () => {
 
   const handleClear = () => {
     setFormData({
-      customer: '',
-      shortName: '',
-      pan: '',
-      contactPerson: '',
-      mobile: '',
-      gstReg: '',
-      email: '',
-      groupOf: '',
-      tanNo: '',
-      address: '',
       employeeName: '',
-      state: '',
-      city: '',
-      gst: '',
-      active: true
+      employeeCode: '',
+      reportingTo: '',
+      userGroup: '',
+      email: '',
+      groupNo: '',
+      pwdExpDays: '',
+      active: '',
+      isFirstTime: '',
+      password: '',
+      active: true,
+      isFirstTime: true
     });
-    setRoleTableData([{ id: 1, client: '', clientCode: '', clientType: '', fifoFife: '' }]);
+    setRoleTableData([{ id: 1, role: '', startDate: '', endDate: '' }]);
     setBranchTableData([{ id: 1, branchCode: '', branchName: '' }]);
+    setClientTableData([{ id: 1, customer: '', client: '' }]);
     setFieldErrors({
-      customer: '',
-      shortName: '',
-      pan: '',
-      contactPerson: '',
-      mobile: '',
-      gstReg: '',
-      email: '',
-      groupOf: '',
-      tanNo: '',
-      address: '',
       employeeName: '',
-      state: '',
-      city: '',
-      gst: ''
+      employeeCode: '',
+      reportingTo: '',
+      userGroup: '',
+      email: '',
+      groupNo: '',
+      pwdExpDays: '',
+      password: ''
     });
+    setRoleTableDataErrors('');
+    setBranchTableErrors('');
+    setClientTableErrors('');
   };
 
   const handleSave = () => {
     const errors = {};
-    if (!formData.customer) {
-      errors.customer = 'Customer is required';
+    if (!formData.employeeName) {
+      errors.employeeName = 'Employee Name is required';
     }
-    if (!formData.shortName) {
-      errors.shortName = 'Short Name is required';
+    if (!formData.reportingTo) {
+      errors.reportingTo = 'Reporting To is required';
     }
-    if (!formData.contactPerson) {
-      errors.contactPerson = 'Contact Person is required';
+    if (!formData.userGroup) {
+      errors.userGroup = 'User Group is required';
     }
     if (!formData.email) {
       errors.email = 'Email ID is required';
     }
-    if (!formData.groupOf) {
-      errors.groupOf = 'Group Of is required';
+    if (!formData.groupNo) {
+      errors.groupNo = 'Group No is required';
     }
-    if (!formData.address) {
-      errors.address = 'Address is required';
+    if (!formData.pwdExpDays) {
+      errors.pwdExpDays = 'PWD Exp Days is required';
     }
-    if (!formData.employeeName) {
-      errors.employeeName = 'Employee Name is required';
-    }
-    if (!formData.state) {
-      errors.state = 'State is required';
-    }
-    if (!formData.city) {
-      errors.city = 'City is required';
-    }
-    if (!formData.gst) {
-      errors.gst = 'GST is required';
-    } else if (formData.gst.length < 15) {
-      errors.gst = 'Invalid GST Format';
-    }
-    if (!formData.mobile) {
-      errors.mobile = 'mobile is required';
-    } else if (formData.mobile.length < 10) {
-      errors.mobile = 'Invalid Mobile Format';
-    }
-    if (formData.pan.length < 10) {
-      errors.pan = 'Invalid PAN Format';
+    if (!formData.password) {
+      errors.password = 'Password is required';
     }
 
     let roleTableDataValid = true;
     const newTableErrors = roleTableData.map((row) => {
       const rowErrors = {};
-      if (!row.client) {
-        rowErrors.client = 'Client is required';
+      if (!row.role) {
+        rowErrors.role = 'Role is required';
         roleTableDataValid = false;
       }
-      if (!row.clientCode) {
-        rowErrors.clientCode = 'Client Code is required';
+      if (!row.startDate) {
+        rowErrors.startDate = 'Start Date is required';
         roleTableDataValid = false;
       }
-      if (!row.clientType) {
-        rowErrors.clientType = 'Client Type is required';
+      if (!row.endDate) {
+        rowErrors.endDate = 'End Date is required';
         roleTableDataValid = false;
       }
 
@@ -353,38 +328,54 @@ export const UserCreationMaster = () => {
 
     setBranchTableErrors(newTableErrors1);
 
+    let clientTableDataValid = true;
+    const newTableErrors2 = clientTableData.map((row) => {
+      const rowErrors = {};
+      if (!row.customer) {
+        rowErrors.customer = 'Customer is required';
+        clientTableDataValid = false;
+      }
+      if (!row.client) {
+        rowErrors.client = 'Client is required';
+        clientTableDataValid = false;
+      }
+      return rowErrors;
+    });
+    // setFieldErrors(errors);
+
+    setClientTableErrors(newTableErrors2);
+
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
-      const clientVo = roleTableData.map((row) => ({
-        client: row.client,
-        clientCode: row.clientCode,
-        clientType: row.clientType,
-        fifoFife: row.fifoFife
+      const roleVo = roleTableData.map((row) => ({
+        role: row.role,
+        startDate: row.startDate,
+        endDate: row.endDate
       }));
       const branchVo = branchTableData.map((row) => ({
-        client: row.branchCode,
-        clientCode: row.branchName
+        branchCode: row.branchCode,
+        branch: row.branch
+      }));
+      const clientVo = clientTableData.map((row) => ({
+        customer: row.customer,
+        client: row.client
       }));
 
       const saveFormData = {
         ...(editId && { id: editId }),
-        active: formData.active,
-        customer: formData.customer,
-        shortName: formData.shortName,
-        pan: formData.pan,
-        contactPerson: formData.contactPerson,
-        mobile: formData.mobile,
-        gstReg: formData.gstReg,
-        email: formData.email,
-        groupOf: formData.groupOf,
-        tanNo: formData.tanNo,
-        address: formData.address,
         employeeName: formData.employeeName,
-        state: formData.state,
-        city: formData.city,
-        gst: formData.gst,
+        employeeCode: formData.employeeCode,
+        reportingTo: formData.reportingTo,
+        userGroup: formData.userGroup,
+        email: formData.email,
+        groupNo: formData.groupNo,
+        pwdExpDays: formData.pwdExpDays,
+        password: formData.password,
+        isFirstTime: formData.isFirstTime,
+        roleVo: roleVo,
         clientVo: clientVo,
         branchVo: branchVo,
+        active: formData.active,
         orgId: orgId,
         createdby: loginUserName
       };
@@ -397,7 +388,7 @@ export const UserCreationMaster = () => {
           if (response.data.status === true) {
             console.log('Response:', response.data);
             handleClear();
-            showToast('success', editId ? ' Customer Updated Successfully' : 'Customer created successfully');
+            showToast('success', editId ? ' User Details Updated Successfully' : 'Customer created successfully');
             setIsLoading(false);
           } else {
             showToast('error', response.data.paramObjectsMap.errorMessage || 'Customer creation failed');
@@ -406,7 +397,7 @@ export const UserCreationMaster = () => {
         })
         .catch((error) => {
           console.error('Error:', error);
-          showToast('error', 'Customer creation failed');
+          showToast('error', 'User creation failed');
           setIsLoading(false);
         });
     } else {
@@ -420,21 +411,16 @@ export const UserCreationMaster = () => {
 
   const handleClose = () => {
     setFormData({
-      customer: '',
-      shortName: '',
-      pan: '',
-      contactPerson: '',
-      mobile: '',
-      gstReg: '',
-      email: '',
-      groupOf: '',
-      tanNo: '',
-      address: '',
       employeeName: '',
-      state: '',
-      city: '',
-      gst: '',
-      active: true
+      employeeCode: '',
+      reportingTo: '',
+      userGroup: '',
+      email: '',
+      groupNo: '',
+      pwdExpDays: '',
+      password: '',
+      active: true,
+      isFirstTime: true
     });
   };
 
@@ -467,8 +453,8 @@ export const UserCreationMaster = () => {
                     onChange={handleInputChange}
                     name="employeeName"
                   >
-                    <MenuItem value="Justin">Justin</MenuItem>
-                    <MenuItem value="Mani">Mani</MenuItem>
+                    <MenuItem value="JUSTIN">JUSTIN</MenuItem>
+                    <MenuItem value="MANI">MANI</MenuItem>
                   </Select>
                   {fieldErrors.employeeName && <FormHelperText>{fieldErrors.employeeName}</FormHelperText>}
                 </FormControl>
@@ -635,7 +621,7 @@ export const UserCreationMaster = () => {
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
 
-                                    <td className="border px-2 py-2">
+                                    {/* <td className="border px-2 py-2">
                                       <input
                                         type="text"
                                         value={row.role}
@@ -656,44 +642,79 @@ export const UserCreationMaster = () => {
                                           {roleTableDataErrors[index].role}
                                         </div>
                                       )}
-                                    </td>
+                                    </td> */}
 
                                     <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.startDate}
+                                      <select
+                                        value={row.role}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, startDate: value } : r)));
+                                          setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, role: value } : r)));
                                           setRoleTableDataErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], startDate: !value ? 'Start Date is required' : '' };
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              role: !value ? 'Role is required' : ''
+                                            };
                                             return newErrors;
                                           });
                                         }}
-                                        className={roleTableDataErrors[index]?.startDate ? 'error form-control' : 'form-control'}
-                                      />
-                                      {roleTableDataErrors[index]?.startDate && (
+                                        onKeyDown={(e) => handleKeyDown1(e, row)}
+                                        className={roleTableDataErrors[index]?.role ? 'error form-control' : 'form-control'}
+                                      >
+                                        <option value="">Select Option</option>
+                                        <option value="ADMIN">ADMIN</option>
+                                        <option value="DEVELOPER">DEVELOPER</option>
+                                      </select>
+                                      {roleTableDataErrors[index]?.role && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {roleTableDataErrors[index].startDate}
+                                          {roleTableDataErrors[index].role}
                                         </div>
                                       )}
                                     </td>
 
                                     <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.endDate}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, endDate: value } : r)));
+                                      <div className="w-100">
+                                        <DatePicker
+                                          selected={row.startDate}
+                                          className={roleTableDataErrors[index]?.startDate ? 'error form-control' : 'form-control'}
+                                          onChange={(date) => {
+                                            setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, startDate: date } : r)));
+                                            setRoleTableDataErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                startDate: !date ? 'Start Date is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          dateFormat="dd/MM/yyyy"
+                                        />
+                                        {roleTableDataErrors[index]?.startDate && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {roleTableDataErrors[index].startDate}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <DatePicker
+                                        selected={row.endDate}
+                                        className={roleTableDataErrors[index]?.endDate ? 'error form-control' : 'form-control'}
+                                        onChange={(date) => {
+                                          setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, endDate: date } : r)));
                                           setRoleTableDataErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], endDate: !value ? 'End Date is required' : '' };
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              endDate: !date ? 'End Date is required' : ''
+                                            };
                                             return newErrors;
                                           });
                                         }}
-                                        className={roleTableDataErrors[index]?.endDate ? 'error form-control' : 'form-control'}
+                                        dateFormat="dd/MM/yyyy"
                                       />
                                       {roleTableDataErrors[index]?.endDate && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -823,21 +844,27 @@ export const UserCreationMaster = () => {
                                     </td>
 
                                     <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
+                                      <select
                                         value={row.customer}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setClientTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, customer: value } : r)));
                                           setClientTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], customer: !value ? 'Customer In is required' : '' };
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              customer: !value ? 'Customer is required' : ''
+                                            };
                                             return newErrors;
                                           });
                                         }}
+                                        onKeyDown={(e) => handleKeyDown1(e, row)}
                                         className={clientTableErrors[index]?.customer ? 'error form-control' : 'form-control'}
-                                        // //style={{ marginBottom: '10px' }}
-                                      />
+                                      >
+                                        <option value="">Select Option</option>
+                                        <option value="CASIO INDIA">CASIO INDIA</option>
+                                        <option value="MARS">MARS</option>
+                                      </select>
                                       {clientTableErrors[index]?.customer && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                           {clientTableErrors[index].customer}
@@ -846,21 +873,27 @@ export const UserCreationMaster = () => {
                                     </td>
 
                                     <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
+                                      <select
                                         value={row.client}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setClientTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, client: value } : r)));
                                           setClientTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], client: !value ? 'Client is required' : '' };
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              client: !value ? 'Client is required' : ''
+                                            };
                                             return newErrors;
                                           });
                                         }}
+                                        onKeyDown={(e) => handleKeyDown1(e, row)}
                                         className={clientTableErrors[index]?.client ? 'error form-control' : 'form-control'}
-                                        // //style={{ marginBottom: '10px' }}
-                                      />
+                                      >
+                                        <option value="">Select Option</option>
+                                        <option value="CASIO INDIA">CASIO INDIA</option>
+                                        <option value="MARS">MARS</option>
+                                      </select>
                                       {clientTableErrors[index]?.client && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                           {clientTableErrors[index].client}
