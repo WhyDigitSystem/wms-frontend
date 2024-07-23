@@ -88,6 +88,12 @@ const basicMasters = {
           url: '/basicmasters/usercreationmaster'
         },
         {
+          id: 'itemMaster',
+          title: 'Item Master',
+          type: 'item',
+          url: '/basicmasters/itemmaster'
+        },
+        {
           id: 'buyerMaster',
           title: 'Buyer Master',
           type: 'item',

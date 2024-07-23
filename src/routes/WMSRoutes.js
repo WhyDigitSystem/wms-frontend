@@ -4,10 +4,6 @@ import { lazy } from 'react';
 import Loadable from 'ui-component/Loadable';
 import MinimalLayout from 'layout/MinimalLayout';
 import MainLayout from 'layout/MainLayout';
-import BuyerMaster from 'views/pages/basic-masters/BuyerMaster';
-import CarrierMaster from 'views/pages/basic-masters/CarrierMaster';
-import SupplierMaster from 'views/pages/basic-masters/SupplierMaster';
-import ExternalDataMismatch from 'views/pages/basic-masters/ExternalDataMismatch';
 
 // login option 3 routing
 const AuthLogin3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Login3')));
@@ -25,6 +21,11 @@ const LocationMappingMaster = Loadable(lazy(() => import('views/pages/basic-mast
 const CellTypeMaster = Loadable(lazy(() => import('views/pages/basic-masters/CellTypeMaster')));
 const EmployeeMaster = Loadable(lazy(() => import('views/pages/basic-masters/EmployeeMaster')));
 const UserCreationMaster = Loadable(lazy(() => import('views/pages/basic-masters/UserCreationMaster')));
+const ItemMaster = Loadable(lazy(() => import('views/pages/basic-masters/ItemMaster')));
+const BuyerMaster = Loadable(lazy(() => import('views/pages/basic-masters/BuyerMaster')));
+const CarrierMaster = Loadable(lazy(() => import('views/pages/basic-masters/CarrierMaster')));
+const SupplierMaster = Loadable(lazy(() => import('views/pages/basic-masters/SupplierMaster')));
+const ExternalDataMismatch = Loadable(lazy(() => import('views/pages/basic-masters/ExternalDataMismatch')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
 
@@ -83,6 +84,10 @@ const WMSRoutes = {
     {
       path: '/basicmasters/usercreationmaster',
       element: <UserCreationMaster />
+    },
+    {
+      path: '/basicmasters/itemmaster',
+      element: <ItemMaster />
     },
     {
       path: '/basicmasters/buyermaster',
