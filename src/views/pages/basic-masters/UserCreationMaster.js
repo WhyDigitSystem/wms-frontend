@@ -28,7 +28,7 @@ export const UserCreationMaster = () => {
   const [orgId, setOrgId] = useState('1');
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
-  const [loginUserName, setLoginUserName] = useState('Karupu');
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
 
   const [formData, setFormData] = useState({
     employeeName: '',

@@ -10,6 +10,7 @@ import AuthCardWrapper from '../AuthCardWrapper';
 import AuthLogin from '../auth-forms/AuthLogin';
 import Logo from 'ui-component/Logo';
 import AuthFooter from 'ui-component/cards/AuthFooter';
+import efit_logo from '../../../../assets/images/efit_logo.png';
 
 // assets
 
@@ -29,7 +30,8 @@ const Login = () => {
                 <Grid container spacing={2} alignItems="center" justifyContent="center">
                   <Grid item sx={{ mb: 3 }}>
                     <Link to="#">
-                      <Logo />
+                      {/* <Logo /> */}
+                      <img src={efit_logo} alt="efit_logo" style={{ width: '150px', height: 'auto' }} />
                     </Link>
                   </Grid>
                   <Grid item xs={12}>

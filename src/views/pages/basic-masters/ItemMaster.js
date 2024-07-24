@@ -31,11 +31,11 @@ import apiCalls from 'apicall';
 import dayjs from 'dayjs';
 
 export const ItemMaster = () => {
-  const [orgId, setOrgId] = useState(1000000001);
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
   const [editId, setEditId] = useState('');
-  const [loginUserName, setLoginUserName] = useState('Karupu');
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
 
   const [formData, setFormData] = useState({
     itemType: '',

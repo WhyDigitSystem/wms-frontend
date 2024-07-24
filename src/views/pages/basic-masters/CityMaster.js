@@ -20,8 +20,8 @@ import { showToast } from 'utils/toast-component';
 export const CityMaster = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
-  const [orgId, setOrgId] = useState(1000000001);
-  const [loginUserName, setLoginUserName] = useState('Karupu');
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
 
   const [formData, setFormData] = useState({
     cityCode: '',

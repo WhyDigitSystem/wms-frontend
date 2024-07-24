@@ -27,8 +27,8 @@ import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 
 export const StateMaster = () => {
-  const [orgId, setOrgId] = useState(1000000001);
-  const [loginUserName, setLoginUserName] = useState('Karupu');
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     active: true,
