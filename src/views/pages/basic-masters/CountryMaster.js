@@ -62,7 +62,7 @@ export const CountryMaster = () => {
 
   const getAllCountries = async () => {
     try {
-      const result = await apiCalls('get', `/commonmaster/country?orgid=1000000001`);
+      const result = await apiCalls('get', `commonmaster/country?orgid=1000000001`);
       setListViewData(result.paramObjectsMap.countryVO);
       console.log('Test', result);
     } catch (err) {
@@ -70,38 +70,22 @@ export const CountryMaster = () => {
     }
   };
 
-  // const getAllCountries = async () => {
-  //   try {
-  //     const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/country?orgid=1000000001`);
-  //     console.log('API Response:', response);
-
-  //     if (response.status === 200) {
-  //       setListViewData(response.data.paramObjectsMap.countryVO);
-  //     } else {
-  //       console.error('API Error:', response.data);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
   const getCountryById = async (row) => {
     console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/country/${row.original.id}`);
-      console.log('API Response:', response);
+      const response = await apiCalls('get', `commonmaster/country/${row.original.id}`);
 
-      if (response.status === 200) {
-        setListView(false);
-        const particularCountry = response.data.paramObjectsMap.Country;
-
+      if (response.status === true) {
+        const particularCountry = response.paramObjectsMap.Country;
         setFormData({
           countryCode: particularCountry.countryCode,
           countryName: particularCountry.countryName,
           active: particularCountry.active === 'Active' ? true : false
         });
+        setListView(false);
       } else {
-        console.error('API Error:', response.data);
+        console.error('API Error');
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -126,7 +110,8 @@ export const CountryMaster = () => {
   const handleClear = () => {
     setFormData({
       countryName: '',
-      countryCode: ''
+      countryCode: '',
+      active: true
     });
     setFieldErrors({
       countryName: '',
@@ -157,7 +142,7 @@ export const CountryMaster = () => {
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const result = await apiCalls('post', `/commonmaster/createUpdateCountry`, saveFormData);
+        const result = await apiCalls('post', `commonmaster/createUpdateCountry`, saveFormData);
 
         if (result.status === true) {
           console.log('Response:', result);
