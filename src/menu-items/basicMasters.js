@@ -100,7 +100,7 @@ const basicMasters = {
           url: '/basicmasters/buyermaster'
         },
         {
-          id: 'carriermaster',
+          id: 'carrierMaster',
           title: 'Carrier Master',
           type: 'item',
           url: '/basicmasters/carriermaster'
@@ -112,10 +112,16 @@ const basicMasters = {
           url: '/basicmasters/suppliermaster'
         },
         {
-          id: 'externaldatamaster',
-          title: 'External Data Master',
+          id: 'externalDataMismatchMaster',
+          title: 'External Data Mismatch Master',
           type: 'item',
-          url: '/basicmasters/externaldatamaster'
+          url: '/basicmasters/externaldatamismatchmaster'
+        },
+        {
+          id: 'materialLabelMappingMaster',
+          title: 'Material Label Mapping Master',
+          type: 'item',
+          url: '/basicmasters/materiallabelmappingmaster'
         }
       ]
     }

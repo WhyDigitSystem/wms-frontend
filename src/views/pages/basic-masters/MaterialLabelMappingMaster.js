@@ -24,7 +24,7 @@ import ToastComponent, { showToast } from 'utils/toast-component';
 import 'react-datepicker/dist/react-datepicker.css';
 import apiCalls from 'apicall';
 
-export const BuyerMaster = () => {
+export const MaterialLabelMappingMaster = () => {
   const [orgId, setOrgId] = useState(1000000001);
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
@@ -32,9 +32,9 @@ export const BuyerMaster = () => {
   const [loginUserName, setLoginUserName] = useState('Karupu');
 
   const [formData, setFormData] = useState({
-    buyerName: '',
+    supplierName: '',
     shortName: '',
-    buyerType: '',
+    supplierType: '',
     pan: '',
     tanNo: '',
     contactPerson: '',
@@ -53,9 +53,9 @@ export const BuyerMaster = () => {
   const [value, setValue] = useState(0);
 
   const [fieldErrors, setFieldErrors] = useState({
-    buyerName: '',
+    supplierName: '',
     shortName: '',
-    buyerType: '',
+    supplierType: '',
     pan: '',
     tanNo: '',
     contactPerson: '',
@@ -72,9 +72,9 @@ export const BuyerMaster = () => {
     active: true
   });
   const listViewColumns = [
-    { accessorKey: 'buyerName', header: 'Supplier Name', size: 140 },
+    { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 },
     { accessorKey: 'shortName', header: 'Part Desc', size: 140 },
-    { accessorKey: 'buyerType', header: 'Supplier Type', size: 140 },
+    { accessorKey: 'supplierType', header: 'Supplier Type', size: 140 },
     { accessorKey: 'contactPerson', header: 'contact Person', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
@@ -82,17 +82,17 @@ export const BuyerMaster = () => {
   const [listViewData, setListViewData] = useState([
     {
       id: 1,
-      buyerName: 'buyerName1',
+      supplierName: 'supplierName1',
       shortName: 'shortName1',
-      buyerType: 'buyerType1',
+      supplierType: 'supplierType1',
       contactPerson: 'contactPerson1',
       active: 'Active'
     },
     {
       id: 2,
-      buyerName: 'buyerName2',
+      partNo: 'partNo2',
       shortName: 'shortName2',
-      buyerType: 'buyerType2',
+      supplierType: 'supplierType2',
       contactPerson: 'contactPerson2',
       active: 'Active'
     }
@@ -117,9 +117,9 @@ export const BuyerMaster = () => {
       const result = await apiCalls('get', `getSupplierByorgId?${orgId}`);
       setListView(false);
       setFormData({
-        buyerName: result.buyerName,
+        supplierName: result.supplierName,
         shortName: result.shortName,
-        buyerType: result.buyerType,
+        supplierType: result.supplierType,
         category: result.category,
         pan: result.pan,
         tanNo: result.tanNo,
@@ -156,7 +156,7 @@ export const BuyerMaster = () => {
     let errorMessage = '';
 
     switch (name) {
-      case 'buyerName':
+      case 'supplierName':
       case 'shortName':
       case 'contactPerson':
         if (!nameRegex.test(value)) {
@@ -212,9 +212,9 @@ export const BuyerMaster = () => {
 
   const handleClear = () => {
     setFormData({
-      buyerName: '',
+      supplierName: '',
       shortName: '',
-      buyerType: '',
+      supplierType: '',
       pan: '',
       tanNo: '',
       contactPerson: '',
@@ -232,9 +232,9 @@ export const BuyerMaster = () => {
     });
 
     setFieldErrors({
-      buyerName: '',
+      supplierName: '',
       shortName: '',
-      buyerType: '',
+      supplierType: '',
       pan: '',
       tanNo: '',
       contactPerson: '',
@@ -254,8 +254,8 @@ export const BuyerMaster = () => {
 
   const handleSave = () => {
     const errors = {};
-    if (!formData.buyerName) {
-      errors.buyerName = 'Buyer Name is required';
+    if (!formData.supplierName) {
+      errors.supplierName = 'Supplier Name is required';
     }
     if (!formData.shortName) {
       errors.shortName = 'Short Name is required';
@@ -277,9 +277,9 @@ export const BuyerMaster = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        buyerName: formData.buyerName,
+        supplierName: formData.supplierName,
         shortName: formData.shortName,
-        buyerType: formData.buyerType,
+        supplierType: formData.supplierType,
         pan: formData.pan,
         tanNo: formData.tanNo,
         contactPerson: formData.contactPerson,
@@ -300,21 +300,21 @@ export const BuyerMaster = () => {
       console.log('DATA TO SAVE IS:', saveFormData);
 
       axios
-        .put(`${process.env.REACT_APP_API_URL}/api/buyer`, saveFormData)
+        .put(`${process.env.REACT_APP_API_URL}/api/supplier`, saveFormData)
         .then((response) => {
           if (response.data.status === true) {
             console.log('Response:', response.data);
             handleClear();
-            showToast('success', editId ? ' Buyer Updated Successfully' : 'Buyer created successfully');
+            showToast('success', editId ? ' Supplier Updated Successfully' : 'Supplier created successfully');
             setIsLoading(false);
           } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Buyer creation failed');
+            showToast('error', response.data.paramObjectsMap.errorMessage || 'Supplier creation failed');
             setIsLoading(false);
           }
         })
         .catch((error) => {
           console.error('Error:', error);
-          showToast('error', 'Buyer creation failed');
+          showToast('error', 'Supplier creation failed');
           setIsLoading(false);
         });
     } else {
@@ -328,9 +328,9 @@ export const BuyerMaster = () => {
 
   const handleClose = () => {
     setFormData({
-      buyerName: '',
+      supplierName: '',
       shortName: '',
-      buyerType: '',
+      supplierType: '',
       pan: '',
       tanNo: '',
       contactPerson: '',
@@ -367,15 +367,15 @@ export const BuyerMaster = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Buyer Name"
+                  label="Supplier Name"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="buyerName"
-                  value={formData.buyerName}
+                  name="supplierName"
+                  value={formData.supplierName}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.buyerName}
-                  helperText={fieldErrors.buyerName}
+                  error={!!fieldErrors.supplierName}
+                  helperText={fieldErrors.supplierName}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -392,21 +392,20 @@ export const BuyerMaster = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.buyerType}>
-                  <InputLabel id="buyerType-label">Buyer Type</InputLabel>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.supplierType}>
+                  <InputLabel id="supplierType-label">Supplier Type</InputLabel>
                   <Select
-                    labelId="buyerType-label"
-                    id="buyerType"
-                    name="buyerType"
-                    label="Buyer Type"
-                    value={formData.buyerType}
+                    labelId="supplierType-label"
+                    id="supplierType"
+                    name="supplierType"
+                    label="Supplier Type"
+                    value={formData.supplierType}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="LOCAL">LOCAL</MenuItem>
-                    <MenuItem value="EXPORT">EXPORT</MenuItem>
-                    <MenuItem value="STOCK TRANSFER">STOCK TRANSFER</MenuItem>
+                    <MenuItem value="VENDOR">VENDOR</MenuItem>
+                    <MenuItem value="SUB CONTRACTOR">SUB CONTRACTOR</MenuItem>
                   </Select>
-                  {fieldErrors.buyerType && <FormHelperText error>{fieldErrors.buyerType}</FormHelperText>}
+                  {fieldErrors.supplierType && <FormHelperText error>{fieldErrors.supplierType}</FormHelperText>}
                 </FormControl>
               </div>
               {/* <div className="col-md-3 mb-3">
@@ -699,4 +698,4 @@ export const BuyerMaster = () => {
   );
 };
 
-export default BuyerMaster;
+export default MaterialLabelMappingMaster;

@@ -26,6 +26,7 @@ const BuyerMaster = Loadable(lazy(() => import('views/pages/basic-masters/BuyerM
 const CarrierMaster = Loadable(lazy(() => import('views/pages/basic-masters/CarrierMaster')));
 const SupplierMaster = Loadable(lazy(() => import('views/pages/basic-masters/SupplierMaster')));
 const ExternalDataMismatch = Loadable(lazy(() => import('views/pages/basic-masters/ExternalDataMismatch')));
+const MaterialLabelMappingMaster = Loadable(lazy(() => import('views/pages/basic-masters/MaterialLabelMappingMaster')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
 
@@ -102,8 +103,12 @@ const WMSRoutes = {
       element: <SupplierMaster />
     },
     {
-      path: '/basicmasters/externaldatamaster',
+      path: '/basicmasters/externaldatamismatchmaster',
       element: <ExternalDataMismatch />
+    },
+    {
+      path: '/basicmasters/materiallabelmappingmaster',
+      element: <MaterialLabelMappingMaster />
     }
   ]
 };

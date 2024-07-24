@@ -57,35 +57,33 @@ export const CountryMaster = () => {
   const [listViewData, setListViewData] = useState([]);
 
   useEffect(() => {
-    console.log('LISTVIEW FIELD CURRENT VALUE IS', listView);
-    // getAllCountries();
-    fetchData();
+    getAllCountries();
   }, []);
 
-  const fetchData = async () => {
+  const getAllCountries = async () => {
     try {
-      const result = await apiCalls('get', `/posts`);
-      setData1(result);
+      const result = await apiCalls('get', `/commonmaster/country?orgid=1000000001`);
+      setListViewData(result.paramObjectsMap.countryVO);
       console.log('Test', result);
     } catch (err) {
       console.log('error', err);
     }
   };
 
-  const getAllCountries = async () => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/country?orgid=1000000001`);
-      console.log('API Response:', response);
+  // const getAllCountries = async () => {
+  //   try {
+  //     const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/country?orgid=1000000001`);
+  //     console.log('API Response:', response);
 
-      if (response.status === 200) {
-        setListViewData(response.data.paramObjectsMap.countryVO);
-      } else {
-        console.error('API Error:', response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
+  //     if (response.status === 200) {
+  //       setListViewData(response.data.paramObjectsMap.countryVO);
+  //     } else {
+  //       console.error('API Error:', response.data);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
   const getCountryById = async (row) => {
     console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
     setEditId(row.original.id);
@@ -136,7 +134,7 @@ export const CountryMaster = () => {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
     if (!formData.countryCode) {
       errors.countryCode = 'Country Code is required';
@@ -158,29 +156,24 @@ export const CountryMaster = () => {
 
       console.log('DATA TO SAVE IS:', saveFormData);
 
-      axios
-        .post(`${process.env.REACT_APP_API_URL}/api/commonmaster/createUpdateCountry`, saveFormData)
+      try {
+        const result = await apiCalls('post', `/commonmaster/createUpdateCountry`, saveFormData);
 
-        .then((response) => {
-          if (response.data.status === true) {
-            console.log('Response:', response.data);
-
-            showToast('success', editId ? ' Country Updated Successfully' : 'Country created successfully');
-
-            handleClear();
-            getAllCountries();
-            setIsLoading(false);
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Country creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'Country creation failed');
-
+        if (result.status === true) {
+          console.log('Response:', result);
+          showToast('success', editId ? ' Country Updated Successfully' : 'Country created successfully');
+          handleClear();
+          getAllCountries();
           setIsLoading(false);
-        });
+        } else {
+          showToast('error', result.paramObjectsMap.errorMessage || 'Country creation failed');
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.log('error', err);
+        showToast('error', 'Country creation failed');
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }
