@@ -30,7 +30,7 @@ const NavCollapse = ({ menu, level }) => {
     if (
       menu?.id !== 'authentication' &&
       menu?.id !== 'icons' &&
-      menu?.id !== 'wmsmasters' &&
+      menu?.id !== 'rolesAndResponsibilities' &&
       menu?.id !== 'companySetup' &&
       menu?.id !== 'basicMasters'
     ) {

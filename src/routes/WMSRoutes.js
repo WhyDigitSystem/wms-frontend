@@ -27,6 +27,8 @@ const CarrierMaster = Loadable(lazy(() => import('views/pages/basic-masters/Carr
 const SupplierMaster = Loadable(lazy(() => import('views/pages/basic-masters/SupplierMaster')));
 const ExternalDataMismatch = Loadable(lazy(() => import('views/pages/basic-masters/ExternalDataMismatch')));
 const MaterialLabelMappingMaster = Loadable(lazy(() => import('views/pages/basic-masters/MaterialLabelMappingMaster')));
+const Roles = Loadable(lazy(() => import('views/pages/rolesandResponsibility/Roles')));
+const ScreenNames = Loadable(lazy(() => import('views/pages/rolesandResponsibility/ScreenNames')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
 
@@ -109,6 +111,14 @@ const WMSRoutes = {
     {
       path: '/basicmasters/materiallabelmappingmaster',
       element: <MaterialLabelMappingMaster />
+    },
+    {
+      path: '/rolesresponsibility/roles',
+      element: <Roles />
+    },
+    {
+      path: '/rolesresponsibility/screennames',
+      element: <ScreenNames />
     }
   ]
 };
