@@ -21,19 +21,24 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Responsibilities from './Responsibilities';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import ActionButton from 'utils/ActionButton';
+import apiCalls from 'apicall';
+import { showToast } from 'utils/toast-component';
 
 const Roles = () => {
   const theme = useTheme();
   const anchorRef = useRef(null);
-  const [showFields, setShowFields] = useState(true);
+  const [listView, setListView] = useState(false);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [data, setData] = useState([]);
   const [roleData, setRoleData] = useState([]);
   const [value, setValue] = useState('1');
+  const [isLoading, setIsLoading] = useState(false);
+  const [editId, setEditId] = useState('');
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
 
   const [formData, setFormData] = useState({
     role: '',
-    orgId: orgId,
     active: true
   });
 
@@ -59,8 +64,8 @@ const Roles = () => {
   ];
 
   useEffect(() => {
-    getRole();
-  }, [showFields]);
+    getAllRoles();
+  }, [listView]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -85,7 +90,7 @@ const Roles = () => {
     newValue = newValue.toUpperCase();
 
     // Validate value to allow only alphabetic characters
-    newValue = newValue.replace(/[^A-Z]/g, '');
+    newValue = newValue.replace(/[^A-Z ]/g, '');
 
     // Update the value of newValue instead of redeclaring it
     newValue = name === 'active' ? checked : newValue;
@@ -94,22 +99,22 @@ const Roles = () => {
     setFieldErrors({ ...fieldErrors, [name]: false });
   };
 
-  const handleList = () => {
-    setShowFields(!showFields);
+  const handleView = () => {
+    setListView(!listView);
   };
 
-  const getRole = async () => {
+  const getAllRoles = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `commonmaster/country?orgid=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === 200) {
-        setData(response.data.paramObjectsMap.roleVO);
-        setRoleData(response.data.paramObjectsMap.roleVO.map((list) => list.role));
+        setData(response.paramObjectsMap.roleVO);
+        setRoleData(response.paramObjectsMap.roleVO.map((list) => list.role));
 
         console.log(
           'Test',
-          response.data.paramObjectsMap.roleMasterVO.map((list) => list.role)
+          response.paramObjectsMap.roleMasterVO.map((list) => list.role)
         );
       } else {
         // Handle error
@@ -119,8 +124,30 @@ const Roles = () => {
       console.error('Error fetching data:', error);
     }
   };
+  const getRoleById = async (row) => {
+    console.log('THE SELECTED ROW ID IS:', row.original.id);
+    try {
+      const result = await apiCalls('get', `basicMaster/updateCreateRoleMaster`);
 
-  const handleSubmit = () => {
+      console.log('API Response:', result);
+
+      if (result.status === 200) {
+        const particularRole = result.paramObjectsMap.Role;
+        setFormData({
+          role: particularRole.role,
+          active: particularRole.active === 'Active' ? true : false
+        });
+        setListView(false);
+      } else {
+        // Handle error
+        console.error('API Error:', result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleSave = async () => {
     // Check if any field is empty
     const errors = Object.keys(formData).reduce((acc, key) => {
       if (!formData[key]) {
@@ -133,44 +160,31 @@ const Roles = () => {
       setFieldErrors(errors);
       return; // Prevent API call if there are errors
     }
-    axios
-      .put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateRoleMaster`, formData)
-      .then((response) => {
-        console.log('Response:', response.data);
-        handleClear();
-        toast.success('Role Created Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-        getRole();
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
-  };
+    setIsLoading(false);
+    const saveFormData = {
+      ...(editId && { id: editId }),
+      active: formData.active,
+      role: formData.role,
+      orgId: orgId,
+      createdby: loginUserName
+    };
 
-  const editRole = async (updatedCountry) => {
     try {
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateRoleMaster`, updatedCountry);
-      if (response.status === 200) {
-        toast.success('Role Updated Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-        getRole();
+      const result = await apiCalls('put', `basicMaster/updateCreateRoleMaster`, saveFormData);
+      if (result.status === true) {
+        console.log('Response:', result);
+        showToast('success', editId ? ' Role Updated Successfully' : 'Role created successfully');
+        handleClear();
+        getAllRoles();
+        setIsLoading(false);
       } else {
-        console.error('API Error:', response.data);
-        toast.error('Failed to Update Role', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
+        showToast('error', result.paramObjectsMap.errorMessage || 'Role creation failed');
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error updating country:', error);
-      toast.error('Error Updating Role', {
-        autoClose: 2000,
-        theme: 'colored'
-      });
+    } catch (err) {
+      console.log('error', err);
+      showToast('error', 'Role creation failed');
+      setIsLoading(false);
     }
   };
 
@@ -191,105 +205,14 @@ const Roles = () => {
               </Box>
               <TabPanel value="1">
                 <div className="d-flex flex-wrap justify-content-start mb-4">
-                  <Tooltip title="Search" placement="top">
-                    <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
-                      <Avatar
-                        variant="rounded"
-                        sx={{
-                          ...theme.typography.commonAvatar,
-                          ...theme.typography.mediumAvatar,
-                          transition: 'all .2s ease-in-out',
-                          background: theme.palette.secondary.light,
-                          color: theme.palette.secondary.dark,
-                          '&[aria-controls="menu-list-grow"],&:hover': {
-                            background: theme.palette.secondary.dark,
-                            color: theme.palette.secondary.light
-                          }
-                        }}
-                        ref={anchorRef}
-                        aria-haspopup="true"
-                        color="inherit"
-                      >
-                        <SearchIcon size="1.3rem" stroke={1.5} />
-                      </Avatar>
-                    </ButtonBase>
-                  </Tooltip>
-
-                  <Tooltip title="Clear" placement="top">
-                    {' '}
-                    <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={handleClear}>
-                      <Avatar
-                        variant="rounded"
-                        sx={{
-                          ...theme.typography.commonAvatar,
-                          ...theme.typography.mediumAvatar,
-                          transition: 'all .2s ease-in-out',
-                          background: theme.palette.secondary.light,
-                          color: theme.palette.secondary.dark,
-                          '&[aria-controls="menu-list-grow"],&:hover': {
-                            background: theme.palette.secondary.dark,
-                            color: theme.palette.secondary.light
-                          }
-                        }}
-                        ref={anchorRef}
-                        aria-haspopup="true"
-                        color="inherit"
-                      >
-                        <ClearIcon size="1.3rem" stroke={1.5} />
-                      </Avatar>
-                    </ButtonBase>
-                  </Tooltip>
-
-                  <Tooltip title="List View" placement="top" onClick={handleList}>
-                    {' '}
-                    <ButtonBase sx={{ borderRadius: '12px' }}>
-                      <Avatar
-                        variant="rounded"
-                        sx={{
-                          ...theme.typography.commonAvatar,
-                          ...theme.typography.mediumAvatar,
-                          transition: 'all .2s ease-in-out',
-                          background: theme.palette.secondary.light,
-                          color: theme.palette.secondary.dark,
-                          '&[aria-controls="menu-list-grow"],&:hover': {
-                            background: theme.palette.secondary.dark,
-                            color: theme.palette.secondary.light
-                          }
-                        }}
-                        ref={anchorRef}
-                        aria-haspopup="true"
-                        color="inherit"
-                      >
-                        <FormatListBulletedTwoToneIcon size="1.3rem" stroke={1.5} />
-                      </Avatar>
-                    </ButtonBase>
-                  </Tooltip>
-                  <Tooltip title="Save" placement="top">
-                    {' '}
-                    <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleSubmit}>
-                      <Avatar
-                        variant="rounded"
-                        sx={{
-                          ...theme.typography.commonAvatar,
-                          ...theme.typography.mediumAvatar,
-                          transition: 'all .2s ease-in-out',
-                          background: theme.palette.secondary.light,
-                          color: theme.palette.secondary.dark,
-                          '&[aria-controls="menu-list-grow"],&:hover': {
-                            background: theme.palette.secondary.dark,
-                            color: theme.palette.secondary.light
-                          }
-                        }}
-                        ref={anchorRef}
-                        aria-haspopup="true"
-                        color="inherit"
-                      >
-                        <SaveIcon size="1.3rem" stroke={1.5} />
-                      </Avatar>
-                    </ButtonBase>
-                  </Tooltip>
+                  <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+                  <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                  <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                  <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
                 </div>
-                {showFields ? (
+                {listView ? (
+                  <CommonListViewTable data={data} columns={columns} editCallback={getRoleById} />
+                ) : (
                   <div className="row d-flex">
                     <div className="col-md-3 mb-3">
                       <FormControl fullWidth variant="filled">
@@ -336,8 +259,6 @@ const Roles = () => {
                       </Grid>
                     </div>
                   </div>
-                ) : (
-                  <CommonListViewTable data={data} columns={columns} editCallback={editRole} />
                 )}
               </TabPanel>
               <TabPanel value="2">

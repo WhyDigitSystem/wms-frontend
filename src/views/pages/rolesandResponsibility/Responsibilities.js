@@ -2,6 +2,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
+import TextField from '@mui/material/TextField';
 import {
   Avatar,
   Box,
@@ -24,6 +25,9 @@ import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import { showToast } from 'utils/toast-component';
+import apiCalls from 'apicall';
+import ActionButton from 'utils/ActionButton';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -38,31 +42,35 @@ const MenuProps = {
 
 const names = ['Dashboard', 'BasicMaster', 'Master', 'Transaction', 'AR-Receivable', 'AP-Payable'];
 
-function getStyles(name, personName, theme) {
+function getStyles(name, selectedScreens, theme) {
   return {
-    fontWeight: personName.indexOf(name) === -1 ? theme.typography.fontWeightRegular : theme.typography.fontWeightMedium
+    fontWeight: selectedScreens.indexOf(name) === -1 ? theme.typography.fontWeightRegular : theme.typography.fontWeightMedium
   };
 }
 
 const Responsibilities = () => {
   const theme = useTheme();
   const anchorRef = useRef(null);
-  const [showFields, setShowFields] = useState(true);
+  const [listView, setListView] = useState(true);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [data, setData] = useState([]);
   const [roleData, setRoleData] = useState([]);
   const [roleDataSelect, setRoleDataSelect] = useState([]);
   const [value, setValue] = useState('1');
+  const [isLoading, setIsLoading] = useState(false);
+  const [editId, setEditId] = useState('');
+  const [screenList, setScreenList] = useState([]);
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [selectedScreens, setSelectedScreens] = useState([]);
 
   const [formData, setFormData] = useState({
-    role: '',
+    name: '',
     orgId: orgId,
-    active: true,
-    screenDTO: []
+    active: true
   });
 
   const [fieldErrors, setFieldErrors] = useState({
-    role: false
+    name: false
   });
 
   const chipSX = {
@@ -78,7 +86,7 @@ const Responsibilities = () => {
   };
 
   const columns = [
-    { accessorKey: 'role', header: 'Role', size: 140 },
+    { accessorKey: 'responsibility', header: 'Responsibility', size: 140 },
     {
       accessorKey: 'screenVO',
       header: 'Screens',
@@ -94,23 +102,21 @@ const Responsibilities = () => {
   ];
 
   useEffect(() => {
-    getRole();
+    getAllResponsibilities();
     getRoleData();
-  }, [showFields]);
+    getAllScreens();
+  }, [listView]);
 
   const handleClear = () => {
     setFormData({
-      role: '',
-      active: true,
-      screenDTO: []
+      name: '',
+      active: true
     });
-    setPersonName([]);
+    setSelectedScreens([]);
     setFieldErrors({
-      role: false
+      name: false
     });
   };
-
-  const [personName, setPersonName] = useState([]);
 
   const handleChange = (event) => {
     const {
@@ -124,7 +130,7 @@ const Responsibilities = () => {
       screenName
     }));
 
-    setPersonName(selectedScreens);
+    setSelectedScreens(selectedScreens);
 
     // Update the formData with the new screenDTO
     setFormData((prevFormData) => ({
@@ -156,23 +162,34 @@ const Responsibilities = () => {
     setFieldErrors({ ...fieldErrors, [name]: false });
   };
 
-  const handleList = () => {
-    setShowFields(!showFields);
+  const handleView = () => {
+    setListView(!listView);
   };
 
-  const getRole = async () => {
+  const getAllScreens = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getResponsibilitiesByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `commonmaster/allScreenNames`);
+      setScreenList(result.paramObjectsMap.screenNamesVO);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
+
+  const getAllResponsibilities = async () => {
+    try {
+      const response = await apiCalls('get', `basicMaster/getResponsibilityById?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === 200) {
-        const responsibilities = response.data.paramObjectsMap.responsibilitiesVO;
-        setData(responsibilities);
+        const particularResponsibility = response.paramObjectsMap.Responsibility;
+        setFormData({
+          name: particularResponsibility.role,
+          active: particularResponsibility.active === 'Active' ? true : false
+        });
+        setListView(false);
 
-        const screenNames = responsibilities.flatMap((item) => item.screenVO.map((screen) => screen.screenName));
-        setRoleData(screenNames);
-
-        console.log('Test', screenNames);
+        // console.log('Test', screenNames);
       } else {
         // Handle error
         console.error('API Error:', response.data);
@@ -203,8 +220,29 @@ const Responsibilities = () => {
       console.error('Error fetching data:', error);
     }
   };
+  const getResponsibilityById = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
+      console.log('API Response:', response);
 
-  const handleSubmit = () => {
+      if (response.status === 200) {
+        // setData(response.data.paramObjectsMap.roleMasterVO);
+        setRoleDataSelect(response.data.paramObjectsMap.roleVO.map((list) => list.role));
+
+        console.log(
+          'Test',
+          response.data.paramObjectsMap.roleMasterVO.map((list) => list.role)
+        );
+      } else {
+        // Handle error
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleSave = async () => {
     // Check if any field is empty
     const errors = Object.keys(formData).reduce((acc, key) => {
       if (!formData[key]) {
@@ -218,47 +256,66 @@ const Responsibilities = () => {
       setFieldErrors(errors);
       return; // Prevent API call if there are errors
     }
+    setIsLoading(false);
+    const screenVo = selectedScreens.map((row) => ({
+      screenName: row
+    }));
 
-    axios
-      .put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateResponsibilities`, formData)
-      .then((response) => {
-        console.log('Response:', response.data);
-        handleClear();
-        toast.success('Role Created Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-        getRole();
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
-  };
+    const saveFormData = {
+      ...(editId && { id: editId }),
+      active: formData.active,
+      responsibility: formData.name,
+      orgId: orgId,
+      createdby: loginUserName,
+      screensDTO: screenVo
+    };
+    console.log('PERSON NAMES:', selectedScreens);
 
-  const editRole = async (updatedCountry) => {
+    console.log('THE SAVE FORM DATA IS:', saveFormData);
+
     try {
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateRoleMaster`, updatedCountry);
-      if (response.status === 200) {
-        toast.success('Role Updated Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-        getRole();
+      const response = await apiCalls('put', `auth/createUpdateResponsibility`, saveFormData);
+      if (response.status === true) {
+        console.log('Response:', response);
+        showToast('success', editId ? ' Responsibility Updated Successfully' : 'Responsibility created successfully');
+        handleClear();
+        getAllResponsibilities();
+        setIsLoading(false);
       } else {
-        console.error('API Error:', response.data);
-        toast.error('Failed to Update Role', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
+        showToast('error', response.paramObjectsMap.errorMessage || 'Responsibility creation failed');
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error updating country:', error);
-      toast.error('Error Updating Role', {
-        autoClose: 2000,
-        theme: 'colored'
-      });
+    } catch (err) {
+      console.log('error', err);
+      showToast('error', 'Responsibility creation failed');
+      setIsLoading(false);
     }
   };
+
+  // const editRole = async (updatedCountry) => {
+  //   try {
+  //     const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateRoleMaster`, updatedCountry);
+  //     if (response.status === 200) {
+  //       toast.success('Role Updated Successfully', {
+  //         autoClose: 2000,
+  //         theme: 'colored'
+  //       });
+  //       getRole();
+  //     } else {
+  //       console.error('API Error:', response.data);
+  //       toast.error('Failed to Update Role', {
+  //         autoClose: 2000,
+  //         theme: 'colored'
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error('Error updating country:', error);
+  //     toast.error('Error Updating Role', {
+  //       autoClose: 2000,
+  //       theme: 'colored'
+  //     });
+  //   }
+  // };
 
   return (
     <div>
@@ -269,107 +326,14 @@ const Responsibilities = () => {
         <div>
           <Box sx={{ width: '100%', typography: 'body1' }}>
             <div className="d-flex flex-wrap justify-content-start mb-4">
-              <Tooltip title="Search" placement="top">
-                <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
-                  <Avatar
-                    variant="rounded"
-                    sx={{
-                      ...theme.typography.commonAvatar,
-                      ...theme.typography.mediumAvatar,
-                      transition: 'all .2s ease-in-out',
-                      background: theme.palette.secondary.light,
-                      color: theme.palette.secondary.dark,
-                      '&[aria-controls="menu-list-grow"],&:hover': {
-                        background: theme.palette.secondary.dark,
-                        color: theme.palette.secondary.light
-                      }
-                    }}
-                    ref={anchorRef}
-                    aria-haspopup="true"
-                    color="inherit"
-                  >
-                    <SearchIcon size="1.3rem" stroke={1.5} />
-                  </Avatar>
-                </ButtonBase>
-              </Tooltip>
-
-              <Tooltip title="Clear" placement="top">
-                {' '}
-                <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={handleClear}>
-                  <Avatar
-                    variant="rounded"
-                    sx={{
-                      ...theme.typography.commonAvatar,
-                      ...theme.typography.mediumAvatar,
-                      transition: 'all .2s ease-in-out',
-                      background: theme.palette.secondary.light,
-                      color: theme.palette.secondary.dark,
-                      '&[aria-controls="menu-list-grow"],&:hover': {
-                        background: theme.palette.secondary.dark,
-                        color: theme.palette.secondary.light
-                      }
-                    }}
-                    ref={anchorRef}
-                    aria-haspopup="true"
-                    color="inherit"
-                  >
-                    <ClearIcon size="1.3rem" stroke={1.5} />
-                  </Avatar>
-                </ButtonBase>
-              </Tooltip>
-
-              <Tooltip title="List View" placement="top" onClick={handleList}>
-                {' '}
-                <ButtonBase sx={{ borderRadius: '12px' }}>
-                  <Avatar
-                    variant="rounded"
-                    sx={{
-                      ...theme.typography.commonAvatar,
-                      ...theme.typography.mediumAvatar,
-                      transition: 'all .2s ease-in-out',
-                      background: theme.palette.secondary.light,
-                      color: theme.palette.secondary.dark,
-                      '&[aria-controls="menu-list-grow"],&:hover': {
-                        background: theme.palette.secondary.dark,
-                        color: theme.palette.secondary.light
-                      }
-                    }}
-                    ref={anchorRef}
-                    aria-haspopup="true"
-                    color="inherit"
-                  >
-                    <FormatListBulletedTwoToneIcon size="1.3rem" stroke={1.5} />
-                  </Avatar>
-                </ButtonBase>
-              </Tooltip>
-              <Tooltip title="Save" placement="top">
-                {' '}
-                <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleSubmit}>
-                  <Avatar
-                    variant="rounded"
-                    sx={{
-                      ...theme.typography.commonAvatar,
-                      ...theme.typography.mediumAvatar,
-                      transition: 'all .2s ease-in-out',
-                      background: theme.palette.secondary.light,
-                      color: theme.palette.secondary.dark,
-                      '&[aria-controls="menu-list-grow"],&:hover': {
-                        background: theme.palette.secondary.dark,
-                        color: theme.palette.secondary.light
-                      }
-                    }}
-                    ref={anchorRef}
-                    aria-haspopup="true"
-                    color="inherit"
-                  >
-                    <SaveIcon size="1.3rem" stroke={1.5} />
-                  </Avatar>
-                </ButtonBase>
-              </Tooltip>
+              <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+              <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
             </div>
-            {showFields ? (
+            {listView ? (
               <div className="row d-flex">
-                <div className="col-md-3 mb-3">
+                {/* <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <InputLabel id="role-label">Role</InputLabel>
                     <Select labelId="role-label" id="role" name="role" value={formData.role} onChange={handleSelectChange} required>
@@ -382,6 +346,19 @@ const Responsibilities = () => {
                     </Select>
                     <span style={{ color: 'red' }}>{fieldErrors.role ? 'This field is required' : ''}</span>
                   </FormControl>
+                </div> */}
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    label="Name"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    error={!!fieldErrors.name}
+                    helperText={fieldErrors.name}
+                  />
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl sx={{ width: 215 }} size="small">
@@ -390,7 +367,7 @@ const Responsibilities = () => {
                       labelId="demo-multiple-chip-label"
                       id="demo-multiple-chip"
                       multiple
-                      value={personName}
+                      value={selectedScreens}
                       onChange={handleChange}
                       input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
                       renderValue={(selected) => (
@@ -402,9 +379,9 @@ const Responsibilities = () => {
                       )}
                       MenuProps={MenuProps}
                     >
-                      {names.map((name) => (
-                        <MenuItem key={name} value={name} style={getStyles(name, personName, theme)}>
-                          {name}
+                      {screenList.map((name, index) => (
+                        <MenuItem key={index} value={name.screenName} style={getStyles(name, selectedScreens, theme)}>
+                          {name.screenName}
                         </MenuItem>
                       ))}
                     </Select>
@@ -442,7 +419,7 @@ const Responsibilities = () => {
                 </div> */}
               </div>
             ) : (
-              <CommonListViewTable data={data} columns={columns} editCallback={editRole} roleData={roleData} />
+              <CommonListViewTable data={data} columns={columns} editCallback={getResponsibilityById} roleData={roleData} />
             )}
           </Box>
         </div>

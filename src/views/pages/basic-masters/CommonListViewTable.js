@@ -1,39 +1,16 @@
 import EditIcon from '@mui/icons-material/Edit';
-import {
-  Avatar,
-  Box,
-  Button,
-  ButtonBase,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
-  Stack,
-  Switch,
-  TextField,
-  Tooltip
-} from '@mui/material';
-import { red } from '@mui/material/colors';
+import { Box, Chip, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { MaterialReactTable } from 'material-react-table';
 import { useEffect, useState } from 'react';
-
-// import { getStateByCountry } from "utils/common-functions";
+import ActionButton from 'utils/ActionButton';
 
 const CommonListViewTable = ({ data, columns, editCallback, countryVO, roleData, blockEdit, toEdit }) => {
   const [tableData, setTableData] = useState(data || []);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
-  const [selectedCountry, setSelectedCountry] = useState('');
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [stateVO, setStateVO] = useState([]);
 
   const theme = useTheme();
 
@@ -44,24 +21,22 @@ const CommonListViewTable = ({ data, columns, editCallback, countryVO, roleData,
 
   const chipSuccessSX = {
     ...chipSX,
-    // color: theme.palette.success.dark,
-    color: 'green',
-    // backgroundColor: theme.palette.success.light,
-    backgroundColor: 'green',
+    color: theme.palette.success.dark,
+    backgroundColor: theme.palette.success.light,
     height: 28
   };
 
   const chipErrorSX = {
     ...chipSX,
-    color: 'red',
-    backgroundColor: 'red',
+    color: theme.palette.orange.dark,
+    backgroundColor: theme.palette.orange.light,
     marginRight: '5px'
   };
 
   const handleEditClick = (row) => {
     setEditingRow(row);
     setEditModalOpen(true);
-    setSelectedCountry(row.original.country);
+    // setSelectedCountry(row.original.country);
   };
 
   const handleButtonClick = (row) => {
@@ -74,39 +49,19 @@ const CommonListViewTable = ({ data, columns, editCallback, countryVO, roleData,
 
   useEffect(() => {
     console.log('BlockEdit', blockEdit);
-    // const fetchDataState = async () => {
-    //   try {
-    //     const stateData = await getStateByCountry(orgId, selectedCountry);
-    //     setStateVO(stateData);
-    //   } catch (error) {
-    //     console.error("Error fetching country data:", error);
-    //   }
-    // };
-    // fetchDataState();
   }, []);
-
-  const handleSaveRowEdits = async () => {
-    if (!Object.keys(validationErrors).length) {
-      const updatedRows = [...tableData];
-      updatedRows[editingRow.index] = editingRow.original;
-      setTableData(updatedRows);
-
-      try {
-        await editCallback(editingRow.original);
-        setEditModalOpen(false);
-        setEditingRow(null);
-      } catch (error) {
-        console.error('Error updating row:', error);
-      }
-    }
-  };
 
   const customColumns = columns.map((column) => {
     if (column.accessorKey === 'active') {
+      console.log('the columns are:', column);
+
       return {
         ...column,
         Cell: ({ cell }) => (
-          <Chip label={cell.getValue() === true ? 'Active' : 'Inactive'} sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX} />
+          <Chip
+            label={cell.getValue() === 'Active' ? 'Active' : 'Inactive'}
+            sx={cell.getValue() === 'Active' ? chipSuccessSX : chipErrorSX}
+          />
         )
       };
     }
@@ -115,57 +70,51 @@ const CommonListViewTable = ({ data, columns, editCallback, countryVO, roleData,
 
   const renderRowActions = ({ row }) => (
     <Box sx={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-      <Tooltip title="Edit" placement="top">
-        <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={() => handleButtonClick(row)}>
-          {/* <Avatar
-            variant="rounded"
-            sx={{
-              ...theme.typography.commonAvatar,
-              ...theme.typography.mediumAvatar,
-              transition: "all .2s ease-in-out",
-              background: theme.palette.primary.light,
-              color: theme.palette.primary.dark,
-              '&[aria-controls="menu-list-grow"],&:hover': {
-                background: theme.palette.primary.dark,
-                color: theme.palette.primary.light,
-              },
-            }}
-            color="inherit"
-          >
-            <EditIcon size="1.3rem" stroke={1.5} />
-          </Avatar> */}
-          <EditIcon size="1.3rem" stroke={1.5} />
-        </ButtonBase>
-      </Tooltip>
+      <ActionButton title="Edit" icon={EditIcon} onClick={() => handleButtonClick(row)} />
     </Box>
   );
 
-  const handleCancelRowEdits = () => {
-    setValidationErrors({});
-    setEditModalOpen(false);
-    setEditingRow(null);
-  };
+  // const validateRequired = (value) => {
+  //   return value !== '';
+  // };
 
-  const validateRequired = (value) => {
-    return value !== '';
-  };
+  // const getCommonEditTextFieldProps = (cell) => ({
+  //   error: !!validationErrors[cell.id],
+  //   helperText: validationErrors[cell.id],
+  //   onBlur: (event) => {
+  //     const isValid = validateRequired(event.target.value);
+  //     if (!isValid) {
+  //       setValidationErrors({
+  //         ...validationErrors,
+  //         [cell.id]: `${cell.column.columnDef.header} is required`
+  //       });
+  //     } else {
+  //       delete validationErrors[cell.id];
+  //       setValidationErrors({ ...validationErrors });
+  //     }
+  //   }
+  // });
 
-  const getCommonEditTextFieldProps = (cell) => ({
-    error: !!validationErrors[cell.id],
-    helperText: validationErrors[cell.id],
-    onBlur: (event) => {
-      const isValid = validateRequired(event.target.value);
-      if (!isValid) {
-        setValidationErrors({
-          ...validationErrors,
-          [cell.id]: `${cell.column.columnDef.header} is required`
-        });
-      } else {
-        delete validationErrors[cell.id];
-        setValidationErrors({ ...validationErrors });
-      }
-    }
-  });
+  // const handleCancelRowEdits = () => {
+  //   setValidationErrors({});
+  //   setEditModalOpen(false);
+  //   setEditingRow(null);
+  // };
+  // const handleSaveRowEdits = async () => {
+  //   if (!Object.keys(validationErrors).length) {
+  //     const updatedRows = [...tableData];
+  //     updatedRows[editingRow.index] = editingRow.original;
+  //     setTableData(updatedRows);
+
+  //     try {
+  //       await editCallback(editingRow.original);
+  //       setEditModalOpen(false);
+  //       setEditingRow(null);
+  //     } catch (error) {
+  //       console.error('Error updating row:', error);
+  //     }
+  //   }
+  // };
 
   return (
     <>
@@ -178,14 +127,14 @@ const CommonListViewTable = ({ data, columns, editCallback, countryVO, roleData,
             size: 120
           }
         }}
-        columns={columns}
+        columns={customColumns}
         data={tableData && tableData}
         enableColumnOrdering
         enableEditing
         renderRowActions={renderRowActions}
         renderTopToolbarCustomActions={() => <Stack direction="row" spacing={2} className="ml-5 "></Stack>}
       />
-      {editingRow && (
+      {/* {editingRow && (
         <Dialog open={editModalOpen} onClose={handleCancelRowEdits}>
           <DialogTitle textAlign="center">
             <h6>Edit</h6>
@@ -307,7 +256,7 @@ const CommonListViewTable = ({ data, columns, editCallback, countryVO, roleData,
             </Button>
           </DialogActions>
         </Dialog>
-      )}
+      )} */}
     </>
   );
 };
