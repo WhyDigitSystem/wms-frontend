@@ -25,7 +25,7 @@ const RolesAndResponsibilities = {
           id: 'rolesAndResponsibilities',
           title: 'Roles And Responsibilities',
           type: 'item',
-          url: '/rolesresponsibility/roles'
+          url: '/rolesresponsibility/rolesandresponse'
           // target: true
         },
         {

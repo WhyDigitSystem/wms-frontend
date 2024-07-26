@@ -4,6 +4,7 @@ import { lazy } from 'react';
 import Loadable from 'ui-component/Loadable';
 import MinimalLayout from 'layout/MinimalLayout';
 import MainLayout from 'layout/MainLayout';
+import RolesandResponsibilitySetup from 'views/pages/rolesandResponsibility/RolesandResponsibilitySetup';
 
 // login option 3 routing
 const AuthLogin3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Login3')));
@@ -113,8 +114,8 @@ const WMSRoutes = {
       element: <MaterialLabelMappingMaster />
     },
     {
-      path: '/rolesresponsibility/roles',
-      element: <Roles />
+      path: '/rolesresponsibility/rolesandresponse',
+      element: <RolesandResponsibilitySetup />
     },
     {
       path: '/rolesresponsibility/screennames',

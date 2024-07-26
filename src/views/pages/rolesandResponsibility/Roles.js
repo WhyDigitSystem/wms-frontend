@@ -218,6 +218,7 @@ const Roles = () => {
             responsibilityId: res.responsibilityId
           }))
         );
+
         setListView(false);
       } else {
         console.error('API Error:', result.data);
@@ -274,34 +275,23 @@ const Roles = () => {
       <ToastComponent />
 
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
-        <div>
-          <Box sx={{ width: '100%', typography: 'body1' }}>
-            <TabContext value={value}>
-              <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
-                  <Tab label="Roles" value="1" />
-                  <Tab label="Responsibilities" value="2" />
-                </TabList>
-              </Box>
-
-              <TabPanel value="1">
-                <div className="d-flex flex-wrap justify-content-start mb-4">
-                  <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-                  <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                  <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-                  <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
-                </div>
-                {listView ? (
-                  <CommonListViewTable
-                    data={data}
-                    columns={columns}
-                    toEdit={getRoleById}
-                    blockEdit={true} // DISAPLE THE MODAL IF TRUE
-                  />
-                ) : (
-                  <div className="row d-flex">
-                    <div className="col-md-3 mb-3">
-                      {/* <FormControl fullWidth variant="filled">
+        <div className="d-flex flex-wrap justify-content-start mb-4">
+          <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+          <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+          <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
+        </div>
+        {listView ? (
+          <CommonListViewTable
+            data={data}
+            columns={columns}
+            toEdit={getRoleById}
+            blockEdit={true} // DISAPLE THE MODAL IF TRUE
+          />
+        ) : (
+          <div className="row d-flex">
+            <div className="col-md-3 mb-3">
+              {/* <FormControl fullWidth variant="filled">
                         <TextField
                           id="account"
                           label="Role"
@@ -315,19 +305,19 @@ const Roles = () => {
                           helperText={<span style={{ color: 'red' }}>{fieldErrors.role ? 'This field is required' : ''}</span>}
                         />
                       </FormControl> */}
-                      <TextField
-                        label="Role"
-                        variant="outlined"
-                        size="small"
-                        fullWidth
-                        name="role"
-                        value={formData.role}
-                        onChange={handleInputChange}
-                        error={!!fieldErrors.role}
-                        helperText={fieldErrors.role}
-                      />
-                    </div>
-                    {/* <div className="col-md-3 mb-3">
+              <TextField
+                label="Role"
+                variant="outlined"
+                size="small"
+                fullWidth
+                name="role"
+                value={formData.role}
+                onChange={handleInputChange}
+                error={!!fieldErrors.role}
+                helperText={fieldErrors.role}
+              />
+            </div>
+            {/* <div className="col-md-3 mb-3">
                       <FormControl sx={{ width: 215 }} size="small">
                         <InputLabel id="demo-multiple-chip-label">Responsibilites</InputLabel>
                         <Select
@@ -356,73 +346,66 @@ const Roles = () => {
                         </Select>
                       </FormControl>
                     </div> */}
-                    <div className="col-md-3 mb-3">
-                      <FormControl sx={{ width: 215 }} size="small" error={!!fieldErrors.selectedRes}>
-                        <InputLabel id="demo-multiple-chip-label">Responsibilities</InputLabel>
-                        <Select
-                          labelId="demo-multiple-chip-label"
-                          id="demo-multiple-chip"
-                          multiple
-                          value={selectedRes}
-                          onChange={handleMultiSelectChange}
-                          input={<OutlinedInput id="select-multiple-chip" label="Responsibilities" />}
-                          renderValue={(selected) => (
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                              {selected.map((value) => (
-                                <Chip key={value} label={value} />
-                              ))}
-                            </Box>
-                          )}
-                          MenuProps={MenuProps}
-                        >
-                          {responsibilityList.map((name, index) => (
-                            <MenuItem key={index} value={name.responsibility} style={getStyles(name, selectedRes, theme)}>
-                              {name.responsibility}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                        {fieldErrors.selectedRes && <FormHelperText>{fieldErrors.selectedRes}</FormHelperText>}
-                      </FormControl>
-                    </div>
+            <div className="col-md-3 mb-3">
+              <FormControl sx={{ width: 215 }} size="small" error={!!fieldErrors.selectedRes}>
+                <InputLabel id="demo-multiple-chip-label">Responsibilities</InputLabel>
+                <Select
+                  labelId="demo-multiple-chip-label"
+                  id="demo-multiple-chip"
+                  multiple
+                  value={selectedRes}
+                  onChange={handleMultiSelectChange}
+                  input={<OutlinedInput id="select-multiple-chip" label="Responsibilities" />}
+                  renderValue={(selected) => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {selected.map((value) => (
+                        <Chip key={value} label={value} />
+                      ))}
+                    </Box>
+                  )}
+                  MenuProps={MenuProps}
+                >
+                  {responsibilityList.map((name, index) => (
+                    <MenuItem key={index} value={name.responsibility} style={getStyles(name, selectedRes, theme)}>
+                      {name.responsibility}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {fieldErrors.selectedRes && <FormHelperText>{fieldErrors.selectedRes}</FormHelperText>}
+              </FormControl>
+            </div>
 
-                    <div className="col-md-3 mb-3">
-                      <FormGroup>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={formData.active}
-                              onChange={handleInputChange}
-                              name="active"
-                              sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
-                            />
-                          }
-                          label="Active"
-                        />
-                      </FormGroup>
-                    </div>
+            <div className="col-md-3 mb-3">
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.active}
+                      onChange={handleInputChange}
+                      name="active"
+                      sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                    />
+                  }
+                  label="Active"
+                />
+              </FormGroup>
+            </div>
 
-                    <div>
-                      <Typography variant="subtitle1">Available Screens</Typography>
+            <div>
+              <Typography variant="subtitle1">Available Screens</Typography>
 
-                      <Grid item xs={12} sx={{ marginTop: '10px', gap: '5px' }}>
-                        <Grid container>
-                          {ScreenList.map((name, index) => (
-                            <Grid item key={index} sx={{ marginLeft: index > 0 ? '5px' : '0' }}>
-                              <Chip label={name} sx={chipSuccessSX} />
-                            </Grid>
-                          ))}
-                        </Grid>
-                      </Grid>
-                    </div>
-                  </div>
-                )}
-              </TabPanel>
-              <TabPanel value="2">
-                <Responsibilities />
-              </TabPanel>
-            </TabContext>
-          </Box>
-        </div>
+              <Grid item xs={12} sx={{ marginTop: '10px', gap: '5px' }}>
+                <Grid container>
+                  {ScreenList.map((name, index) => (
+                    <Grid item key={index} sx={{ marginLeft: index > 0 ? '5px' : '0' }}>
+                      <Chip label={name} sx={chipSuccessSX} />
+                    </Grid>
+                  ))}
+                </Grid>
+              </Grid>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
