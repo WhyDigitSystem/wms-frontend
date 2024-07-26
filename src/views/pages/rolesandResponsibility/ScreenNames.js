@@ -56,7 +56,7 @@ export const ScreenNames = () => {
   };
 
   const getScreenById = async (row) => {
-    console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
+    console.log('THE SELECTED SCREEN ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
       const response = await apiCalls('get', `commonmaster/createUpdateScreenNames/${row.original.id}`);

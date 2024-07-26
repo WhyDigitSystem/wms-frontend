@@ -14,7 +14,8 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  Tooltip
+  Tooltip,
+  FormHelperText
 } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -51,7 +52,8 @@ function getStyles(name, selectedScreens, theme) {
 const Responsibilities = () => {
   const theme = useTheme();
   const anchorRef = useRef(null);
-  const [listView, setListView] = useState(true);
+  const [listView, setListView] = useState(false);
+  const [listViewData, setListViewData] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [data, setData] = useState([]);
   const [roleData, setRoleData] = useState([]);
@@ -73,22 +75,10 @@ const Responsibilities = () => {
     name: false
   });
 
-  const chipSX = {
-    height: 24,
-    padding: '0 6px'
-  };
-
-  const chipSuccessSX = {
-    ...chipSX,
-    color: theme.palette.secondary.main,
-    backgroundColor: theme.palette.secondary.light,
-    height: 28
-  };
-
   const columns = [
     { accessorKey: 'responsibility', header: 'Responsibility', size: 140 },
     {
-      accessorKey: 'screenVO',
+      accessorKey: 'screensVO',
       header: 'Screens',
       Cell: ({ cell }) => {
         const screens = cell
@@ -103,7 +93,7 @@ const Responsibilities = () => {
 
   useEffect(() => {
     getAllResponsibilities();
-    getRoleData();
+    // getRoleData();
     getAllScreens();
   }, [listView]);
 
@@ -142,11 +132,7 @@ const Responsibilities = () => {
   const handleInputChange = (e) => {
     const { name, value, checked } = e.target;
     let newValue = value;
-
-    // Transform value to uppercase
     newValue = newValue.toUpperCase();
-
-    // Validate value to allow only alphabetic characters
     newValue = newValue.replace(/[^A-Z]/g, '');
 
     // Update the value of newValue instead of redeclaring it
@@ -178,63 +164,35 @@ const Responsibilities = () => {
 
   const getAllResponsibilities = async () => {
     try {
-      const response = await apiCalls('get', `basicMaster/getResponsibilityById?orgId=${orgId}`);
+      const response = await apiCalls('get', `auth/allResponsibilityByOrgId?orgId=${orgId}`);
+
+      setListViewData(response.paramObjectsMap.responsibilityVO);
+      console.log('Test', response);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
+
+  const getResponsibilityById = async (row) => {
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `auth/responsibilityById?id=${row.original.id}`);
       console.log('API Response:', response);
 
-      if (response.status === 200) {
-        const particularResponsibility = response.paramObjectsMap.Responsibility;
+      if (response) {
+        console.log('after success then data is:', response);
+
+        const particularResponsibility = response.paramObjectsMap.responsibilityVO;
+        const particularResScreens = particularResponsibility.screensVO.map((k) => k.screenName);
         setFormData({
-          name: particularResponsibility.role,
+          name: particularResponsibility.responsibility,
           active: particularResponsibility.active === 'Active' ? true : false
         });
+        console.log('THE SCREEN VO DATA IS:', particularResScreens);
+        setSelectedScreens(particularResScreens);
+
         setListView(false);
-
-        // console.log('Test', screenNames);
       } else {
-        // Handle error
-        console.error('API Error:', response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  const getRoleData = async () => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
-      console.log('API Response:', response);
-
-      if (response.status === 200) {
-        // setData(response.data.paramObjectsMap.roleMasterVO);
-        setRoleDataSelect(response.data.paramObjectsMap.roleVO.map((list) => list.role));
-
-        console.log(
-          'Test',
-          response.data.paramObjectsMap.roleMasterVO.map((list) => list.role)
-        );
-      } else {
-        // Handle error
-        console.error('API Error:', response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-  const getResponsibilityById = async () => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
-      console.log('API Response:', response);
-
-      if (response.status === 200) {
-        // setData(response.data.paramObjectsMap.roleMasterVO);
-        setRoleDataSelect(response.data.paramObjectsMap.roleVO.map((list) => list.role));
-
-        console.log(
-          'Test',
-          response.data.paramObjectsMap.roleMasterVO.map((list) => list.role)
-        );
-      } else {
-        // Handle error
         console.error('API Error:', response.data);
       }
     } catch (error) {
@@ -243,7 +201,6 @@ const Responsibilities = () => {
   };
 
   const handleSave = async () => {
-    // Check if any field is empty
     const errors = Object.keys(formData).reduce((acc, key) => {
       if (!formData[key]) {
         acc[key] = true;
@@ -251,7 +208,6 @@ const Responsibilities = () => {
       return acc;
     }, {});
 
-    // If there are errors, set the corresponding fieldErrors state to true
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return; // Prevent API call if there are errors
@@ -292,31 +248,6 @@ const Responsibilities = () => {
     }
   };
 
-  // const editRole = async (updatedCountry) => {
-  //   try {
-  //     const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateRoleMaster`, updatedCountry);
-  //     if (response.status === 200) {
-  //       toast.success('Role Updated Successfully', {
-  //         autoClose: 2000,
-  //         theme: 'colored'
-  //       });
-  //       getRole();
-  //     } else {
-  //       console.error('API Error:', response.data);
-  //       toast.error('Failed to Update Role', {
-  //         autoClose: 2000,
-  //         theme: 'colored'
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.error('Error updating country:', error);
-  //     toast.error('Error Updating Role', {
-  //       autoClose: 2000,
-  //       theme: 'colored'
-  //     });
-  //   }
-  // };
-
   return (
     <div>
       <div>
@@ -329,24 +260,10 @@ const Responsibilities = () => {
               <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
               <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
               <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-              <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+              <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
             </div>
-            {listView ? (
+            {!listView ? (
               <div className="row d-flex">
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="role-label">Role</InputLabel>
-                    <Select labelId="role-label" id="role" name="role" value={formData.role} onChange={handleSelectChange} required>
-                      {roleDataSelect &&
-                        roleDataSelect.map((role, index) => (
-                          <MenuItem key={index} value={role}>
-                            {role}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                    <span style={{ color: 'red' }}>{fieldErrors.role ? 'This field is required' : ''}</span>
-                  </FormControl>
-                </div> */}
                 <div className="col-md-3 mb-3">
                   <TextField
                     label="Name"
@@ -360,7 +277,7 @@ const Responsibilities = () => {
                     helperText={fieldErrors.name}
                   />
                 </div>
-                <div className="col-md-3 mb-3">
+                {/* <div className="col-md-3 mb-3">
                   <FormControl sx={{ width: 215 }} size="small">
                     <InputLabel id="demo-multiple-chip-label">Screens</InputLabel>
                     <Select
@@ -369,7 +286,36 @@ const Responsibilities = () => {
                       multiple
                       value={selectedScreens}
                       onChange={handleChange}
-                      input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
+                      input={<OutlinedInput id="select-multiple-chip" label="Screens" />}
+                      renderValue={(selected) => (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {selected.map((value) => (
+                            <Chip key={value} label={value} />
+                          ))}
+                        </Box>
+                      )}
+                      MenuProps={MenuProps}
+                      error={!!fieldErrors.name}
+                      helperText={fieldErrors.name}
+                    >
+                      {screenList.map((name, index) => (
+                        <MenuItem key={index} value={name.screenName} style={getStyles(name, selectedScreens, theme)}>
+                          {name.screenName}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </div> */}
+                <div className="col-md-3 mb-3">
+                  <FormControl sx={{ width: 215 }} size="small" error={!!fieldErrors.name}>
+                    <InputLabel id="demo-multiple-chip-label">Screens</InputLabel>
+                    <Select
+                      labelId="demo-multiple-chip-label"
+                      id="demo-multiple-chip"
+                      multiple
+                      value={selectedScreens}
+                      onChange={handleChange}
+                      input={<OutlinedInput id="select-multiple-chip" label="Screens" />}
                       renderValue={(selected) => (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                           {selected.map((value) => (
@@ -385,6 +331,7 @@ const Responsibilities = () => {
                         </MenuItem>
                       ))}
                     </Select>
+                    {fieldErrors.name && <FormHelperText>{fieldErrors.name}</FormHelperText>}
                   </FormControl>
                 </div>
 
@@ -403,23 +350,14 @@ const Responsibilities = () => {
                     />
                   </FormGroup>
                 </div>
-                {/* 
-                <div>
-                  <Typography variant="subtitle1">Available Roles</Typography>
-
-                  <Grid item xs={12} sx={{ marginTop: '10px', gap: '5px' }}>
-                    <Grid container>
-                      {roleData.map((role, index) => (
-                        <Grid item key={index} sx={{ marginLeft: index > 0 ? '5px' : '0' }}>
-                          <Chip label={role} sx={chipSuccessSX} />
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </Grid>
-                </div> */}
               </div>
             ) : (
-              <CommonListViewTable data={data} columns={columns} editCallback={getResponsibilityById} roleData={roleData} />
+              <CommonListViewTable
+                data={listViewData}
+                columns={columns}
+                toEdit={getResponsibilityById}
+                blockEdit={true} // DISAPLE THE MODAL IF TRUE
+              />
             )}
           </Box>
         </div>

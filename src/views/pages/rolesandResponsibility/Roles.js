@@ -5,7 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import { Avatar, ButtonBase, Chip, Grid, Tooltip, Typography } from '@mui/material';
+import { Avatar, ButtonBase, Chip, Grid, Tooltip, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
@@ -17,25 +17,38 @@ import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
-import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Responsibilities from './Responsibilities';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import ActionButton from 'utils/ActionButton';
 import apiCalls from 'apicall';
-import { showToast } from 'utils/toast-component';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import ToastComponent, { showToast } from 'utils/toast-component';
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250
+    }
+  }
+};
 
 const Roles = () => {
   const theme = useTheme();
-  const anchorRef = useRef(null);
   const [listView, setListView] = useState(false);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [data, setData] = useState([]);
-  const [roleData, setRoleData] = useState([]);
   const [value, setValue] = useState('1');
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [selectedRes, setSelectedRes] = useState([]);
+  const [responsibilityList, setResponsibilityList] = useState([]);
+  const [ScreenList, setScreenList] = useState([]);
+  const [selectedResponsibilitiesDetails, setSelectedResponsibilitiesDetails] = useState({});
 
   const [formData, setFormData] = useState({
     role: '',
@@ -60,11 +73,23 @@ const Roles = () => {
 
   const columns = [
     { accessorKey: 'role', header: 'Role', size: 140 },
+    {
+      accessorKey: 'rolesReposibilitiesVO',
+      header: 'Responsibilities',
+      Cell: ({ cell }) => {
+        const res = cell
+          .getValue()
+          .map((screen) => screen.responsibility)
+          .join(', ');
+        return res;
+      }
+    },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
   useEffect(() => {
     getAllRoles();
+    getAllActiveResponsibilities();
   }, [listView]);
 
   const handleChange = (event, newValue) => {
@@ -76,11 +101,19 @@ const Roles = () => {
       role: '',
       active: true
     });
+    setSelectedResponsibilitiesDetails({});
+    setSelectedRes([]);
+    setScreenList([]);
 
     setFieldErrors({
       role: false
     });
   };
+  function getStyles(name, selectedRes, theme) {
+    return {
+      fontWeight: selectedRes.indexOf(name) === -1 ? theme.typography.fontWeightRegular : theme.typography.fontWeightMedium
+    };
+  }
 
   const handleInputChange = (e) => {
     const { name, value, checked } = e.target;
@@ -99,47 +132,82 @@ const Roles = () => {
     setFieldErrors({ ...fieldErrors, [name]: false });
   };
 
+  const handleMultiSelectChange = (event) => {
+    const {
+      target: { value }
+    } = event;
+
+    console.log('THE VALUE IS:', value);
+
+    setSelectedRes(value);
+
+    const selectedResScreen = responsibilityList
+      .filter((res) => value.includes(res.responsibility))
+      .map((res) => res.screensVO.map((screen) => screen.screenName))
+      .flat(); // Flatten the array of arrays
+    console.log("SELECTED RESPONSIBILITY'S SCREENS:", selectedResScreen);
+
+    setScreenList(selectedResScreen);
+
+    const selectedResDetails = responsibilityList
+      .filter((res) => value.includes(res.responsibility))
+      .map((res) => ({ responsibility: res.responsibility, responsibilityId: res.id }));
+    console.log('SELECTED RESPONSIBILITY DETAILS:', selectedResDetails);
+    setSelectedResponsibilitiesDetails(selectedResDetails);
+  };
+
   const handleView = () => {
     setListView(!listView);
   };
 
-  const getAllRoles = async () => {
+  const getAllActiveResponsibilities = async () => {
     try {
-      const response = await apiCalls('get', `commonmaster/country?orgid=${orgId}`);
+      const response = await apiCalls('get', `auth/allActiveResponsibilityByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
-      if (response.status === 200) {
-        setData(response.paramObjectsMap.roleVO);
-        setRoleData(response.paramObjectsMap.roleVO.map((list) => list.role));
-
-        console.log(
-          'Test',
-          response.paramObjectsMap.roleMasterVO.map((list) => list.role)
-        );
+      if (response) {
+        setResponsibilityList(response.paramObjectsMap.resposResponsibilityVO);
       } else {
-        // Handle error
         console.error('API Error:', response.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
+  const getAllRoles = async () => {
+    try {
+      const response = await apiCalls('get', `auth/allRolesByOrgId?orgId=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response) {
+        console.log('THE GETALL ROLES:', response);
+
+        setData(response.paramObjectsMap.rolesVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   const getRoleById = async (row) => {
     console.log('THE SELECTED ROW ID IS:', row.original.id);
     try {
-      const result = await apiCalls('get', `basicMaster/updateCreateRoleMaster`);
+      const result = await apiCalls('get', `/auth/rolesById?id=${row.original.id}`);
 
       console.log('API Response:', result);
 
-      if (result.status === 200) {
-        const particularRole = result.paramObjectsMap.Role;
+      if (result) {
+        setEditId(row.original.id);
+        const particularRole = result.paramObjectsMap.rolesVO;
         setFormData({
           role: particularRole.role,
           active: particularRole.active === 'Active' ? true : false
         });
+        setSelectedRes(particularRole.rolesReposibilitiesVO.map((k) => k.responsibility));
         setListView(false);
       } else {
-        // Handle error
         console.error('API Error:', result.data);
       }
     } catch (error) {
@@ -161,16 +229,19 @@ const Roles = () => {
       return; // Prevent API call if there are errors
     }
     setIsLoading(false);
+
     const saveFormData = {
       ...(editId && { id: editId }),
       active: formData.active,
       role: formData.role,
+      rolesResponsibilityDTO: selectedResponsibilitiesDetails,
       orgId: orgId,
       createdby: loginUserName
     };
+    console.log('THE SAVE FORM DATA IS:', saveFormData);
 
     try {
-      const result = await apiCalls('put', `basicMaster/updateCreateRoleMaster`, saveFormData);
+      const result = await apiCalls('put', `auth/createUpdateRoles`, saveFormData);
       if (result.status === true) {
         console.log('Response:', result);
         showToast('success', editId ? ' Role Updated Successfully' : 'Role created successfully');
@@ -190,28 +261,33 @@ const Roles = () => {
 
   return (
     <div>
-      <div>
-        <ToastContainer />
-      </div>
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <div>
           <Box sx={{ width: '100%', typography: 'body1' }}>
             <TabContext value={value}>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
-                  <Tab label="Roles" value="1" />
-                  <Tab label="Responsibilities" value="2" />
+                  <Tab label="Responsibilities" value="1" />
+                  <Tab label="Roles" value="2" />
                 </TabList>
               </Box>
               <TabPanel value="1">
+                <Responsibilities />
+              </TabPanel>
+              <TabPanel value="2">
                 <div className="d-flex flex-wrap justify-content-start mb-4">
                   <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
                   <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                   <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-                  <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+                  <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
                 </div>
                 {listView ? (
-                  <CommonListViewTable data={data} columns={columns} editCallback={getRoleById} />
+                  <CommonListViewTable
+                    data={data}
+                    columns={columns}
+                    toEdit={getRoleById}
+                    blockEdit={true} // DISAPLE THE MODAL IF TRUE
+                  />
                 ) : (
                   <div className="row d-flex">
                     <div className="col-md-3 mb-3">
@@ -225,10 +301,39 @@ const Roles = () => {
                           value={formData.role}
                           onChange={handleInputChange}
                           inputProps={{ maxLength: 30 }}
+                          error={!!fieldErrors.role}
                           helperText={<span style={{ color: 'red' }}>{fieldErrors.role ? 'This field is required' : ''}</span>}
                         />
                       </FormControl>
                     </div>
+                    <div className="col-md-3 mb-3">
+                      <FormControl sx={{ width: 215 }} size="small">
+                        <InputLabel id="demo-multiple-chip-label">Responsibilites</InputLabel>
+                        <Select
+                          labelId="demo-multiple-chip-label"
+                          id="demo-multiple-chip"
+                          multiple
+                          value={selectedRes}
+                          onChange={handleMultiSelectChange}
+                          input={<OutlinedInput id="select-multiple-chip" label="Responsibilites" />}
+                          renderValue={(selected) => (
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                              {selected.map((value) => (
+                                <Chip key={value} label={value} />
+                              ))}
+                            </Box>
+                          )}
+                          MenuProps={MenuProps}
+                        >
+                          {responsibilityList.map((name, index) => (
+                            <MenuItem key={index} value={name.responsibility} style={getStyles(name, selectedRes, theme)}>
+                              {name.responsibility}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </div>
+
                     <div className="col-md-3 mb-3">
                       <FormGroup>
                         <FormControlLabel
@@ -246,13 +351,13 @@ const Roles = () => {
                     </div>
 
                     <div>
-                      <Typography variant="subtitle1">Available Roles</Typography>
+                      <Typography variant="subtitle1">Available Screens</Typography>
 
                       <Grid item xs={12} sx={{ marginTop: '10px', gap: '5px' }}>
                         <Grid container>
-                          {roleData.map((role, index) => (
+                          {ScreenList.map((name, index) => (
                             <Grid item key={index} sx={{ marginLeft: index > 0 ? '5px' : '0' }}>
-                              <Chip label={role} sx={chipSuccessSX} />
+                              <Chip label={name} sx={chipSuccessSX} />
                             </Grid>
                           ))}
                         </Grid>
@@ -261,13 +366,11 @@ const Roles = () => {
                   </div>
                 )}
               </TabPanel>
-              <TabPanel value="2">
-                <Responsibilities />
-              </TabPanel>
             </TabContext>
           </Box>
         </div>
       </div>
+      <ToastComponent />
     </div>
   );
 };
