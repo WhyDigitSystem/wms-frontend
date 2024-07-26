@@ -5,7 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import { Avatar, ButtonBase, Chip, Grid, Tooltip, InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import { Avatar, ButtonBase, Chip, Grid, Tooltip, InputLabel, MenuItem, Select, Typography, FormHelperText } from '@mui/material';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
@@ -24,6 +24,7 @@ import ActionButton from 'utils/ActionButton';
 import apiCalls from 'apicall';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import ToastComponent, { showToast } from 'utils/toast-component';
+import { ToastContainer, toast } from 'react-toastify';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -56,7 +57,8 @@ const Roles = () => {
   });
 
   const [fieldErrors, setFieldErrors] = useState({
-    role: false
+    role: false,
+    selectedRes: ''
   });
 
   const chipSX = {
@@ -151,7 +153,7 @@ const Roles = () => {
 
     const selectedResDetails = responsibilityList
       .filter((res) => value.includes(res.responsibility))
-      .map((res) => ({ responsibility: res.responsibility, responsibilityId: res.id }));
+      .map((res) => ({ responsibility: res.responsibility, responsibilityId: res.responsibilityId }));
     console.log('SELECTED RESPONSIBILITY DETAILS:', selectedResDetails);
     setSelectedResponsibilitiesDetails(selectedResDetails);
   };
@@ -166,6 +168,8 @@ const Roles = () => {
       console.log('API Response:', response);
 
       if (response) {
+        console.log('THE RESPONSIBILITY LIST IS:', response.paramObjectsMap.resposResponsibilityVO);
+
         setResponsibilityList(response.paramObjectsMap.resposResponsibilityVO);
       } else {
         console.error('API Error:', response.data);
@@ -201,11 +205,19 @@ const Roles = () => {
       if (result) {
         setEditId(row.original.id);
         const particularRole = result.paramObjectsMap.rolesVO;
+        console.log('THE PARTICULAR ROLE IS:', particularRole);
+
         setFormData({
           role: particularRole.role,
           active: particularRole.active === 'Active' ? true : false
         });
         setSelectedRes(particularRole.rolesReposibilitiesVO.map((k) => k.responsibility));
+        setSelectedResponsibilitiesDetails(
+          particularRole.rolesReposibilitiesVO.map((res) => ({
+            responsibility: res.responsibility,
+            responsibilityId: res.responsibilityId
+          }))
+        );
         setListView(false);
       } else {
         console.error('API Error:', result.data);
@@ -216,65 +228,63 @@ const Roles = () => {
   };
 
   const handleSave = async () => {
-    // Check if any field is empty
-    const errors = Object.keys(formData).reduce((acc, key) => {
-      if (!formData[key]) {
-        acc[key] = true;
-      }
-      return acc;
-    }, {});
-    // If there are errors, set the corresponding fieldErrors state to true
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return; // Prevent API call if there are errors
+    const errors = {};
+    if (!formData.role) {
+      errors.role = 'Role is required';
+    }
+    if (selectedRes.length <= 0) {
+      errors.selectedRes = 'Responsibilities is required';
     }
     setIsLoading(false);
+    if (Object.keys(errors).length === 0) {
+      const saveFormData = {
+        ...(editId && { id: editId }),
+        active: formData.active,
+        role: formData.role,
+        rolesResponsibilityDTO: selectedResponsibilitiesDetails,
+        orgId: orgId,
+        createdby: loginUserName
+      };
+      console.log('THE SAVE FORM DATA IS:', saveFormData);
 
-    const saveFormData = {
-      ...(editId && { id: editId }),
-      active: formData.active,
-      role: formData.role,
-      rolesResponsibilityDTO: selectedResponsibilitiesDetails,
-      orgId: orgId,
-      createdby: loginUserName
-    };
-    console.log('THE SAVE FORM DATA IS:', saveFormData);
-
-    try {
-      const result = await apiCalls('put', `auth/createUpdateRoles`, saveFormData);
-      if (result.status === true) {
-        console.log('Response:', result);
-        showToast('success', editId ? ' Role Updated Successfully' : 'Role created successfully');
-        handleClear();
-        getAllRoles();
-        setIsLoading(false);
-      } else {
-        showToast('error', result.paramObjectsMap.errorMessage || 'Role creation failed');
+      try {
+        const result = await apiCalls('put', `auth/createUpdateRoles`, saveFormData);
+        if (result.status === true) {
+          console.log('Response:', result);
+          showToast('success', editId ? ' Role Updated Successfully' : 'Role created successfully');
+          handleClear();
+          getAllRoles();
+          setIsLoading(false);
+        } else {
+          showToast('error', result.paramObjectsMap.errorMessage || 'Role creation failed');
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.log('error', err);
+        showToast('error', 'Role creation failed');
         setIsLoading(false);
       }
-    } catch (err) {
-      console.log('error', err);
-      showToast('error', 'Role creation failed');
-      setIsLoading(false);
+    } else {
+      setFieldErrors(errors);
     }
   };
 
   return (
-    <div>
+    <>
+      <ToastComponent />
+
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <div>
           <Box sx={{ width: '100%', typography: 'body1' }}>
             <TabContext value={value}>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
-                  <Tab label="Responsibilities" value="1" />
-                  <Tab label="Roles" value="2" />
+                  <Tab label="Roles" value="1" />
+                  <Tab label="Responsibilities" value="2" />
                 </TabList>
               </Box>
+
               <TabPanel value="1">
-                <Responsibilities />
-              </TabPanel>
-              <TabPanel value="2">
                 <div className="d-flex flex-wrap justify-content-start mb-4">
                   <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
                   <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
@@ -291,7 +301,7 @@ const Roles = () => {
                 ) : (
                   <div className="row d-flex">
                     <div className="col-md-3 mb-3">
-                      <FormControl fullWidth variant="filled">
+                      {/* <FormControl fullWidth variant="filled">
                         <TextField
                           id="account"
                           label="Role"
@@ -304,9 +314,20 @@ const Roles = () => {
                           error={!!fieldErrors.role}
                           helperText={<span style={{ color: 'red' }}>{fieldErrors.role ? 'This field is required' : ''}</span>}
                         />
-                      </FormControl>
+                      </FormControl> */}
+                      <TextField
+                        label="Role"
+                        variant="outlined"
+                        size="small"
+                        fullWidth
+                        name="role"
+                        value={formData.role}
+                        onChange={handleInputChange}
+                        error={!!fieldErrors.role}
+                        helperText={fieldErrors.role}
+                      />
                     </div>
-                    <div className="col-md-3 mb-3">
+                    {/* <div className="col-md-3 mb-3">
                       <FormControl sx={{ width: 215 }} size="small">
                         <InputLabel id="demo-multiple-chip-label">Responsibilites</InputLabel>
                         <Select
@@ -324,6 +345,8 @@ const Roles = () => {
                             </Box>
                           )}
                           MenuProps={MenuProps}
+                          error={!!fieldErrors.selectedRes}
+                          helperText={fieldErrors.selectedRes}
                         >
                           {responsibilityList.map((name, index) => (
                             <MenuItem key={index} value={name.responsibility} style={getStyles(name, selectedRes, theme)}>
@@ -331,6 +354,34 @@ const Roles = () => {
                             </MenuItem>
                           ))}
                         </Select>
+                      </FormControl>
+                    </div> */}
+                    <div className="col-md-3 mb-3">
+                      <FormControl sx={{ width: 215 }} size="small" error={!!fieldErrors.selectedRes}>
+                        <InputLabel id="demo-multiple-chip-label">Responsibilities</InputLabel>
+                        <Select
+                          labelId="demo-multiple-chip-label"
+                          id="demo-multiple-chip"
+                          multiple
+                          value={selectedRes}
+                          onChange={handleMultiSelectChange}
+                          input={<OutlinedInput id="select-multiple-chip" label="Responsibilities" />}
+                          renderValue={(selected) => (
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                              {selected.map((value) => (
+                                <Chip key={value} label={value} />
+                              ))}
+                            </Box>
+                          )}
+                          MenuProps={MenuProps}
+                        >
+                          {responsibilityList.map((name, index) => (
+                            <MenuItem key={index} value={name.responsibility} style={getStyles(name, selectedRes, theme)}>
+                              {name.responsibility}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        {fieldErrors.selectedRes && <FormHelperText>{fieldErrors.selectedRes}</FormHelperText>}
                       </FormControl>
                     </div>
 
@@ -366,12 +417,14 @@ const Roles = () => {
                   </div>
                 )}
               </TabPanel>
+              <TabPanel value="2">
+                <Responsibilities />
+              </TabPanel>
             </TabContext>
           </Box>
         </div>
       </div>
-      <ToastComponent />
-    </div>
+    </>
   );
 };
 

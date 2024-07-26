@@ -41,8 +41,6 @@ const MenuProps = {
   }
 };
 
-const names = ['Dashboard', 'BasicMaster', 'Master', 'Transaction', 'AR-Receivable', 'AP-Payable'];
-
 function getStyles(name, selectedScreens, theme) {
   return {
     fontWeight: selectedScreens.indexOf(name) === -1 ? theme.typography.fontWeightRegular : theme.typography.fontWeightMedium
@@ -51,14 +49,9 @@ function getStyles(name, selectedScreens, theme) {
 
 const Responsibilities = () => {
   const theme = useTheme();
-  const anchorRef = useRef(null);
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [data, setData] = useState([]);
-  const [roleData, setRoleData] = useState([]);
-  const [roleDataSelect, setRoleDataSelect] = useState([]);
-  const [value, setValue] = useState('1');
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
   const [screenList, setScreenList] = useState([]);
@@ -201,50 +194,51 @@ const Responsibilities = () => {
   };
 
   const handleSave = async () => {
-    const errors = Object.keys(formData).reduce((acc, key) => {
-      if (!formData[key]) {
-        acc[key] = true;
-      }
-      return acc;
-    }, {});
-
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return; // Prevent API call if there are errors
+    const errors = {};
+    if (!formData.name) {
+      errors.name = 'Name is required';
     }
+    if (selectedScreens.length <= 0) {
+      errors.selectedScreens = 'Screens is required';
+    }
+
     setIsLoading(false);
-    const screenVo = selectedScreens.map((row) => ({
-      screenName: row
-    }));
+    if (Object.keys(errors).length === 0) {
+      const screenVo = selectedScreens.map((row) => ({
+        screenName: row
+      }));
 
-    const saveFormData = {
-      ...(editId && { id: editId }),
-      active: formData.active,
-      responsibility: formData.name,
-      orgId: orgId,
-      createdby: loginUserName,
-      screensDTO: screenVo
-    };
-    console.log('PERSON NAMES:', selectedScreens);
+      const saveFormData = {
+        ...(editId && { id: editId }),
+        active: formData.active,
+        responsibility: formData.name,
+        orgId: orgId,
+        createdby: loginUserName,
+        screensDTO: screenVo
+      };
+      console.log('PERSON NAMES:', selectedScreens);
 
-    console.log('THE SAVE FORM DATA IS:', saveFormData);
+      console.log('THE SAVE FORM DATA IS:', saveFormData);
 
-    try {
-      const response = await apiCalls('put', `auth/createUpdateResponsibility`, saveFormData);
-      if (response.status === true) {
-        console.log('Response:', response);
-        showToast('success', editId ? ' Responsibility Updated Successfully' : 'Responsibility created successfully');
-        handleClear();
-        getAllResponsibilities();
-        setIsLoading(false);
-      } else {
-        showToast('error', response.paramObjectsMap.errorMessage || 'Responsibility creation failed');
+      try {
+        const response = await apiCalls('put', `auth/createUpdateResponsibility`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          showToast('success', editId ? ' Responsibility Updated Successfully' : 'Responsibility created successfully');
+          handleClear();
+          getAllResponsibilities();
+          setIsLoading(false);
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Responsibility creation failed');
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.log('error', err);
+        showToast('error', 'Responsibility creation failed');
         setIsLoading(false);
       }
-    } catch (err) {
-      console.log('error', err);
-      showToast('error', 'Responsibility creation failed');
-      setIsLoading(false);
+    } else {
+      setFieldErrors(errors);
     }
   };
 
@@ -277,37 +271,8 @@ const Responsibilities = () => {
                     helperText={fieldErrors.name}
                   />
                 </div>
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl sx={{ width: 215 }} size="small">
-                    <InputLabel id="demo-multiple-chip-label">Screens</InputLabel>
-                    <Select
-                      labelId="demo-multiple-chip-label"
-                      id="demo-multiple-chip"
-                      multiple
-                      value={selectedScreens}
-                      onChange={handleChange}
-                      input={<OutlinedInput id="select-multiple-chip" label="Screens" />}
-                      renderValue={(selected) => (
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {selected.map((value) => (
-                            <Chip key={value} label={value} />
-                          ))}
-                        </Box>
-                      )}
-                      MenuProps={MenuProps}
-                      error={!!fieldErrors.name}
-                      helperText={fieldErrors.name}
-                    >
-                      {screenList.map((name, index) => (
-                        <MenuItem key={index} value={name.screenName} style={getStyles(name, selectedScreens, theme)}>
-                          {name.screenName}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </div> */}
                 <div className="col-md-3 mb-3">
-                  <FormControl sx={{ width: 215 }} size="small" error={!!fieldErrors.name}>
+                  <FormControl sx={{ width: 215 }} size="small" error={!!fieldErrors.selectedScreens}>
                     <InputLabel id="demo-multiple-chip-label">Screens</InputLabel>
                     <Select
                       labelId="demo-multiple-chip-label"
@@ -331,7 +296,7 @@ const Responsibilities = () => {
                         </MenuItem>
                       ))}
                     </Select>
-                    {fieldErrors.name && <FormHelperText>{fieldErrors.name}</FormHelperText>}
+                    {fieldErrors.selectedScreens && <FormHelperText>{fieldErrors.selectedScreens}</FormHelperText>}
                   </FormControl>
                 </div>
 
