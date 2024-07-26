@@ -122,6 +122,30 @@ const basicMasters = {
           title: 'Material Label Mapping Master',
           type: 'item',
           url: '/basicmasters/materiallabelmappingmaster'
+        },
+        {
+          id: 'departmentMaster',
+          title: 'Department Master',
+          type: 'item',
+          url: '/basicmasters/departmentmaster'
+        },
+        {
+          id: 'designationMaster',
+          title: 'Designation Master',
+          type: 'item',
+          url: '/basicmasters/designationmaster'
+        },
+        {
+          id: 'groupMaster',
+          title: 'Group Master',
+          type: 'item',
+          url: '/basicmasters/groupmaster'
+        },
+        {
+          id: 'unitMaster',
+          title: 'Unit Master',
+          type: 'item',
+          url: '/basicmasters/unitmaster'
         }
       ]
     }

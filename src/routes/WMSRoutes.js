@@ -28,6 +28,10 @@ const CarrierMaster = Loadable(lazy(() => import('views/pages/basic-masters/Carr
 const SupplierMaster = Loadable(lazy(() => import('views/pages/basic-masters/SupplierMaster')));
 const ExternalDataMismatch = Loadable(lazy(() => import('views/pages/basic-masters/ExternalDataMismatch')));
 const MaterialLabelMappingMaster = Loadable(lazy(() => import('views/pages/basic-masters/MaterialLabelMappingMaster')));
+const DepartmentMaster = Loadable(lazy(() => import('views/pages/basic-masters/DepartmentMaster')));
+const DesignationMaster = Loadable(lazy(() => import('views/pages/basic-masters/DesignationMaster')));
+const GroupMaster = Loadable(lazy(() => import('views/pages/basic-masters/GroupMaster')));
+const UnitMaster = Loadable(lazy(() => import('views/pages/basic-masters/UnitMaster')));
 const Roles = Loadable(lazy(() => import('views/pages/rolesandResponsibility/Roles')));
 const ScreenNames = Loadable(lazy(() => import('views/pages/rolesandResponsibility/ScreenNames')));
 
@@ -120,6 +124,22 @@ const WMSRoutes = {
     {
       path: '/rolesresponsibility/screennames',
       element: <ScreenNames />
+    },
+    {
+      path: '/basicmasters/departmentmaster',
+      element: <DepartmentMaster />
+    },
+    {
+      path: '/basicmasters/designationmaster',
+      element: <DesignationMaster />
+    },
+    {
+      path: '/basicmasters/groupmaster',
+      element: <GroupMaster />
+    },
+    {
+      path: '/basicmasters/unitmaster',
+      element: <UnitMaster />
     }
   ]
 };

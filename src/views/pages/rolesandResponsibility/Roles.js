@@ -142,6 +142,7 @@ const Roles = () => {
     console.log('THE VALUE IS:', value);
 
     setSelectedRes(value);
+    console.log('responsibilities list from multiselect :', responsibilityList);
 
     const selectedResScreen = responsibilityList
       .filter((res) => value.includes(res.responsibility))
@@ -153,7 +154,7 @@ const Roles = () => {
 
     const selectedResDetails = responsibilityList
       .filter((res) => value.includes(res.responsibility))
-      .map((res) => ({ responsibility: res.responsibility, responsibilityId: res.responsibilityId }));
+      .map((res) => ({ responsibility: res.responsibility, responsibilityId: res.id }));
     console.log('SELECTED RESPONSIBILITY DETAILS:', selectedResDetails);
     setSelectedResponsibilitiesDetails(selectedResDetails);
   };
