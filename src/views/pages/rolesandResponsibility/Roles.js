@@ -236,8 +236,9 @@ const Roles = () => {
     if (selectedRes.length <= 0) {
       errors.selectedRes = 'Responsibilities is required';
     }
-    setIsLoading(false);
     if (Object.keys(errors).length === 0) {
+      setIsLoading(true);
+
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,

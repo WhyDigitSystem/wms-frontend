@@ -59,10 +59,10 @@ export const ScreenNames = () => {
     console.log('THE SELECTED SCREEN ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `commonmaster/createUpdateScreenNames/${row.original.id}`);
+      const response = await apiCalls('get', `commonmaster/screenNamesById?id=${row.original.id}`);
 
       if (response.status === true) {
-        const particularScreen = response.paramObjectsMap.Screen;
+        const particularScreen = response.paramObjectsMap.screenNamesVO;
         setFormData({
           screenCode: particularScreen.screenCode,
           screenName: particularScreen.screenName,

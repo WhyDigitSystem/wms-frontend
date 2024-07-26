@@ -86,7 +86,6 @@ const Responsibilities = () => {
 
   useEffect(() => {
     getAllResponsibilities();
-    // getRoleData();
     getAllScreens();
   }, [listView]);
 
@@ -202,8 +201,9 @@ const Responsibilities = () => {
       errors.selectedScreens = 'Screens is required';
     }
 
-    setIsLoading(false);
     if (Object.keys(errors).length === 0) {
+      setIsLoading(false);
+
       const screenVo = selectedScreens.map((row) => ({
         screenName: row
       }));
