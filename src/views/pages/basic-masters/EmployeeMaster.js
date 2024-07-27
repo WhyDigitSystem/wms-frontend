@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
@@ -14,10 +14,13 @@ import { showToast } from 'utils/toast-component';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
+import { getAllActiveBranches } from 'utils/CommonFunctions';
+import apiCalls from 'apicall';
 
 export const EmployeeMaster = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
+  const [branchList, setBranchList] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
 
@@ -26,6 +29,7 @@ export const EmployeeMaster = () => {
     empName: '',
     gender: '',
     branch: '',
+    branchCode: '',
     dept: '',
     designation: '',
     dob: null,
@@ -41,6 +45,7 @@ export const EmployeeMaster = () => {
     empName: '',
     gender: '',
     branch: '',
+    branchCode: '',
     dept: '',
     designation: '',
     dob: '',
@@ -48,6 +53,11 @@ export const EmployeeMaster = () => {
   });
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
+
+  useEffect(() => {
+    getAllBranches();
+    getAllEmployees();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value, checked } = e.target;
@@ -58,6 +68,15 @@ export const EmployeeMaster = () => {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else if (name === 'empName' && !nameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+    } else if (name === 'branch') {
+      const selectedBranch = branchList.find((br) => br.branch === value);
+      if (selectedBranch) {
+        setFormData((prevData) => ({
+          ...prevData,
+          branch: value,
+          branchCode: selectedBranch.branchCode
+        }));
+      }
     } else {
       setFormData({ ...formData, [name]: value.toUpperCase() });
       setFieldErrors({ ...fieldErrors, [name]: '' });
@@ -65,12 +84,8 @@ export const EmployeeMaster = () => {
   };
 
   const handleDateChange = (field, date) => {
-    // if (date) {
     const formattedDate = dayjs(date).format('DD-MM-YYYY');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
-    // } else {
-    //   setFormData((prevData) => ({ ...prevData, [field]: null }));
-    // }
   };
   const handleClear = () => {
     setFormData({
@@ -78,6 +93,7 @@ export const EmployeeMaster = () => {
       empName: '',
       gender: '',
       branch: '',
+      branchCode: '',
       dept: '',
       designation: '',
       dob: null,
@@ -89,6 +105,7 @@ export const EmployeeMaster = () => {
       empName: '',
       gender: '',
       branch: '',
+      branchCode: '',
       dept: '',
       designation: '',
       dob: '',
@@ -96,15 +113,24 @@ export const EmployeeMaster = () => {
     });
   };
 
+  const getAllBranches = async () => {
+    try {
+      const branchData = await getAllActiveBranches(orgId);
+      setBranchList(branchData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+
   const getAllEmployees = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/employee?orgid=${orgId}`);
+      const response = await apiCalls('get', `warehousemastercontroller/getAllEmployeeByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
-      if (response.status === 200) {
-        setListViewData(response.data.paramObjectsMap.countryVO);
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.employeeVO);
       } else {
-        console.error('API Error:', response.data);
+        console.error('API Error:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -115,27 +141,36 @@ export const EmployeeMaster = () => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/employee/${row.original.id}`);
+      const response = await apiCalls('get', `warehousemastercontroller/employee/${row.original.id}`);
       console.log('API Response:', response);
 
-      if (response.status === 200) {
+      if (response.status === true) {
         setListView(false);
-        const particularEmp = response.data.paramObjectsMap.employee;
+        const particularEmp = response.paramObjectsMap.Employee;
+        const selectedBranch = branchList.find((br) => br.branch === particularEmp.branch);
+        console.log('THE SELECTED BRANCH IS:', selectedBranch);
 
         setFormData({
-          // countryCode: particularCountry.countryCode,
-          // countryName: particularCountry.countryName,
+          empCode: particularEmp.employeeCode,
+          empName: particularEmp.employeeName,
+          gender: particularEmp.gender,
+          dept: particularEmp.department,
+          designation: particularEmp.designation,
+          branch: particularEmp.branch,
+          branchCode: selectedBranch ? selectedBranch.branchCode : '', // Handle case where selectedBranch might be undefined
+          dob: particularEmp.dateOfBirth,
+          doj: particularEmp.joiningDate,
           active: particularEmp.active === 'Active' ? true : false
         });
       } else {
-        console.error('API Error:', response.data);
+        console.error('API Error:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
     if (!formData.empCode) {
       errors.empCode = 'Employee Code is required';
@@ -164,40 +199,41 @@ export const EmployeeMaster = () => {
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
-      const saveData = {
+      const saveFormData = {
         ...(editId && { id: editId }),
-        active: formData.active,
-        empCode: formData.empCode,
-        empName: formData.empName,
+        // active: formData.active,
+        active: true,
+        employeeCode: formData.empCode,
+        employeeName: formData.empName,
         gender: formData.gender,
         branch: formData.branch,
-        dept: formData.dept,
+        branchCode: formData.branchCode,
+        department: formData.dept,
         designation: formData.designation,
-        dob: formData.dob,
-        doj: formData.doj,
+        dateOfBirth: formData.dob,
+        joiningdate: formData.doj,
         orgId: orgId,
-        createdby: loginUserName
+        createdBy: loginUserName
       };
-      console.log('DATA TO SAVE', saveData);
+      console.log('DATA TO SAVE', saveFormData);
 
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/employeemaster/createUpdateEmployee`, formData)
-        .then((response) => {
-          if (response.data.status === true) {
-            console.log('Response:', response.data);
-            showToast('success', editId ? 'Employee Updated Successfully' : 'Employee created successfully');
-            handleClear();
-            setIsLoading(false);
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Employee creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'Employee creation failed');
+      try {
+        const response = await apiCalls('put', `warehousemastercontroller/createUpdateEmployee`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          showToast('success', editId ? 'Employee Updated Successfully' : 'Employee created successfully');
+          handleClear();
+          getAllEmployees();
           setIsLoading(false);
-        });
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Employee creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Employee creation failed');
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }
@@ -208,15 +244,13 @@ export const EmployeeMaster = () => {
   };
 
   const listViewColumns = [
-    { accessorKey: 'empCode', header: 'Code', size: 140 },
-    { accessorKey: 'empName', header: 'Name', size: 140 },
-    { accessorKey: 'gender', header: 'Gender', size: 140 },
+    { accessorKey: 'employeeCode', header: 'Emp Code', size: 140 },
+    { accessorKey: 'employeeName', header: 'Employee', size: 140 },
     { accessorKey: 'branch', header: 'Branch', size: 140 },
-    { accessorKey: 'dept', header: 'Dept', size: 140 },
+    { accessorKey: 'department', header: 'Dept', size: 140 },
     { accessorKey: 'designation', header: 'Designation', size: 140 },
-    { accessorKey: 'dob', header: 'DOB', size: 140 },
-    { accessorKey: 'doj', header: 'DOJ', size: 140 },
-    { accessorKey: 'active', header: 'Active', size: 140, Cell: ({ cell: { value } }) => (value ? 'Active' : 'Inactive') }
+    { accessorKey: 'joiningDate', header: 'Joining Date', size: 140 },
+    { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
   return (
@@ -228,12 +262,12 @@ export const EmployeeMaster = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
           </div>
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getEmployeeById} />
           </div>
         ) : (
           <>
@@ -279,8 +313,11 @@ export const EmployeeMaster = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
                   <InputLabel id="branch-label">Branch</InputLabel>
                   <Select labelId="branch-label" label="Branch" value={formData.branch} onChange={handleInputChange} name="branch">
-                    <MenuItem value="BRANCH1">BRANCH1</MenuItem>
-                    <MenuItem value="BRANCH2">BRANCH2</MenuItem>
+                    {branchList?.map((row) => (
+                      <MenuItem key={row.id} value={row.branch}>
+                        {row.branch}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.branch && <FormHelperText>{fieldErrors.branch}</FormHelperText>}
                 </FormControl>
@@ -316,11 +353,12 @@ export const EmployeeMaster = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Date of Birth"
-                      value={formData.dob ? dayjs(formData.dob) : null}
+                      value={formData.dob ? dayjs(formData.dob, 'DD-MM-YYYY') : null}
                       onChange={(date) => handleDateChange('dob', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
+                      format="DD/MM/YYYY"
                       error={fieldErrors.dob}
                       helperText={fieldErrors.dob && 'Required'}
                     />
@@ -332,11 +370,12 @@ export const EmployeeMaster = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Date of Join"
-                      value={formData.doj ? dayjs(formData.doj) : null}
+                      value={formData.doj ? dayjs(formData.doj, 'DD-MM-YYYY') : null}
                       onChange={(date) => handleDateChange('doj', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
+                      format="DD/MM/YYYY"
                       error={fieldErrors.doj}
                       helperText={fieldErrors.doj && 'Required'}
                     />
