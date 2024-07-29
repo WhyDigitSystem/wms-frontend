@@ -39,3 +39,21 @@ export const getAllActiveBranches = async (orgId) => {
     return error;
   }
 };
+
+export const getAllActiveEmployees = async (orgId) => {
+  try {
+    const response = await apiCalls('get', `warehousemastercontroller/getAllEmployeeByOrgId?orgId=${orgId}`);
+    if (response.status === true) {
+      const empData = response.paramObjectsMap.employeeVO
+        .filter((row) => row.active === 'Active')
+        .map(({ id, employeeName, employeeCode }) => ({ id, employeeName, employeeCode }));
+      return empData;
+    } else {
+      console.error('API Error:');
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};

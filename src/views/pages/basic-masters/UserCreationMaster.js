@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from './CommonListViewTable';
 import axios from 'axios';
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState, useMemo, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FormControl from '@mui/material/FormControl';
@@ -23,9 +23,18 @@ import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import 'react-datepicker/dist/react-datepicker.css';
 import DatePicker from 'react-datepicker';
+import { getAllActiveBranches, getAllActiveEmployees } from 'utils/CommonFunctions';
+import apiCalls from 'apicall';
+// import { DatePicker } from '@mui/x-date-pickers';
+// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import dayjs from 'dayjs';
+// import AdapterDayjs from '@mui/x-date-pickers/AdapterDayjs';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { encryptPassword } from 'views/utilities/encryptPassword';
 
 export const UserCreationMaster = () => {
-  const [orgId, setOrgId] = useState('1');
+  const [orgId, setOrgId] = useState(1000000001);
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
@@ -34,11 +43,11 @@ export const UserCreationMaster = () => {
     employeeName: '',
     employeeCode: '',
     reportingTo: '',
-    userGroup: '',
+    userType: '',
     email: '',
     groupNo: '',
     pwdExpDays: '',
-    password: '',
+    password: 'wds2022',
     active: true,
     isFirstTime: true,
     orgId: 1
@@ -51,17 +60,18 @@ export const UserCreationMaster = () => {
       branch: ''
     }
   ]);
-  const [roleTableData, setRoleTableData] = useState([{ id: 1, role: '', startDate: null, endDate: null }]);
+  const [roleTableData, setRoleTableData] = useState([{ id: 1, role: '', roleId: '', startDate: null, endDate: null }]);
   const [clientTableData, setClientTableData] = useState([{ id: 1, customer: '', client: '' }]);
   const handleAddRow = () => {
     const newRow = {
       id: Date.now(),
       role: '',
+      roleId: '',
       startDate: '',
       endDate: ''
     };
     setRoleTableData([...roleTableData, newRow]);
-    setRoleTableDataErrors([...roleTableDataErrors, { role: '', startDate: '', endDate: '' }]);
+    setRoleTableDataErrors([...roleTableDataErrors, { role: '', roleId: '', startDate: '', endDate: '' }]);
   };
   const handleAddRow1 = () => {
     const newRow = {
@@ -97,6 +107,8 @@ export const UserCreationMaster = () => {
   const [roleTableDataErrors, setRoleTableDataErrors] = useState([
     {
       role: '',
+      roleId: '',
+      roleId: '',
       startDate: '',
       endDate: ''
     }
@@ -114,14 +126,11 @@ export const UserCreationMaster = () => {
     }
   ]);
 
-  const theme = useTheme();
-  const anchorRef = useRef(null);
-
   const [fieldErrors, setFieldErrors] = useState({
     employeeName: '',
     employeeCode: '',
     reportingTo: '',
-    userGroup: '',
+    userType: '',
     email: '',
     groupNo: '',
     pwdExpDays: '',
@@ -131,76 +140,141 @@ export const UserCreationMaster = () => {
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'employeeName', header: 'Customer', size: 140 },
-    { accessorKey: 'employeeCode', header: 'Employee Code', size: 140 },
-    { accessorKey: 'reportingTo', header: 'Reporting To', size: 140 },
-    { accessorKey: 'userGroup', header: 'UserGroup', size: 140 },
+    { accessorKey: 'employeeName', header: 'Employee', size: 140 },
+    { accessorKey: 'employeeCode', header: 'Emp Code', size: 140 },
+    { accessorKey: 'userType', header: 'User Type', size: 140 },
     { accessorKey: 'email', header: 'Email', size: 140 },
-    { accessorKey: 'groupNo', header: 'Group No', size: 140 },
-    { accessorKey: 'pwdExpDays', header: 'PWD Exp Days', size: 140 },
-    { accessorKey: 'active', header: 'Active', size: 140 },
-    { accessorKey: 'isFirstTime', header: 'IsFirstTime', size: 140 }
+    { accessorKey: 'role', header: 'Roles', size: 140 },
+    { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
   const [listViewData, setListViewData] = useState([]);
+  const [employeeList, setEmployeeList] = useState([]);
+  const [roleList, setRoleList] = useState([]);
+  const [branchList, setBranchList] = useState([]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
+  useEffect(() => {
+    getAllEmployees();
+    getAllRoles();
+    getAllBranches();
+    console.log('THE ROLES ARE FROM THE USEEFFECT IS:', roleList);
+  }, []);
+
+  const getAllEmployees = async () => {
+    try {
+      const empData = await getAllActiveEmployees(orgId);
+      console.log('THE EMPDATA IS:', empData);
+
+      setEmployeeList(empData);
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+  const getAllRoles = async () => {
+    try {
+      const response = await apiCalls('get', `auth/allActiveRolesByOrgId?orgId=${orgId}`);
+      console.log('ROLE API Response:', response);
+
+      if (response.status === true) {
+        console.log('THE GETALL ROLES:', response);
+
+        setRoleList(response.paramObjectsMap.rolesVO);
+        console.log('THE ROLESVO ARE:', response.paramObjectsMap.rolesVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const getAllBranches = async () => {
+    try {
+      const branchData = await getAllActiveBranches(orgId);
+      setBranchList(branchData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     const nameRegex = /^[A-Za-z ]*$/;
     const alphaNumericRegex = /^[A-Za-z0-9]*$/;
     const numericRegex = /^[0-9]*$/;
     const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
     const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex for email validation
 
     let errorMessage = '';
 
-    // switch (name) {
-    //   case 'customer':
-    //   case 'shortName':
-    //     if (!nameRegex.test(value)) {
-    //       errorMessage = 'Only alphabetic characters are allowed';
-    //     }
-    //     break;
-    //   case 'pan':
-    //     if (!alphaNumericRegex.test(value)) {
-    //       errorMessage = 'Only alphanumeric characters are allowed';
-    //     } else if (value.length > 10) {
-    //       errorMessage = 'Invalid Format';
-    //     }
-    //     break;
-    //   case 'branchName':
-    //     if (!branchNameRegex.test(value)) {
-    //       errorMessage = 'Only alphanumeric characters and @, _, -, * are allowed';
-    //     }
-    //     break;
-    //   case 'mobile':
-    //     if (!numericRegex.test(value)) {
-    //       errorMessage = 'Only numeric characters are allowed';
-    //     } else if (value.length > 10) {
-    //       errorMessage = 'Invalid Format';
-    //     }
-    //     break;
-    //   case 'gst':
-    //     if (!alphaNumericRegex.test(value)) {
-    //       errorMessage = 'Only alphanumeric characters are allowed';
-    //     } else if (value.length > 15) {
-    //       errorMessage = 'Invalid Format';
-    //     }
-    //     break;
-    //   default:
-    //     break;
-    // }
+    // Validation based on field name
+    switch (name) {
+      case 'reportingTo':
+      case 'shortName':
+        if (!nameRegex.test(value)) {
+          errorMessage = 'Only alphabetic characters are allowed';
+        }
+        break;
+      case 'pan':
+        if (!alphaNumericRegex.test(value)) {
+          errorMessage = 'Only alphanumeric characters are allowed';
+        } else if (value.length > 10) {
+          errorMessage = 'Invalid Format';
+        }
+        break;
+      case 'branchName':
+        if (!branchNameRegex.test(value)) {
+          errorMessage = 'Only alphanumeric characters and @, _, -, * are allowed';
+        }
+        break;
+      case 'mobile':
+        if (!numericRegex.test(value)) {
+          errorMessage = 'Only numeric characters are allowed';
+        } else if (value.length > 10) {
+          errorMessage = 'Invalid Format';
+        }
+        break;
+      case 'pwdExpDays':
+        if (!numericRegex.test(value)) {
+          errorMessage = 'Only numeric characters are allowed';
+        } else if (value.length > 6) {
+          errorMessage = 'Invalid Format';
+        }
+        break;
+      case 'gst':
+        if (!alphaNumericRegex.test(value)) {
+          errorMessage = 'Only alphanumeric characters are allowed';
+        } else if (value.length > 15) {
+          errorMessage = 'Invalid Format';
+        }
+        break;
+    }
 
+    // Update field errors and form data
     if (errorMessage) {
-      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
+      if (name === 'employeeName') {
+        const selectedEmp = employeeList.find((emp) => emp.employeeName === value);
+        if (selectedEmp) {
+          setFormData((prevData) => ({
+            ...prevData,
+            employeeName: selectedEmp.employeeName,
+            employeeCode: selectedEmp.employeeCode
+          }));
+        }
+      }
+
+      // Convert to uppercase if not the email field
+      // const updatedValue = name === 'email' ? value : value.toUpperCase();
       const updatedValue = name === 'email' ? value : value.toUpperCase();
-      setFormData({ ...formData, [name]: updatedValue });
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+      setFormData((prevData) => ({ ...prevData, [name]: updatedValue }));
+
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
     }
   };
 
@@ -241,7 +315,7 @@ export const UserCreationMaster = () => {
       employeeName: '',
       employeeCode: '',
       reportingTo: '',
-      userGroup: '',
+      userType: '',
       email: '',
       groupNo: '',
       pwdExpDays: '',
@@ -251,14 +325,14 @@ export const UserCreationMaster = () => {
       active: true,
       isFirstTime: true
     });
-    setRoleTableData([{ id: 1, role: '', startDate: '', endDate: '' }]);
+    setRoleTableData([{ id: 1, role: '', roleId: '', startDate: '', endDate: '' }]);
     setBranchTableData([{ id: 1, branchCode: '', branchName: '' }]);
     setClientTableData([{ id: 1, customer: '', client: '' }]);
     setFieldErrors({
       employeeName: '',
       employeeCode: '',
       reportingTo: '',
-      userGroup: '',
+      userType: '',
       email: '',
       groupNo: '',
       pwdExpDays: '',
@@ -269,25 +343,18 @@ export const UserCreationMaster = () => {
     setClientTableErrors('');
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    console.log('handle save is working');
+
     const errors = {};
     if (!formData.employeeName) {
       errors.employeeName = 'Employee Name is required';
     }
-    if (!formData.reportingTo) {
-      errors.reportingTo = 'Reporting To is required';
-    }
-    if (!formData.userGroup) {
-      errors.userGroup = 'User Group is required';
+    if (!formData.userType) {
+      errors.userType = 'User Type is required';
     }
     if (!formData.email) {
       errors.email = 'Email ID is required';
-    }
-    if (!formData.groupNo) {
-      errors.groupNo = 'Group No is required';
-    }
-    if (!formData.pwdExpDays) {
-      errors.pwdExpDays = 'PWD Exp Days is required';
     }
     if (!formData.password) {
       errors.password = 'Password is required';
@@ -349,8 +416,9 @@ export const UserCreationMaster = () => {
       setIsLoading(true);
       const roleVo = roleTableData.map((row) => ({
         role: row.role,
-        startDate: row.startDate,
-        endDate: row.endDate
+        roleId: row.roleId,
+        startDate: dayjs(row.startDate).format('YYYY-MM-DD'),
+        endDate: dayjs(row.endDate).format('YYYY-MM-DD')
       }));
       const branchVo = branchTableData.map((row) => ({
         branchCode: row.branchCode,
@@ -364,42 +432,41 @@ export const UserCreationMaster = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         employeeName: formData.employeeName,
-        employeeCode: formData.employeeCode,
-        reportingTo: formData.reportingTo,
-        userGroup: formData.userGroup,
+        // employeeCode: formData.employeeCode,
+        // reportingTo: formData.reportingTo,
+        userType: formData.userType,
         email: formData.email,
-        groupNo: formData.groupNo,
-        pwdExpDays: formData.pwdExpDays,
-        password: formData.password,
-        isFirstTime: formData.isFirstTime,
-        roleVo: roleVo,
-        clientVo: clientVo,
-        branchVo: branchVo,
+        password: encryptPassword(formData.password),
+        mobileNo: '1234567890',
+        nickName: 'KARUPU',
+        userName: formData.employeeCode,
+
+        roleAccessDTO: roleVo,
+        clientAccessDTOList: clientVo,
+        branchAccessDTOList: branchVo,
         active: formData.active,
-        orgId: orgId,
-        createdby: loginUserName
+        orgId: orgId
+        // createdby: loginUserName
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
-
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/customer`, formData)
-        .then((response) => {
-          if (response.data.status === true) {
-            console.log('Response:', response.data);
-            handleClear();
-            showToast('success', editId ? ' User Details Updated Successfully' : 'Customer created successfully');
-            setIsLoading(false);
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Customer creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'User creation failed');
+      try {
+        const response = await apiCalls('put', `auth/signup`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          showToast('success', editId ? 'User Updated Successfully' : 'User created successfully');
+          handleClear();
+          // getAllEmployees();
           setIsLoading(false);
-        });
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'User creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'User creation failed');
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }
@@ -414,7 +481,7 @@ export const UserCreationMaster = () => {
       employeeName: '',
       employeeCode: '',
       reportingTo: '',
-      userGroup: '',
+      userType: '',
       email: '',
       groupNo: '',
       pwdExpDays: '',
@@ -422,6 +489,10 @@ export const UserCreationMaster = () => {
       active: true,
       isFirstTime: true
     });
+  };
+  const handleDateChange = (field, date) => {
+    const formattedDate = dayjs(date).format('DD-MM-YYYY');
+    setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
 
   return (
@@ -433,7 +504,7 @@ export const UserCreationMaster = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
           </div>
         </div>
         {listView ? (
@@ -453,8 +524,11 @@ export const UserCreationMaster = () => {
                     onChange={handleInputChange}
                     name="employeeName"
                   >
-                    <MenuItem value="JUSTIN">JUSTIN</MenuItem>
-                    <MenuItem value="MANI">MANI</MenuItem>
+                    {employeeList?.map((row) => (
+                      <MenuItem key={row.id} value={row.employeeName}>
+                        {row.employeeName}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.employeeName && <FormHelperText>{fieldErrors.employeeName}</FormHelperText>}
                 </FormControl>
@@ -473,7 +547,7 @@ export const UserCreationMaster = () => {
                   disabled
                 />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label="Reporting To"
                   variant="outlined"
@@ -485,22 +559,16 @@ export const UserCreationMaster = () => {
                   error={!!fieldErrors.reportingTo}
                   helperText={fieldErrors.reportingTo}
                 />
-              </div>
+              </div> */}
 
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.userGroup}>
-                  <InputLabel id="userGroup-label">User Group</InputLabel>
-                  <Select
-                    labelId="userGroup-label"
-                    label="UserGroup"
-                    value={formData.userGroup}
-                    onChange={handleInputChange}
-                    name="userGroup"
-                  >
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.userType}>
+                  <InputLabel id="userType-label">User Type</InputLabel>
+                  <Select labelId="userType-label" label="userType" value={formData.userType} onChange={handleInputChange} name="userType">
                     <MenuItem value="ADMIN">ADMIN</MenuItem>
-                    <MenuItem value="DEVELOPER">DEVELOPER</MenuItem>
+                    <MenuItem value="USER">USER</MenuItem>
                   </Select>
-                  {fieldErrors.userGroup && <FormHelperText>{fieldErrors.userGroup}</FormHelperText>}
+                  {fieldErrors.userType && <FormHelperText>{fieldErrors.userType}</FormHelperText>}
                 </FormControl>
               </div>
 
@@ -517,7 +585,7 @@ export const UserCreationMaster = () => {
                   helperText={fieldErrors.email}
                 />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label="Group No"
                   variant="outlined"
@@ -542,7 +610,7 @@ export const UserCreationMaster = () => {
                   error={!!fieldErrors.pwdExpDays}
                   helperText={fieldErrors.pwdExpDays}
                 />
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="Password"
@@ -564,12 +632,12 @@ export const UserCreationMaster = () => {
                   label="Active"
                 />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControlLabel
                   control={<Checkbox checked={formData.isFirstTime} onChange={handleCheckboxChange} name="isFirstTime" color="primary" />}
                   label="Is First Time"
                 />
-              </div>
+              </div> */}
             </div>
             <div className="row mt-2">
               <Box sx={{ width: '100%' }}>
@@ -592,7 +660,6 @@ export const UserCreationMaster = () => {
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
                       </div>
-                      {/* Table */}
                       <div className="row mt-2">
                         <div className="col-lg-12">
                           <div className="table-responsive">
@@ -605,9 +672,15 @@ export const UserCreationMaster = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">Role</th>
-                                  <th className="px-2 py-2 text-white text-center">Start Date</th>
-                                  <th className="px-2 py-2 text-white text-center">End Date</th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                    Role
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                    Start Date
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                    End Date
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -617,39 +690,58 @@ export const UserCreationMaster = () => {
                                       <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
                                     </td>
                                     <td className="text-center">
-                                      {/* <input type="text" value={`${index + 1}`} readOnly style={{ width: '100%' }} /> */}
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
-
+                                    {/* MUI DROPDOWN */}
                                     {/* <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.role}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, role: value } : r)));
-                                          setRoleTableDataErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], role: !value ? 'Role is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={roleTableDataErrors[index]?.role ? 'error form-control' : 'form-control'}
-                                        // //style={{ marginBottom: '10px' }}
-                                      />
-                                      {roleTableDataErrors[index]?.role && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {roleTableDataErrors[index].role}
-                                        </div>
-                                      )}
+                                      <FormControl size="small" fullWidth error={!!roleTableDataErrors[index]?.role}>
+                                        <Select
+                                          displayEmpty
+                                          value={row.role}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, role: value } : r)));
+                                            setRoleTableDataErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                role: !value ? 'Role is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={roleTableDataErrors[index]?.role ? 'error' : ''}
+                                        >
+                                          <MenuItem value="">Select Option</MenuItem>
+                                          {roleList.map((role) => (
+                                            <MenuItem key={role.id} value={role.role}>
+                                              {role.role}
+                                            </MenuItem>
+                                          ))}
+                                        </Select>
+                                        {roleTableDataErrors[index]?.role && (
+                                          <FormHelperText>{roleTableDataErrors[index].role}</FormHelperText>
+                                        )}
+                                      </FormControl>
                                     </td> */}
-
+                                    {/* NORMAL DROPDOWN */}
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.role}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, role: value } : r)));
+                                          const selectedRole = roleList.find((role) => role.role === value);
+
+                                          setRoleTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, role: value, roleId: selectedRole.id } : r))
+                                          );
+                                          // setBranchTableData((prev) =>
+                                          //   prev.map((r) =>
+                                          //     r.id === row.id
+                                          //       ? { ...r, branchCode: value, branch: selectedBranch ? selectedBranch.branch : '' }
+                                          //       : r
+                                          //   )
+
                                           setRoleTableDataErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
@@ -659,12 +751,14 @@ export const UserCreationMaster = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        onKeyDown={(e) => handleKeyDown1(e, row)}
                                         className={roleTableDataErrors[index]?.role ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        <option value="ADMIN">ADMIN</option>
-                                        <option value="DEVELOPER">DEVELOPER</option>
+                                        {roleList.map((role) => (
+                                          <option key={role.id} value={role.role}>
+                                            {role.role}
+                                          </option>
+                                        ))}
                                       </select>
                                       {roleTableDataErrors[index]?.role && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -672,24 +766,32 @@ export const UserCreationMaster = () => {
                                         </div>
                                       )}
                                     </td>
-
+                                    {/* NORMAL DATE PICKER */}
                                     <td className="border px-2 py-2">
                                       <div className="w-100">
                                         <DatePicker
                                           selected={row.startDate}
                                           className={roleTableDataErrors[index]?.startDate ? 'error form-control' : 'form-control'}
                                           onChange={(date) => {
-                                            setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, startDate: date } : r)));
+                                            setRoleTableData((prev) =>
+                                              prev.map((r) =>
+                                                r.id === row.id
+                                                  ? { ...r, startDate: date, endDate: date > r.endDate ? null : r.endDate }
+                                                  : r
+                                              )
+                                            );
                                             setRoleTableDataErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                startDate: !date ? 'Start Date is required' : ''
+                                                startDate: !date ? 'Start Date is required' : '',
+                                                endDate: date && row.endDate && date > row.endDate ? '' : newErrors[index]?.endDate
                                               };
                                               return newErrors;
                                             });
                                           }}
                                           dateFormat="dd/MM/yyyy"
+                                          minDate={new Date()}
                                         />
                                         {roleTableDataErrors[index]?.startDate && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -698,6 +800,7 @@ export const UserCreationMaster = () => {
                                         )}
                                       </div>
                                     </td>
+                                    {/* MUI DATE PICKER */}
 
                                     <td className="border px-2 py-2">
                                       <DatePicker
@@ -715,6 +818,8 @@ export const UserCreationMaster = () => {
                                           });
                                         }}
                                         dateFormat="dd/MM/yyyy"
+                                        minDate={row.startDate || new Date()}
+                                        disabled={!row.startDate}
                                       />
                                       {roleTableDataErrors[index]?.endDate && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -722,6 +827,7 @@ export const UserCreationMaster = () => {
                                         </div>
                                       )}
                                     </td>
+                                    <td className="border px-2 py-2">{roleList.role}</td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -763,7 +869,6 @@ export const UserCreationMaster = () => {
                                       <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow1(row.id)} />
                                     </td>
                                     <td className="text-center">
-                                      {/* <input type="text" value={`${index + 1}`} readOnly style={{ width: '100%' }} /> */}
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
 
@@ -772,9 +877,15 @@ export const UserCreationMaster = () => {
                                         value={row.branchCode}
                                         onChange={(e) => {
                                           const value = e.target.value;
+                                          const selectedBranch = branchList.find((branch) => branch.branchCode === value);
                                           setBranchTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, branchCode: value } : r))
+                                            prev.map((r) =>
+                                              r.id === row.id
+                                                ? { ...r, branchCode: value, branch: selectedBranch ? selectedBranch.branch : '' }
+                                                : r
+                                            )
                                           );
+
                                           setBranchTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
@@ -788,8 +899,11 @@ export const UserCreationMaster = () => {
                                         className={branchTableErrors[index]?.branchCode ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        <option value="Fixed">MAA</option>
-                                        <option value="Open">KA</option>
+                                        {branchList?.map((branch) => (
+                                          <option key={branch.id} value={branch.branchCode}>
+                                            {branch.branchCode}
+                                          </option>
+                                        ))}
                                       </select>
                                       {branchTableErrors[index]?.branchCode && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -797,8 +911,7 @@ export const UserCreationMaster = () => {
                                         </div>
                                       )}
                                     </td>
-
-                                    <td className="border px-2 py-2">{row.branch}</td>
+                                    <td className="border px-2 py-2 text-center pt-3">{row.branch}</td>
                                   </tr>
                                 ))}
                               </tbody>

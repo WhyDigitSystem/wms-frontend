@@ -263,17 +263,17 @@ export const ItemMaster = () => {
     }
   };
 
-  const handleDateChange = (date, index) => {
-    setItemTableData((prev) => prev.map((r, idx) => (idx === index ? { ...r, fDate: date } : r)));
-    setItemTableErrors((prev) => {
-      const newErrors = [...prev];
-      newErrors[index] = {
-        ...newErrors[index],
-        fDate: !date ? 'Start Date is required' : ''
-      };
-      return newErrors;
-    });
-  };
+  // const handleDateChange = (date, index) => {
+  //   setItemTableData((prev) => prev.map((r, idx) => (idx === index ? { ...r, fDate: date } : r)));
+  //   setItemTableErrors((prev) => {
+  //     const newErrors = [...prev];
+  //     newErrors[index] = {
+  //       ...newErrors[index],
+  //       fDate: !date ? 'Start Date is required' : ''
+  //     };
+  //     return newErrors;
+  //   });
+  // };
 
   const handleDeleteRow = (id) => {
     setItemTableData(itemTableData.filter((row) => row.id !== id));
