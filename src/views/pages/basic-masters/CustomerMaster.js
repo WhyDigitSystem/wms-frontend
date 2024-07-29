@@ -664,7 +664,6 @@ export const CustomerMaster = () => {
                                       <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
                                     </td>
                                     <td className="text-center">
-                                      {/* <input type="text" value={`${index + 1}`} readOnly style={{ width: '100%' }} /> */}
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
 

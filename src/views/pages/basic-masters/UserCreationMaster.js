@@ -25,11 +25,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import DatePicker from 'react-datepicker';
 import { getAllActiveBranches, getAllActiveEmployees } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
-// import { DatePicker } from '@mui/x-date-pickers';
-// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
-// import AdapterDayjs from '@mui/x-date-pickers/AdapterDayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { encryptPassword } from 'views/utilities/encryptPassword';
 
@@ -42,14 +38,10 @@ export const UserCreationMaster = () => {
   const [formData, setFormData] = useState({
     employeeName: '',
     employeeCode: '',
-    reportingTo: '',
     userType: '',
     email: '',
-    groupNo: '',
-    pwdExpDays: '',
     password: 'wds2022',
     active: true,
-    isFirstTime: true,
     orgId: 1
   });
   const [value, setValue] = useState(0);
@@ -141,11 +133,21 @@ export const UserCreationMaster = () => {
   const [listView, setListView] = useState(false);
   const listViewColumns = [
     { accessorKey: 'employeeName', header: 'Employee', size: 140 },
-    { accessorKey: 'employeeCode', header: 'Emp Code', size: 140 },
+    { accessorKey: 'userName', header: 'Emp Code', size: 140 },
     { accessorKey: 'userType', header: 'User Type', size: 140 },
     { accessorKey: 'email', header: 'Email', size: 140 },
-    { accessorKey: 'role', header: 'Roles', size: 140 },
-    { accessorKey: 'active', header: 'Active', size: 140 }
+    {
+      accessorKey: 'roleAccessVO',
+      header: 'Roles',
+      Cell: ({ cell }) => {
+        const roles = cell
+          .getValue()
+          .map((role) => role.role)
+          .join(', ');
+        return roles;
+      }
+    },
+    { accessorKey: 'isActive', header: 'Active', size: 140 }
   ];
 
   const [listViewData, setListViewData] = useState([]);
@@ -160,6 +162,7 @@ export const UserCreationMaster = () => {
     getAllEmployees();
     getAllRoles();
     getAllBranches();
+    getAllUsers();
     console.log('THE ROLES ARE FROM THE USEEFFECT IS:', roleList);
   }, []);
 
@@ -196,6 +199,75 @@ export const UserCreationMaster = () => {
       setBranchList(branchData);
     } catch (error) {
       console.error('Error fetching country data:', error);
+    }
+  };
+
+  const getAllUsers = async () => {
+    try {
+      const response = await apiCalls('get', `auth/allUsersByOrgId?orgId=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.userVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getUserById = async (row) => {
+    console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `auth/getUserById?userId=${row.original.id}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListView(false);
+        const particularUser = response.paramObjectsMap.userVO;
+        // const selectedBranch = branchList.find((br) => br.branch === particularUser.branch);
+        // console.log('THE SELECTED BRANCH IS:', selectedBranch);
+
+        setFormData({
+          employeeCode: particularUser.userName,
+          employeeName: particularUser.employeeName,
+          userType: particularUser.userType,
+          email: particularUser.email,
+          active: particularUser.isActive === 'Active' ? true : false
+        });
+        setRoleTableData(
+          particularUser.roleAccessVO.map((role) => ({
+            id: role.id,
+            role: role.role,
+            roleId: role.roleId,
+            startDate: role.startDate,
+            endDate: role.endDate
+          }))
+        );
+        setClientTableData(
+          particularUser.clientAccessVO.map((role) => ({
+            id: role.id,
+            client: role.client,
+            customer: role.customer
+          }))
+        );
+        setBranchTableData(
+          particularUser.branchAccessibleVO.map((role) => ({
+            id: role.id,
+            branch: branchList.find((branch) => branch.branchCode === role.branch),
+            // const selectedBranch = branchList.find((branch) => branch.branchCode === value);
+
+            // branch: role.branch,
+            branchCode: role.branchcode
+          }))
+        );
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
   };
 
@@ -356,6 +428,7 @@ export const UserCreationMaster = () => {
     if (!formData.email) {
       errors.email = 'Email ID is required';
     }
+
     if (!formData.password) {
       errors.password = 'Password is required';
     }
@@ -456,7 +529,7 @@ export const UserCreationMaster = () => {
           console.log('Response:', response);
           showToast('success', editId ? 'User Updated Successfully' : 'User created successfully');
           handleClear();
-          // getAllEmployees();
+          getAllUsers();
           setIsLoading(false);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'User creation failed');
@@ -509,7 +582,7 @@ export const UserCreationMaster = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getUserById} />
           </div>
         ) : (
           <>
@@ -661,9 +734,9 @@ export const UserCreationMaster = () => {
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
                       </div>
                       <div className="row mt-2">
-                        <div className="col-lg-12">
+                        <div className="col-lg-9">
                           <div className="table-responsive">
-                            <table className="table table-bordered">
+                            <table className="table table-bordered ">
                               <thead>
                                 <tr style={{ backgroundColor: '#673AB7' }}>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
@@ -735,13 +808,6 @@ export const UserCreationMaster = () => {
                                           setRoleTableData((prev) =>
                                             prev.map((r) => (r.id === row.id ? { ...r, role: value, roleId: selectedRole.id } : r))
                                           );
-                                          // setBranchTableData((prev) =>
-                                          //   prev.map((r) =>
-                                          //     r.id === row.id
-                                          //       ? { ...r, branchCode: value, branch: selectedBranch ? selectedBranch.branch : '' }
-                                          //       : r
-                                          //   )
-
                                           setRoleTableDataErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
@@ -800,8 +866,6 @@ export const UserCreationMaster = () => {
                                         )}
                                       </div>
                                     </td>
-                                    {/* MUI DATE PICKER */}
-
                                     <td className="border px-2 py-2">
                                       <DatePicker
                                         selected={row.endDate}
@@ -827,7 +891,6 @@ export const UserCreationMaster = () => {
                                         </div>
                                       )}
                                     </td>
-                                    <td className="border px-2 py-2">{roleList.role}</td>
                                   </tr>
                                 ))}
                               </tbody>
