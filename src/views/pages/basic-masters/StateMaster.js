@@ -24,7 +24,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { getAllActiveCountries } from 'utils/CommonFunctions';
 import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
+import ToastComponent, { showToast } from 'utils/toast-component';
+import apiCalls from 'apicall';
 
 export const StateMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -147,7 +148,7 @@ export const StateMaster = () => {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
     if (!formData.stateCode) {
       errors.stateCode = 'State Code is required';
@@ -176,25 +177,22 @@ export const StateMaster = () => {
         orgId: orgId,
         createdby: loginUserName
       };
-
-      axios
-        .post(`${process.env.REACT_APP_API_URL}/api/commonmaster/state`, saveFormData)
-        .then((response) => {
-          if (response.data.status === true) {
-            setIsLoading(false);
-            handleClear();
-            getAllStates();
-            showToast('success', editId ? ' State Updated Successfully' : 'State created successfully');
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'State creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'State creation failed');
+      try {
+        const response = await apiCalls('post', `commonmaster/state`, saveFormData);
+        if (response.status === true) {
           setIsLoading(false);
-        });
+          handleClear();
+          getAllStates();
+          showToast('success', editId ? ' State Updated Successfully' : 'State created successfully');
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'State creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'State creation failed');
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }
@@ -212,89 +210,92 @@ export const StateMaster = () => {
   };
 
   return (
-    <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-      <div className="row d-flex ml">
-        <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-          <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-          <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-          <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+    <>
+      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
+        <div className="row d-flex ml">
+          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+          </div>
         </div>
-      </div>
 
-      {listView ? (
-        <div className="mt-4">
-          <CommonListViewTable
-            data={listViewData}
-            columns={listViewColumns}
-            blockEdit={true} // DISAPLE THE MODAL IF TRUE
-            toEdit={getStateById}
-          />
-        </div>
-      ) : (
-        <div className="row">
-          <div className="col-md-3 mb-3">
-            <TextField
-              label="State Number"
-              variant="outlined"
-              size="small"
-              fullWidth
-              name="stateNo"
-              value={formData.stateNo}
-              onChange={handleInputChange}
-              error={!!fieldErrors.stateNo}
-              helperText={fieldErrors.stateNo}
+        {listView ? (
+          <div className="mt-4">
+            <CommonListViewTable
+              data={listViewData}
+              columns={listViewColumns}
+              blockEdit={true} // DISAPLE THE MODAL IF TRUE
+              toEdit={getStateById}
             />
           </div>
-          <div className="col-md-3 mb-3">
-            <TextField
-              label="State Code"
-              variant="outlined"
-              size="small"
-              fullWidth
-              name="stateCode"
-              value={formData.stateCode}
-              onChange={handleInputChange}
-              error={!!fieldErrors.stateCode}
-              helperText={fieldErrors.stateCode}
-            />
+        ) : (
+          <div className="row">
+            <div className="col-md-3 mb-3">
+              <TextField
+                label="State Number"
+                variant="outlined"
+                size="small"
+                fullWidth
+                name="stateNo"
+                value={formData.stateNo}
+                onChange={handleInputChange}
+                error={!!fieldErrors.stateNo}
+                helperText={fieldErrors.stateNo}
+              />
+            </div>
+            <div className="col-md-3 mb-3">
+              <TextField
+                label="State Code"
+                variant="outlined"
+                size="small"
+                fullWidth
+                name="stateCode"
+                value={formData.stateCode}
+                onChange={handleInputChange}
+                error={!!fieldErrors.stateCode}
+                helperText={fieldErrors.stateCode}
+              />
+            </div>
+            <div className="col-md-3 mb-3">
+              <TextField
+                label="State Name"
+                variant="outlined"
+                size="small"
+                fullWidth
+                name="stateName"
+                value={formData.stateName}
+                onChange={handleInputChange}
+                error={!!fieldErrors.stateName}
+                helperText={fieldErrors.stateName}
+              />
+            </div>
+            <div className="col-md-3 mb-3">
+              <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.country}>
+                <InputLabel id="country-label">Country</InputLabel>
+                <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
+                  {countryList?.map((row) => (
+                    <MenuItem key={row.id} value={row.countryName}>
+                      {row.countryName}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
+              </FormControl>
+            </div>
+            <div className="col-md-3 mb-3">
+              <FormControlLabel
+                control={<Checkbox checked={formData.active} onChange={handleCheckboxChange} />}
+                label="Active"
+                labelPlacement="end"
+              />
+            </div>
           </div>
-          <div className="col-md-3 mb-3">
-            <TextField
-              label="State Name"
-              variant="outlined"
-              size="small"
-              fullWidth
-              name="stateName"
-              value={formData.stateName}
-              onChange={handleInputChange}
-              error={!!fieldErrors.stateName}
-              helperText={fieldErrors.stateName}
-            />
-          </div>
-          <div className="col-md-3 mb-3">
-            <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.country}>
-              <InputLabel id="country-label">Country</InputLabel>
-              <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
-                {countryList?.map((row) => (
-                  <MenuItem key={row.id} value={row.countryName}>
-                    {row.countryName}
-                  </MenuItem>
-                ))}
-              </Select>
-              {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
-            </FormControl>
-          </div>
-          <div className="col-md-3 mb-3">
-            <FormControlLabel
-              control={<Checkbox checked={formData.active} onChange={handleCheckboxChange} />}
-              label="Active"
-              labelPlacement="end"
-            />
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+      <ToastComponent />
+    </>
   );
 };
 

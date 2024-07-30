@@ -10,18 +10,22 @@ import Select from '@mui/material/Select';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from './CommonListViewTable';
 import axios from 'axios';
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState, useMemo, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
+import apiCalls from 'apicall';
+import { getAllActiveCountries, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
 
 export const CityMaster = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [countryList, setCountryList] = useState([]);
+  const [stateList, setStateList] = useState([]);
 
   const [formData, setFormData] = useState({
     cityCode: '',
@@ -31,9 +35,6 @@ export const CityMaster = () => {
     active: true
   });
 
-  const theme = useTheme();
-  const anchorRef = useRef(null);
-
   const [fieldErrors, setFieldErrors] = useState({
     cityCode: '',
     cityName: '',
@@ -42,6 +43,30 @@ export const CityMaster = () => {
   });
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
+  useEffect(() => {
+    getAllCities();
+    getAllCountries();
+    if (formData.country) {
+      getAllStates();
+    }
+  }, [formData.country]);
+
+  const getAllCountries = async () => {
+    try {
+      const countryData = await getAllActiveCountries(orgId);
+      setCountryList(countryData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+  const getAllStates = async () => {
+    try {
+      const stateData = await getAllActiveStatesByCountry(formData.country, orgId);
+      setStateList(stateData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value, checked } = e.target;
@@ -78,13 +103,13 @@ export const CityMaster = () => {
 
   const getAllCities = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/city?orgid=1000000001`);
+      const response = await apiCalls('get', `commonmaster/city?orgid=${orgId}`);
       console.log('API Response:', response);
 
-      if (response.status === 200) {
-        setListViewData(response.data.paramObjectsMap.cityVO);
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.cityVO);
       } else {
-        console.error('API Error:', response.data);
+        console.error('API Error:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -95,27 +120,29 @@ export const CityMaster = () => {
     console.log('THE SELECTED CITY ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/city/${row.original.id}`);
+      const response = await apiCalls('get', `commonmaster/city/${row.original.id}`);
       console.log('API Response:', response);
 
-      if (response.status === 200) {
+      if (response.status === true) {
         setListView(false);
-        const particularCity = response.data.paramObjectsMap.city;
+        const particularCity = response.paramObjectsMap.cityVO;
 
         setFormData({
           cityCode: particularCity.cityCode,
           cityName: particularCity.cityName,
+          country: particularCity.country,
+          state: particularCity.state,
           active: particularCity.active === 'Active' ? true : false
         });
       } else {
-        console.error('API Error:', response.data);
+        console.error('API Error:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
     if (!formData.cityCode) {
       errors.cityCode = 'City Code is required';
@@ -131,7 +158,7 @@ export const CityMaster = () => {
     }
 
     if (Object.keys(errors).length === 0) {
-      setIsLoading(true);
+      // setIsLoading(true);
       const saveData = {
         ...(editId && { id: editId }),
         active: formData.active,
@@ -140,29 +167,28 @@ export const CityMaster = () => {
         state: formData.state,
         country: formData.country,
         orgId: orgId,
-        createdby: loginUserName
+        createdBy: loginUserName
       };
 
       console.log('DATA TO SAVE', saveData);
 
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/commonmaster/createUpdateCity`, formData)
-        .then((response) => {
-          if (response.data.status === true) {
-            console.log('Response:', response.data);
-            showToast('success', editId ? ' City Updated Successfully' : 'City created successfully');
-            handleClear();
-            setIsLoading(false);
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'City creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'City creation failed');
+      try {
+        const response = await apiCalls('post', `commonmaster/createUpdateCity`, saveData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          showToast('success', editId ? ' City Updated Successfully' : 'City created successfully');
+          handleClear();
+          getAllCities();
           setIsLoading(false);
-        });
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'City creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'City creation failed');
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }
@@ -177,7 +203,7 @@ export const CityMaster = () => {
     { accessorKey: 'cityName', header: 'City', size: 140 },
     { accessorKey: 'state', header: 'State', size: 140 },
     { accessorKey: 'country', header: 'Country', size: 140 },
-    { accessorKey: 'active', header: 'Active', size: 140, Cell: ({ cell: { value } }) => (value ? 'Active' : 'Inactive') }
+    { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
   return (
@@ -188,12 +214,12 @@ export const CityMaster = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
           </div>
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getCityById} />
           </div>
         ) : (
           <>
@@ -229,8 +255,11 @@ export const CityMaster = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.country}>
                   <InputLabel id="country-label">Country</InputLabel>
                   <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
-                    <MenuItem value="INDIA">INDIA</MenuItem>
-                    <MenuItem value="USA">USA</MenuItem>
+                    {countryList?.map((row) => (
+                      <MenuItem key={row.id} value={row.countryName}>
+                        {row.countryName}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
                 </FormControl>
@@ -239,10 +268,11 @@ export const CityMaster = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
                   <InputLabel id="state-label">State</InputLabel>
                   <Select labelId="state-label" label="State" value={formData.state} onChange={handleInputChange} name="state">
-                    <MenuItem value="TAMILNADU">TAMILNADU</MenuItem>
-                    <MenuItem value="KARNATAKA">KARNATAKA</MenuItem>
-                    <MenuItem value="KERALA">KERALA</MenuItem>
-                    <MenuItem value="ANDRAPRADESH">ANDRAPRADESH</MenuItem>
+                    {stateList?.map((row) => (
+                      <MenuItem key={row.id} value={row.stateName}>
+                        {row.stateName}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.state && <FormHelperText>{fieldErrors.state}</FormHelperText>}
                 </FormControl>

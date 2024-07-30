@@ -14,7 +14,7 @@ import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import axios from 'axios';
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState, useMemo, useEffect } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -25,13 +25,19 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
+import ToastComponent, { showToast } from 'utils/toast-component';
+import { getAllActiveCitiesByState, getAllActiveCountries, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
+import apiCalls from 'apicall';
 
 const Company = () => {
-  const [orgId, setOrgId] = useState('1');
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const theme = useTheme();
   const anchorRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [countryList, setCountryList] = useState([]);
+  const [stateList, setStateList] = useState([]);
+  const [cityList, setCityList] = useState([]);
 
   const [formData, setFormData] = useState({
     companyCode: '',
@@ -44,9 +50,7 @@ const Company = () => {
     pincode: '',
     gst: '',
     website: '',
-    active: '',
-    orgId: 1,
-    createdby: 'Karupu'
+    active: true
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -79,9 +83,43 @@ const Company = () => {
   ];
 
   const [listViewData, setListViewData] = useState([]);
+  useEffect(() => {
+    getAllCountries();
+    if (formData.country) {
+      getAllStates();
+    }
+    if (formData.state) {
+      getAllCities();
+    }
+  }, [formData.country, formData.state]);
+
+  const getAllCountries = async () => {
+    try {
+      const countryData = await getAllActiveCountries(orgId);
+      setCountryList(countryData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+  const getAllStates = async () => {
+    try {
+      const stateData = await getAllActiveStatesByCountry(formData.country, orgId);
+      setStateList(stateData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+  const getAllCities = async () => {
+    try {
+      const cityData = await getAllActiveCitiesByState(formData.state, orgId);
+      setCityList(cityData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, checked } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
     const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
     const numericRegex = /^[0-9]*$/;
@@ -98,7 +136,7 @@ const Company = () => {
     } else if (name === 'gst' && value.length > 15) {
       setFieldErrors({ ...fieldErrors, [name]: 'Only 15 Digits only allowed' });
     } else {
-      setFormData({ ...formData, [name]: value.toUpperCase() });
+      setFormData({ ...formData, [name]: name === 'active' ? checked : value.toUpperCase() });
       setFieldErrors({ ...fieldErrors, [name]: '' });
     }
   };
@@ -129,7 +167,7 @@ const Company = () => {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
     if (!formData.companyCode) {
       errors.companyCode = 'Company Code is required';
@@ -160,31 +198,46 @@ const Company = () => {
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
+      const saveFormData = {
+        // id: formData.id,
+        companyCode: formData.companyCode,
+        companyName: formData.companyName,
+        ceo: formData.ceo,
+        address: formData.address,
+        country: formData.country,
+        state: formData.state,
+        city: formData.city,
+        pincode: formData.pincode,
+        gst: formData.gst,
+        website: formData.website,
+        active: formData.active,
+        orgId: orgId,
+        updatedBy: loginUserName
+      };
+      console.log('THE SAVE FORM DATA IS:', saveFormData);
 
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/country`, formData)
-        .then((response) => {
-          if (response.data.status === true) {
-            console.log('Response:', response.data);
+      // try {
+      //   const response = await apiCalls('put', `country`, saveFormData);
+      //   if (response.status === true) {
+      //     console.log('Response:', response);
 
-            showToast('success', ' Company updated Successfully');
-            handleClear();
-            setIsLoading(false);
-            setFormData({
-              country: '',
-              countryCode: ''
-            });
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Country creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'Company updation failed');
+      //     showToast('success', ' Company updated Successfully');
+      //     handleClear();
+      //     setIsLoading(false);
+      //     setFormData({
+      //       country: '',
+      //       countryCode: ''
+      //     });
+      //   } else {
+      //     showToast('error', response.paramObjectsMap.errorMessage || 'Country creation failed');
+      //     setIsLoading(false);
+      //   }
+      // } catch (error) {
+      //   console.error('Error:', error);
+      //   showToast('error', 'Company updation failed');
 
-          setIsLoading(false);
-        });
+      //   setIsLoading(false);
+      // }
     } else {
       setFieldErrors(errors);
     }
@@ -196,7 +249,6 @@ const Company = () => {
 
   return (
     <>
-      <div>{/* <ToastContainer /> */}</div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
@@ -270,70 +322,42 @@ const Company = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl sx={{ minWidth: 200 }} size="small">
-                  <InputLabel id="demo-select-small-label">Country</InputLabel>
-                  <Select
-                    labelId="demo-select-small-label"
-                    id="demo-select-small"
-                    value={formData.country}
-                    label="Country"
-                    name="country"
-                    onChange={handleInputChange}
-                    error={!!fieldErrors.country}
-                    helperText={fieldErrors.country}
-                  >
-                    <MenuItem value="">
-                      <em>Select Country</em>
-                    </MenuItem>
-                    <MenuItem value="India">India</MenuItem>
-                    <MenuItem value="USA">USA</MenuItem>
-                    <MenuItem value="UK">UK</MenuItem>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.country}>
+                  <InputLabel id="country-label">Country</InputLabel>
+                  <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
+                    {countryList?.map((row) => (
+                      <MenuItem key={row.id} value={row.countryName}>
+                        {row.countryName}
+                      </MenuItem>
+                    ))}
                   </Select>
+                  {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl sx={{ minWidth: 200 }} size="small">
-                  <InputLabel id="demo-select-small-label">State</InputLabel>
-                  <Select
-                    labelId="demo-select-small-label"
-                    id="demo-select-small"
-                    value={formData.state}
-                    label="State"
-                    name="state"
-                    onChange={handleInputChange}
-                    error={!!fieldErrors.state}
-                    helperText={fieldErrors.state}
-                  >
-                    <MenuItem value="">
-                      <em>Select State</em>
-                    </MenuItem>
-                    <MenuItem value="Tamil Nadu">Tamil Nadu</MenuItem>
-                    <MenuItem value="Karnataka">Karnataka</MenuItem>
-                    <MenuItem value="Kerala">Kerala</MenuItem>
-                    <MenuItem value="Andhra Pradesh">Andhra Pradesh</MenuItem>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
+                  <InputLabel id="state-label">State</InputLabel>
+                  <Select labelId="state-label" label="State" value={formData.state} onChange={handleInputChange} name="state">
+                    {stateList?.map((row) => (
+                      <MenuItem key={row.id} value={row.stateName}>
+                        {row.stateName}
+                      </MenuItem>
+                    ))}
                   </Select>
+                  {fieldErrors.state && <FormHelperText>{fieldErrors.state}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl sx={{ minWidth: 200 }} size="small">
-                  <InputLabel id="demo-select-small-label">City</InputLabel>
-                  <Select
-                    labelId="demo-select-small-label"
-                    id="demo-select-small"
-                    value={formData.city}
-                    label="city"
-                    name="city"
-                    onChange={handleInputChange}
-                    error={!!fieldErrors.city}
-                    helperText={fieldErrors.city}
-                  >
-                    <MenuItem value="">
-                      <em>Select City</em>
-                    </MenuItem>
-                    <MenuItem value="Madurai">Madurai</MenuItem>
-                    <MenuItem value="Dindigul">Dindigul</MenuItem>
-                    <MenuItem value="Chennai">Chennai</MenuItem>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
+                  <InputLabel id="city-label">City</InputLabel>
+                  <Select labelId="city-label" label="City" value={formData.city} onChange={handleInputChange} name="city">
+                    {cityList?.map((row) => (
+                      <MenuItem key={row.id} value={row.cityName}>
+                        {row.cityName}
+                      </MenuItem>
+                    ))}
                   </Select>
+                  {fieldErrors.city && <FormHelperText>{fieldErrors.city}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -377,12 +401,16 @@ const Company = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControlLabel value="start" control={<Checkbox />} label="Active" labelPlacement="end" />
+                <FormControlLabel
+                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
+                  label="Active"
+                />
               </div>
             </div>
           </>
         )}
       </div>
+      <ToastComponent />
     </>
   );
 };

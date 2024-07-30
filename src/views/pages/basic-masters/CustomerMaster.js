@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from './CommonListViewTable';
 import axios from 'axios';
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState, useMemo, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import IconButton from '@mui/material/IconButton';
@@ -24,11 +24,17 @@ import AddIcon from '@mui/icons-material/Add';
 import BrowserUpdatedIcon from '@mui/icons-material/BrowserUpdated';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
+import apiCalls from 'apicall';
+import { getAllActiveBranches, getAllActiveCitiesByState, getAllActiveCountries, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
 
 export const CustomerMaster = () => {
-  const [orgId, setOrgId] = useState('1');
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
+  const [branchList, setBranchList] = useState([]);
+  const [countryList, setCountryList] = useState([]);
+  const [stateList, setStateList] = useState([]);
+  const [cityList, setCityList] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
 
   const [formData, setFormData] = useState({
@@ -100,9 +106,6 @@ export const CustomerMaster = () => {
     }
   ]);
 
-  const theme = useTheme();
-  const anchorRef = useRef(null);
-
   const [fieldErrors, setFieldErrors] = useState({
     customer: '',
     shortName: '',
@@ -131,6 +134,122 @@ export const CustomerMaster = () => {
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
+  };
+
+  useEffect(() => {
+    getAllBranches();
+    getAllCountries();
+    if (formData.country) {
+      getAllStates();
+    }
+    if (formData.state) {
+      getAllCities();
+    }
+  }, [formData.country, formData.state]);
+
+  const getAllCountries = async () => {
+    try {
+      const countryData = await getAllActiveCountries(orgId);
+      setCountryList(countryData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+  const getAllStates = async () => {
+    try {
+      const stateData = await getAllActiveStatesByCountry(formData.country, orgId);
+      setStateList(stateData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+  const getAllCities = async () => {
+    try {
+      const cityData = await getAllActiveCitiesByState(formData.state, orgId);
+      setCityList(cityData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+  const getAllBranches = async () => {
+    try {
+      const branchData = await getAllActiveBranches(orgId);
+      setBranchList(branchData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+  const getAllCustomers = async () => {
+    try {
+      const response = await apiCalls('get', `auth/allUsersByOrgId?orgId=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.userVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getCustomerById = async (row) => {
+    console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `auth/getUserById?userId=${row.original.id}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListView(false);
+        const particularCustomer = response.paramObjectsMap.userVO;
+        const foundBranch1 = branchList.find((branch) => branch.branchCode === particularCustomer.branchAccessibleVO.branchcode);
+        console.log('THE FOUND BRANCH 1 IS:', foundBranch1);
+
+        setFormData({
+          customer: particularCustomer.customer,
+          shortName: particularCustomer.shortName,
+          pan: particularCustomer.pan,
+          contactPerson: particularCustomer.contactPerson,
+          mobile: particularCustomer.mobile,
+          gstReg: particularCustomer.gstReg,
+          email: particularCustomer.email,
+          groupOf: particularCustomer.groupOf,
+          tanNo: particularCustomer.tanNo,
+          address: particularCustomer.address,
+          country: particularCustomer.country,
+          state: particularCustomer.state,
+          city: particularCustomer.city,
+          gst: particularCustomer.gst,
+          active: particularCustomer.active === 'Active' ? true : false
+        });
+        setClientTableData(
+          particularCustomer.clientAccessVO.map((cl) => ({
+            id: cl.id,
+            client: cl.client,
+            clientCode: cl.clientCode,
+            clientType: cl.clientType,
+            fifoFife: cl.fifoFife
+          }))
+        );
+
+        const alreadySelectedBranch = particularCustomer.branchAccessibleVO.map((role) => {
+          const foundBranch = branchList.find((branch) => branch.branchCode === role.branchcode);
+          console.log(`Searching for branch with code ${role.branchcode}:`, foundBranch);
+          return {
+            id: role.id,
+            branchCode: foundBranch ? foundBranch.branchCode : 'Not Found',
+            branch: foundBranch.branch ? foundBranch.branch : 'Not Found'
+          };
+        });
+        setBranchTableData(alreadySelectedBranch);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -246,7 +365,7 @@ export const CustomerMaster = () => {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
     if (!formData.customer) {
       errors.customer = 'Customer is required';
@@ -334,56 +453,54 @@ export const CustomerMaster = () => {
         client: row.client,
         clientCode: row.clientCode,
         clientType: row.clientType,
-        fifoFife: row.fifoFife
+        fifofife: row.fifoFife
       }));
       const branchVo = branchTableData.map((row) => ({
-        client: row.branchCode,
-        clientCode: row.branchName
+        branchCode: row.branchCode,
+        branch: row.branch
       }));
 
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        customer: formData.customer,
-        shortName: formData.shortName,
-        pan: formData.pan,
+        customerName: formData.customer,
+        customerShortName: formData.shortName,
+        panNo: formData.pan,
         contactPerson: formData.contactPerson,
-        mobile: formData.mobile,
-        gstReg: formData.gstReg,
-        email: formData.email,
-        groupOf: formData.groupOf,
+        mobileNumber: formData.mobile,
+        gstRegistration: formData.gstReg,
+        emailId: formData.email,
+        grouPof: formData.groupOf,
         tanNo: formData.tanNo,
-        address: formData.address,
+        address1: formData.address,
+        address2: formData.address,
         country: formData.country,
         state: formData.state,
         city: formData.city,
-        gst: formData.gst,
-        clientVo: clientVo,
-        branchVo: branchVo,
+        gstNo: formData.gst,
+        clientDTO: clientVo,
+        clientBranchDTO: branchVo,
         orgId: orgId,
-        createdby: loginUserName
+        createdBy: loginUserName
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
-
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/customer`, formData)
-        .then((response) => {
-          if (response.data.status === true) {
-            console.log('Response:', response.data);
-            handleClear();
-            showToast('success', editId ? ' Customer Updated Successfully' : 'Customer created successfully');
-            setIsLoading(false);
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Customer creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'Customer creation failed');
+      try {
+        const response = await apiCalls('post', `warehousemastercontroller/createUpdateCustomer`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          handleClear();
+          showToast('success', editId ? ' Customer Updated Successfully' : 'Customer created successfully');
           setIsLoading(false);
-        });
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Customer creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Customer creation failed');
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }
@@ -568,8 +685,11 @@ export const CustomerMaster = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.country}>
                   <InputLabel id="country-label">Country</InputLabel>
                   <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
-                    <MenuItem value="INDIA">INDIA</MenuItem>
-                    <MenuItem value="USA">USA</MenuItem>
+                    {countryList?.map((row) => (
+                      <MenuItem key={row.id} value={row.countryName}>
+                        {row.countryName}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
                 </FormControl>
@@ -578,10 +698,11 @@ export const CustomerMaster = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
                   <InputLabel id="state-label">State</InputLabel>
                   <Select labelId="state-label" label="State" value={formData.state} onChange={handleInputChange} name="state">
-                    <MenuItem value="TAMILNADU">TAMILNADU</MenuItem>
-                    <MenuItem value="KARNATAKA">KARNATAKA</MenuItem>
-                    <MenuItem value="KERALA">KERALA</MenuItem>
-                    <MenuItem value="ANDRAPRADESH">ANDRAPRADESH</MenuItem>
+                    {stateList?.map((row) => (
+                      <MenuItem key={row.id} value={row.stateName}>
+                        {row.stateName}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.state && <FormHelperText>{fieldErrors.state}</FormHelperText>}
                 </FormControl>
@@ -590,10 +711,11 @@ export const CustomerMaster = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
                   <InputLabel id="city-label">City</InputLabel>
                   <Select labelId="city-label" label="City" value={formData.city} onChange={handleInputChange} name="city">
-                    <MenuItem value="TAMILNADU">TAMILNADU</MenuItem>
-                    <MenuItem value="KARNATAKA">KARNATAKA</MenuItem>
-                    <MenuItem value="KERALA">KERALA</MenuItem>
-                    <MenuItem value="ANDRAPRADESH">ANDRAPRADESH</MenuItem>
+                    {cityList?.map((row) => (
+                      <MenuItem key={row.id} value={row.cityName}>
+                        {row.cityName}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.city && <FormHelperText>{fieldErrors.city}</FormHelperText>}
                 </FormControl>
@@ -822,9 +944,15 @@ export const CustomerMaster = () => {
                                         value={row.branchCode}
                                         onChange={(e) => {
                                           const value = e.target.value;
+                                          const selectedBranch = branchList.find((branch) => branch.branchCode === value);
                                           setBranchTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, branchCode: value } : r))
+                                            prev.map((r) =>
+                                              r.id === row.id
+                                                ? { ...r, branchCode: value, branch: selectedBranch ? selectedBranch.branch : '' }
+                                                : r
+                                            )
                                           );
+
                                           setBranchTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
@@ -838,8 +966,11 @@ export const CustomerMaster = () => {
                                         className={branchTableErrors[index]?.branchCode ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        <option value="Fixed">MAA</option>
-                                        <option value="Open">KA</option>
+                                        {branchList?.map((branch) => (
+                                          <option key={branch.id} value={branch.branchCode}>
+                                            {branch.branchCode}
+                                          </option>
+                                        ))}
                                       </select>
                                       {branchTableErrors[index]?.branchCode && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -847,8 +978,7 @@ export const CustomerMaster = () => {
                                         </div>
                                       )}
                                     </td>
-
-                                    <td className="border px-2 py-2">{row.branch}</td>
+                                    <td className="border px-2 py-2 text-center pt-3">{row.branch}</td>
                                   </tr>
                                 ))}
                               </tbody>
