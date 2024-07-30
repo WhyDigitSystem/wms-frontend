@@ -27,7 +27,7 @@ import { getAllActiveBranches, getAllActiveEmployees } from 'utils/CommonFunctio
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { encryptPassword } from 'views/utilities/encryptPassword';
+import { decryptPassword, encryptPassword } from 'views/utilities/encryptPassword';
 
 export const UserCreationMaster = () => {
   const [orgId, setOrgId] = useState(1000000001);
@@ -39,6 +39,8 @@ export const UserCreationMaster = () => {
     employeeName: '',
     employeeCode: '',
     userType: '',
+    mobileNo: '',
+    nickName: '',
     email: '',
     password: 'wds2022',
     active: true,
@@ -100,7 +102,6 @@ export const UserCreationMaster = () => {
     {
       role: '',
       roleId: '',
-      roleId: '',
       startDate: '',
       endDate: ''
     }
@@ -121,13 +122,11 @@ export const UserCreationMaster = () => {
   const [fieldErrors, setFieldErrors] = useState({
     employeeName: '',
     employeeCode: '',
-    reportingTo: '',
     userType: '',
+    mobileNo: '',
+    nickName: '',
     email: '',
-    groupNo: '',
-    pwdExpDays: '',
     active: '',
-    isFirstTime: '',
     password: ''
   });
   const [listView, setListView] = useState(false);
@@ -147,7 +146,7 @@ export const UserCreationMaster = () => {
         return roles;
       }
     },
-    { accessorKey: 'isActive', header: 'Active', size: 140 }
+    { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
   const [listViewData, setListViewData] = useState([]);
@@ -227,15 +226,20 @@ export const UserCreationMaster = () => {
       if (response.status === true) {
         setListView(false);
         const particularUser = response.paramObjectsMap.userVO;
-        // const selectedBranch = branchList.find((br) => br.branch === particularUser.branch);
-        // console.log('THE SELECTED BRANCH IS:', selectedBranch);
+        const foundBranch1 = branchList.find((branch) => branch.branchCode === particularUser.branchAccessibleVO.branchcode);
+        console.log('THE FOUND BRANCH 1 IS:', foundBranch1);
 
         setFormData({
           employeeCode: particularUser.userName,
           employeeName: particularUser.employeeName,
+          nickName: particularUser.nickName,
           userType: particularUser.userType,
+          mobileNo: particularUser.mobileNo,
           email: particularUser.email,
-          active: particularUser.isActive === 'Active' ? true : false
+          // password: decryptPassword(particularUser.password),
+          // password: particularUser.password,
+
+          active: particularUser.active === 'Active' ? true : false
         });
         setRoleTableData(
           particularUser.roleAccessVO.map((role) => ({
@@ -253,16 +257,17 @@ export const UserCreationMaster = () => {
             customer: role.customer
           }))
         );
-        setBranchTableData(
-          particularUser.branchAccessibleVO.map((role) => ({
-            id: role.id,
-            branch: branchList.find((branch) => branch.branchCode === role.branch),
-            // const selectedBranch = branchList.find((branch) => branch.branchCode === value);
 
-            // branch: role.branch,
-            branchCode: role.branchcode
-          }))
-        );
+        const alreadySelectedBranch = particularUser.branchAccessibleVO.map((role) => {
+          const foundBranch = branchList.find((branch) => branch.branchCode === role.branchcode);
+          console.log(`Searching for branch with code ${role.branchcode}:`, foundBranch);
+          return {
+            id: role.id,
+            branchCode: foundBranch ? foundBranch.branchCode : 'Not Found',
+            branch: foundBranch.branch ? foundBranch.branch : 'Not Found'
+          };
+        });
+        setBranchTableData(alreadySelectedBranch);
       } else {
         console.error('API Error:', response);
       }
@@ -285,43 +290,17 @@ export const UserCreationMaster = () => {
 
     // Validation based on field name
     switch (name) {
-      case 'reportingTo':
-      case 'shortName':
+      case 'mobileNo':
+        if (!numericRegex.test(value)) {
+          errorMessage = 'Only numeric characters are allowed';
+        } else if (value.length > 10) {
+          errorMessage = 'Invalid Format';
+        }
+        break;
+
+      case 'nickName':
         if (!nameRegex.test(value)) {
-          errorMessage = 'Only alphabetic characters are allowed';
-        }
-        break;
-      case 'pan':
-        if (!alphaNumericRegex.test(value)) {
-          errorMessage = 'Only alphanumeric characters are allowed';
-        } else if (value.length > 10) {
-          errorMessage = 'Invalid Format';
-        }
-        break;
-      case 'branchName':
-        if (!branchNameRegex.test(value)) {
-          errorMessage = 'Only alphanumeric characters and @, _, -, * are allowed';
-        }
-        break;
-      case 'mobile':
-        if (!numericRegex.test(value)) {
-          errorMessage = 'Only numeric characters are allowed';
-        } else if (value.length > 10) {
-          errorMessage = 'Invalid Format';
-        }
-        break;
-      case 'pwdExpDays':
-        if (!numericRegex.test(value)) {
-          errorMessage = 'Only numeric characters are allowed';
-        } else if (value.length > 6) {
-          errorMessage = 'Invalid Format';
-        }
-        break;
-      case 'gst':
-        if (!alphaNumericRegex.test(value)) {
-          errorMessage = 'Only alphanumeric characters are allowed';
-        } else if (value.length > 15) {
-          errorMessage = 'Invalid Format';
+          errorMessage = 'Only alphabet are allowed';
         }
         break;
     }
@@ -356,13 +335,6 @@ export const UserCreationMaster = () => {
       active: event.target.checked
     });
   };
-  const handleCheckboxChange = (event) => {
-    setFormData({
-      ...formData,
-      isFirstTime: event.target.checked
-    });
-  };
-
   const handleDeleteRow = (id) => {
     setRoleTableData(roleTableData.filter((row) => row.id !== id));
   };
@@ -381,6 +353,15 @@ export const UserCreationMaster = () => {
       handleAddRow1();
     }
   };
+  const handleDeleteRow2 = (id) => {
+    setClientTableData(clientTableData.filter((row) => row.id !== id));
+  };
+  const handleKeyDown2 = (e, row) => {
+    if (e.key === 'Tab' && row.id === clientTableData[clientTableData.length - 1].id) {
+      e.preventDefault();
+      handleAddRow2();
+    }
+  };
 
   const handleClear = () => {
     setFormData({
@@ -388,6 +369,8 @@ export const UserCreationMaster = () => {
       employeeCode: '',
       reportingTo: '',
       userType: '',
+      mobileNo: '',
+      nickName: '',
       email: '',
       groupNo: '',
       pwdExpDays: '',
@@ -405,6 +388,8 @@ export const UserCreationMaster = () => {
       employeeCode: '',
       reportingTo: '',
       userType: '',
+      mobileNo: '',
+      nickName: '',
       email: '',
       groupNo: '',
       pwdExpDays: '',
@@ -422,9 +407,18 @@ export const UserCreationMaster = () => {
     if (!formData.employeeName) {
       errors.employeeName = 'Employee Name is required';
     }
+    if (!formData.nickName) {
+      errors.nickName = 'Nick Name is required';
+    }
     if (!formData.userType) {
       errors.userType = 'User Type is required';
     }
+    if (!formData.mobileNo) {
+      errors.mobileNo = 'Mobile No is required';
+    } else if (formData.mobileNo.length < 10) {
+      errors.mobileNo = ' Mobile No must be in 10 digit';
+    }
+
     if (!formData.email) {
       errors.email = 'Email ID is required';
     }
@@ -486,7 +480,7 @@ export const UserCreationMaster = () => {
     setClientTableErrors(newTableErrors2);
 
     if (Object.keys(errors).length === 0) {
-      setIsLoading(true);
+      // setIsLoading(true);
       const roleVo = roleTableData.map((row) => ({
         role: row.role,
         roleId: row.roleId,
@@ -505,13 +499,11 @@ export const UserCreationMaster = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         employeeName: formData.employeeName,
-        // employeeCode: formData.employeeCode,
-        // reportingTo: formData.reportingTo,
         userType: formData.userType,
         email: formData.email,
         password: encryptPassword(formData.password),
-        mobileNo: '1234567890',
-        nickName: 'KARUPU',
+        mobileNo: formData.mobileNo,
+        nickName: formData.nickName,
         userName: formData.employeeCode,
 
         roleAccessDTO: roleVo,
@@ -555,6 +547,8 @@ export const UserCreationMaster = () => {
       employeeCode: '',
       reportingTo: '',
       userType: '',
+      mobileNo: '',
+      nickName: '',
       email: '',
       groupNo: '',
       pwdExpDays: '',
@@ -563,14 +557,9 @@ export const UserCreationMaster = () => {
       isFirstTime: true
     });
   };
-  const handleDateChange = (field, date) => {
-    const formattedDate = dayjs(date).format('DD-MM-YYYY');
-    setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
-  };
 
   return (
     <>
-      <div>{/* <ToastContainer /> */}</div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
@@ -620,19 +609,19 @@ export const UserCreationMaster = () => {
                   disabled
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-3">
                 <TextField
-                  label="Reporting To"
+                  label="Nick Name"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="reportingTo"
-                  value={formData.reportingTo}
+                  name="nickName"
+                  value={formData.nickName}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.reportingTo}
-                  helperText={fieldErrors.reportingTo}
+                  error={!!fieldErrors.nickName}
+                  helperText={fieldErrors.nickName}
                 />
-              </div> */}
+              </div>
 
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.userType}>
@@ -643,6 +632,19 @@ export const UserCreationMaster = () => {
                   </Select>
                   {fieldErrors.userType && <FormHelperText>{fieldErrors.userType}</FormHelperText>}
                 </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="Mobile"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="mobileNo"
+                  value={formData.mobileNo}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.mobileNo}
+                  helperText={fieldErrors.mobileNo}
+                />
               </div>
 
               <div className="col-md-3 mb-3">
@@ -658,39 +660,13 @@ export const UserCreationMaster = () => {
                   helperText={fieldErrors.email}
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <TextField
-                  label="Group No"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="groupNo"
-                  value={formData.groupNo}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.groupNo}
-                  helperText={fieldErrors.groupNo}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="PWDExpDays"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="pwdExpDays"
-                  value={formData.pwdExpDays}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.pwdExpDays}
-                  helperText={fieldErrors.pwdExpDays}
-                />
-              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="Password"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  type="password"
+                  type="text"
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
@@ -705,12 +681,6 @@ export const UserCreationMaster = () => {
                   label="Active"
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <FormControlLabel
-                  control={<Checkbox checked={formData.isFirstTime} onChange={handleCheckboxChange} name="isFirstTime" color="primary" />}
-                  label="Is First Time"
-                />
-              </div> */}
             </div>
             <div className="row mt-2">
               <Box sx={{ width: '100%' }}>
@@ -765,39 +735,6 @@ export const UserCreationMaster = () => {
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
-                                    {/* MUI DROPDOWN */}
-                                    {/* <td className="border px-2 py-2">
-                                      <FormControl size="small" fullWidth error={!!roleTableDataErrors[index]?.role}>
-                                        <Select
-                                          displayEmpty
-                                          value={row.role}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, role: value } : r)));
-                                            setRoleTableDataErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                role: !value ? 'Role is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={roleTableDataErrors[index]?.role ? 'error' : ''}
-                                        >
-                                          <MenuItem value="">Select Option</MenuItem>
-                                          {roleList.map((role) => (
-                                            <MenuItem key={role.id} value={role.role}>
-                                              {role.role}
-                                            </MenuItem>
-                                          ))}
-                                        </Select>
-                                        {roleTableDataErrors[index]?.role && (
-                                          <FormHelperText>{roleTableDataErrors[index].role}</FormHelperText>
-                                        )}
-                                      </FormControl>
-                                    </td> */}
-                                    {/* NORMAL DROPDOWN */}
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.role}
@@ -832,7 +769,6 @@ export const UserCreationMaster = () => {
                                         </div>
                                       )}
                                     </td>
-                                    {/* NORMAL DATE PICKER */}
                                     <td className="border px-2 py-2">
                                       <div className="w-100">
                                         <DatePicker
@@ -858,6 +794,7 @@ export const UserCreationMaster = () => {
                                           }}
                                           dateFormat="dd/MM/yyyy"
                                           minDate={new Date()}
+                                          onKeyDown={(e) => handleKeyDown(e, row)}
                                         />
                                         {roleTableDataErrors[index]?.startDate && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1012,10 +949,9 @@ export const UserCreationMaster = () => {
                                 {clientTableData.map((row, index) => (
                                   <tr key={row.id}>
                                     <td className="border px-2 py-2 text-center">
-                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow2(row.id)} />
                                     </td>
                                     <td className="text-center">
-                                      {/* <input type="text" value={`${index + 1}`} readOnly style={{ width: '100%' }} /> */}
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
 
@@ -1063,7 +999,7 @@ export const UserCreationMaster = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        onKeyDown={(e) => handleKeyDown1(e, row)}
+                                        onKeyDown={(e) => handleKeyDown2(e, row)}
                                         className={clientTableErrors[index]?.client ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>

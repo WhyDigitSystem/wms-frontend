@@ -146,6 +146,12 @@ const basicMasters = {
           title: 'Unit Master',
           type: 'item',
           url: '/basicmasters/unitmaster'
+        },
+        {
+          id: 'fullfeaturedcurdgrid',
+          title: 'Grid table',
+          type: 'item',
+          url: '/basicmasters/fullfeaturedcurdgrid'
         }
       ]
     }

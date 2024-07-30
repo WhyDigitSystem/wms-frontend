@@ -34,6 +34,7 @@ const GroupMaster = Loadable(lazy(() => import('views/pages/basic-masters/GroupM
 const UnitMaster = Loadable(lazy(() => import('views/pages/basic-masters/UnitMaster')));
 const Roles = Loadable(lazy(() => import('views/pages/rolesandResponsibility/Roles')));
 const ScreenNames = Loadable(lazy(() => import('views/pages/rolesandResponsibility/ScreenNames')));
+const FullFeaturedCrudGrid = Loadable(lazy(() => import('views/pages/basic-masters/FullFeaturedCrudGrid')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
 
@@ -140,6 +141,10 @@ const WMSRoutes = {
     {
       path: '/basicmasters/unitmaster',
       element: <UnitMaster />
+    },
+    {
+      path: '/basicmasters/fullfeaturedcurdgrid',
+      element: <FullFeaturedCrudGrid />
     }
   ]
 };
