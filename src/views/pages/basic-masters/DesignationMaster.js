@@ -34,9 +34,6 @@ export const DesignationMaster = () => {
   });
   const [editId, setEditId] = useState('');
 
-  const theme = useTheme();
-  const anchorRef = useRef(null);
-
   const [fieldErrors, setFieldErrors] = useState({
     designationName: '',
     designationCode: ''
@@ -44,10 +41,9 @@ export const DesignationMaster = () => {
   const [listView, setListView] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'designationCode', header: 'Code', size: 140 },
     {
-      accessorKey: 'designationName',
-      header: 'Designation Name',
+      accessorKey: 'designation',
+      header: 'Designation',
       size: 140
     },
     { accessorKey: 'active', header: 'Active', size: 140 }
@@ -60,26 +56,25 @@ export const DesignationMaster = () => {
 
   const getAllDesignation = async () => {
     try {
-      const result = await apiCalls('get', `commonmaster/country?orgid=1000000001`);
-      setListViewData(result.paramObjectsMap.designationVO);
-      console.log('Test', result);
+      const response = await apiCalls('get', `commonmaster/getAllDesignationByOrgId?orgId=${orgId}`);
+      setListViewData(response.paramObjectsMap.designationVO);
+      console.log('Test', response);
     } catch (err) {
       console.log('error', err);
     }
   };
 
   const getDesignationById = async (row) => {
-    console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
+    console.log('THE SELECTED DESIGNATION ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `commonmaster/country/${row.original.id}`);
+      const response = await apiCalls('get', `commonmaster/getAllDesignationById?id=${row.original.id}`);
 
       if (response.status === true) {
-        const particulardesignation = response.paramObjectsMap.Country;
+        const particularDesignation = response.paramObjectsMap.designationVO;
         setFormData({
-          designationCode: particulardesignation.designationCode,
-          designationName: particulardesignation.designationName,
-          active: particulardesignation.active === 'Active' ? true : false
+          designationName: particularDesignation.designation,
+          active: particularDesignation.active === 'Active' ? true : false
         });
         setListView(false);
       } else {
@@ -91,16 +86,13 @@ export const DesignationMaster = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const { name, value, checked } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
 
-    if (name === 'designationCode' && !codeRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else if (name === 'designationName' && !nameRegex.test(value)) {
+    if (name === 'designationName' && !nameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else {
-      setFormData({ ...formData, [name]: value.toUpperCase() });
+      setFormData({ ...formData, [name]: name === 'active' ? checked : value.toUpperCase() });
       setFieldErrors({ ...fieldErrors, [name]: '' });
     }
   };
@@ -119,9 +111,7 @@ export const DesignationMaster = () => {
 
   const handleSave = async () => {
     const errors = {};
-    if (!formData.designationCode) {
-      errors.designationCode = 'Designation Code is required';
-    }
+
     if (!formData.designationName) {
       errors.designationName = 'Designation is required';
     }
@@ -131,30 +121,29 @@ export const DesignationMaster = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        designationCode: formData.designationCode,
-        designationName: formData.designationName,
+        designation: formData.designationName,
         orgId: orgId,
-        createdby: loginUserName
+        createdBy: loginUserName
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const result = await apiCalls('post', `commonmaster/createUpdateDesignationCode`, saveFormData);
+        const response = await apiCalls('put', `commonmaster/createUpdateDesignation`, saveFormData);
 
-        if (result.status === true) {
-          console.log('Response:', result);
-          showToast('success', editId ? ' DesignationCode Updated Successfully' : 'DesignationCode created successfully');
+        if (response.status === true) {
+          console.log('Response:', response);
+          showToast('success', editId ? ' Designation Updated Successfully' : 'Designation created successfully');
           handleClear();
           getAllDesignation();
           setIsLoading(false);
         } else {
-          showToast('error', result.paramObjectsMap.errorMessage || 'DesignationCode creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'Designation creation failed');
           setIsLoading(false);
         }
       } catch (err) {
         console.log('error', err);
-        showToast('error', 'DesignationCode creation failed');
+        showToast('error', 'Designation creation failed');
         setIsLoading(false);
       }
     } else {
@@ -174,12 +163,6 @@ export const DesignationMaster = () => {
     });
   };
 
-  const handleCheckboxChange = (event) => {
-    setFormData({
-      ...formData,
-      active: event.target.checked
-    });
-  };
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -205,19 +188,6 @@ export const DesignationMaster = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Designation Code"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="designationCode"
-                  value={formData.designationCode}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.designationCode}
-                  helperText={fieldErrors.designationCode}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
                   label="Designation Name"
                   variant="outlined"
                   size="small"
@@ -231,9 +201,8 @@ export const DesignationMaster = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControlLabel
-                  control={<Checkbox checked={formData.active} onChange={handleCheckboxChange} />}
+                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
                   label="Active"
-                  labelPlacement="end"
                 />
               </div>
             </div>

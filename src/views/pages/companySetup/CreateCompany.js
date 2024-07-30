@@ -26,22 +26,21 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 import { encryptPassword } from 'views/utilities/encryptPassword';
 import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
+import ToastComponent, { showToast } from 'utils/toast-component';
+import apiCalls from 'apicall';
 
 const CreateCompany = () => {
-  const theme = useTheme();
-  const anchorRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [editId, setEditId] = useState('');
   const [formData, setFormData] = useState({
     companyCode: '',
     companyName: '',
     companyAdminName: '',
     companyAdminEmail: '',
     companyAdminPwd: '',
-    active: '',
-    orgId: 1,
-    createdby: 'Karupu'
+    active: true
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -53,7 +52,6 @@ const CreateCompany = () => {
     active: ''
   });
   const [listView, setListView] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
     { accessorKey: 'companyId', header: 'CompanyId', size: 140 },
     {
@@ -72,7 +70,7 @@ const CreateCompany = () => {
   const [listViewData, setListViewData] = useState([]);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, checked } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
     const companyNameRegex = /^[A-Za-z0-9@_\-*]*$/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -80,16 +78,19 @@ const CreateCompany = () => {
 
     if (name === 'companyName' && !companyNameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Only alphabetic characters and @*_- are allowed' });
-    }
-    //  else if (name === 'companyAdminEmail' && !emailRegex.test(value)) {
-    //   setFieldErrors({ ...fieldErrors, [name]: 'Invalid Email Id' });
-    // }
-    else if (name === 'companyCode' && !companyCodeRegex.test(value)) {
+    } else if (name === 'companyCode' && !companyCodeRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else if (name === 'companyAdminName' && !nameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else {
-      setFormData({ ...formData, [name]: value.toUpperCase() });
+      if (name === 'active') {
+        setFormData({ ...formData, [name]: checked });
+      } else if (name === 'companyAdminEmail') {
+        setFormData({ ...formData, [name]: value });
+      } else {
+        setFormData({ ...formData, [name]: value.toUpperCase() });
+      }
+
       setFieldErrors({ ...fieldErrors, [name]: '' });
     }
   };
@@ -111,7 +112,7 @@ const CreateCompany = () => {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
     if (!formData.companyCode) {
       errors.companyCode = 'Company Code is required';
@@ -133,12 +134,13 @@ const CreateCompany = () => {
       setIsLoading(true);
 
       const saveData = {
+        active: formData.active,
         address: '',
         city: '',
         companyCode: formData.companyCode,
         companyName: formData.companyName,
         country: '',
-        createdBy: 'Karupu',
+        createdBy: loginUserName,
         currency: '',
         email: formData.companyAdminEmail,
         employeeCode: '',
@@ -149,30 +151,29 @@ const CreateCompany = () => {
         phone: '',
         state: '',
         webSite: '',
-        zip: ''
+        zip: '',
+        orgId: orgId
       };
       console.log('DATA TO SAVE IS:', saveData);
 
-      axios
-        .post(`${process.env.REACT_APP_API_URL}/api/commonmaster/company`, saveData)
-        .then((response) => {
-          if (response.data.status === true) {
-            console.log('Response:', response.data);
+      try {
+        const response = await apiCalls('post', `commonmaster/company`, saveData);
+        if (response.data.status === true) {
+          console.log('Response:', response);
+          showToast('success', editId ? ' Company Updated Successfully' : 'Company created successfully');
 
-            showToast('success', 'Company created successfully');
-            handleClear();
-            setIsLoading(false);
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Company creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'Company creation failed');
-
+          handleClear();
           setIsLoading(false);
-        });
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Company creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Company creation failed');
+
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }
@@ -184,14 +185,13 @@ const CreateCompany = () => {
 
   return (
     <>
-      <div>{/* <ToastContainer /> */}</div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
           </div>
         </div>
         {listView ? (
@@ -273,12 +273,16 @@ const CreateCompany = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControlLabel value="start" control={<Checkbox />} label="Active" labelPlacement="end" />
+                <FormControlLabel
+                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
+                  label="Active"
+                />
               </div>
             </div>
           </>
         )}
       </div>
+      <ToastComponent />
     </>
   );
 };

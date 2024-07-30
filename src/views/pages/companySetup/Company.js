@@ -32,8 +32,6 @@ import apiCalls from 'apicall';
 const Company = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const theme = useTheme();
-  const anchorRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [countryList, setCountryList] = useState([]);
   const [stateList, setStateList] = useState([]);

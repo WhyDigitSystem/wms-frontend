@@ -14,7 +14,7 @@ import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import axios from 'axios';
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState, useMemo, useEffect } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -22,13 +22,17 @@ import 'react-toastify/dist/ReactToastify.css';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
+import ToastComponent, { showToast } from 'utils/toast-component';
+import { getAllActiveCitiesByState, getAllActiveCountries, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
+import apiCalls from 'apicall';
 
 const Branch = () => {
-  const [orgId, setOrgId] = useState('1');
-  const theme = useTheme();
-  const anchorRef = useRef(null);
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
+  const [countryList, setCountryList] = useState([]);
+  const [stateList, setStateList] = useState([]);
+  const [cityList, setCityList] = useState([]);
   const [editId, setEditId] = useState('');
 
   const [formData, setFormData] = useState({
@@ -42,9 +46,7 @@ const Branch = () => {
     country: '',
     state: '',
     city: '',
-    active: '',
-    orgId: 1,
-    createdby: 'Karupu'
+    active: true
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -78,9 +80,43 @@ const Branch = () => {
   ];
 
   const [listViewData, setListViewData] = useState([]);
+  useEffect(() => {
+    getAllCountries();
+    if (formData.country) {
+      getAllStates();
+    }
+    if (formData.state) {
+      getAllCities();
+    }
+  }, [formData.country, formData.state]);
+
+  const getAllCountries = async () => {
+    try {
+      const countryData = await getAllActiveCountries(orgId);
+      setCountryList(countryData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+  const getAllStates = async () => {
+    try {
+      const stateData = await getAllActiveStatesByCountry(formData.country, orgId);
+      setStateList(stateData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+  const getAllCities = async () => {
+    try {
+      const cityData = await getAllActiveCitiesByState(formData.state, orgId);
+      setCityList(cityData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, checked } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
     const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
     const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
@@ -92,7 +128,14 @@ const Branch = () => {
     } else if (name === 'branchName' && !branchNameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Only alphanumeric characters and @, _, -, * are allowed' });
     } else {
-      setFormData({ ...formData, [name]: value.toUpperCase() });
+      if (name === 'active') {
+        setFormData({ ...formData, [name]: checked });
+      } else if (name === 'email') {
+        setFormData({ ...formData, [name]: value });
+      } else {
+        setFormData({ ...formData, [name]: value.toUpperCase() });
+      }
+
       setFieldErrors({ ...fieldErrors, [name]: '' });
     }
   };
@@ -120,7 +163,7 @@ const Branch = () => {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
     if (!formData.branchCode) {
       errors.branchCode = 'Company Code is required';
@@ -143,30 +186,36 @@ const Branch = () => {
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
-
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/country`, formData)
-        .then((response) => {
-          if (response.data.status === true) {
-            showToast('success', editId ? ' Branch Updated Successfully' : 'Branch created successfully');
-            handleClear();
-            setFormData({
-              country: '',
-              state: '',
-              city: '',
-              countryCode: ''
-            });
-            setIsLoading(false);
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Branch creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'Branch creation failed');
+      const saveFormData = {
+        companyName: formData.companyName,
+        branchCode: formData.branchCode,
+        branchName: formData.branchName,
+        branchHead: formData.branchHead,
+        mobile: formData.mobile,
+        email: formData.email,
+        address: formData.address,
+        country: formData.country,
+        state: formData.state,
+        city: formData.city,
+        active: formData.active,
+        orgId: orgId,
+        createdBy: loginUserName
+      };
+      try {
+        const response = await apiCalls('get', `country`, saveFormData);
+        if (response.status === true) {
+          showToast('success', editId ? ' Branch Updated Successfully' : 'Branch created successfully');
+          handleClear();
           setIsLoading(false);
-        });
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Branch creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Branch creation failed');
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }
@@ -178,7 +227,6 @@ const Branch = () => {
 
   return (
     <>
-      <div>{/* <ToastContainer /> */}</div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
@@ -291,64 +339,42 @@ const Branch = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl sx={{ minWidth: 200 }} size="small">
-                  <InputLabel id="demo-select-small-label">Country</InputLabel>
-                  <Select
-                    labelId="demo-select-small-label"
-                    id="demo-select-small"
-                    value={formData.country}
-                    label="Country"
-                    name="country"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="">
-                      <em>Select Country</em>
-                    </MenuItem>
-                    <MenuItem value="India">India</MenuItem>
-                    <MenuItem value="USA">USA</MenuItem>
-                    <MenuItem value="UK">UK</MenuItem>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.country}>
+                  <InputLabel id="country-label">Country</InputLabel>
+                  <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
+                    {countryList?.map((row) => (
+                      <MenuItem key={row.id} value={row.countryName}>
+                        {row.countryName}
+                      </MenuItem>
+                    ))}
                   </Select>
+                  {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl sx={{ minWidth: 200 }} size="small">
-                  <InputLabel id="demo-select-small-label">State</InputLabel>
-                  <Select
-                    labelId="demo-select-small-label"
-                    id="demo-select-small"
-                    value={formData.state}
-                    label="State"
-                    name="state"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="">
-                      <em>Select State</em>
-                    </MenuItem>
-                    <MenuItem value="Tamil Nadu">Tamil Nadu</MenuItem>
-                    <MenuItem value="Karnataka">Karnataka</MenuItem>
-                    <MenuItem value="Kerala">Kerala</MenuItem>
-                    <MenuItem value="Andhra Pradesh">Andhra Pradesh</MenuItem>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
+                  <InputLabel id="state-label">State</InputLabel>
+                  <Select labelId="state-label" label="State" value={formData.state} onChange={handleInputChange} name="state">
+                    {stateList?.map((row) => (
+                      <MenuItem key={row.id} value={row.stateName}>
+                        {row.stateName}
+                      </MenuItem>
+                    ))}
                   </Select>
+                  {fieldErrors.state && <FormHelperText>{fieldErrors.state}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl sx={{ minWidth: 200 }} size="small">
-                  <InputLabel id="demo-select-small-label">City</InputLabel>
-                  <Select
-                    labelId="demo-select-small-label"
-                    id="demo-select-small"
-                    value={formData.city}
-                    label="city"
-                    name="city"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="">
-                      <em>Select City</em>
-                    </MenuItem>
-                    <MenuItem value="Madurai">Madurai</MenuItem>
-                    <MenuItem value="Dindigul">Dindigul</MenuItem>
-                    <MenuItem value="Chennai">Chennai</MenuItem>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
+                  <InputLabel id="city-label">City</InputLabel>
+                  <Select labelId="city-label" label="City" value={formData.city} onChange={handleInputChange} name="city">
+                    {cityList?.map((row) => (
+                      <MenuItem key={row.id} value={row.cityName}>
+                        {row.cityName}
+                      </MenuItem>
+                    ))}
                   </Select>
+                  {fieldErrors.city && <FormHelperText>{fieldErrors.city}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -358,6 +384,7 @@ const Branch = () => {
           </>
         )}
       </div>
+      <ToastComponent />
     </>
   );
 };
