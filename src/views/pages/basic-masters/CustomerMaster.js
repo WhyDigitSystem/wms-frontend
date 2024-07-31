@@ -124,8 +124,9 @@ export const CustomerMaster = () => {
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'customer', header: 'Customer', size: 140 },
-    { accessorKey: 'shortName', header: 'Short Name', size: 140 },
+    { accessorKey: 'customerName', header: 'Customer', size: 140 },
+    { accessorKey: 'contactPerson', header: 'Contact Person', size: 140 },
+    { accessorKey: 'emailId', header: 'Email Id', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
@@ -145,6 +146,7 @@ export const CustomerMaster = () => {
     if (formData.state) {
       getAllCities();
     }
+    getAllCustomers();
   }, [formData.country, formData.state]);
 
   const getAllCountries = async () => {
@@ -181,11 +183,11 @@ export const CustomerMaster = () => {
   };
   const getAllCustomers = async () => {
     try {
-      const response = await apiCalls('get', `auth/allUsersByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `warehousemastercontroller/customer?orgid=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.userVO);
+        setListViewData(response.paramObjectsMap.CustomerVO);
       } else {
         console.error('API Error:', response);
       }
@@ -198,47 +200,46 @@ export const CustomerMaster = () => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `auth/getUserById?userId=${row.original.id}`);
+      const response = await apiCalls('get', `warehousemastercontroller/customer/${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
         setListView(false);
-        const particularCustomer = response.paramObjectsMap.userVO;
-        const foundBranch1 = branchList.find((branch) => branch.branchCode === particularCustomer.branchAccessibleVO.branchcode);
-        console.log('THE FOUND BRANCH 1 IS:', foundBranch1);
+        const particularCustomer = response.paramObjectsMap.Customer;
+        console.log('THE PARTICULAR CUSTOMER IS:', particularCustomer);
 
         setFormData({
-          customer: particularCustomer.customer,
-          shortName: particularCustomer.shortName,
-          pan: particularCustomer.pan,
+          customer: particularCustomer.customerName,
+          shortName: particularCustomer.customerShortName,
+          pan: particularCustomer.panNo,
           contactPerson: particularCustomer.contactPerson,
-          mobile: particularCustomer.mobile,
-          gstReg: particularCustomer.gstReg,
-          email: particularCustomer.email,
+          mobile: particularCustomer.mobileNumber,
+          gstReg: particularCustomer.gstRegistration,
+          email: particularCustomer.emailId,
           groupOf: particularCustomer.groupOf,
           tanNo: particularCustomer.tanNo,
-          address: particularCustomer.address,
+          address: particularCustomer.address1,
           country: particularCustomer.country,
           state: particularCustomer.state,
           city: particularCustomer.city,
-          gst: particularCustomer.gst,
+          gst: particularCustomer.gstNo,
           active: particularCustomer.active === 'Active' ? true : false
         });
         setClientTableData(
-          particularCustomer.clientAccessVO.map((cl) => ({
+          particularCustomer.clientVO.map((cl) => ({
             id: cl.id,
             client: cl.client,
             clientCode: cl.clientCode,
             clientType: cl.clientType,
-            fifoFife: cl.fifoFife
+            fifoFife: cl.fifofife
           }))
         );
 
-        const alreadySelectedBranch = particularCustomer.branchAccessibleVO.map((role) => {
-          const foundBranch = branchList.find((branch) => branch.branchCode === role.branchcode);
-          console.log(`Searching for branch with code ${role.branchcode}:`, foundBranch);
+        const alreadySelectedBranch = particularCustomer.clientBranchVO.map((br) => {
+          const foundBranch = branchList.find((branch) => branch.branchCode === br.branchCode);
+          console.log(`Searching for branch with code ${br.branchcode}:`, foundBranch);
           return {
-            id: role.id,
+            id: br.id,
             branchCode: foundBranch ? foundBranch.branchCode : 'Not Found',
             branch: foundBranch.branch ? foundBranch.branch : 'Not Found'
           };
@@ -253,7 +254,7 @@ export const CustomerMaster = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, checked } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
     const alphaNumericRegex = /^[A-Za-z0-9]*$/;
     const numericRegex = /^[0-9]*$/;
@@ -302,8 +303,14 @@ export const CustomerMaster = () => {
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
-      const updatedValue = name === 'email' ? value : value.toUpperCase();
-      setFormData({ ...formData, [name]: updatedValue });
+      if (name === 'active') {
+        setFormData({ ...formData, [name]: checked });
+      } else if (name === 'email') {
+        setFormData({ ...formData, [name]: value });
+      } else {
+        setFormData({ ...formData, [name]: value.toUpperCase() });
+      }
+
       setFieldErrors({ ...fieldErrors, [name]: '' });
     }
   };
@@ -430,7 +437,7 @@ export const CustomerMaster = () => {
 
       return rowErrors;
     });
-    setFieldErrors(errors);
+    // setFieldErrors(errors);
 
     setClientTableErrors(newTableErrors);
 
@@ -443,7 +450,7 @@ export const CustomerMaster = () => {
       }
       return rowErrors;
     });
-    // setFieldErrors(errors);
+    setFieldErrors(errors);
 
     setBranchTableErrors(newTableErrors1);
 
@@ -470,7 +477,7 @@ export const CustomerMaster = () => {
         mobileNumber: formData.mobile,
         gstRegistration: formData.gstReg,
         emailId: formData.email,
-        grouPof: formData.groupOf,
+        groupOf: formData.groupOf,
         tanNo: formData.tanNo,
         address1: formData.address,
         address2: formData.address,
@@ -544,7 +551,7 @@ export const CustomerMaster = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getCustomerById} />
           </div>
         ) : (
           <>
@@ -795,7 +802,9 @@ export const CustomerMaster = () => {
                                         value={row.client}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setClientTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, client: value } : r)));
+                                          setClientTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, client: value.toUpperCase() } : r))
+                                          );
                                           setClientTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = { ...newErrors[index], client: !value ? 'Gst In is required' : '' };
@@ -819,7 +828,7 @@ export const CustomerMaster = () => {
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setClientTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, clientCode: value } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, clientCode: value.toUpperCase() } : r))
                                           );
                                           setClientTableErrors((prev) => {
                                             const newErrors = [...prev];
@@ -842,7 +851,7 @@ export const CustomerMaster = () => {
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setClientTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, clientType: value } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, clientType: value.toUpperCase() } : r))
                                           );
                                           setClientTableErrors((prev) => {
                                             const newErrors = [...prev];
@@ -856,8 +865,8 @@ export const CustomerMaster = () => {
                                         className={clientTableErrors[index]?.clientType ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        <option value="Fixed">Fixed</option>
-                                        <option value="Open">Open</option>
+                                        <option value="FIXED">FIXED</option>
+                                        <option value="OPEN">OPEN</option>
                                       </select>
                                       {clientTableErrors[index]?.clientType && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -871,7 +880,9 @@ export const CustomerMaster = () => {
                                         value={row.fifoFife}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setClientTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, fifoFife: value } : r)));
+                                          setClientTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, fifoFife: value.toUpperCase() } : r))
+                                          );
                                           setClientTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
