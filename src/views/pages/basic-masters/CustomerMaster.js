@@ -52,8 +52,7 @@ export const CustomerMaster = () => {
     state: '',
     city: '',
     gst: '',
-    active: true,
-    orgId: 1
+    active: true
   });
   const [value, setValue] = useState(0);
   const [branchTableData, setBranchTableData] = useState([

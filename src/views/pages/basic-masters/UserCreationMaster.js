@@ -30,7 +30,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { decryptPassword, encryptPassword } from 'views/utilities/encryptPassword';
 
 export const UserCreationMaster = () => {
-  const [orgId, setOrgId] = useState(1000000001);
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
@@ -148,7 +148,6 @@ export const UserCreationMaster = () => {
     },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
-
   const [listViewData, setListViewData] = useState([]);
   const [employeeList, setEmployeeList] = useState([]);
   const [roleList, setRoleList] = useState([]);
@@ -335,32 +334,60 @@ export const UserCreationMaster = () => {
       active: event.target.checked
     });
   };
-  const handleDeleteRow = (id) => {
-    setRoleTableData(roleTableData.filter((row) => row.id !== id));
-  };
-  const handleKeyDown = (e, row) => {
-    if (e.key === 'Tab' && row.id === roleTableData[roleTableData.length - 1].id) {
+
+  const handleKeyDown = (e, row, table) => {
+    if (e.key === 'Tab' && row.id === table[table.length - 1].id) {
       e.preventDefault();
-      handleAddRow();
+      if (table === roleTableData) handleAddRow();
+      else if (table === branchTableData) handleAddRow1();
+      else handleAddRow2();
     }
   };
-  const handleDeleteRow1 = (id) => {
-    setBranchTableData(branchTableData.filter((row) => row.id !== id));
+
+  const handleDeleteRow = (id, table, setTable) => {
+    setTable(table.filter((row) => row.id !== id));
   };
-  const handleKeyDown1 = (e, row) => {
-    if (e.key === 'Tab' && row.id === branchTableData[branchTableData.length - 1].id) {
-      e.preventDefault();
-      handleAddRow1();
-    }
+
+  const getAvailableRoles = (currentRowId) => {
+    const selectedRoles = roleTableData.filter((row) => row.id !== currentRowId).map((row) => row.role);
+    return roleList.filter((role) => !selectedRoles.includes(role.role));
   };
-  const handleDeleteRow2 = (id) => {
-    setClientTableData(clientTableData.filter((row) => row.id !== id));
+
+  const handleRoleChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedRole = roleList.find((role) => role.role === value);
+
+    setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, role: value, roleId: selectedRole.id } : r)));
+    setRoleTableDataErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        role: !value ? 'Role is required' : ''
+      };
+      return newErrors;
+    });
   };
-  const handleKeyDown2 = (e, row) => {
-    if (e.key === 'Tab' && row.id === clientTableData[clientTableData.length - 1].id) {
-      e.preventDefault();
-      handleAddRow2();
-    }
+
+  const getAvailableBranchCodes = (currentRowId) => {
+    const selectedBranchCodes = branchTableData.filter((row) => row.id !== currentRowId).map((row) => row.branchCode);
+    return branchList.filter((branch) => !selectedBranchCodes.includes(branch.branchCode));
+  };
+
+  const handleBranchCodeChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedBranch = branchList.find((branch) => branch.branchCode === value);
+
+    setBranchTableData((prev) =>
+      prev.map((r) => (r.id === row.id ? { ...r, branchCode: value, branch: selectedBranch ? selectedBranch.branch : '' } : r))
+    );
+    setBranchTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        branchCode: !value ? 'Branch Code is required' : ''
+      };
+      return newErrors;
+    });
   };
 
   const handleClear = () => {
@@ -480,7 +507,7 @@ export const UserCreationMaster = () => {
     setClientTableErrors(newTableErrors2);
 
     if (Object.keys(errors).length === 0) {
-      // setIsLoading(true);
+      setIsLoading(true);
       const roleVo = roleTableData.map((row) => ({
         role: row.role,
         roleId: row.roleId,
@@ -730,7 +757,11 @@ export const UserCreationMaster = () => {
                                 {roleTableData.map((row, index) => (
                                   <tr key={row.id}>
                                     <td className="border px-2 py-2 text-center">
-                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+                                      <ActionButton
+                                        title="Delete"
+                                        icon={DeleteIcon}
+                                        onClick={() => handleDeleteRow(row.id, roleTableData, setRoleTableData)}
+                                      />
                                     </td>
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
@@ -738,26 +769,11 @@ export const UserCreationMaster = () => {
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.role}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const selectedRole = roleList.find((role) => role.role === value);
-
-                                          setRoleTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, role: value, roleId: selectedRole.id } : r))
-                                          );
-                                          setRoleTableDataErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              role: !value ? 'Role is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
+                                        onChange={(e) => handleRoleChange(row, index, e)}
                                         className={roleTableDataErrors[index]?.role ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        {roleList.map((role) => (
+                                        {getAvailableRoles(row.id).map((role) => (
                                           <option key={role.id} value={role.role}>
                                             {role.role}
                                           </option>
@@ -769,6 +785,7 @@ export const UserCreationMaster = () => {
                                         </div>
                                       )}
                                     </td>
+
                                     <td className="border px-2 py-2">
                                       <div className="w-100">
                                         <DatePicker
@@ -794,7 +811,7 @@ export const UserCreationMaster = () => {
                                           }}
                                           dateFormat="dd/MM/yyyy"
                                           minDate={new Date()}
-                                          onKeyDown={(e) => handleKeyDown(e, row)}
+                                          onKeyDown={(e) => handleKeyDown(e, row, roleTableData)}
                                         />
                                         {roleTableDataErrors[index]?.startDate && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -866,40 +883,24 @@ export const UserCreationMaster = () => {
                                 {branchTableData.map((row, index) => (
                                   <tr key={row.id}>
                                     <td className="border px-2 py-2 text-center">
-                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow1(row.id)} />
+                                      <ActionButton
+                                        title="Delete"
+                                        icon={DeleteIcon}
+                                        onClick={() => handleDeleteRow(row.id, branchTableData, setBranchTableData)}
+                                      />
                                     </td>
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
-
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.branchCode}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const selectedBranch = branchList.find((branch) => branch.branchCode === value);
-                                          setBranchTableData((prev) =>
-                                            prev.map((r) =>
-                                              r.id === row.id
-                                                ? { ...r, branchCode: value, branch: selectedBranch ? selectedBranch.branch : '' }
-                                                : r
-                                            )
-                                          );
-
-                                          setBranchTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              branchCode: !value ? 'Branch Code is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        onKeyDown={(e) => handleKeyDown1(e, row)}
+                                        onChange={(e) => handleBranchCodeChange(row, index, e)}
+                                        onKeyDown={(e) => handleKeyDown(e, row, branchTableData)}
                                         className={branchTableErrors[index]?.branchCode ? 'error form-control' : 'form-control'}
                                       >
-                                        <option value="">Select Option</option>
-                                        {branchList?.map((branch) => (
+                                        <option value="">Select</option>
+                                        {getAvailableBranchCodes(row.id).map((branch) => (
                                           <option key={branch.id} value={branch.branchCode}>
                                             {branch.branchCode}
                                           </option>
@@ -911,6 +912,7 @@ export const UserCreationMaster = () => {
                                         </div>
                                       )}
                                     </td>
+
                                     <td className="border px-2 py-2 text-center pt-3">{row.branch}</td>
                                   </tr>
                                 ))}
@@ -928,7 +930,6 @@ export const UserCreationMaster = () => {
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow2} />
                       </div>
-                      {/* Table */}
                       <div className="row mt-2">
                         <div className="col-lg-6">
                           <div className="table-responsive">
@@ -949,7 +950,11 @@ export const UserCreationMaster = () => {
                                 {clientTableData.map((row, index) => (
                                   <tr key={row.id}>
                                     <td className="border px-2 py-2 text-center">
-                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow2(row.id)} />
+                                      <ActionButton
+                                        title="Delete"
+                                        icon={DeleteIcon}
+                                        onClick={() => handleDeleteRow(row.id, clientTableData, setClientTableData)}
+                                      />
                                     </td>
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
@@ -970,7 +975,6 @@ export const UserCreationMaster = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        onKeyDown={(e) => handleKeyDown1(e, row)}
                                         className={clientTableErrors[index]?.customer ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
@@ -999,7 +1003,7 @@ export const UserCreationMaster = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        onKeyDown={(e) => handleKeyDown2(e, row)}
+                                        onKeyDown={(e) => handleKeyDown(e, row, clientTableData)}
                                         className={clientTableErrors[index]?.client ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>

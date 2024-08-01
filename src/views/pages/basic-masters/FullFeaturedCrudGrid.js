@@ -381,7 +381,7 @@ export const FullFeaturedCrudGrid = () => {
                                       }}
                                       error={!!roleTableDataErrors[index]?.name}
                                       helperText={roleTableDataErrors[index]?.name}
-                                      className={roleTableDataErrors[index]?.name ? 'error' : ''}
+                                      // className={roleTableDataErrors[index]?.name ? 'error' : ''}
                                       variant="outlined" // or "filled" depending on your design preference
                                       size="small"
                                     />

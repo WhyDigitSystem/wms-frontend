@@ -158,7 +158,7 @@ export const CityMaster = () => {
     }
 
     if (Object.keys(errors).length === 0) {
-      // setIsLoading(true);
+      setIsLoading(true);
       const saveData = {
         ...(editId && { id: editId }),
         active: formData.active,
