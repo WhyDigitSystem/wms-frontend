@@ -56,47 +56,6 @@ export const UserCreationMaster = () => {
   ]);
   const [roleTableData, setRoleTableData] = useState([{ id: 1, role: '', roleId: '', startDate: null, endDate: null }]);
   const [clientTableData, setClientTableData] = useState([{ id: 1, customer: '', client: '' }]);
-  const handleAddRow = () => {
-    const newRow = {
-      id: Date.now(),
-      role: '',
-      roleId: '',
-      startDate: '',
-      endDate: ''
-    };
-    setRoleTableData([...roleTableData, newRow]);
-    setRoleTableDataErrors([...roleTableDataErrors, { role: '', roleId: '', startDate: '', endDate: '' }]);
-  };
-  const handleAddRow1 = () => {
-    const newRow = {
-      id: Date.now(),
-      branchCode: '',
-      branch: ''
-    };
-    setBranchTableData([...branchTableData, newRow]);
-    setBranchTableErrors([
-      ...branchTableErrors,
-      {
-        branchCode: '',
-        branchCode: ''
-      }
-    ]);
-  };
-  const handleAddRow2 = () => {
-    const newRow = {
-      id: Date.now(),
-      customer: '',
-      client: ''
-    };
-    setClientTableData([...clientTableData, newRow]);
-    setClientTableErrors([
-      ...clientTableErrors,
-      {
-        customer: '',
-        client: ''
-      }
-    ]);
-  };
 
   const [roleTableDataErrors, setRoleTableDataErrors] = useState([
     {
@@ -152,6 +111,8 @@ export const UserCreationMaster = () => {
   const [employeeList, setEmployeeList] = useState([]);
   const [roleList, setRoleList] = useState([]);
   const [branchList, setBranchList] = useState([]);
+  const [customerList, setCustomerList] = useState([]);
+  const [clientList, setClientList] = useState([]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -161,6 +122,7 @@ export const UserCreationMaster = () => {
     getAllRoles();
     getAllBranches();
     getAllUsers();
+    getAllCustomers();
     console.log('THE ROLES ARE FROM THE USEEFFECT IS:', roleList);
   }, []);
 
@@ -197,6 +159,34 @@ export const UserCreationMaster = () => {
       setBranchList(branchData);
     } catch (error) {
       console.error('Error fetching country data:', error);
+    }
+  };
+  const getAllCustomers = async () => {
+    try {
+      const response = await apiCalls('get', `warehousemastercontroller/customer?orgid=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setCustomerList(response.paramObjectsMap.CustomerVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const getAllClientsByCustomer = async (customer) => {
+    try {
+      const response = await apiCalls('get', `warehousemastercontroller/client?customer=${customer}&orgid=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setClientList(response.paramObjectsMap.clientVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
   };
 
@@ -338,9 +328,117 @@ export const UserCreationMaster = () => {
   const handleKeyDown = (e, row, table) => {
     if (e.key === 'Tab' && row.id === table[table.length - 1].id) {
       e.preventDefault();
-      if (table === roleTableData) handleAddRow();
-      else if (table === branchTableData) handleAddRow1();
-      else handleAddRow2();
+      if (isLastRowEmpty(table)) {
+        displayRowError(table);
+      } else {
+        if (table === roleTableData) handleAddRow();
+        else if (table === branchTableData) handleAddRow1();
+        else handleAddRow2();
+      }
+    }
+  };
+
+  const handleAddRow = () => {
+    if (isLastRowEmpty(roleTableData)) {
+      displayRowError(roleTableData);
+      return;
+    }
+    const newRow = {
+      id: Date.now(),
+      role: '',
+      roleId: '',
+      startDate: '',
+      endDate: ''
+    };
+    setRoleTableData([...roleTableData, newRow]);
+    setRoleTableDataErrors([...roleTableDataErrors, { role: '', roleId: '', startDate: '', endDate: '' }]);
+  };
+
+  const handleAddRow1 = () => {
+    if (isLastRowEmpty(branchTableData)) {
+      displayRowError(branchTableData);
+      return;
+    }
+    const newRow = {
+      id: Date.now(),
+      branchCode: '',
+      branch: ''
+    };
+    setBranchTableData([...branchTableData, newRow]);
+    setBranchTableErrors([
+      ...branchTableErrors,
+      {
+        branchCode: ''
+      }
+    ]);
+  };
+
+  const handleAddRow2 = () => {
+    if (isLastRowEmpty(clientTableData)) {
+      displayRowError(clientTableData);
+      return;
+    }
+    const newRow = {
+      id: Date.now(),
+      customer: '',
+      client: ''
+    };
+    setClientTableData([...clientTableData, newRow]);
+    setClientTableErrors([
+      ...clientTableErrors,
+      {
+        customer: '',
+        client: ''
+      }
+    ]);
+  };
+
+  const isLastRowEmpty = (table) => {
+    const lastRow = table[table.length - 1];
+    if (!lastRow) return false;
+
+    if (table === roleTableData) {
+      return !lastRow.role || !lastRow.startDate;
+    } else if (table === branchTableData) {
+      return !lastRow.branchCode;
+    } else if (table === clientTableData) {
+      return !lastRow.customer || !lastRow.client;
+    }
+    return false;
+  };
+
+  const displayRowError = (table) => {
+    if (table === roleTableData) {
+      setRoleTableDataErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          role: !table[table.length - 1].role ? 'Role is required' : '',
+          startDate: !table[table.length - 1].startDate ? 'Start Date is required' : ''
+        };
+        return newErrors;
+      });
+    }
+    if (table === branchTableData) {
+      setBranchTableErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          branchCode: !table[table.length - 1].branchCode ? 'Branch Code is required' : ''
+        };
+        return newErrors;
+      });
+    }
+    if (table === clientTableData) {
+      setClientTableErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          customer: !table[table.length - 1].customer ? 'Customer is required' : '',
+          client: !table[table.length - 1].client ? 'Client is required' : ''
+        };
+        return newErrors;
+      });
     }
   };
 
@@ -348,6 +446,10 @@ export const UserCreationMaster = () => {
     setTable(table.filter((row) => row.id !== id));
   };
 
+  const getAvailableClients = (currentRowId) => {
+    const selectedClients = clientTableData.filter((row) => row.id !== currentRowId).map((row) => row.client);
+    return clientList.filter((role) => !selectedClients.includes(role.client));
+  };
   const getAvailableRoles = (currentRowId) => {
     const selectedRoles = roleTableData.filter((row) => row.id !== currentRowId).map((row) => row.role);
     return roleList.filter((role) => !selectedRoles.includes(role.role));
@@ -356,7 +458,6 @@ export const UserCreationMaster = () => {
   const handleRoleChange = (row, index, event) => {
     const value = event.target.value;
     const selectedRole = roleList.find((role) => role.role === value);
-
     setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, role: value, roleId: selectedRole.id } : r)));
     setRoleTableDataErrors((prev) => {
       const newErrors = [...prev];
@@ -376,7 +477,6 @@ export const UserCreationMaster = () => {
   const handleBranchCodeChange = (row, index, event) => {
     const value = event.target.value;
     const selectedBranch = branchList.find((branch) => branch.branchCode === value);
-
     setBranchTableData((prev) =>
       prev.map((r) => (r.id === row.id ? { ...r, branchCode: value, branch: selectedBranch ? selectedBranch.branch : '' } : r))
     );
@@ -385,6 +485,19 @@ export const UserCreationMaster = () => {
       newErrors[index] = {
         ...newErrors[index],
         branchCode: !value ? 'Branch Code is required' : ''
+      };
+      return newErrors;
+    });
+  };
+  const handleCustomerChange = (row, index, event) => {
+    const value = event.target.value;
+    // const selectedCustomer = customerList.find((branch) => branch.branchCode === value);
+    setClientTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, customer: value } : r)));
+    setClientTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        customer: !value ? 'Customer is required' : ''
       };
       return newErrors;
     });
@@ -959,13 +1072,15 @@ export const UserCreationMaster = () => {
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
-
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.customer}
+                                        // onChange={(e) => handleCustomerChange(row, index, e)}
+                                        className={clientTableErrors[index]?.customer ? 'error form-control' : 'form-control'}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setClientTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, customer: value } : r)));
+                                          getAllClientsByCustomer(value);
                                           setClientTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
@@ -975,11 +1090,13 @@ export const UserCreationMaster = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        className={clientTableErrors[index]?.customer ? 'error form-control' : 'form-control'}
                                       >
-                                        <option value="">Select Option</option>
-                                        <option value="CASIO INDIA">CASIO INDIA</option>
-                                        <option value="MARS">MARS</option>
+                                        <option value="">--Select--</option>
+                                        {customerList?.map((row) => (
+                                          <option key={row.id} value={row.customerName}>
+                                            {row.customerName}
+                                          </option>
+                                        ))}
                                       </select>
                                       {clientTableErrors[index]?.customer && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1003,12 +1120,21 @@ export const UserCreationMaster = () => {
                                             return newErrors;
                                           });
                                         }}
+                                        // onChange={(e) => handleCustomerChange(row, index, e)}
                                         onKeyDown={(e) => handleKeyDown(e, row, clientTableData)}
                                         className={clientTableErrors[index]?.client ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        <option value="CASIO INDIA">CASIO INDIA</option>
-                                        <option value="MARS">MARS</option>
+                                        {/* {clientList?.map((row) => (
+                                          <option key={row.id} value={row.client}>
+                                            {row.client}
+                                          </option>
+                                        ))} */}
+                                        {getAvailableClients(row.id).map((cl) => (
+                                          <option key={cl.id} value={cl.client}>
+                                            {cl.client}
+                                          </option>
+                                        ))}
                                       </select>
                                       {clientTableErrors[index]?.client && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
