@@ -32,6 +32,8 @@ const DepartmentMaster = Loadable(lazy(() => import('views/pages/basic-masters/D
 const DesignationMaster = Loadable(lazy(() => import('views/pages/basic-masters/DesignationMaster')));
 const GroupMaster = Loadable(lazy(() => import('views/pages/basic-masters/GroupMaster')));
 const UnitMaster = Loadable(lazy(() => import('views/pages/basic-masters/UnitMaster')));
+const CurrencyMaster = Loadable(lazy(() => import('views/pages/basic-masters/CurrencyMaster')));
+const RegionMaster = Loadable(lazy(() => import('views/pages/basic-masters/RegionMaster')));
 const Roles = Loadable(lazy(() => import('views/pages/rolesandResponsibility/Roles')));
 const ScreenNames = Loadable(lazy(() => import('views/pages/rolesandResponsibility/ScreenNames')));
 const FullFeaturedCrudGrid = Loadable(lazy(() => import('views/pages/basic-masters/FullFeaturedCrudGrid')));
@@ -141,6 +143,14 @@ const WMSRoutes = {
     {
       path: '/basicmasters/unitmaster',
       element: <UnitMaster />
+    },
+    {
+      path: '/basicmasters/currencymaster',
+      element: <CurrencyMaster />
+    },
+    {
+      path: '/basicmasters/regionmaster',
+      element: <RegionMaster />
     },
     {
       path: '/basicmasters/fullfeaturedcurdgrid',

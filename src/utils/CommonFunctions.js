@@ -95,3 +95,21 @@ export const getAllActiveEmployees = async (orgId) => {
     return error;
   }
 };
+
+export const getAllActiveRegions = async (orgId) => {
+  try {
+    const response = await apiCalls('get', `commonmaster/getAllRegionsByOrgId?orgId=${orgId}`);
+    if (response.status === true) {
+      const empData = response.paramObjectsMap.regionVO
+        .filter((row) => row.active === 'Active')
+        .map(({ id, regionName, regionCode }) => ({ id, regionName, regionCode }));
+      return empData;
+    } else {
+      console.error('API Error:');
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};

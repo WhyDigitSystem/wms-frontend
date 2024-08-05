@@ -148,6 +148,18 @@ const basicMasters = {
           url: '/basicmasters/unitmaster'
         },
         {
+          id: 'currencyMaster',
+          title: 'Currency Master',
+          type: 'item',
+          url: '/basicmasters/currencymaster'
+        },
+        {
+          id: 'regionMaster',
+          title: 'Region Master',
+          type: 'item',
+          url: '/basicmasters/regionmaster'
+        },
+        {
           id: 'fullfeaturedcurdgrid',
           title: 'Grid table',
           type: 'item',
