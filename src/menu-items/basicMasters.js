@@ -160,6 +160,24 @@ const basicMasters = {
           url: '/basicmasters/regionmaster'
         },
         {
+          id: 'documentTypeMaster',
+          title: 'Document Type Master',
+          type: 'item',
+          url: '/basicmasters/documenttype'
+        },
+        {
+          id: 'documentTypeMappingMaster',
+          title: 'DocumentType Mapping Master',
+          type: 'item',
+          url: '/basicmasters/documenttypemapping'
+        },
+        {
+          id: 'finYearMaster',
+          title: 'Financial Year Master',
+          type: 'item',
+          url: '/basicmasters/finyearmaster'
+        },
+        {
           id: 'fullfeaturedcurdgrid',
           title: 'Grid table',
           type: 'item',

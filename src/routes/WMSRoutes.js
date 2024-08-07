@@ -34,6 +34,9 @@ const GroupMaster = Loadable(lazy(() => import('views/pages/basic-masters/GroupM
 const UnitMaster = Loadable(lazy(() => import('views/pages/basic-masters/UnitMaster')));
 const CurrencyMaster = Loadable(lazy(() => import('views/pages/basic-masters/CurrencyMaster')));
 const RegionMaster = Loadable(lazy(() => import('views/pages/basic-masters/RegionMaster')));
+const DocumentTypeMaster = Loadable(lazy(() => import('views/pages/basic-masters/DocumentTypeMaster')));
+const DocumentTypeMappingMaster = Loadable(lazy(() => import('views/pages/basic-masters/DocumentTypeMappingMaster')));
+const FinYearMaster = Loadable(lazy(() => import('views/pages/basic-masters/FinYearMaster')));
 const Roles = Loadable(lazy(() => import('views/pages/rolesandResponsibility/Roles')));
 const ScreenNames = Loadable(lazy(() => import('views/pages/rolesandResponsibility/ScreenNames')));
 const FullFeaturedCrudGrid = Loadable(lazy(() => import('views/pages/basic-masters/FullFeaturedCrudGrid')));
@@ -151,6 +154,18 @@ const WMSRoutes = {
     {
       path: '/basicmasters/regionmaster',
       element: <RegionMaster />
+    },
+    {
+      path: '/basicmasters/documenttype',
+      element: <DocumentTypeMaster />
+    },
+    {
+      path: '/basicmasters/documenttypemapping',
+      element: <DocumentTypeMappingMaster />
+    },
+    {
+      path: '/basicmasters/finyearmaster',
+      element: <FinYearMaster />
     },
     {
       path: '/basicmasters/fullfeaturedcurdgrid',
