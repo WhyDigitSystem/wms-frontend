@@ -14,7 +14,7 @@ import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import axios from 'axios';
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState, useMemo, useEffect } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -53,14 +53,14 @@ const CreateCompany = () => {
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'companyId', header: 'CompanyId', size: 140 },
+    { accessorKey: 'companyCode', header: 'Company Code', size: 140 },
     {
-      accessorKey: 'company',
+      accessorKey: 'companyName',
       header: 'Company',
       size: 140
     },
     {
-      accessorKey: 'adminName',
+      accessorKey: 'employeeName',
       header: 'Admin',
       size: 140
     },
@@ -69,10 +69,53 @@ const CreateCompany = () => {
 
   const [listViewData, setListViewData] = useState([]);
 
+  useEffect(() => {
+    getAllCompanies();
+  }, []);
+  const getAllCompanies = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.companyVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const getCompanyById = async (row) => {
+    console.log('THE SELECTED COMPANY ID IS:', row.original.id);
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${row.original.id}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListView(false);
+        const particularCompany = response.paramObjectsMap.companyVO;
+
+        setFormData({
+          companyCode: particularCompany.companyCode,
+          companyName: particularCompany.companyName,
+          companyAdminName: particularCompany.employeeName,
+          companyAdminEmail: particularCompany.email,
+          active: particularCompany.active === 'Active' ? true : false
+        });
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value, checked } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
-    const companyNameRegex = /^[A-Za-z0-9@_\-*]*$/;
+    const companyNameRegex = /^[A-Za-z 0-9@_\-*]*$/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const companyCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
 
@@ -101,7 +144,8 @@ const CreateCompany = () => {
       companyName: '',
       companyAdminName: '',
       companyAdminEmail: '',
-      companyAdminPwd: ''
+      companyAdminPwd: '',
+      active: true
     });
     setFieldErrors({
       companyCode: '',
@@ -110,6 +154,7 @@ const CreateCompany = () => {
       companyAdminEmail: '',
       companyAdminPwd: ''
     });
+    setEditId('');
   };
 
   const handleSave = async () => {
@@ -126,19 +171,18 @@ const CreateCompany = () => {
     if (!formData.companyAdminEmail) {
       errors.companyAdminEmail = 'Email Id is required';
     }
-    if (!formData.companyAdminPwd) {
-      errors.companyAdminPwd = 'Password is required';
-    }
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
 
       const saveData = {
+        ...(editId && { id: editId }),
         active: formData.active,
         address: '',
         city: '',
         companyCode: formData.companyCode,
         companyName: formData.companyName,
+        ceo: '',
         country: '',
         createdBy: loginUserName,
         currency: '',
@@ -150,6 +194,7 @@ const CreateCompany = () => {
         password: encryptPassword('Wds@20232'),
         phone: '',
         state: '',
+        gst: '',
         webSite: '',
         zip: '',
         orgId: orgId
@@ -157,12 +202,16 @@ const CreateCompany = () => {
       console.log('DATA TO SAVE IS:', saveData);
 
       try {
-        const response = await apiCalls('post', `commonmaster/company`, saveData);
-        if (response.data.status === true) {
+        const method = editId ? 'put' : 'post';
+        const url = editId ? 'commonmaster/updateCompany' : 'commonmaster/company';
+
+        const response = await apiCalls(method, url, saveData);
+        if (response.status === true) {
           console.log('Response:', response);
           showToast('success', editId ? ' Company Updated Successfully' : 'Company created successfully');
 
           handleClear();
+          getAllCompanies();
           setIsLoading(false);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Company creation failed');
@@ -201,7 +250,7 @@ const CreateCompany = () => {
               columns={listViewColumns}
               // editCallback={editEmployee}
               blockEdit={true} // DISAPLE THE MODAL IF TRUE
-              // toEdit={getCustomerById}
+              toEdit={getCompanyById}
             />
           </div>
         ) : (
@@ -259,7 +308,7 @@ const CreateCompany = () => {
                   helperText={fieldErrors.companyAdminEmail}
                 />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label="Password"
                   variant="outlined"
@@ -271,7 +320,7 @@ const CreateCompany = () => {
                   error={!!fieldErrors.companyAdminPwd}
                   helperText={fieldErrors.companyAdminPwd}
                 />
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControlLabel
                   control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}

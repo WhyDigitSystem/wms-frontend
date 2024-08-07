@@ -36,6 +36,7 @@ const Company = () => {
   const [countryList, setCountryList] = useState([]);
   const [stateList, setStateList] = useState([]);
   const [cityList, setCityList] = useState([]);
+  const [editId, setEditId] = useState('');
 
   const [formData, setFormData] = useState({
     companyCode: '',
@@ -64,16 +65,15 @@ const Company = () => {
     active: ''
   });
   const [listView, setListView] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'companyId', header: 'CompanyId', size: 140 },
+    { accessorKey: 'companyCode', header: 'Company Code', size: 140 },
     {
-      accessorKey: 'company',
+      accessorKey: 'companyName',
       header: 'Company',
       size: 140
     },
     {
-      accessorKey: 'adminName',
+      accessorKey: 'employeeName',
       header: 'Admin',
       size: 140
     },
@@ -82,6 +82,8 @@ const Company = () => {
 
   const [listViewData, setListViewData] = useState([]);
   useEffect(() => {
+    getCompanyDetails();
+    // getCompany();
     getAllCountries();
     if (formData.country) {
       getAllStates();
@@ -139,9 +141,56 @@ const Company = () => {
     }
   };
 
+  const getCompanyById = async (row) => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${row.original.id}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListView(false);
+        const particularCompany = response.paramObjectsMap.companyVO[0];
+        console.log('PARTICULAR COMPANY IS:', particularCompany);
+
+        setFormData({
+          companyCode: particularCompany.companyCode,
+          companyName: particularCompany.companyName,
+          ceo: particularCompany.ceo,
+          address: particularCompany.address,
+          country: particularCompany.country,
+          state: particularCompany.state,
+          city: particularCompany.city,
+          pincode: particularCompany.zip,
+          gst: particularCompany.gst,
+          website: particularCompany.webSite
+        });
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const getCompanyDetails = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        const particularCompany = response.paramObjectsMap.companyVO[0];
+        setListViewData(response.paramObjectsMap.companyVO);
+        console.log('THE LISTVIEW COMPANY IS:', particularCompany);
+
+        setFormData({ ...formData, companyCode: particularCompany.companyCode, companyName: particularCompany.companyName });
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   const handleClear = () => {
     setFormData({
-      companyCode: '',
       ceo: '',
       address: '',
       country: '',
@@ -152,8 +201,6 @@ const Company = () => {
       website: ''
     });
     setFieldErrors({
-      companyCode: '',
-      companyName: '',
       ceo: '',
       address: '',
       country: '',
@@ -167,9 +214,6 @@ const Company = () => {
 
   const handleSave = async () => {
     const errors = {};
-    if (!formData.companyCode) {
-      errors.companyCode = 'Company Code is required';
-    }
     if (!formData.ceo) {
       errors.ceo = 'CEO is required';
     }
@@ -197,7 +241,7 @@ const Company = () => {
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       const saveFormData = {
-        // id: formData.id,
+        id: orgId,
         companyCode: formData.companyCode,
         companyName: formData.companyName,
         ceo: formData.ceo,
@@ -205,43 +249,40 @@ const Company = () => {
         country: formData.country,
         state: formData.state,
         city: formData.city,
-        pincode: formData.pincode,
+        zip: formData.pincode,
         gst: formData.gst,
-        website: formData.website,
+        webSite: formData.website,
         active: formData.active,
-        orgId: orgId,
         updatedBy: loginUserName
       };
       console.log('THE SAVE FORM DATA IS:', saveFormData);
 
-      // try {
-      //   const response = await apiCalls('put', `country`, saveFormData);
-      //   if (response.status === true) {
-      //     console.log('Response:', response);
+      try {
+        const response = await apiCalls('put', `commonmaster/updateCompany`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response);
 
-      //     showToast('success', ' Company updated Successfully');
-      //     handleClear();
-      //     setIsLoading(false);
-      //     setFormData({
-      //       country: '',
-      //       countryCode: ''
-      //     });
-      //   } else {
-      //     showToast('error', response.paramObjectsMap.errorMessage || 'Country creation failed');
-      //     setIsLoading(false);
-      //   }
-      // } catch (error) {
-      //   console.error('Error:', error);
-      //   showToast('error', 'Company updation failed');
+          showToast('success', ' Company updated Successfully');
+          handleClear();
+          setIsLoading(false);
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Company updation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Company updation failed');
 
-      //   setIsLoading(false);
-      // }
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }
   };
 
   const handleView = () => {
+    console.log('LIST VIEW DATAS ARE:', listViewData);
+
     setListView(!listView);
   };
 
@@ -263,7 +304,7 @@ const Company = () => {
               columns={listViewColumns}
               // editCallback={editEmployee}
               blockEdit={true} // DISAPLE THE MODAL IF TRUE
-              // toEdit={getCustomerById}
+              toEdit={getCompanyById}
             />
           </div>
         ) : (
@@ -291,6 +332,7 @@ const Company = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.companyCode}
                   helperText={fieldErrors.companyCode}
+                  disabled
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -332,6 +374,7 @@ const Company = () => {
                   {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
                 </FormControl>
               </div>
+
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
                   <InputLabel id="state-label">State</InputLabel>

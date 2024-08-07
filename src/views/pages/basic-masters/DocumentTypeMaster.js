@@ -40,8 +40,7 @@ export const DocumentTypeMaster = () => {
     screenName: '',
     userType: '',
     docCode: '',
-    desc: '',
-    active: true
+    desc: ''
   });
   const [value, setValue] = useState(0);
   const [clientTableData, setClientTableData] = useState([{ id: 1, clientCode: '', client: '' }]);
@@ -57,14 +56,12 @@ export const DocumentTypeMaster = () => {
     screenName: '',
     userType: '',
     docCode: '',
-    desc: '',
-    active: ''
+    desc: ''
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
     { accessorKey: 'screenCode', header: 'screenCode', size: 140 },
-    { accessorKey: 'screenName', header: 'Screen', size: 140 },
-    { accessorKey: 'active', header: 'Active', size: 140 }
+    { accessorKey: 'screenName', header: 'Screen', size: 140 }
   ];
   const [listViewData, setListViewData] = useState([]);
   const [screenList, setScreenList] = useState([]);
@@ -77,7 +74,8 @@ export const DocumentTypeMaster = () => {
   useEffect(() => {
     getAllScreens();
     getAllDocumentType();
-    getAllCustomers();
+    // getAllCustomers();
+    getAllClients();
   }, []);
 
   const getAllScreens = async () => {
@@ -94,13 +92,27 @@ export const DocumentTypeMaster = () => {
       console.error('Error fetching data:', error);
     }
   };
-  const getAllCustomers = async () => {
+  // const getAllCustomers = async () => {
+  //   try {
+  //     const response = await apiCalls('get', `warehousemastercontroller/customer?orgid=${orgId}`);
+  //     console.log('API Response:', response);
+
+  //     if (response.status === true) {
+  //       setCustomerList(response.paramObjectsMap.CustomerVO);
+  //     } else {
+  //       console.error('API Error:', response);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
+  const getAllClients = async () => {
     try {
-      const response = await apiCalls('get', `warehousemastercontroller/customer?orgid=${orgId}`);
+      const response = await apiCalls('get', `warehousemastercontroller/getClientAndClientCodeByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setCustomerList(response.paramObjectsMap.CustomerVO);
+        setClientList(response.paramObjectsMap.CustomerVO);
       } else {
         console.error('API Error:', response);
       }
@@ -108,21 +120,6 @@ export const DocumentTypeMaster = () => {
       console.error('Error fetching data:', error);
     }
   };
-  const getAllClientsByCustomer = async (customer) => {
-    try {
-      const response = await apiCalls('get', `warehousemastercontroller/client?customer=${customer}&orgid=${orgId}`);
-      console.log('API Response:', response);
-
-      if (response.status === true) {
-        setClientList(response.paramObjectsMap.clientVO);
-      } else {
-        console.error('API Error:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
   const getAllDocumentType = async () => {
     try {
       const response = await apiCalls('get', `warehousemastercontroller/getAllDocumentType?orgid=${orgId}`);
@@ -148,7 +145,6 @@ export const DocumentTypeMaster = () => {
       if (response.status === true) {
         setListView(false);
         const particularClient = response.paramObjectsMap.documentTypeVO;
-        // console.log('THE FOUND BRANCH 1 IS:', foundBranch1);
 
         setFormData({
           screenName: particularClient.screenName,
@@ -163,7 +159,7 @@ export const DocumentTypeMaster = () => {
           console.log(`Searching for branch with code ${i.client}:`, foundClient);
           return {
             id: i.id,
-            client: foundClient ? foundClient.clientName : 'Not Found',
+            client: foundClient ? foundClient.client : 'Not Found',
             clientCode: foundClient.clientCode ? foundClient.clientCode : 'Not Found'
           };
         });
@@ -185,7 +181,6 @@ export const DocumentTypeMaster = () => {
 
     let errorMessage = '';
 
-    // Validation based on field name
     switch (name) {
       case 'docCode':
         if (!alphaNumericRegex.test(value)) {
@@ -220,13 +215,6 @@ export const DocumentTypeMaster = () => {
 
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
     }
-  };
-
-  const handleActiveChange = (event) => {
-    setFormData({
-      ...formData,
-      active: event.target.checked
-    });
   };
 
   const handleKeyDown = (e, row, table) => {
@@ -312,35 +300,12 @@ export const DocumentTypeMaster = () => {
 
   const getAvailableClients = (currentRowId) => {
     const selectedClients = clientTableData.filter((row) => row.id !== currentRowId).map((row) => row.client);
-    return clientList.filter((role) => !selectedClients.includes(role.client));
+    return clientList.filter((client) => !selectedClients.includes(client.client));
   };
-  // const getAvailableRoles = (currentRowId) => {
-  //   const selectedRoles = roleTableData.filter((row) => row.id !== currentRowId).map((row) => row.role);
-  //   return roleList.filter((role) => !selectedRoles.includes(role.role));
-  // };
-
-  // const handleRoleChange = (row, index, event) => {
-  //   const value = event.target.value;
-  //   const selectedRole = roleList.find((role) => role.role === value);
-  //   setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, role: value, roleId: selectedRole.id } : r)));
-  //   setRoleTableDataErrors((prev) => {
-  //     const newErrors = [...prev];
-  //     newErrors[index] = {
-  //       ...newErrors[index],
-  //       role: !value ? 'Role is required' : ''
-  //     };
-  //     return newErrors;
-  //   });
-  // };
-
-  // const getAvailableBranchCodes = (currentRowId) => {
-  //   const selectedBranchCodes = branchTableData.filter((row) => row.id !== currentRowId).map((row) => row.branchCode);
-  //   return branchList.filter((branch) => !selectedBranchCodes.includes(branch.branchCode));
-  // };
 
   const handleClientChange = (row, index, event) => {
     const value = event.target.value;
-    const selectedClient = clientList.find((client) => client.clientName === value);
+    const selectedClient = clientList.find((client) => client.client === value);
     setClientTableData((prev) =>
       prev.map((r) => (r.id === row.id ? { ...r, client: value, clientCode: selectedClient ? selectedClient.clientCode : '' } : r))
     );
@@ -349,19 +314,6 @@ export const DocumentTypeMaster = () => {
       newErrors[index] = {
         ...newErrors[index],
         client: !value ? 'Client is required' : ''
-      };
-      return newErrors;
-    });
-  };
-  const handleCustomerChange = (row, index, event) => {
-    const value = event.target.value;
-    // const selectedCustomer = customerList.find((branch) => branch.branchCode === value);
-    setClientTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, clientCode: value } : r)));
-    setClientTableErrors((prev) => {
-      const newErrors = [...prev];
-      newErrors[index] = {
-        ...newErrors[index],
-        clientCode: !value ? 'clientCode is required' : ''
       };
       return newErrors;
     });
@@ -384,6 +336,7 @@ export const DocumentTypeMaster = () => {
       desc: ''
     });
     setClientTableErrors('');
+    setEditId('');
   };
 
   const handleSave = async () => {
@@ -444,7 +397,7 @@ export const DocumentTypeMaster = () => {
           console.log('Response:', response);
           showToast('success', editId ? 'Document Type Updated Successfully' : 'Document Type created successfully');
           handleClear();
-          // getAllDocumentType();
+          getAllDocumentType();
           setIsLoading(false);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Document Type creation failed');
@@ -551,12 +504,6 @@ export const DocumentTypeMaster = () => {
                   helperText={fieldErrors.docCode}
                 />
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControlLabel
-                  control={<Checkbox checked={formData.active} onChange={handleActiveChange} name="active" color="primary" />}
-                  label="Active"
-                />
-              </div>
             </div>
             <div className="row mt-2">
               <Box sx={{ width: '100%' }}>
@@ -567,212 +514,10 @@ export const DocumentTypeMaster = () => {
                   indicatorColor="secondary"
                   aria-label="secondary tabs example"
                 >
-                  {/* <Tab value={0} label="Roles" />
-                  <Tab value={1} label="Branch Accessible" /> */}
                   <Tab value={0} label="Client Access" />
                 </Tabs>
               </Box>
               <Box sx={{ padding: 2 }}>
-                {/* {value === 2 && (
-                  <>
-                    <div className="row d-flex ml">
-                      <div className="mb-1">
-                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                      </div>
-                      <div className="row mt-2">
-                        <div className="col-lg-9">
-                          <div className="table-responsive">
-                            <table className="table table-bordered ">
-                              <thead>
-                                <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                    Action
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                    S.No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    Role
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Start Date
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    End Date
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {roleTableData.map((row, index) => (
-                                  <tr key={row.id}>
-                                    <td className="border px-2 py-2 text-center">
-                                      <ActionButton
-                                        title="Delete"
-                                        icon={DeleteIcon}
-                                        onClick={() => handleDeleteRow(row.id, roleTableData, setRoleTableData)}
-                                      />
-                                    </td>
-                                    <td className="text-center">
-                                      <div className="pt-2">{index + 1}</div>
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <select
-                                        value={row.role}
-                                        onChange={(e) => handleRoleChange(row, index, e)}
-                                        className={roleTableDataErrors[index]?.role ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">Select Option</option>
-                                        {getAvailableRoles(row.id).map((role) => (
-                                          <option key={role.id} value={role.role}>
-                                            {role.role}
-                                          </option>
-                                        ))}
-                                      </select>
-                                      {roleTableDataErrors[index]?.role && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {roleTableDataErrors[index].role}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <div className="w-100">
-                                        <DatePicker
-                                          selected={row.startDate}
-                                          className={roleTableDataErrors[index]?.startDate ? 'error form-control' : 'form-control'}
-                                          onChange={(date) => {
-                                            setRoleTableData((prev) =>
-                                              prev.map((r) =>
-                                                r.id === row.id
-                                                  ? { ...r, startDate: date, endDate: date > r.endDate ? null : r.endDate }
-                                                  : r
-                                              )
-                                            );
-                                            setRoleTableDataErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                startDate: !date ? 'Start Date is required' : '',
-                                                endDate: date && row.endDate && date > row.endDate ? '' : newErrors[index]?.endDate
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          dateFormat="dd/MM/yyyy"
-                                          minDate={new Date()}
-                                          onKeyDown={(e) => handleKeyDown(e, row, roleTableData)}
-                                        />
-                                        {roleTableDataErrors[index]?.startDate && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {roleTableDataErrors[index].startDate}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <DatePicker
-                                        selected={row.endDate}
-                                        className={roleTableDataErrors[index]?.endDate ? 'error form-control' : 'form-control'}
-                                        onChange={(date) => {
-                                          setRoleTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, endDate: date } : r)));
-                                          setRoleTableDataErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              endDate: !date ? 'End Date is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        dateFormat="dd/MM/yyyy"
-                                        minDate={row.startDate || new Date()}
-                                        disabled={!row.startDate}
-                                      />
-                                      {roleTableDataErrors[index]?.endDate && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {roleTableDataErrors[index].endDate}
-                                        </div>
-                                      )}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )}
-                {value === 1 && (
-                  <>
-                    <div className="row d-flex ml">
-                      <div className="mb-1">
-                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow1} />
-                      </div>
-                      <div className="row mt-2">
-                        <div className="col-lg-6">
-                          <div className="table-responsive">
-                            <table className="table table-bordered table-responsive">
-                              <thead>
-                                <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                    Action
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                    S.No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Branch Code
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center">Branch</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {branchTableData.map((row, index) => (
-                                  <tr key={row.id}>
-                                    <td className="border px-2 py-2 text-center">
-                                      <ActionButton
-                                        title="Delete"
-                                        icon={DeleteIcon}
-                                        onClick={() => handleDeleteRow(row.id, branchTableData, setBranchTableData)}
-                                      />
-                                    </td>
-                                    <td className="text-center">
-                                      <div className="pt-2">{index + 1}</div>
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <select
-                                        value={row.branchCode}
-                                        onChange={(e) => handleBranchCodeChange(row, index, e)}
-                                        onKeyDown={(e) => handleKeyDown(e, row, branchTableData)}
-                                        className={branchTableErrors[index]?.branchCode ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">Select</option>
-                                        {getAvailableBranchCodes(row.id).map((branch) => (
-                                          <option key={branch.id} value={branch.branchCode}>
-                                            {branch.branchCode}
-                                          </option>
-                                        ))}
-                                      </select>
-                                      {branchTableErrors[index]?.branchCode && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {branchTableErrors[index].branchCode}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    <td className="border px-2 py-2 text-center pt-3">{row.branch}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )} */}
                 {value === 0 && (
                   <>
                     <div className="row d-flex ml">
@@ -808,6 +553,7 @@ export const DocumentTypeMaster = () => {
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
+
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.client}
@@ -815,10 +561,10 @@ export const DocumentTypeMaster = () => {
                                         onKeyDown={(e) => handleKeyDown(e, row, clientTableData)}
                                         className={clientTableErrors[index]?.client ? 'error form-control' : 'form-control'}
                                       >
-                                        <option value="">-- Select --</option>
-                                        {getAvailableClients(row.id).map((cl) => (
-                                          <option key={cl.id} value={cl.client}>
-                                            {cl.client}
+                                        <option value="">Select Option</option>
+                                        {getAvailableClients(row.id).map((client) => (
+                                          <option key={client.id} value={client.client}>
+                                            {client.client}
                                           </option>
                                         ))}
                                       </select>
