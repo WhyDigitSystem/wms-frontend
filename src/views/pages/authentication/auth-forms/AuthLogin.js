@@ -336,6 +336,12 @@ const FirebaseLogin = ({ ...others }) => {
         localStorage.setItem('orgId', response.data.paramObjectsMap.userVO.orgId); // Replace with the actual token
         localStorage.setItem('userId', response.data.paramObjectsMap.userVO.usersId);
         localStorage.setItem('userName', response.data.paramObjectsMap.userVO.userName);
+        localStorage.setItem('branch', 'CHENNAI');
+        localStorage.setItem('branchCode', 'MAAW');
+        localStorage.setItem('warehouse', 'CHENNAI');
+        localStorage.setItem('finYear', '2024');
+        localStorage.setItem('customer', 'CASIO INDIA PVT LTD');
+        localStorage.setItem('client', 'CASIO');
         localStorage.setItem('LoginMessage', true);
         const userRoleVO = response.data.paramObjectsMap.userVO.roleVO;
         const roles = userRoleVO.map((row) => ({
