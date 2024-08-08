@@ -5,7 +5,8 @@ const ToastComponent = () => <ToastContainer />;
 
 export const showToast = (type, message, options = {}) => {
   const config = {
-    autoClose: 2000,
+    autoClose: 3000,
+    position: 'top-center',
     theme: 'colored',
     ...options
   };

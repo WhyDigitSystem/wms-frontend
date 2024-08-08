@@ -2,17 +2,17 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from './CommonListViewTable';
 import axios from 'axios';
-import { useRef, useState, useMemo, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import 'react-toastify/dist/ReactToastify.css';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
+import CommonListViewTable from './CommonListViewTable';
 
 export const CellTypeMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -34,7 +34,7 @@ export const CellTypeMaster = () => {
   const [listView, setListView] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'cellCategory', header: 'Cell Category', size: 140 },
+    { accessorKey: 'cellType', header: 'Cell Category', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
   const [listViewData, setListViewData] = useState([]);
@@ -46,11 +46,13 @@ export const CellTypeMaster = () => {
 
   const getAllCellCategory = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/cellCategory?orgid=1000000001`);
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/warehousemastercontroller/getAllCellTypeByOrgId?orgId=${orgId}`
+      );
       console.log('API Response:', response);
 
       if (response.status === 200) {
-        setListViewData(response.data.paramObjectsMap.cellCategoryVO);
+        setListViewData(response.data.paramObjectsMap.cellTypeVO);
       } else {
         console.error('API Error:', response.data);
       }
@@ -60,18 +62,20 @@ export const CellTypeMaster = () => {
   };
   const getCellCategoryById = async (row) => {
     console.log('THE SELECTED cellCategory ID IS:', row.original.id);
+    setListView(true);
     setEditId(row.original.id);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/cellCategory/${row.original.id}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/warehousemastercontroller/cellType/${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === 200) {
         setListView(false);
-        const particularCellCategory = response.data.paramObjectsMap.cellCategory;
+        const particularCellCategory = response.data.paramObjectsMap.cellTypeVO;
 
         setFormData({
-          cellCategory: particularCellCategory.cellCategory,
-          active: particularCellCategory.active === 'Active' ? true : false
+          cellCategory: particularCellCategory.cellType,
+          active: particularCellCategory.active === 'Active' ? true : false,
+          id: particularCellCategory.id
         });
       } else {
         console.error('API Error:', response.data);
@@ -102,6 +106,7 @@ export const CellTypeMaster = () => {
     setFieldErrors({
       cellCategory: ''
     });
+    setEditId('');
   };
 
   const handleSave = () => {
@@ -115,7 +120,7 @@ export const CellTypeMaster = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        cellCategory: formData.cellCategory,
+        celltype: formData.cellCategory,
         orgId: orgId,
         createdby: loginUserName
       };
@@ -123,7 +128,7 @@ export const CellTypeMaster = () => {
       console.log('DATA TO SAVE IS:', saveFormData);
 
       axios
-        .post(`${process.env.REACT_APP_API_URL}/api/commonmaster/createUpdateCellCategory`, saveFormData)
+        .put(`${process.env.REACT_APP_API_URL}/api/warehousemastercontroller/createUpdateCellType`, saveFormData)
 
         .then((response) => {
           if (response.data.status === true) {
@@ -191,7 +196,7 @@ export const CellTypeMaster = () => {
               data={listViewData}
               columns={listViewColumns}
               blockEdit={true} // DISAPLE THE MODAL IF TRUE
-              toEdit={getAllCellCategory}
+              toEdit={getCellCategoryById}
             />
           </div>
         ) : (
