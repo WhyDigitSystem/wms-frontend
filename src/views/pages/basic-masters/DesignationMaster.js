@@ -107,6 +107,7 @@ export const DesignationMaster = () => {
       designationName: '',
       designationCode: ''
     });
+    setEditId('');
   };
 
   const handleSave = async () => {
