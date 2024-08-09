@@ -135,18 +135,18 @@ const basicMasters = {
           type: 'item',
           url: '/basicmasters/designationmaster'
         },
-        {
-          id: 'groupMaster',
-          title: 'Group',
-          type: 'item',
-          url: '/basicmasters/groupmaster'
-        },
-        {
-          id: 'unitMaster',
-          title: 'Unit',
-          type: 'item',
-          url: '/basicmasters/unitmaster'
-        },
+        // {
+        //   id: 'groupMaster',
+        //   title: 'Group',
+        //   type: 'item',
+        //   url: '/basicmasters/groupmaster'
+        // },
+        // {
+        //   id: 'unitMaster',
+        //   title: 'Unit',
+        //   type: 'item',
+        //   url: '/basicmasters/unitmaster'
+        // },
         {
           id: 'currencyMaster',
           title: 'Currency',
