@@ -29,25 +29,27 @@ export const DepartmentMaster = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     active: true,
-    deptCode: '',
-    deptName: ''
+    code: '',
+    departmentName: ''
   });
   const [editId, setEditId] = useState('');
 
   const theme = useTheme();
   const anchorRef = useRef(null);
+  const codeRef = useRef(null);
+  const departmentNameRef = useRef(null);
 
   const [fieldErrors, setFieldErrors] = useState({
-    deptName: '',
-    deptCode: ''
+    departmentName: '',
+    code: ''
   });
   const [listView, setListView] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'deptCode', header: 'Code', size: 140 },
+    { accessorKey: 'code', header: 'Code', size: 140 },
     {
-      accessorKey: 'deptName',
-      header: 'Country',
+      accessorKey: 'departmentName',
+      header: 'Department Name',
       size: 140
     },
     { accessorKey: 'active', header: 'Active', size: 140 }
@@ -60,30 +62,37 @@ export const DepartmentMaster = () => {
 
   const getAllDepart = async () => {
     try {
-      const result = await apiCalls('get', `commonmaster/country?orgid=1000000001`);
-      setListViewData(result.paramObjectsMap.deptVO);
-      console.log('Test', result);
-    } catch (err) {
-      console.log('error', err);
+      const response = await apiCalls('get', `commonmaster/getAllDepartmentByOrgId?orgId=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.departmentVOs);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
   };
 
   const getDeptById = async (row) => {
-    console.log('THE SELECTED DEPT ID IS:', row.original.id);
+    console.log('THE SELECTED region ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `commonmaster/country/${row.original.id}`);
+      const response = await apiCalls('get', `commonmaster/getAllDepartmentById?id=${row.original.id}`);
+      console.log('API Response:', response);
 
       if (response.status === true) {
-        const particularDept = response.paramObjectsMap.DeptVo;
-        setFormData({
-          deptCode: particularDept.deptCode,
-          deptName: particularDept.deptName,
-          active: particularDept.active === 'Active' ? true : false
-        });
         setListView(false);
+        const particularDepartment = response.paramObjectsMap.departmentVOs[0];
+
+        setFormData({
+          code: particularDepartment.code,
+          departmentName: particularDepartment.departmentName,
+          active: particularDepartment.active === 'Active' ? true : false
+        });
       } else {
-        console.error('API Error');
+        console.error('API Error:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -91,39 +100,51 @@ export const DepartmentMaster = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, selectionStart, selectionEnd } = e.target;
     const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
 
-    if (name === 'deptCode' && !codeRegex.test(value)) {
+    if (name === 'code' && !codeRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else if (name === 'deptName' && !nameRegex.test(value)) {
+    } else if (name === 'departmentName' && !nameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else {
       setFormData({ ...formData, [name]: value.toUpperCase() });
       setFieldErrors({ ...fieldErrors, [name]: '' });
+
+      const refs = {
+        code: codeRef,
+        departmentName: departmentNameRef
+      };
+
+      setTimeout(() => {
+        const ref = refs[name];
+        if (ref && ref.current) {
+          ref.current.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 10);
     }
   };
 
   const handleClear = () => {
     setFormData({
-      deptName: '',
-      deptCode: '',
+      departmentName: '',
+      code: '',
       active: true
     });
     setFieldErrors({
-      deptName: '',
-      deptCode: ''
+      departmentName: '',
+      code: ''
     });
   };
 
   const handleSave = async () => {
     const errors = {};
-    if (!formData.deptCode) {
-      errors.deptCode = 'Dept Code is required';
+    if (!formData.code) {
+      errors.code = 'Dept Code is required';
     }
-    if (!formData.deptName) {
-      errors.deptName = 'Department Name is required';
+    if (!formData.departmentName) {
+      errors.departmentName = 'Department Name is required';
     }
 
     if (Object.keys(errors).length === 0) {
@@ -131,16 +152,16 @@ export const DepartmentMaster = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        deptCode: formData.deptCode,
-        deptName: formData.deptName,
+        code: formData.code,
+        departmentName: formData.departmentName,
         orgId: orgId,
-        createdby: loginUserName
+        createdBy: loginUserName
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const result = await apiCalls('post', `commonmaster/createUpdateDeptartment`, saveFormData);
+        const result = await apiCalls('put', `commonmaster/createUpdateDepartment`, saveFormData);
 
         if (result.status === true) {
           console.log('Response:', result);
@@ -152,9 +173,9 @@ export const DepartmentMaster = () => {
           showToast('error', result.paramObjectsMap.errorMessage || 'Deptartment creation failed');
           setIsLoading(false);
         }
-      } catch (err) {
-        console.log('error', err);
-        showToast('error', 'Deptartment creation failed');
+      } catch (error) {
+        console.log('error', error);
+        showToast('error', error.message);
         setIsLoading(false);
       }
     } else {
@@ -170,7 +191,7 @@ export const DepartmentMaster = () => {
     setEditMode(false);
     setFormData({
       country: '',
-      deptCode: ''
+      code: ''
     });
   };
 
@@ -209,11 +230,12 @@ export const DepartmentMaster = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="deptCode"
-                  value={formData.deptCode}
+                  name="code"
+                  value={formData.code}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.deptCode}
-                  helperText={fieldErrors.deptCode}
+                  error={!!fieldErrors.code}
+                  helperText={fieldErrors.code}
+                  inputRef={codeRef}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -222,11 +244,12 @@ export const DepartmentMaster = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="deptName"
-                  value={formData.deptName}
+                  name="departmentName"
+                  value={formData.departmentName}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.deptName}
-                  helperText={fieldErrors.deptName}
+                  error={!!fieldErrors.departmentName}
+                  helperText={fieldErrors.departmentName}
+                  inputRef={departmentNameRef}
                 />
               </div>
               <div className="col-md-3 mb-3">
