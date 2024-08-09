@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
 import {
   Avatar,
   Box,
@@ -20,6 +19,7 @@ import {
   Typography,
   useMediaQuery
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar';
@@ -93,7 +93,7 @@ const NotificationSection = () => {
       <Box
         sx={{
           ml: 2,
-          mr: 3,
+          mr: 2,
           [theme.breakpoints.down('md')]: {
             mr: 2
           }
@@ -106,11 +106,11 @@ const NotificationSection = () => {
               ...theme.typography.commonAvatar,
               ...theme.typography.mediumAvatar,
               transition: 'all .2s ease-in-out',
-              background: theme.palette.secondary.light,
-              color: theme.palette.secondary.dark,
+              background: theme.palette.primary.light,
+              color: theme.palette.primary.dark,
               '&[aria-controls="menu-list-grow"],&:hover': {
-                background: theme.palette.secondary.dark,
-                color: theme.palette.secondary.light
+                background: theme.palette.primary.dark,
+                color: theme.palette.primary.light
               }
             }}
             ref={anchorRef}

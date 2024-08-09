@@ -65,6 +65,18 @@ const CommonListViewTable = ({ data, columns, editCallback, countryVO, roleData,
         )
       };
     }
+
+    if (column.accessorKey === 'currentFinYear') {
+      console.log('the columns are:', column);
+
+      return {
+        ...column,
+        Cell: ({ cell }) => (
+          <Chip label={cell.getValue() === true ? 'true' : 'false'} sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX} />
+        )
+      };
+    }
+
     return column;
   });
 
