@@ -29,6 +29,7 @@ import apiCalls from 'apicall';
 const Branch = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [loginUserId, setLoginUserId] = useState(localStorage.getItem('userId'));
   const [isLoading, setIsLoading] = useState(false);
   const [countryList, setCountryList] = useState([]);
   const [stateList, setStateList] = useState([]);
@@ -39,13 +40,14 @@ const Branch = () => {
     companyName: '',
     branchCode: '',
     branchName: '',
-    branchHead: '',
     mobile: '',
     email: '',
     address: '',
     country: '',
     state: '',
     city: '',
+    pincode: '',
+    gst: '',
     active: true
   });
 
@@ -53,27 +55,32 @@ const Branch = () => {
     companyName: '',
     branchCode: '',
     branchName: '',
-    branchHead: '',
     mobile: '',
     email: '',
     address: '',
     country: '',
     state: '',
     city: '',
+    pincode: '',
+    gst: '',
     active: ''
   });
   const [listView, setListView] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'companyId', header: 'CompanyId', size: 140 },
+    { accessorKey: 'branch', header: 'Branch', size: 140 },
     {
-      accessorKey: 'company',
-      header: 'Company',
+      accessorKey: 'branch',
+      header: 'Branch',
       size: 140
     },
     {
-      accessorKey: 'adminName',
-      header: 'Admin',
+      accessorKey: 'branchCode',
+      header: 'Branch Code',
+      size: 140
+    },
+    {
+      accessorKey: 'city',
+      header: 'City',
       size: 140
     },
     { accessorKey: 'active', header: 'Active', size: 140 }
@@ -82,6 +89,8 @@ const Branch = () => {
   const [listViewData, setListViewData] = useState([]);
   useEffect(() => {
     getAllCountries();
+    getCompanyDetails();
+    getAllBranches();
     if (formData.country) {
       getAllStates();
     }
@@ -89,6 +98,23 @@ const Branch = () => {
       getAllCities();
     }
   }, [formData.country, formData.state]);
+
+  const getCompanyDetails = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        const particularCompany = response.paramObjectsMap.companyVO[0];
+
+        setFormData({ ...formData, companyName: particularCompany.companyName });
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const getAllCountries = async () => {
     try {
@@ -118,15 +144,27 @@ const Branch = () => {
   const handleInputChange = (e) => {
     const { name, value, checked } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
-    const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
+    const branchNameRegex = /^[A-Za-z0-9@_\-* ]*$/;
     const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const alphanumericRegex = /^[A-Za-z0-9]*$/;
+    const numericRegex = /^[0-9]*$/;
 
     if (name === 'branchCode' && !branchCodeRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Only alphanumeric characters and @, _, -, /, are allowed' });
-    } else if (name === 'branchHead' && !nameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only alphabetic characters are allowed' });
     } else if (name === 'branchName' && !branchNameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Only alphanumeric characters and @, _, -, * are allowed' });
+    } else if (name === 'gst' && !alphanumericRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Special Characters are not allowed' });
+    } else if (name === 'gst' && value.length > 15) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Only 15 Digits only allowed' });
+    } else if (name === 'pincode' && !numericRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Only numeric are allowed' });
+    } else if (name === 'pincode' && value.length > 6) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Only 6 Digits are allowed' });
+    } else if (name === 'mobile' && !numericRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Only numeric are allowed' });
+    } else if (name === 'mobile' && value.length > 10) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Only 10 Digits are allowed' });
     } else {
       if (name === 'active') {
         setFormData({ ...formData, [name]: checked });
@@ -142,25 +180,32 @@ const Branch = () => {
 
   const handleClear = () => {
     setFormData({
-      companyName: '',
       branchCode: '',
       branchName: '',
-      branchHead: '',
       mobile: '',
       email: '',
       address: '',
-      country: ''
+      country: '',
+      state: '',
+      city: '',
+      pincode: '',
+      gst: '',
+      active: true
     });
     setFieldErrors({
-      companyName: '',
+      // companyName: '',
       branchCode: '',
       branchName: '',
-      branchHead: '',
       mobile: '',
       email: '',
       address: '',
-      country: ''
+      country: '',
+      state: '',
+      city: '',
+      pincode: '',
+      gst: ''
     });
+    setEditId('');
   };
 
   const handleSave = async () => {
@@ -171,41 +216,59 @@ const Branch = () => {
     if (!formData.branchName) {
       errors.branchName = 'Company is required';
     }
-    if (!formData.branchHead) {
-      errors.branchHead = 'Admin Name is required';
-    }
-    if (!formData.mobile) {
-      errors.mobile = 'Email Id is required';
-    }
-    if (!formData.email) {
-      errors.email = 'Password is required';
-    }
+
+    // if (!formData.email) {
+    //   errors.email = 'Password is required';
+    // }
     if (!formData.address) {
       errors.address = 'Address is required';
+    }
+    if (!formData.country) {
+      errors.country = 'Country is required';
+    }
+    if (!formData.state) {
+      errors.state = 'State is required';
+    }
+    if (!formData.city) {
+      errors.city = 'City is required';
+    }
+    if (!formData.gst) {
+      errors.gst = 'GST is required';
+    } else if (formData.gst.length < 15) {
+      errors.gst = 'Invalid GST No';
     }
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       const saveFormData = {
-        companyName: formData.companyName,
+        ...(editId && { id: editId }),
         branchCode: formData.branchCode,
-        branchName: formData.branchName,
-        branchHead: formData.branchHead,
-        mobile: formData.mobile,
-        email: formData.email,
-        address: formData.address,
+        branch: formData.branchName,
+        phone: formData.mobile,
+        pinCode: formData.pincode,
+        // email: formData.email,
+        addressLine1: formData.address,
+        addressLine2: '',
         country: formData.country,
         state: formData.state,
         city: formData.city,
+        region: '',
         active: formData.active,
         orgId: orgId,
-        createdBy: loginUserName
+        createdBy: loginUserName,
+        gstIn: formData.gst,
+        lccurrency: '',
+        pan: '',
+        stateCode: '',
+        stateNo: '',
+        userid: loginUserId
       };
       try {
-        const response = await apiCalls('get', `country`, saveFormData);
+        const response = await apiCalls('put', `warehousemastercontroller/createUpdateBranch`, saveFormData);
         if (response.status === true) {
           showToast('success', editId ? ' Branch Updated Successfully' : 'Branch created successfully');
           handleClear();
+          // getAllBranches();
           setIsLoading(false);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Branch creation failed');
@@ -220,7 +283,44 @@ const Branch = () => {
       setFieldErrors(errors);
     }
   };
+  const getAllBranches = async () => {
+    try {
+      const result = await apiCalls('get', `warehousemastercontroller/branch?orgid=${orgId}`);
+      setListViewData(result.paramObjectsMap.branchVO);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
+  const getBranchById = async (row) => {
+    console.log('THE SELECTED BRANCH ID IS:', row.original.id);
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `warehousemastercontroller/branch/${row.original.id}`);
 
+      if (response.status === true) {
+        const particularBranch = response.paramObjectsMap.Branch;
+        setFormData({
+          branchCode: particularBranch.branchCode,
+          branchName: particularBranch.branch,
+          mobile: particularBranch.phone,
+          address: particularBranch.addressLine1,
+          gst: particularBranch.gstIn,
+          country: particularBranch.country,
+          state: particularBranch.state,
+          city: particularBranch.city,
+          pincode: particularBranch.pinCode,
+          state: particularBranch.state,
+          active: particularBranch.active === 'Active' ? true : false
+        });
+        setListView(false);
+      } else {
+        console.error('API Error');
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
   const handleView = () => {
     setListView(!listView);
   };
@@ -243,7 +343,7 @@ const Branch = () => {
               columns={listViewColumns}
               // editCallback={editEmployee}
               blockEdit={true} // DISAPLE THE MODAL IF TRUE
-              // toEdit={getCustomerById}
+              toEdit={getBranchById}
             />
           </div>
         ) : (
@@ -251,7 +351,7 @@ const Branch = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Company"
+                  // label="Company"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -288,19 +388,6 @@ const Branch = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Branch Head"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="branchHead"
-                  value={formData.branchHead}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.branchHead}
-                  helperText={fieldErrors.branchHead}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
                   label="Mobile"
                   variant="outlined"
                   size="small"
@@ -312,7 +399,7 @@ const Branch = () => {
                   helperText={fieldErrors.mobile}
                 />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label="Email ID"
                   variant="outlined"
@@ -324,7 +411,7 @@ const Branch = () => {
                   error={!!fieldErrors.email}
                   helperText={fieldErrors.email}
                 />
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="Address"
@@ -378,7 +465,37 @@ const Branch = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControlLabel value="start" control={<Checkbox />} label="Active" labelPlacement="end" />
+                <TextField
+                  label="Pincode"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="pincode"
+                  value={formData.pincode}
+                  maxLength={6}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.pincode}
+                  helperText={fieldErrors.pincode}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="GST"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="gst"
+                  value={formData.gst}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.gst}
+                  helperText={fieldErrors.gst}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControlLabel
+                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
+                  label="Active"
+                />
               </div>
             </div>
           </>

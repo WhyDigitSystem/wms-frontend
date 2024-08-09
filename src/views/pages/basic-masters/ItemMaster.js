@@ -29,13 +29,21 @@ import 'react-datepicker/dist/react-datepicker.css';
 import DatePicker from 'react-datepicker';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
+import { getAllActiveGroups, getAllActiveUnits } from 'utils/CommonFunctions';
 
 export const ItemMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
   const [editId, setEditId] = useState('');
+  const [unitList, setUnitList] = useState([]);
+  const [groupList, setGroupList] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
+  const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
+  const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
+  const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
 
   const [formData, setFormData] = useState({
     itemType: '',
@@ -60,7 +68,7 @@ export const ItemMaster = () => {
     zoneType: '',
     weightSkuUom: '',
     hsnCode: '',
-    controlBranch: '',
+    controlBranch: localStorage.getItem('branchCode'),
     criticalStockLevel: '',
     criticalStock: '',
     bchk: '',
@@ -140,7 +148,7 @@ export const ItemMaster = () => {
     barcode: ''
   });
   const listViewColumns = [
-    { accessorKey: 'partNo', header: 'Part No', size: 140 },
+    { accessorKey: 'partno', header: 'Part No', size: 140 },
     { accessorKey: 'partDesc', header: 'Part Desc', size: 140 },
     { accessorKey: 'sku', header: 'SKU', size: 140 },
     { accessorKey: 'status', header: 'Status', size: 140 },
@@ -167,59 +175,104 @@ export const ItemMaster = () => {
   ]);
   useEffect(() => {
     console.log('LISTVIEW FIELD CURRENT VALUE IS', listView);
-    // getAllItems();
+    getAllUnits();
+    getAllGroups();
+    getAllItems();
   }, []);
 
+  const getAllUnits = async () => {
+    try {
+      const unitData = await getAllActiveUnits(orgId);
+      setUnitList(unitData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+  const getAllGroups = async () => {
+    try {
+      const groupData = await getAllActiveGroups(orgId);
+      console.log('THE GROUP DATA IS:', groupData);
+
+      setGroupList(groupData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
   const getAllItems = async () => {
     try {
-      const result = await apiCalls('get', `getAllItemsByorgId?${orgId}`);
-      setListViewData(result);
-      console.log('TEST LISTVIEW DATA', result);
+      const response = await apiCalls(
+        'get',
+        `warehousemastercontroller/material?cbranch=${loginBranchCode}&client=${loginClient}&orgid=${orgId}`
+      );
+      setListViewData(response.paramObjectsMap.materialVO);
+      console.log('TEST LISTVIEW DATA', response);
     } catch (err) {
       console.log('error', err);
     }
   };
-
-  const getAllItemById = async () => {
+  const getAllItemById = async (row) => {
+    console.log('THE SELECTED ITEM ID IS:', row.original.id);
+    setEditId(row.original.id);
     try {
-      const result = await apiCalls('get', `getAllItemsByorgId?${orgId}`);
-      // setListViewData(result);
-      setListView(false);
-      setFormData({
-        itemType: result.itemType,
-        partNo: result.partNo,
-        partDesc: result.partDesc,
-        custPartNo: result.custPartNo,
-        groupName: result.groupName,
-        styleCode: result.styleCode,
-        baseSku: result.baseSku,
-        addDesc: result.addDesc,
-        purchaseUnit: result.purchaseUnit,
-        storageUnit: result.storageUnit,
-        fixedCapAcrossLocn: result.fixedCapAcrossLocn,
-        fsn: result.fsn,
-        saleUnit: result.saleUnit,
-        type: result.type,
-        serialNoFlag: result.serialNoFlag,
-        sku: result.sku,
-        skuQty: result.skuQty,
-        ssku: result.ssku,
-        sskuQty: result.sskuQty,
-        zoneType: result.zoneType,
-        weightSkuUom: result.weightSkuUom,
-        hsnCode: result.hsnCode,
-        parentChildKey: result.parentChildKey,
-        controlBranch: result.controlBranch,
-        criticalStockLevel: result.criticalStockLevel,
-        criticalStock: result.criticalStock,
-        bchk: result.bchk,
-        status: result.status,
-        barcode: result.barcode,
-        active: result.active === 'Active' ? true : false
-      });
-      console.log('TEST LISTVIEW DATA', result);
-    } catch (err) {
-      console.log('error', err);
+      const response = await apiCalls('get', `warehousemastercontroller/material/${row.original.id}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListView(false);
+        const particularItem = response.paramObjectsMap.materialVO;
+        // const selectedBranch = branchList.find((br) => br.branch === particularItem.branch);
+        console.log('THE SELECTED ITEM IS:', particularItem);
+
+        setFormData({
+          itemType: particularItem.itemType,
+          partNo: particularItem.partNo,
+          partDesc: particularItem.partDesc,
+          custPartNo: particularItem.custPartNo,
+          groupName: particularItem.groupName,
+          styleCode: particularItem.styleCode,
+          baseSku: particularItem.baseSku,
+          // addDesc: particularItem.addDesc, //no
+          purchaseUnit: particularItem.purchaseUnit,
+          storageUnit: particularItem.storageUnit,
+          // fixedCapAcrossLocn: particularItem.fixedCapAcrossLocn, //no
+          fsn: particularItem.fsn,
+          saleUnit: particularItem.saleUnit,
+          type: particularItem.type,
+          // serialNoFlag: particularItem.serialNoFlag, //no
+          sku: particularItem.sku,
+          skuQty: particularItem.skuQty,
+          ssku: particularItem.ssku,
+          sskuQty: particularItem.sskuQty,
+          // zoneType: particularItem.zoneType, //no
+          weightSkuUom: particularItem.weightSkuUom,
+          hsnCode: particularItem.hsnCode,
+          parentChildKey: particularItem.parentChildKey,
+          controlBranch: particularItem.cbranch,
+          criticalStockLevel: particularItem.criticalStockLevel,
+          // criticalStock: particularItem.criticalStock, //no
+          // bchk: particularItem.bchk, //no
+          status: particularItem.status,
+          barcode: particularItem.barcode,
+          // itemVo: itemVo, //no
+          // orgId: orgId,
+          // createdby: loginUserName,
+          // breadth: 0,
+          // client: loginClient,
+          // customer: loginCustomer,
+          // height: 0,
+          // length: 0,
+          // palletQty: '',
+          // warehouse: loginWarehouse,
+          // weight: 0,
+          // branch: loginBranch,
+          // branchCode: loginBranchCode,
+          active: particularItem.active === 'Active' ? true : false
+        });
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
   };
 
@@ -309,7 +362,7 @@ export const ItemMaster = () => {
       zoneType: '',
       weightSkuUom: '',
       hsnCode: '',
-      controlBranch: '',
+      // controlBranch: '',
       criticalStockLevel: '',
       criticalStock: '',
       bchk: '',
@@ -358,9 +411,10 @@ export const ItemMaster = () => {
       barcode: ''
     });
     setItemTableErrors('');
+    setEditId('');
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
     if (!formData.partNo) {
       errors.partNo = 'Part No is required';
@@ -389,59 +443,67 @@ export const ItemMaster = () => {
         ...(editId && { id: editId }),
         active: formData.active,
         itemType: formData.itemType,
-        partNo: formData.partNo,
+        partno: formData.partNo,
         partDesc: formData.partDesc,
         custPartNo: formData.custPartNo,
         groupName: formData.groupName,
         styleCode: formData.styleCode,
         baseSku: formData.baseSku,
-        addDesc: formData.addDesc,
+        // addDesc: formData.addDesc, //no
         purchaseUnit: formData.purchaseUnit,
         storageUnit: formData.storageUnit,
-        fixedCapAcrossLocn: formData.fixedCapAcrossLocn,
+        // fixedCapAcrossLocn: formData.fixedCapAcrossLocn, //no
         fsn: formData.fsn,
         saleUnit: formData.saleUnit,
         type: formData.type,
-        serialNoFlag: formData.serialNoFlag,
+        // serialNoFlag: formData.serialNoFlag, //no
         sku: formData.sku,
         skuQty: formData.skuQty,
         ssku: formData.ssku,
         sskuQty: formData.sskuQty,
-        zoneType: formData.zoneType,
+        // zoneType: formData.zoneType, //no
         weightSkuUom: formData.weightSkuUom,
         hsnCode: formData.hsnCode,
         parentChildKey: formData.parentChildKey,
-        controlBranch: formData.controlBranch,
+        cBranch: formData.controlBranch,
         criticalStockLevel: formData.criticalStockLevel,
-        criticalStock: formData.criticalStock,
-        bchk: formData.bchk,
+        // criticalStock: formData.criticalStock, //no
+        // bchk: formData.bchk, //no
         status: formData.status,
         barcode: formData.barcode,
-        itemVo: itemVo,
+        // itemVo: itemVo, //no
         orgId: orgId,
-        createdby: loginUserName
+        createdby: loginUserName,
+        breadth: 0,
+        client: loginClient,
+        customer: loginCustomer,
+        height: 0,
+        length: 0,
+        palletQty: '',
+        warehouse: loginWarehouse,
+        weight: 0,
+        branch: loginBranch,
+        branchCode: loginBranchCode
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
 
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/item`, saveFormData)
-        .then((response) => {
-          if (response.data.status === true) {
-            console.log('Response:', response.data);
-            handleClear();
-            showToast('success', editId ? ' Item Updated Successfully' : 'Item created successfully');
-            setIsLoading(false);
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Item creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'Item creation failed');
+      try {
+        const response = await apiCalls('put', `warehousemastercontroller/createUpdateMaterial`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          handleClear();
+          showToast('success', editId ? ' Item Updated Successfully' : 'Item created successfully');
           setIsLoading(false);
-        });
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Item creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Item creation failed');
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }
@@ -498,7 +560,7 @@ export const ItemMaster = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getAllItemById} />
           </div>
         ) : (
           <>
@@ -514,8 +576,8 @@ export const ItemMaster = () => {
                     value={formData.itemType}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="TYPE 1">TYPE 1</MenuItem>
-                    <MenuItem value="TYPE 2">TYPE 2</MenuItem>
+                    <MenuItem value="GROUP">GROUP</MenuItem>
+                    <MenuItem value="ITEM">ITEM</MenuItem>
                   </Select>
                   {fieldErrors.itemType && <FormHelperText error>{fieldErrors.itemType}</FormHelperText>}
                 </FormControl>
@@ -570,8 +632,11 @@ export const ItemMaster = () => {
                     value={formData.groupName}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="GROUP 1">GROUP 1</MenuItem>
-                    <MenuItem value="GROUP 2">GROUP 2</MenuItem>
+                    {groupList?.map((row) => (
+                      <MenuItem key={row.id} value={row.groupName.toUpperCase()}>
+                        {row.groupName.toUpperCase()}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.groupName && <FormHelperText error>{fieldErrors.groupName}</FormHelperText>}
                 </FormControl>
@@ -613,8 +678,11 @@ export const ItemMaster = () => {
                     value={formData.purchaseUnit}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="UNIT 1">UNIT 1</MenuItem>
-                    <MenuItem value="UNIT 2">UNIT 2</MenuItem>
+                    {unitList?.map((row) => (
+                      <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
+                        {row.unitName.toUpperCase()}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.purchaseUnit && <FormHelperText error>{fieldErrors.purchaseUnit}</FormHelperText>}
                 </FormControl>
@@ -630,8 +698,11 @@ export const ItemMaster = () => {
                     value={formData.storageUnit}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="UNIT 1">UNIT 1</MenuItem>
-                    <MenuItem value="UNIT 2">UNIT 2</MenuItem>
+                    {unitList?.map((row) => (
+                      <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
+                        {row.unitName.toUpperCase()}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.storageUnit && <FormHelperText error>{fieldErrors.storageUnit}</FormHelperText>}
                 </FormControl>
@@ -640,13 +711,29 @@ export const ItemMaster = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.sku}>
                   <InputLabel id="sku-label">SKU</InputLabel>
                   <Select labelId="sku-label" id="sku" name="sku" label="SKU" value={formData.sku} onChange={handleInputChange}>
-                    <MenuItem value="SKU 1">SKU 1</MenuItem>
-                    <MenuItem value="SKU 2">SKU 2</MenuItem>
+                    {unitList?.map((row) => (
+                      <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
+                        {row.unitName.toUpperCase()}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.sku && <FormHelperText error>{fieldErrors.sku}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.sku}>
+                  <InputLabel id="sku-label">SSKU</InputLabel>
+                  <Select labelId="sku-label" id="ssku" name="ssku" label="SSKU" value={formData.ssku} onChange={handleInputChange}>
+                    {unitList?.map((row) => (
+                      <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
+                        {row.unitName.toUpperCase()}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.ssku && <FormHelperText error>{fieldErrors.ssku}</FormHelperText>}
+                </FormControl>
+              </div>
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label="SSKU"
                   variant="outlined"
@@ -658,7 +745,7 @@ export const ItemMaster = () => {
                   error={!!fieldErrors.ssku}
                   helperText={fieldErrors.ssku}
                 />
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.controlBranch}>
                   <InputLabel id="controlBranch-label">Control Branch</InputLabel>
@@ -670,13 +757,13 @@ export const ItemMaster = () => {
                     value={formData.controlBranch}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="BRANCH 1">BRANCH 1</MenuItem>
-                    <MenuItem value="BRANCH 2">BRANCH 2</MenuItem>
+                    {loginBranchCode && <MenuItem value={loginBranchCode}>{loginBranchCode}</MenuItem>}
+                    <MenuItem value="ALL">ALL</MenuItem>
                   </Select>
                   {fieldErrors.controlBranch && <FormHelperText error>{fieldErrors.controlBranch}</FormHelperText>}
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.criticalStock}>
                   <InputLabel id="criticalStock-label">Critical Stock</InputLabel>
                   <Select
@@ -692,8 +779,8 @@ export const ItemMaster = () => {
                   </Select>
                   {fieldErrors.criticalStock && <FormHelperText error>{fieldErrors.criticalStock}</FormHelperText>}
                 </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
+              </div> */}
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label="BCHK"
                   variant="outlined"
@@ -705,7 +792,7 @@ export const ItemMaster = () => {
                   error={!!fieldErrors.bchk}
                   helperText={fieldErrors.bchk}
                 />
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
                   <InputLabel id="status-label">Status</InputLabel>
@@ -903,7 +990,7 @@ export const ItemMaster = () => {
                   <>
                     <div className="row mt-2">
                       <div className="row">
-                        <div className="col-md-3 mb-3">
+                        {/* <div className="col-md-3 mb-3">
                           <TextField
                             label="Add Desc"
                             variant="outlined"
@@ -915,9 +1002,9 @@ export const ItemMaster = () => {
                             error={!!fieldErrors.addDesc}
                             helperText={fieldErrors.addDesc}
                           />
-                        </div>
+                        </div> */}
 
-                        <div className="col-md-3 mb-3">
+                        {/* <div className="col-md-3 mb-3">
                           <TextField
                             label="Fixed Cap Across Locn"
                             variant="outlined"
@@ -929,7 +1016,7 @@ export const ItemMaster = () => {
                             error={!!fieldErrors.fixedCapAcrossLocn}
                             helperText={fieldErrors.fixedCapAcrossLocn}
                           />
-                        </div>
+                        </div> */}
                         <div className="col-md-3 mb-3">
                           <TextField
                             label="FSN"
@@ -954,8 +1041,11 @@ export const ItemMaster = () => {
                               value={formData.saleUnit}
                               onChange={handleInputChange}
                             >
-                              <MenuItem value="UNIT 1">UNIT 1</MenuItem>
-                              <MenuItem value="UNIT 2">UNIT 2</MenuItem>
+                              {unitList?.map((row) => (
+                                <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
+                                  {row.unitName.toUpperCase()}
+                                </MenuItem>
+                              ))}
                             </Select>
                             {fieldErrors.saleUnit && <FormHelperText error>{fieldErrors.saleUnit}</FormHelperText>}
                           </FormControl>
@@ -977,7 +1067,7 @@ export const ItemMaster = () => {
                             {fieldErrors.type && <FormHelperText error>{fieldErrors.type}</FormHelperText>}
                           </FormControl>
                         </div>
-                        <div className="col-md-3 mb-3">
+                        {/* <div className="col-md-3 mb-3">
                           <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.serialNoFlag}>
                             <InputLabel id="serialNoFlag-label">Serial No Flag</InputLabel>
                             <Select
@@ -993,7 +1083,7 @@ export const ItemMaster = () => {
                             </Select>
                             {fieldErrors.serialNoFlag && <FormHelperText error>{fieldErrors.serialNoFlag}</FormHelperText>}
                           </FormControl>
-                        </div>
+                        </div> */}
 
                         <div className="col-md-3 mb-3">
                           <TextField
@@ -1024,7 +1114,7 @@ export const ItemMaster = () => {
                             helperText={fieldErrors.sskuQty}
                           />
                         </div>
-                        <div className="col-md-3 mb-3">
+                        {/* <div className="col-md-3 mb-3">
                           <TextField
                             label="Zone Type"
                             variant="outlined"
@@ -1036,7 +1126,7 @@ export const ItemMaster = () => {
                             error={!!fieldErrors.zoneType}
                             helperText={fieldErrors.zoneType}
                           />
-                        </div>
+                        </div> */}
                         <div className="col-md-3 mb-3">
                           <TextField
                             type="number"

@@ -96,6 +96,24 @@ export const getAllActiveEmployees = async (orgId) => {
   }
 };
 
+export const getAllActiveUnits = async (orgId) => {
+  try {
+    const response = await apiCalls('get', `warehousemastercontroller/getAllUnitByOrgId?orgid=${orgId}`);
+    if (response.status === true) {
+      const unitData = response.paramObjectsMap.unitVO
+        .filter((row) => row.active === 'Active')
+        .map(({ id, unitName, unitType }) => ({ id, unitName, unitType }));
+      return unitData;
+    } else {
+      console.error('API Error:');
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
+
 export const getAllActiveRegions = async (orgId) => {
   try {
     const response = await apiCalls('get', `commonmaster/getAllRegionsByOrgId?orgId=${orgId}`);
@@ -104,6 +122,23 @@ export const getAllActiveRegions = async (orgId) => {
         .filter((row) => row.active === 'Active')
         .map(({ id, regionName, regionCode }) => ({ id, regionName, regionCode }));
       return empData;
+    } else {
+      console.error('API Error:');
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
+export const getAllActiveGroups = async (orgId) => {
+  try {
+    const response = await apiCalls('get', `warehousemastercontroller/group?orgid=${orgId}`);
+    if (response.status === true) {
+      const groupData = response.paramObjectsMap.groupVO
+        .filter((row) => row.active === 'Active')
+        .map(({ id, groupName }) => ({ id, groupName }));
+      return groupData;
     } else {
       console.error('API Error:');
       return response;

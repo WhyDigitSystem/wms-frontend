@@ -29,151 +29,151 @@ const basicMasters = {
         },
         {
           id: 'stateMaster',
-          title: 'State Master',
+          title: 'State',
           type: 'item',
           url: '/basicmasters/statemaster'
         },
         {
           id: 'cityMaster',
-          title: 'City Master',
+          title: 'City',
           type: 'item',
           url: '/basicmasters/citymaster'
         },
         {
           id: 'customerMaster',
-          title: 'Customer Master',
+          title: 'Customer',
           type: 'item',
           url: '/basicmasters/customermaster'
         },
         {
           id: 'warehouseMaster',
-          title: 'Warehouse Master',
+          title: 'Warehouse',
           type: 'item',
           url: '/basicmasters/warehousemaster'
         },
         {
           id: 'locationTypeMaster',
-          title: 'LocationType Master',
+          title: 'LocationType',
           type: 'item',
           url: '/basicmasters/locationtypemaster'
         },
         {
           id: 'warehouseLocationMaster',
-          title: 'Warehouse Location Master',
+          title: 'Warehouse Location',
           type: 'item',
           url: '/basicmasters/warehouselocationmaster'
         },
         {
           id: 'locationMappingMaster',
-          title: 'LocationMapping Master',
+          title: 'Location Mapping',
           type: 'item',
           url: '/basicmasters/locationmappingmaster'
         },
         {
           id: 'cellTypeMaster',
-          title: 'CellType Master',
+          title: 'CellType',
           type: 'item',
           url: '/basicmasters/celltypemaster'
         },
         {
           id: 'employeeMaster',
-          title: 'Employee Master',
+          title: 'Employee',
           type: 'item',
           url: '/basicmasters/employeemaster'
         },
         {
           id: 'userCreationMaster',
-          title: 'User Creation Master',
+          title: 'User Creation',
           type: 'item',
           url: '/basicmasters/usercreationmaster'
         },
         {
           id: 'itemMaster',
-          title: 'Item Master',
+          title: 'Item',
           type: 'item',
           url: '/basicmasters/itemmaster'
         },
         {
           id: 'buyerMaster',
-          title: 'Buyer Master',
+          title: 'Buyer',
           type: 'item',
           url: '/basicmasters/buyermaster'
         },
         {
           id: 'carrierMaster',
-          title: 'Carrier Master',
+          title: 'Carrier',
           type: 'item',
           url: '/basicmasters/carriermaster'
         },
         {
           id: 'supplierMaster',
-          title: 'Supplier Master',
+          title: 'Supplier',
           type: 'item',
           url: '/basicmasters/suppliermaster'
         },
         {
           id: 'externalDataMismatchMaster',
-          title: 'External Data MismatchMaster',
+          title: 'External Data Mismatch',
           type: 'item',
           url: '/basicmasters/externaldatamismatchmaster'
         },
         {
           id: 'materialLabelMappingMaster',
-          title: 'Material Label Mapping Master',
+          title: 'Material Label Mapping',
           type: 'item',
           url: '/basicmasters/materiallabelmappingmaster'
         },
         {
           id: 'departmentMaster',
-          title: 'Department Master',
+          title: 'Department',
           type: 'item',
           url: '/basicmasters/departmentmaster'
         },
         {
           id: 'designationMaster',
-          title: 'Designation Master',
+          title: 'Designation',
           type: 'item',
           url: '/basicmasters/designationmaster'
         },
         {
           id: 'groupMaster',
-          title: 'Group Master',
+          title: 'Group',
           type: 'item',
           url: '/basicmasters/groupmaster'
         },
         {
           id: 'unitMaster',
-          title: 'Unit Master',
+          title: 'Unit',
           type: 'item',
           url: '/basicmasters/unitmaster'
         },
         {
           id: 'currencyMaster',
-          title: 'Currency Master',
+          title: 'Currency',
           type: 'item',
           url: '/basicmasters/currencymaster'
         },
         {
           id: 'regionMaster',
-          title: 'Region Master',
+          title: 'Region',
           type: 'item',
           url: '/basicmasters/regionmaster'
         },
         {
           id: 'documentTypeMaster',
-          title: 'Document Type Master',
+          title: 'Document Type',
           type: 'item',
           url: '/basicmasters/documenttype'
         },
         {
           id: 'documentTypeMappingMaster',
-          title: 'DocumentType Mapping Master',
+          title: 'DocumentType Mapping',
           type: 'item',
           url: '/basicmasters/documenttypemapping'
         },
         {
           id: 'finYearMaster',
-          title: 'Financial Year Master',
+          title: 'Financial Year',
           type: 'item',
           url: '/basicmasters/finyearmaster'
         },
