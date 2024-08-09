@@ -35,6 +35,7 @@ export const RegionMaster = () => {
     regionCode: '',
     regionName: ''
   });
+  const inputRef = useRef(null);
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
   useEffect(() => {
@@ -59,7 +60,7 @@ export const RegionMaster = () => {
   // };
 
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd } = e.target;
     const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
 
@@ -70,8 +71,14 @@ export const RegionMaster = () => {
     } else if (name === 'regionName' && !nameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else {
-      setFormData({ ...formData, [name]: name === 'active' ? checked : value.toUpperCase() });
       setFieldErrors({ ...fieldErrors, [name]: '' });
+      const upperCaseValue = value.toUpperCase();
+      setFormData({ ...formData, [name]: name === 'active' ? checked : upperCaseValue });
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 0);
     }
   };
 
@@ -224,6 +231,7 @@ export const RegionMaster = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.regionName}
                   helperText={fieldErrors.regionName}
+                  inputRef={inputRef}
                 />
               </div>
               <div className="col-md-3 mb-3">

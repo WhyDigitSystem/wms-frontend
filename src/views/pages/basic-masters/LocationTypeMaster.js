@@ -21,6 +21,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
+import apiCalls from 'apicall';
 
 export const LocationTypeMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -29,25 +30,20 @@ export const LocationTypeMaster = () => {
 
   const [formData, setFormData] = useState({
     active: true,
-    storageType: ''
+    binType: ''
   });
   const [editId, setEditId] = useState('');
 
   const theme = useTheme();
   const anchorRef = useRef(null);
-
+  const inputRef = useRef(null);
   const [fieldErrors, setFieldErrors] = useState({
-    storageType: ''
+    binType: ''
   });
   const [listView, setListView] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'storageType', header: 'Code', size: 140 },
-    {
-      accessorKey: 'countryName',
-      header: 'Country',
-      size: 140
-    },
+    { accessorKey: 'binType', header: 'Bin Type', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
   const [listViewData, setListViewData] = useState([]);
@@ -59,32 +55,48 @@ export const LocationTypeMaster = () => {
 
   const getAllLocationTypes = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/country?orgid=1000000001`);
+      const response = await apiCalls('get', `warehousemastercontroller/locationType?orgid=${orgId}`);
       console.log('API Response:', response);
 
-      if (response.status === 200) {
-        setListViewData(response.data.paramObjectsMap.countryVO);
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.locationTypeVO);
       } else {
-        console.error('API Error:', response.data);
+        console.error('API Error:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
+
+  // const getAllLocationTypes = async () => {
+  //   try {
+  //     const response = await apiCalls('get', `warehousemastercontroller/locationType?orgId=${orgId}`);
+
+  //     console.log('API Response:', response);
+
+  //     if (response.status === 200) {
+  //       setListViewData(response.paramObjectsMap.countryVO);
+  //     } else {
+  //       console.error('API Error:', response);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
   const getLocationTypeById = async (row) => {
     console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/country/${row.original.id}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/warehousemastercontroller/locationType/${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === 200) {
         setListView(false);
-        const particularCountry = response.data.paramObjectsMap.Country;
+        const particularLocationType = response.data.paramObjectsMap.locationTypeVO;
 
         setFormData({
-          storageType: particularCountry.storageType,
-          active: particularCountry.active === 'Active' ? true : false
+          binType: particularLocationType.binType,
+          active: particularLocationType.active === 'Active' ? true : false
         });
       } else {
         console.error('API Error:', response.data);
@@ -95,30 +107,60 @@ export const LocationTypeMaster = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    const nameRegex = /^[A-Za-z ]*$/;
+    const { name, value, selectionStart, selectionEnd } = e.target;
 
-    if (name === 'storageType' && !nameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+    const nameRegex = /^[A-Za-z0-9  ]*$/;
+    // const numericRegex = /^[0-9]*$/;
+
+    let errorMessage = '';
+
+    switch (name) {
+      case 'binType':
+        if (!nameRegex.test(value)) {
+          errorMessage = 'Only Alphanumeric characters are allowed';
+        }
+        // else if (value.length > 10) {
+        //   errorMessage = 'Invalid Format';
+        // }
+        break;
+
+      default:
+        break;
+    }
+
+    if (errorMessage) {
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
-      setFormData({ ...formData, [name]: value.toUpperCase() });
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+
+      // Convert the input value to uppercase
+      const upperCaseValue = value.toUpperCase();
+
+      // Set the form data and preserve the cursor position
+      setFormData((prevData) => ({ ...prevData, [name]: upperCaseValue }));
+
+      // Use a timeout to ensure the cursor position is set after the state update
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 0);
     }
   };
 
   const handleClear = () => {
     setFormData({
-      storageType: ''
+      binType: ''
     });
     setFieldErrors({
-      storageType: ''
+      binType: ''
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
-    if (!formData.storageType) {
-      errors.storageType = 'Location Type is required';
+    if (!formData.binType) {
+      errors.binType = 'Bin Type is required';
     }
 
     if (Object.keys(errors).length === 0) {
@@ -126,36 +168,31 @@ export const LocationTypeMaster = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        storageType: formData.storageType,
+        binType: formData.binType,
         orgId: orgId,
-        createdby: loginUserName
+        createdBy: loginUserName
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
+      try {
+        const response = await apiCalls('put', `warehousemastercontroller/createUpdateLocationType`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response.data);
 
-      axios
-        .post(`${process.env.REACT_APP_API_URL}/api/commonmaster/createUpdateCountry`, saveFormData)
+          showToast('success', editId ? ' LocationType Updated Successfully' : 'LocationType created successfully');
 
-        .then((response) => {
-          if (response.data.status === true) {
-            console.log('Response:', response.data);
-
-            showToast('success', editId ? ' LocationType Updated Successfully' : 'LocationType created successfully');
-
-            handleClear();
-            getAllLocationTypes();
-            setIsLoading(false);
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'LocationType creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'LocationType creation failed');
-
+          handleClear();
+          getAllLocationTypes();
           setIsLoading(false);
-        });
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'LocationType creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', error.message);
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }
@@ -168,7 +205,7 @@ export const LocationTypeMaster = () => {
   const handleClose = () => {
     setEditMode(false);
     setFormData({
-      storageType: ''
+      binType: ''
     });
   };
 
@@ -178,6 +215,7 @@ export const LocationTypeMaster = () => {
       active: event.target.checked
     });
   };
+
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -209,15 +247,16 @@ export const LocationTypeMaster = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Storage Type"
+                  label="Bin Type"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="storageType"
-                  value={formData.storageType}
+                  name="binType"
+                  value={formData.binType}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.storageType}
-                  helperText={fieldErrors.storageType}
+                  error={!!fieldErrors.binType}
+                  helperText={fieldErrors.binType}
+                  inputRef={inputRef}
                 />
               </div>
               <div className="col-md-3 mb-3">

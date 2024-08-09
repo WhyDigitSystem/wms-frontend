@@ -23,13 +23,24 @@ import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import 'react-datepicker/dist/react-datepicker.css';
 import apiCalls from 'apicall';
+import { getAllActiveCitiesByState, getAllActiveCountries, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
 
 export const SupplierMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [warehouse, setWarehouse] = useState(localStorage.getItem('warehouse'));
+  const [customer, setCustomer] = useState(localStorage.getItem('customer'));
+  const [client, setClient] = useState(localStorage.getItem('client'));
+  const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [selectedBranchCode, setSelectedBranchCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
   const [editId, setEditId] = useState('');
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [countryList, setCountryList] = useState([]);
+  const [stateList, setStateList] = useState([]);
+  const [cityList, setCityList] = useState([]);
 
   const [formData, setFormData] = useState({
     supplierName: '',
@@ -43,10 +54,10 @@ export const SupplierMaster = () => {
     country: '',
     state: '',
     city: '',
-    controlBranch: '',
+    controlBranch: localStorage.getItem('branchCode'),
     pincode: '',
     email: '',
-    gst: '',
+    // gst: '',
     eccNo: '',
     active: true
   });
@@ -67,99 +78,147 @@ export const SupplierMaster = () => {
     controlBranch: '',
     pincode: '',
     email: '',
-    gst: '',
+    // gst: '',
     eccNo: '',
     active: true
   });
   const listViewColumns = [
-    { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 },
-    { accessorKey: 'shortName', header: 'Part Desc', size: 140 },
+    { accessorKey: 'supplier', header: 'Supplier Name', size: 140 },
+    { accessorKey: 'supplierShortName', header: 'Short Name', size: 140 },
     { accessorKey: 'supplierType', header: 'Supplier Type', size: 140 },
-    { accessorKey: 'contactPerson', header: 'contact Person', size: 140 },
+    { accessorKey: 'cbranch', header: 'Control Branch', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
-  const [listViewData, setListViewData] = useState([
-    {
-      id: 1,
-      supplierName: 'supplierName1',
-      shortName: 'shortName1',
-      supplierType: 'supplierType1',
-      contactPerson: 'contactPerson1',
-      active: 'Active'
-    },
-    {
-      id: 2,
-      partNo: 'partNo2',
-      shortName: 'shortName2',
-      supplierType: 'supplierType2',
-      contactPerson: 'contactPerson2',
-      active: 'Active'
-    }
-  ]);
+  const [listViewData, setListViewData] = useState([]);
+  const supplierNameRef = useRef(null);
+  const shortNameRef = useRef(null);
+  const panRef = useRef(null);
+  const tanNoRef = useRef(null);
+  const contactPersonRef = useRef(null);
+  const mobileRef = useRef(null);
+  const addressRef = useRef(null);
+  const pincodeRef = useRef(null);
+  const emailRef = useRef(null);
+  const eccNoRef = useRef(null);
+
   useEffect(() => {
-    console.log('LISTVIEW FIELD CURRENT VALUE IS', listView);
-    // getAllSuppliers();
+    getAllSuppliers();
   }, []);
+
+  useEffect(() => {
+    getAllCountries();
+    if (formData.country) {
+      getAllStates();
+    }
+    if (formData.state) {
+      getAllCities();
+    }
+  }, [formData.country, formData.state]);
+
+  // const getAllCountries = async () => {
+  //   try {
+  //     const countryData = await getAllActiveCountries(orgId);
+  //     setCountryList(countryData);
+  //   } catch (error) {
+  //     console.error('Error fetching country data:', error);
+  //   }
+  // };
+  const getAllCountries = async () => {
+    try {
+      const countryData = await getAllActiveCountries(orgId);
+      if (Array.isArray(countryData)) {
+        setCountryList(countryData);
+      } else {
+        console.error('Expected an array but got:', typeof countryData);
+      }
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+  const getAllStates = async () => {
+    try {
+      const stateData = await getAllActiveStatesByCountry(formData.country, orgId);
+      setStateList(stateData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+  const getAllCities = async () => {
+    try {
+      const cityData = await getAllActiveCitiesByState(formData.state, orgId);
+      setCityList(cityData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
 
   const getAllSuppliers = async () => {
     try {
-      const result = await apiCalls('get', `getAllSuppliersByorgId?${orgId}`);
-      setListViewData(result);
-      console.log('TEST LISTVIEW DATA', result);
-    } catch (err) {
-      console.log('error', err);
+      const response = await apiCalls('get', `warehousemastercontroller/supplier?cbranch=${branchCode}&client=${client}&orgid=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.supplierVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
   };
 
-  const getSupplierById = async () => {
+  const getSupplierById = async (row) => {
+    console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
+    setEditId(row.original.id);
     try {
-      const result = await apiCalls('get', `getSupplierByorgId?${orgId}`);
-      setListView(false);
-      setFormData({
-        supplierName: result.supplierName,
-        shortName: result.shortName,
-        supplierType: result.supplierType,
-        category: result.category,
-        pan: result.pan,
-        tanNo: result.tanNo,
-        contactPerson: result.contactPerson,
-        mobile: result.mobile,
-        address: result.address,
-        country: result.country,
-        state: result.state,
-        city: result.city,
-        controlBranch: result.controlBranch,
-        pincode: result.pincode,
-        email: result.email,
-        gst: result.gst,
-        eccNo: result.eccNo,
-        active: result.active === 'Active' ? true : false
-      });
-      console.log('TEST LISTVIEW DATA', result);
-    } catch (err) {
-      console.log('error', err);
-    }
-  };
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/warehousemastercontroller/supplier/${row.original.id}`);
+      console.log('API Response:', response);
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
+      if (response.status === 200) {
+        setListView(false);
+        const particularSupplier = response.data.paramObjectsMap.Supplier;
+
+        setFormData({
+          supplierName: particularSupplier.supplier,
+          shortName: particularSupplier.supplierShortName,
+          supplierType: particularSupplier.supplierType,
+          pan: particularSupplier.panNo,
+          tanNo: particularSupplier.tanNo,
+          contactPerson: particularSupplier.contactPerson,
+          mobile: particularSupplier.mobileNo,
+          address: particularSupplier.addressLine1,
+          country: particularSupplier.country,
+          state: particularSupplier.state,
+          city: particularSupplier.city,
+          controlBranch: particularSupplier.cbranch,
+          pincode: particularSupplier.zipCode,
+          email: particularSupplier.email,
+          // gst: particularSupplier.gst,
+          eccNo: particularSupplier.eccNo,
+          active: particularSupplier.active === 'Active' ? true : false
+        });
+      } else {
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    const numericRegex = /^[0-9]*$/;
-    const alphanumericRegex = /^[A-Za-z0-9]*$/;
-    const specialCharsRegex = /^[A-Za-z0-9@_\-*]*$/;
-    const nameRegex = /^[A-Za-z ]*$/;
-
+    const { name, value, selectionStart, selectionEnd } = e.target;
     let errorMessage = '';
+
+    const numericRegex = /^[0-9]*$/;
+    const alphanumericRegex = /^[A-Za-z0-9 ]*$/;
+    const nameRegex = /^[A-Za-z ]*$/;
 
     switch (name) {
       case 'supplierName':
       case 'shortName':
       case 'contactPerson':
-        if (!nameRegex.test(value)) {
+        if (!alphanumericRegex.test(value)) {
           errorMessage = 'Only Alphabet are allowed';
         }
         break;
@@ -177,6 +236,13 @@ export const SupplierMaster = () => {
           errorMessage = 'max Length is 10';
         }
         break;
+      case 'tanNo':
+        if (!alphanumericRegex.test(value)) {
+          errorMessage = 'Only AlphaNumeric are allowed';
+        } else if (value.length > 10) {
+          errorMessage = 'max Length is 10';
+        }
+        break;
       case 'pincode':
         if (!alphanumericRegex.test(value)) {
           errorMessage = 'Only AlphaNumeric are allowed';
@@ -184,12 +250,6 @@ export const SupplierMaster = () => {
           errorMessage = 'max Length is 6';
         }
         break;
-      case 'gst':
-        if (!alphanumericRegex.test(value)) {
-          errorMessage = 'Only AlphaNumeric are allowed';
-        } else if (value.length > 15) {
-          errorMessage = 'max Length is 15';
-        }
       case 'eccNo':
         if (!alphanumericRegex.test(value)) {
           errorMessage = 'Only AlphaNumeric are allowed';
@@ -204,9 +264,32 @@ export const SupplierMaster = () => {
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
-      const updatedValue = name === 'email' ? value : value.toUpperCase();
-      setFormData({ ...formData, [name]: updatedValue });
       setFieldErrors({ ...fieldErrors, [name]: '' });
+
+      const upperCaseValue = value.toUpperCase();
+      const updatedValue = name === 'email' ? value : upperCaseValue;
+
+      setFormData({ ...formData, [name]: updatedValue });
+
+      const refs = {
+        supplierName: supplierNameRef,
+        shortName: shortNameRef,
+        pan: panRef,
+        tanNo: tanNoRef,
+        contactPerson: contactPersonRef,
+        mobile: mobileRef,
+        address: addressRef,
+        pinCode: pincodeRef,
+        email: emailRef,
+        eccNo: eccNoRef
+      };
+
+      setTimeout(() => {
+        const ref = refs[name];
+        if (ref && ref.current) {
+          ref.current.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 10);
     }
   };
 
@@ -226,7 +309,7 @@ export const SupplierMaster = () => {
       controlBranch: '',
       pincode: '',
       email: '',
-      gst: '',
+      // gst: '',
       eccNo: '',
       active: true
     });
@@ -246,13 +329,13 @@ export const SupplierMaster = () => {
       controlBranch: '',
       pincode: '',
       email: '',
-      gst: '',
+      // gst: '',
       eccNo: '',
       active: true
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
     if (!formData.supplierName) {
       errors.supplierName = 'Supplier Name is required';
@@ -260,14 +343,44 @@ export const SupplierMaster = () => {
     if (!formData.shortName) {
       errors.shortName = 'Short Name is required';
     }
-    if (formData.gst.length < 15) {
-      errors.gst = 'Invalid GST Format';
+    if (!formData.supplierType) {
+      errors.supplierType = 'Supplier Type is required';
     }
-    if (formData.pan.length < 10) {
-      errors.pan = 'Invalid PAN Format';
+    if (!formData.pan) {
+      errors.pan = 'Pan is required';
     }
-    if (formData.mobile.length < 10) {
-      errors.mobile = 'Invalid Mobile Format';
+    if (!formData.tanNo) {
+      errors.tanNo = 'Tan No is required';
+    }
+    if (!formData.contactPerson) {
+      errors.contactPerson = 'Contact Person is required';
+    }
+    if (!formData.mobile) {
+      errors.mobile = 'Mobile Number is required';
+    }
+    if (!formData.address) {
+      errors.address = 'Address is required';
+    }
+    if (!formData.country) {
+      errors.country = 'Country is required';
+    }
+    if (!formData.state) {
+      errors.state = 'State is required';
+    }
+    if (!formData.city) {
+      errors.city = 'City is required';
+    }
+    if (!formData.pincode) {
+      errors.pincode = 'Pin code is required';
+    }
+    if (!formData.email) {
+      errors.email = 'Email is required';
+    }
+    if (!formData.controlBranch) {
+      errors.controlBranch = 'Control Branch is required';
+    }
+    if (!formData.eccNo) {
+      errors.eccNo = 'Ecc No is required';
     }
 
     setFieldErrors(errors);
@@ -277,46 +390,49 @@ export const SupplierMaster = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        supplierName: formData.supplierName,
-        shortName: formData.shortName,
+        supplier: formData.supplierName,
+        supplierShortName: formData.shortName,
         supplierType: formData.supplierType,
-        pan: formData.pan,
+        panNo: formData.pan,
         tanNo: formData.tanNo,
         contactPerson: formData.contactPerson,
-        mobile: formData.mobile,
-        address: formData.address,
+        mobileNo: formData.mobile,
+        addressLine1: formData.address,
         country: formData.country,
         state: formData.state,
         city: formData.city,
-        controlBranch: formData.controlBranch,
-        pincode: formData.pincode,
+        cbranch: formData.controlBranch,
+        zipCode: formData.pincode,
         email: formData.email,
-        gst: formData.gst,
+        // gst: formData.gst,
         eccNo: formData.eccNo,
         orgId: orgId,
-        createdby: loginUserName
+        createdBy: loginUserName,
+        branchCode: branchCode,
+        branch: branch,
+        client: client,
+        customer: customer,
+        warehouse: warehouse
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
 
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/supplier`, saveFormData)
-        .then((response) => {
-          if (response.data.status === true) {
-            console.log('Response:', response.data);
-            handleClear();
-            showToast('success', editId ? ' Supplier Updated Successfully' : 'Supplier created successfully');
-            setIsLoading(false);
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Supplier creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'Supplier creation failed');
+      try {
+        const response = await apiCalls('put', `warehousemastercontroller/createUpdateSupplier`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response.data);
+          handleClear();
+          showToast('success', editId ? ' Supplier Updated Successfully' : 'Supplier created successfully');
           setIsLoading(false);
-        });
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Supplier creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', error.message);
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }
@@ -342,7 +458,7 @@ export const SupplierMaster = () => {
       controlBranch: '',
       pincode: '',
       email: '',
-      gst: '',
+      // gst: '',
       eccNo: '',
       active: true
     });
@@ -360,7 +476,7 @@ export const SupplierMaster = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getSupplierById} />
           </div>
         ) : (
           <>
@@ -376,6 +492,7 @@ export const SupplierMaster = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.supplierName}
                   helperText={fieldErrors.supplierName}
+                  inputRef={supplierNameRef}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -389,6 +506,7 @@ export const SupplierMaster = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.shortName}
                   helperText={fieldErrors.shortName}
+                  inputRef={shortNameRef}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -449,6 +567,7 @@ export const SupplierMaster = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.pan}
                   helperText={fieldErrors.pan}
+                  inputRef={panRef}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -462,6 +581,7 @@ export const SupplierMaster = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.tanNo}
                   helperText={fieldErrors.tanNo}
+                  inputRef={tanNoRef}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -475,6 +595,7 @@ export const SupplierMaster = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.contactPerson}
                   helperText={fieldErrors.contactPerson}
+                  inputRef={contactPersonRef}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -488,6 +609,7 @@ export const SupplierMaster = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.mobile}
                   helperText={fieldErrors.mobile}
+                  inputRef={mobileRef}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -501,43 +623,47 @@ export const SupplierMaster = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.address}
                   helperText={fieldErrors.address}
+                  inputRef={addressRef}
                 />
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.country}>
                   <InputLabel id="country-label">Country</InputLabel>
-                  <Select
-                    labelId="country-label"
-                    id="country"
-                    name="country"
-                    label="Country"
-                    value={formData.country}
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="COUNTRY 1">COUNTRY 1</MenuItem>
-                    <MenuItem value="COUNTRY 2">COUNTRY 2</MenuItem>
+                  <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
+                    {Array.isArray(countryList) &&
+                      countryList.map((row) => (
+                        <MenuItem key={row.id} value={row.countryName}>
+                          {row.countryName}
+                        </MenuItem>
+                      ))}
                   </Select>
-                  {fieldErrors.country && <FormHelperText error>{fieldErrors.country}</FormHelperText>}
+                  {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
                   <InputLabel id="state-label">State</InputLabel>
-                  <Select labelId="state-label" id="state" name="state" label="State" value={formData.state} onChange={handleInputChange}>
-                    <MenuItem value="STATE 1">STATE 1</MenuItem>
-                    <MenuItem value="STATE 2">STATE 2</MenuItem>
+                  <Select labelId="state-label" label="State" value={formData.state} onChange={handleInputChange} name="state">
+                    {stateList?.map((row) => (
+                      <MenuItem key={row.id} value={row.stateName}>
+                        {row.stateName}
+                      </MenuItem>
+                    ))}
                   </Select>
-                  {fieldErrors.state && <FormHelperText error>{fieldErrors.state}</FormHelperText>}
+                  {fieldErrors.state && <FormHelperText>{fieldErrors.state}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.city}>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
                   <InputLabel id="city-label">City</InputLabel>
-                  <Select labelId="city-label" id="city" name="city" label="City" value={formData.city} onChange={handleInputChange}>
-                    <MenuItem value="CITY 1">CITY 1</MenuItem>
-                    <MenuItem value="CITY 2">CITY 2</MenuItem>
+                  <Select labelId="city-label" label="City" value={formData.city} onChange={handleInputChange} name="city">
+                    {cityList?.map((row) => (
+                      <MenuItem key={row.id} value={row.cityName}>
+                        {row.cityName}
+                      </MenuItem>
+                    ))}
                   </Select>
-                  {fieldErrors.city && <FormHelperText error>{fieldErrors.city}</FormHelperText>}
+                  {fieldErrors.city && <FormHelperText>{fieldErrors.city}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -551,6 +677,7 @@ export const SupplierMaster = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.pincode}
                   helperText={fieldErrors.pincode}
+                  inputRef={pincodeRef}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -564,9 +691,10 @@ export const SupplierMaster = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.email}
                   helperText={fieldErrors.email}
+                  inputRef={emailRef}
                 />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label="GST"
                   variant="outlined"
@@ -578,9 +706,9 @@ export const SupplierMaster = () => {
                   error={!!fieldErrors.gst}
                   helperText={fieldErrors.gst}
                 />
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.city}>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.controlBranch}>
                   <InputLabel id="controlBranch-label">Control Branch</InputLabel>
                   <Select
                     labelId="controlBranch-label"
@@ -590,7 +718,7 @@ export const SupplierMaster = () => {
                     value={formData.controlBranch}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="CONTROL BRANCH 1">CONTROL BRANCH 1</MenuItem>
+                    {loginBranchCode && <MenuItem value={loginBranchCode}>{loginBranchCode}</MenuItem>}
                     <MenuItem value="ALL">ALL</MenuItem>
                   </Select>
                   {fieldErrors.controlBranch && <FormHelperText error>{fieldErrors.controlBranch}</FormHelperText>}
@@ -607,6 +735,7 @@ export const SupplierMaster = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.eccNo}
                   helperText={fieldErrors.eccNo}
+                  inputRef={eccNoRef}
                 />
               </div>
               <div className="col-md-3 mb-3">
