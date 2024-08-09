@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from './CommonListViewTable';
 import axios from 'axios';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import IconButton from '@mui/material/IconButton';
@@ -25,16 +25,26 @@ import BrowserUpdatedIcon from '@mui/icons-material/BrowserUpdated';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import GridOnIcon from '@mui/icons-material/GridOn';
+import { getAllActiveLocationTypes } from 'utils/CommonFunctions';
+import apiCalls from 'apicall';
 
 export const WarehouseLocationMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
   const [editId, setEditId] = useState('');
+  const [warehouseList, setWarehouseList] = useState([]);
+  const [locationTypeList, setLocationTypeList] = useState([]);
+  const [binCategoryList, setBinCategoryList] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-
+  const [loginUserId, setLoginUserId] = useState(localStorage.getItem('userId'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
+  const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
+  const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
+  const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
   const [formData, setFormData] = useState({
-    branch: '',
+    branch: localStorage.getItem('branch'),
     warehouse: '',
     locationType: '',
     rowNo: '',
@@ -45,48 +55,40 @@ export const WarehouseLocationMaster = () => {
     orgId: 1
   });
   const [value, setValue] = useState(0);
-  const [locationTableData, setLocationTableData] = useState([
+  const [binTableData, setBinTableData] = useState([
     {
       id: 1,
-      location: '',
-      height: '',
-      weight: '',
-      cellCategory: '',
+      bin: '',
+      binCategory: '',
       status: '',
       core: ''
     }
   ]);
 
-  const handleAddRow = () => {
-    const newRow = {
-      id: Date.now(),
-      location: '',
-      height: '',
-      weight: '',
-      cellCategory: '',
-      status: '',
-      core: ''
-    };
-    setLocationTableData([...locationTableData, newRow]);
-    setLocationTableErrors([
-      ...locationTableErrors,
-      {
-        location: '',
-        height: '',
-        weight: '',
-        cellCategory: '',
-        status: '',
-        core: ''
-      }
-    ]);
-  };
+  // const handleAddRow = () => {
+  //   const newRow = {
+  //     id: Date.now(),
+  //     bin: '',
+  //     binCategory: '',
+  //     status: '',
+  //     core: ''
+  //   };
+  //   setBinTableData([...binTableData, newRow]);
+  //   setBinTableErrors([
+  //     ...binTableErrors,
+  //     {
+  //       bin: '',
+  //       binCategory: '',
+  //       status: '',
+  //       core: ''
+  //     }
+  //   ]);
+  // };
 
-  const [locationTableErrors, setLocationTableErrors] = useState([
+  const [binTableErrors, setBinTableErrors] = useState([
     {
-      location: '',
-      height: '',
-      weight: '',
-      cellCategory: '',
+      bin: '',
+      binCategory: '',
       status: '',
       core: ''
     }
@@ -144,11 +146,77 @@ export const WarehouseLocationMaster = () => {
     setValue(newValue);
   };
 
+  useEffect(() => {
+    getAllWarehousesByLoginBranch();
+    getAllLocationTypes();
+    getAllCellCategories();
+  }, []);
+
+  const getAllWarehousesByLoginBranch = async () => {
+    try {
+      const response = await apiCalls('get', `warehousemastercontroller/warehouse/branch?branchcode=${loginBranchCode}&orgid=${orgId}`);
+      console.log('THE WAREHOUSEES IS:', response);
+      if (response.status === true) {
+        setWarehouseList(response.paramObjectsMap.Warehouse);
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+  const getAllCellCategories = async () => {
+    try {
+      const response = await apiCalls('get', `warehousemastercontroller/getAllCellTypeByOrgId?orgId=${orgId}`);
+      console.log('THE CELL CATEGORIES IS:', response);
+      if (response.status === true) {
+        setBinCategoryList(response.paramObjectsMap.cellTypeVO);
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+
+  const getAllLocationTypes = async () => {
+    try {
+      const locationTypeData = await getAllActiveLocationTypes(orgId);
+      console.log('THE LOCATIONTYPE IS:', locationTypeData);
+
+      setLocationTypeList(locationTypeData);
+    } catch (error) {
+      console.error('Error fetching locationType data:', error);
+    }
+  };
+
+  const getAllBinDetails = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `warehousemastercontroller/getPalletno?endno=${formData.cellTo}&level=${formData.levelIdentity}&rowno=${formData.rowNo}&startno=${formData.cellFrom}`
+      );
+      console.log('THE WAREHOUSE IS:', response);
+      if (response.status === true) {
+        const palletDetails = response.paramObjectsMap.pallet;
+        console.log('THE PALLET DETAILS ARE:', palletDetails);
+
+        setBinTableData(
+          palletDetails.map((plt) => ({
+            id: plt.id,
+            bin: plt.Bin,
+            binCategory: plt.binCategory,
+            status: plt.status === 'T' ? 'True' : 'False',
+            core: plt.core
+          }))
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     const numericRegex = /^[0-9]*$/;
-    const alphanumericRegex = /^[A-Za-z0-9]*$/;
-    const specialCharsRegex = /^[A-Za-z0-9@_\-*]*$/;
+    const alphanumericRegex = /^[A-Za-z0-9 ]*$/;
+    const specialCharsRegex = /^[A-Za-z0-9#_\-/\\]*$/;
 
     let errorMessage = '';
 
@@ -159,6 +227,22 @@ export const WarehouseLocationMaster = () => {
           errorMessage = 'Only Numbers are allowed';
         }
         break;
+      case 'rowNo':
+        if (!specialCharsRegex.test(value)) {
+          errorMessage = 'Only alphaNumeric and /,,-_  are allowed';
+        }
+        break;
+      case 'cellFrom':
+      case 'cellTo':
+        if (!numericRegex.test(value)) {
+          errorMessage = 'Only Numeric are allowed';
+        }
+        break;
+      case 'levelIdentity':
+        if (!alphanumericRegex.test(value)) {
+          errorMessage = 'Only alphaNumeric are allowed';
+        }
+        break;
       default:
         break;
     }
@@ -166,20 +250,95 @@ export const WarehouseLocationMaster = () => {
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
-      setFormData({ ...formData, [name]: value });
+      setFormData({ ...formData, [name]: value.toUpperCase() });
       setFieldErrors({ ...fieldErrors, [name]: '' });
     }
   };
 
-  const handleDeleteRow = (id) => {
-    setLocationTableData(locationTableData.filter((row) => row.id !== id));
-  };
-  const handleKeyDown = (e, row) => {
-    if (e.key === 'Tab' && row.id === locationTableData[locationTableData.length - 1].id) {
+  // const handleDeleteRow = (id) => {
+  //   setBinTableData(binTableData.filter((row) => row.id !== id));
+  // };
+  const handleKeyDown = (e, row, table) => {
+    if (e.key === 'Tab' && row.id === table[table.length - 1].id) {
       e.preventDefault();
-      handleAddRow();
+      if (isLastRowEmpty(table)) {
+        displayRowError(table);
+      } else {
+        // if (table === roleTableData) handleAddRow();
+        // else if (table === branchTableData) handleAddRow1();
+        // else handleAddRow();
+        handleAddRow();
+      }
     }
   };
+
+  // const handleKeyDown = (e, row) => {
+  //   if (e.key === 'Tab' && row.id === binTableData[binTableData.length - 1].id) {
+  //     e.preventDefault();
+  //     handleAddRow();
+  //   }
+  // };
+  const handleAddRow = () => {
+    if (isLastRowEmpty(binTableData)) {
+      displayRowError(binTableData);
+      return;
+    }
+    const newRow = {
+      id: Date.now(),
+      bin: '',
+      binCategory: '',
+      status: '',
+      core: ''
+    };
+    setBinTableData([...binTableData, newRow]);
+    setBinTableErrors([
+      ...binTableErrors,
+      {
+        bin: '',
+        binCategory: '',
+        status: '',
+        core: ''
+      }
+    ]);
+  };
+
+  const isLastRowEmpty = (table) => {
+    const lastRow = table[table.length - 1];
+    if (!lastRow) return false;
+
+    if (table === binTableData) {
+      return !lastRow.bin || !lastRow.binCategory || !lastRow.status || !lastRow.core;
+      // } else if (table === branchTableData) {
+      //   return !lastRow.branchCode;
+      // } else if (table === clientTableData) {
+      //   return !lastRow.customer || !lastRow.client;
+    }
+    return false;
+  };
+
+  const displayRowError = (table) => {
+    if (table === binTableData) {
+      setBinTableErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          bin: !table[table.length - 1].bin ? 'Bin is required' : '',
+          binCategory: !table[table.length - 1].binCategory ? 'Bin Category is required' : '',
+          status: !table[table.length - 1].status ? 'Status is required' : '',
+          core: !table[table.length - 1].core ? 'Core is required' : ''
+        };
+        return newErrors;
+      });
+    }
+  };
+
+  const handleDeleteRow = (id, table, setTable) => {
+    setTable(table.filter((row) => row.id !== id));
+  };
+
+  // const handleDeleteRow = (id) => {
+  //   setBinTableData(binTableData.filter((row) => row.id !== id));
+  // };
 
   const handleClear = () => {
     setFormData({
@@ -192,13 +351,11 @@ export const WarehouseLocationMaster = () => {
       cellTo: '',
       active: true
     });
-    setLocationTableData([
+    setBinTableData([
       {
         id: 1,
-        location: '',
-        height: '',
-        weight: '',
-        cellCategory: '',
+        bin: '',
+        binCategory: '',
         status: '',
         core: ''
       }
@@ -212,10 +369,10 @@ export const WarehouseLocationMaster = () => {
       cellFrom: '',
       cellTo: ''
     });
-    setLocationTableErrors('');
+    setBinTableErrors('');
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
     if (!formData.branch) {
       errors.branch = 'Branch is required';
@@ -239,46 +396,37 @@ export const WarehouseLocationMaster = () => {
       errors.cellTo = 'Cell To is required';
     }
 
-    let locationTableDataValid = true;
-    const newTableErrors = locationTableData.map((row) => {
+    let binTableDataValid = true;
+    const newTableErrors = binTableData.map((row) => {
       const rowErrors = {};
-      if (!row.location) {
-        rowErrors.location = 'Location is required';
-        locationTableDataValid = false;
+      if (!row.bin) {
+        rowErrors.bin = 'Bin is required';
+        binTableDataValid = false;
       }
-      if (!row.height) {
-        rowErrors.height = 'Height is required';
-        locationTableDataValid = false;
-      }
-      if (!row.weight) {
-        rowErrors.weight = 'Weight is required';
-        locationTableDataValid = false;
-      }
-      if (!row.cellCategory) {
-        rowErrors.cellCategory = 'Cell Category is required';
-        locationTableDataValid = false;
-      }
+      // if (!row.binCategory) {
+      //   rowErrors.binCategory = 'Bin Category is required';
+      //   binTableDataValid = false;
+      // }
       if (!row.status) {
         rowErrors.status = 'Status is required';
-        locationTableDataValid = false;
+        binTableDataValid = false;
       }
       if (!row.core) {
         rowErrors.core = 'Core is required';
-        locationTableDataValid = false;
+        binTableDataValid = false;
       }
 
       return rowErrors;
     });
     setFieldErrors(errors);
-    setLocationTableErrors(newTableErrors);
+    setBinTableErrors(newTableErrors);
 
-    if (Object.keys(errors).length === 0 && locationTableDataValid) {
-      setIsLoading(true);
-      const locationVo = locationTableData.map((row) => ({
-        location: row.location,
-        height: row.height,
-        weight: row.weight,
-        cellCategory: row.cellCategory,
+    if (Object.keys(errors).length === 0 && binTableDataValid) {
+      // setIsLoading(true);
+      const binVo = binTableData.map((row) => ({
+        id: row.id,
+        bin: row.bin,
+        binCategory: row.binCategory,
         status: row.status,
         core: row.core
       }));
@@ -286,38 +434,41 @@ export const WarehouseLocationMaster = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        branch: formData.branch,
+        branch: loginBranch,
+        branchcode: loginBranchCode,
         warehouse: formData.warehouse,
-        locationType: formData.locationType,
-        rowNo: formData.rowNo,
-        levelIdentity: formData.levelIdentity,
-        cellFrom: formData.cellFrom,
-        cellTo: formData.cellTo,
-        locationVo: locationVo,
+        locationtype: formData.locationType,
+        rowno: formData.rowNo,
+        level: formData.levelIdentity,
+        cellfrom: formData.cellFrom,
+        cellto: formData.cellTo,
+        warehouseLocationDetailsVO: binVo,
         orgId: orgId,
-        createdby: loginUserName
+        createdby: loginUserName,
+        userid: loginUserId,
+        warehouse: loginWarehouse
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
 
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/location`, saveFormData)
-        .then((response) => {
-          if (response.data.status === true) {
-            console.log('Response:', response.data);
-            handleClear();
-            showToast('success', editId ? ' Warehouse Location Updated Successfully' : 'Warehouse Location created successfully');
-            setIsLoading(false);
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Warehouse Location creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'Warehouse Location creation failed');
-          setIsLoading(false);
-        });
+      // try {
+      //   const method = editId ? 'put' : 'post';
+      //   const response = await apiCalls(method, `warehousemastercontroller/warehouselocation`, saveFormData);
+
+      //   if (response.status === true) {
+      //     console.log('Response:', response);
+      //     handleClear();
+      //     showToast('success', editId ? ' Warehouse Location Updated Successfully' : 'Warehouse Location created successfully');
+      //     setIsLoading(false);
+      //   } else {
+      //     showToast('error', response.data.paramObjectsMap.errorMessage || 'Warehouse Location creation failed');
+      //     setIsLoading(false);
+      //   }
+      // } catch (error) {
+      //   console.error('Error:', error);
+      //   showToast('error', 'Warehouse Location creation failed');
+      //   setIsLoading(false);
+      // }
     } else {
       setFieldErrors(errors);
     }
@@ -382,8 +533,11 @@ export const WarehouseLocationMaster = () => {
                     value={formData.warehouse}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="Warehouse 1">Warehouse 1</MenuItem>
-                    <MenuItem value="Warehouse 2">Warehouse 2</MenuItem>
+                    {warehouseList?.map((row, index) => (
+                      <MenuItem key={index} value={row.Warehouse.toUpperCase()}>
+                        {row.Warehouse.toUpperCase()}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.warehouse && <FormHelperText error>{fieldErrors.warehouse}</FormHelperText>}
                 </FormControl>
@@ -400,8 +554,11 @@ export const WarehouseLocationMaster = () => {
                     value={formData.locationType}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="Type 1">Type 1</MenuItem>
-                    <MenuItem value="Type 2">Type 2</MenuItem>
+                    {locationTypeList?.map((row) => (
+                      <MenuItem key={row.id} value={row.binType.toUpperCase()}>
+                        {row.binType.toUpperCase()}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.locationType && <FormHelperText error>{fieldErrors.locationType}</FormHelperText>}
                 </FormControl>
@@ -484,18 +641,17 @@ export const WarehouseLocationMaster = () => {
                   <Tab value={0} label="Location Details" />
                 </Tabs>
               </Box>
-              {/* <Box className="mt-4"> */}
               <Box className="mt-2" sx={{ padding: 1 }}>
                 {value === 0 && (
                   <>
                     <div className="row d-flex ml">
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                        <ActionButton title="Fill Grid" icon={GridOnIcon} />
+                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={getAllBinDetails} />
                         <ActionButton title="Clear" icon={ClearIcon} />
                       </div>
                       <div className="row mt-2">
-                        <div className="col-lg-12">
+                        <div className="col-lg-10">
                           <div className="table-responsive">
                             <table className="table table-bordered" style={{ width: '100%' }}>
                               <thead>
@@ -506,23 +662,29 @@ export const WarehouseLocationMaster = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">Location</th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 130 }}>
-                                    Height(feet)
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                    Bin
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 130 }}>
-                                    Weight(kg)
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                    Bin Category
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">Cell Category</th>
-                                  <th className="px-2 py-2 text-white text-center">Status</th>
-                                  <th className="px-2 py-2 text-white text-center">Core</th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                    Status
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                    Core
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {locationTableData.map((row, index) => (
+                                {binTableData.map((row, index) => (
                                   <tr key={row.id}>
                                     <td className="border px-2 py-2 text-center">
-                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+                                      <ActionButton
+                                        title="Delete"
+                                        icon={DeleteIcon}
+                                        onClick={() => handleDeleteRow(row.id, binTableData, setBinTableData)}
+                                      />
                                     </td>
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
@@ -531,98 +693,52 @@ export const WarehouseLocationMaster = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.location}
+                                        value={row.bin}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLocationTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, location: value } : r))
-                                          );
-                                          setLocationTableErrors((prev) => {
+                                          setBinTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, bin: value } : r)));
+                                          setBinTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], location: !value ? 'Gst In is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], bin: !value ? 'Gst In is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={locationTableErrors[index]?.location ? 'error form-control' : 'form-control'}
+                                        className={binTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
                                       />
-                                      {locationTableErrors[index]?.location && (
+                                      {binTableErrors[index]?.bin && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationTableErrors[index].location}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.height}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLocationTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, height: value } : r)));
-                                          setLocationTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], height: !value ? 'height is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={locationTableErrors[index]?.height ? 'error form-control' : 'form-control'}
-                                      />
-                                      {locationTableErrors[index]?.height && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationTableErrors[index].height}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.weight}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLocationTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, weight: value } : r)));
-                                          setLocationTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], weight: !value ? 'weight is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={locationTableErrors[index]?.weight ? 'error form-control' : 'form-control'}
-                                      />
-                                      {locationTableErrors[index]?.weight && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationTableErrors[index].weight}
+                                          {binTableErrors[index].bin}
                                         </div>
                                       )}
                                     </td>
 
                                     <td className="border px-2 py-2">
                                       <select
-                                        value={row.cellCategory}
+                                        value={row.binCategory}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLocationTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, cellCategory: value } : r))
-                                          );
-                                          setLocationTableErrors((prev) => {
+                                          setBinTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, binCategory: value } : r)));
+                                          setBinTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              cellCategory: !value ? 'Cell Category is required' : ''
+                                              binCategory: !value ? 'Cell Category is required' : ''
                                             };
                                             return newErrors;
                                           });
                                         }}
-                                        className={locationTableErrors[index]?.cellCategory ? 'error form-control' : 'form-control'}
+                                        className={binTableErrors[index]?.binCategory ? 'error form-control' : 'form-control'}
                                       >
-                                        <option value="">Select Option</option>
-                                        <option value="Acitve">Acitve</option>
-                                        <option value="In-Acitve">In-Acitve</option>
-                                        <option value="Block">Block</option>
-                                        <option value="Open">Way</option>
+                                        <option value="">--Select--</option>
+                                        {binCategoryList?.map((row) => (
+                                          <option key={row.id} value={row.cellType}>
+                                            {row.cellType}
+                                          </option>
+                                        ))}
                                       </select>
-                                      {locationTableErrors[index]?.cellCategory && (
+                                      {binTableErrors[index]?.binCategory && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationTableErrors[index].cellCategory}
+                                          {binTableErrors[index].binCategory}
                                         </div>
                                       )}
                                     </td>
@@ -632,8 +748,8 @@ export const WarehouseLocationMaster = () => {
                                         value={row.status}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLocationTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, status: value } : r)));
-                                          setLocationTableErrors((prev) => {
+                                          setBinTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, status: value } : r)));
+                                          setBinTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
@@ -642,15 +758,15 @@ export const WarehouseLocationMaster = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        className={locationTableErrors[index]?.status ? 'error form-control' : 'form-control'}
+                                        className={binTableErrors[index]?.status ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
                                         <option value="True">True</option>
                                         <option value="False">False</option>
                                       </select>
-                                      {locationTableErrors[index]?.status && (
+                                      {binTableErrors[index]?.status && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationTableErrors[index].status}
+                                          {binTableErrors[index].status}
                                         </div>
                                       )}
                                     </td>
@@ -659,8 +775,8 @@ export const WarehouseLocationMaster = () => {
                                         value={row.core}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLocationTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, core: value } : r)));
-                                          setLocationTableErrors((prev) => {
+                                          setBinTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, core: value } : r)));
+                                          setBinTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
@@ -669,16 +785,16 @@ export const WarehouseLocationMaster = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        onKeyDown={(e) => handleKeyDown(e, row)}
-                                        className={locationTableErrors[index]?.core ? 'error form-control' : 'form-control'}
+                                        onKeyDown={(e) => handleKeyDown(e, row, binTableData)}
+                                        className={binTableErrors[index]?.core ? 'error form-control' : 'form-control'}
                                       >
-                                        <option value="">Select Option</option>
-                                        <option value="True">True</option>
-                                        <option value="False">False</option>
+                                        {/* <option value="">Select Option</option> */}
+                                        <option value="Multi">Multi</option>
+                                        <option value="Single">Single</option>
                                       </select>
-                                      {locationTableErrors[index]?.core && (
+                                      {binTableErrors[index]?.core && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {locationTableErrors[index].core}
+                                          {binTableErrors[index].core}
                                         </div>
                                       )}
                                     </td>

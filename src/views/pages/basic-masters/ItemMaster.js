@@ -225,9 +225,9 @@ export const ItemMaster = () => {
 
         setFormData({
           itemType: particularItem.itemType,
-          partNo: particularItem.partNo,
+          partNo: particularItem.partno,
           partDesc: particularItem.partDesc,
-          custPartNo: particularItem.custPartNo,
+          custPartNo: particularItem.custPartno,
           groupName: particularItem.groupName,
           styleCode: particularItem.styleCode,
           baseSku: particularItem.baseSku,
@@ -244,7 +244,7 @@ export const ItemMaster = () => {
           ssku: particularItem.ssku,
           sskuQty: particularItem.sskuQty,
           // zoneType: particularItem.zoneType, //no
-          weightSkuUom: particularItem.weightSkuUom,
+          weightSkuUom: particularItem.weightofSkuAndUom,
           hsnCode: particularItem.hsnCode,
           parentChildKey: particularItem.parentChildKey,
           controlBranch: particularItem.cbranch,
@@ -445,7 +445,7 @@ export const ItemMaster = () => {
         itemType: formData.itemType,
         partno: formData.partNo,
         partDesc: formData.partDesc,
-        custPartNo: formData.custPartNo,
+        custPartno: formData.custPartNo,
         groupName: formData.groupName,
         styleCode: formData.styleCode,
         baseSku: formData.baseSku,
@@ -462,10 +462,10 @@ export const ItemMaster = () => {
         ssku: formData.ssku,
         sskuQty: formData.sskuQty,
         // zoneType: formData.zoneType, //no
-        weightSkuUom: formData.weightSkuUom,
+        weightofSkuAndUom: formData.weightSkuUom,
         hsnCode: formData.hsnCode,
         parentChildKey: formData.parentChildKey,
-        cBranch: formData.controlBranch,
+        cbranch: formData.controlBranch,
         criticalStockLevel: formData.criticalStockLevel,
         // criticalStock: formData.criticalStock, //no
         // bchk: formData.bchk, //no
@@ -473,7 +473,7 @@ export const ItemMaster = () => {
         barcode: formData.barcode,
         // itemVo: itemVo, //no
         orgId: orgId,
-        createdby: loginUserName,
+        createdBy: loginUserName,
         breadth: 0,
         client: loginClient,
         customer: loginCustomer,

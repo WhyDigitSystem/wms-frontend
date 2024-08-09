@@ -131,6 +131,7 @@ export const getAllActiveRegions = async (orgId) => {
     return error;
   }
 };
+
 export const getAllActiveGroups = async (orgId) => {
   try {
     const response = await apiCalls('get', `warehousemastercontroller/group?orgid=${orgId}`);
@@ -139,6 +140,24 @@ export const getAllActiveGroups = async (orgId) => {
         .filter((row) => row.active === 'Active')
         .map(({ id, groupName }) => ({ id, groupName }));
       return groupData;
+    } else {
+      console.error('API Error:');
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
+
+export const getAllActiveLocationTypes = async (orgId) => {
+  try {
+    const response = await apiCalls('get', `warehousemastercontroller/locationType?orgid=${orgId}`);
+    if (response.status === true) {
+      const locationTypeData = response.paramObjectsMap.locationTypeVO
+        .filter((row) => row.active === true)
+        .map(({ id, binType }) => ({ id, binType }));
+      return locationTypeData;
     } else {
       console.error('API Error:');
       return response;
