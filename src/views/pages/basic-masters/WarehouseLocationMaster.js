@@ -200,7 +200,7 @@ export const WarehouseLocationMaster = () => {
         setBinTableData(
           palletDetails.map((plt) => ({
             id: plt.id,
-            bin: plt.Bin,
+            bin: plt.bin,
             binCategory: plt.binCategory,
             status: plt.status === 'T' ? 'True' : 'False',
             core: plt.core
