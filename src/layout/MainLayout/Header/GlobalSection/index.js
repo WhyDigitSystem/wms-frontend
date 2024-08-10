@@ -57,6 +57,7 @@ const GlobalSection = () => {
   const [customerVO, setCustomerVO] = useState([]);
   const [clientVO, setClientVO] = useState([]);
   const [globalParameter, setGlobalParameter] = useState([]);
+  const [branchName, setBranchName] = useState('');
 
   /**
    * anchorRef is used on different componets and specifying one type leads to other components throwing an error
@@ -88,13 +89,13 @@ const GlobalSection = () => {
 
     if (branch) {
       setSelectedBranch({ branch: branch.branch, branchcode: branchcode });
+      setBranchName(branch.branch); // Set the branchName state
     }
 
     setBranchValue(branchcode);
 
     getCustomer(branchcode);
   };
-
   const getAccessBranch = async () => {
     try {
       const result = await apiCalls('get', `commonmaster/globalparamBranchByUserName?orgid=${orgId}&userName=${userName}`);
@@ -162,6 +163,7 @@ const GlobalSection = () => {
       setFinYearValue(globalParameterVO.finYear);
       setWarehouseValue(globalParameterVO.warehouse);
       setBranchValue(globalParameterVO.branchcode);
+      setBranchName(globalParameterVO.branch);
       console.log('Test', result);
 
       localStorage.setItem('customer', globalParameterVO.customer);
@@ -181,7 +183,7 @@ const GlobalSection = () => {
 
   const handleSubmit = async () => {
     const formData = {
-      branch: selectedBranch.branch,
+      branch: branchName,
       branchcode: branchValue,
       customer: customerValue,
       client: clientValue,
