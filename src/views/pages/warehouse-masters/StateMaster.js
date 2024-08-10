@@ -16,7 +16,7 @@ import {
   FormControlLabel
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from './CommonListViewTable';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import axios from 'axios';
 import { useRef, useState, useEffect } from 'react';
 import 'react-tabs/style/react-tabs.css';

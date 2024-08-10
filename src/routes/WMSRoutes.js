@@ -11,9 +11,9 @@ const AuthLogin3 = Loadable(lazy(() => import('views/pages/authentication/authen
 const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 const CreateCompany = Loadable(lazy(() => import('views/pages/companySetup/CreateCompany')));
 const CompanySetup = Loadable(lazy(() => import('views/pages/companySetup/CompanySetup')));
-const CountryMaster = Loadable(lazy(() => import('views/pages/basic-masters/CountryMaster')));
-const StateMaster = Loadable(lazy(() => import('views/pages/basic-masters/StateMaster')));
-const CityMaster = Loadable(lazy(() => import('views/pages/basic-masters/CityMaster')));
+const CountryMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/CountryMaster')));
+const StateMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/StateMaster')));
+const CityMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/CityMaster')));
 const CustomerMaster = Loadable(lazy(() => import('views/pages/basic-masters/CustomerMaster')));
 const WarehouseMaster = Loadable(lazy(() => import('views/pages/basic-masters/WarehouseMaster')));
 const LocationTypeMaster = Loadable(lazy(() => import('views/pages/basic-masters/LocationTypeMaster')));
@@ -31,8 +31,8 @@ const MaterialLabelMappingMaster = Loadable(lazy(() => import('views/pages/basic
 const DepartmentMaster = Loadable(lazy(() => import('views/pages/basic-masters/DepartmentMaster')));
 const DesignationMaster = Loadable(lazy(() => import('views/pages/basic-masters/DesignationMaster')));
 const GroupMaster = Loadable(lazy(() => import('views/pages/basic-masters/GroupMaster')));
-const UnitMaster = Loadable(lazy(() => import('views/pages/basic-masters/UnitMaster')));
-const CurrencyMaster = Loadable(lazy(() => import('views/pages/basic-masters/CurrencyMaster')));
+const UnitMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/UnitMaster')));
+const CurrencyMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/CurrencyMaster')));
 const RegionMaster = Loadable(lazy(() => import('views/pages/basic-masters/RegionMaster')));
 const DocumentTypeMaster = Loadable(lazy(() => import('views/pages/basic-masters/DocumentTypeMaster')));
 const DocumentTypeMappingMaster = Loadable(lazy(() => import('views/pages/basic-masters/DocumentTypeMappingMaster')));
@@ -68,59 +68,59 @@ const WMSRoutes = {
       element: <CityMaster />
     },
     {
-      path: '/basicmasters/customermaster',
+      path: '/warehousemasters/customermaster',
       element: <CustomerMaster />
     },
     {
-      path: '/basicmasters/warehousemaster',
+      path: '/warehousemasters/warehousemaster',
       element: <WarehouseMaster />
     },
     {
-      path: '/basicmasters/locationtypemaster',
+      path: '/warehousemasters/locationtypemaster',
       element: <LocationTypeMaster />
     },
     {
-      path: '/basicmasters/warehouselocationmaster',
+      path: '/warehousemasters/warehouselocationmaster',
       element: <WarehouseLocationMaster />
     },
     {
-      path: '/basicmasters/locationmappingmaster',
+      path: '/warehousemasters/locationmappingmaster',
       element: <LocationMappingMaster />
     },
     {
-      path: '/basicmasters/celltypemaster',
+      path: '/warehousemasters/celltypemaster',
       element: <CellTypeMaster />
     },
     {
-      path: '/basicmasters/employeemaster',
+      path: '/warehousemasters/employeemaster',
       element: <EmployeeMaster />
     },
     {
-      path: '/basicmasters/usercreationmaster',
+      path: '/warehousemasters/usercreationmaster',
       element: <UserCreationMaster />
     },
     {
-      path: '/basicmasters/itemmaster',
+      path: '/warehousemasters/itemmaster',
       element: <ItemMaster />
     },
     {
-      path: '/basicmasters/buyermaster',
+      path: '/warehousemasters/buyermaster',
       element: <BuyerMaster />
     },
     {
-      path: '/basicmasters/carriermaster',
+      path: '/warehousemasters/carriermaster',
       element: <CarrierMaster />
     },
     {
-      path: '/basicmasters/suppliermaster',
+      path: '/warehousemasters/suppliermaster',
       element: <SupplierMaster />
     },
     {
-      path: '/basicmasters/externaldatamismatchmaster',
+      path: '/warehousemasters/externaldatamismatchmaster',
       element: <ExternalDataMismatch />
     },
     {
-      path: '/basicmasters/materiallabelmappingmaster',
+      path: '/warehousemasters/materiallabelmappingmaster',
       element: <MaterialLabelMappingMaster />
     },
     {
@@ -132,15 +132,15 @@ const WMSRoutes = {
       element: <ScreenNames />
     },
     {
-      path: '/basicmasters/departmentmaster',
+      path: '/warehousemasters/departmentmaster',
       element: <DepartmentMaster />
     },
     {
-      path: '/basicmasters/designationmaster',
+      path: '/warehousemasters/designationmaster',
       element: <DesignationMaster />
     },
     {
-      path: '/basicmasters/groupmaster',
+      path: '/warehousemasters/groupmaster',
       element: <GroupMaster />
     },
     {
@@ -156,15 +156,15 @@ const WMSRoutes = {
       element: <RegionMaster />
     },
     {
-      path: '/basicmasters/documenttype',
+      path: '/warehousemasters/documenttype',
       element: <DocumentTypeMaster />
     },
     {
-      path: '/basicmasters/documenttypemapping',
+      path: '/warehousemasters/documenttypemapping',
       element: <DocumentTypeMappingMaster />
     },
     {
-      path: '/basicmasters/finyearmaster',
+      path: '/warehousemasters/finyearmaster',
       element: <FinYearMaster />
     },
     {

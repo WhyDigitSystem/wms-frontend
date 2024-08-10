@@ -39,108 +39,103 @@ const basicMasters = {
           type: 'item',
           url: '/basicmasters/citymaster'
         },
-        {
-          id: 'customerMaster',
-          title: 'Customer',
-          type: 'item',
-          url: '/basicmasters/customermaster'
-        },
-        {
-          id: 'warehouseMaster',
-          title: 'Warehouse',
-          type: 'item',
-          url: '/basicmasters/warehousemaster'
-        },
-        {
-          id: 'locationTypeMaster',
-          title: 'LocationType',
-          type: 'item',
-          url: '/basicmasters/locationtypemaster'
-        },
-        {
-          id: 'warehouseLocationMaster',
-          title: 'Warehouse Location',
-          type: 'item',
-          url: '/basicmasters/warehouselocationmaster'
-        },
-        {
-          id: 'locationMappingMaster',
-          title: 'Location Mapping',
-          type: 'item',
-          url: '/basicmasters/locationmappingmaster'
-        },
-        {
-          id: 'cellTypeMaster',
-          title: 'CellType',
-          type: 'item',
-          url: '/basicmasters/celltypemaster'
-        },
-        {
-          id: 'employeeMaster',
-          title: 'Employee',
-          type: 'item',
-          url: '/basicmasters/employeemaster'
-        },
-        {
-          id: 'userCreationMaster',
-          title: 'User Creation',
-          type: 'item',
-          url: '/basicmasters/usercreationmaster'
-        },
-        {
-          id: 'itemMaster',
-          title: 'Item',
-          type: 'item',
-          url: '/basicmasters/itemmaster'
-        },
-        {
-          id: 'buyerMaster',
-          title: 'Buyer',
-          type: 'item',
-          url: '/basicmasters/buyermaster'
-        },
-        {
-          id: 'carrierMaster',
-          title: 'Carrier',
-          type: 'item',
-          url: '/basicmasters/carriermaster'
-        },
-        {
-          id: 'supplierMaster',
-          title: 'Supplier',
-          type: 'item',
-          url: '/basicmasters/suppliermaster'
-        },
-        {
-          id: 'externalDataMismatchMaster',
-          title: 'External Data Mismatch',
-          type: 'item',
-          url: '/basicmasters/externaldatamismatchmaster'
-        },
-        {
-          id: 'materialLabelMappingMaster',
-          title: 'Material Label Mapping',
-          type: 'item',
-          url: '/basicmasters/materiallabelmappingmaster'
-        },
-        {
-          id: 'departmentMaster',
-          title: 'Department',
-          type: 'item',
-          url: '/basicmasters/departmentmaster'
-        },
-        {
-          id: 'designationMaster',
-          title: 'Designation',
-          type: 'item',
-          url: '/basicmasters/designationmaster'
-        },
         // {
-        //   id: 'groupMaster',
-        //   title: 'Group',
+        //   id: 'customerMaster',
+        //   title: 'Customer',
         //   type: 'item',
-        //   url: '/basicmasters/groupmaster'
+        //   url: '/basicmasters/customermaster'
         // },
+        // {
+        //   id: 'warehouseMaster',
+        //   title: 'Warehouse',
+        //   type: 'item',
+        //   url: '/basicmasters/warehousemaster'
+        // },
+        // {
+        //   id: 'locationTypeMaster',
+        //   title: 'LocationType',
+        //   type: 'item',
+        //   url: '/basicmasters/locationtypemaster'
+        // },
+        // {
+        //   id: 'warehouseLocationMaster',
+        //   title: 'Warehouse Location',
+        //   type: 'item',
+        //   url: '/basicmasters/warehouselocationmaster'
+        // },
+        // {
+        //   id: 'locationMappingMaster',
+        //   title: 'Location Mapping',
+        //   type: 'item',
+        //   url: '/basicmasters/locationmappingmaster'
+        // },
+        // {
+        //   id: 'cellTypeMaster',
+        //   title: 'CellType',
+        //   type: 'item',
+        //   url: '/basicmasters/celltypemaster'
+        // },
+        // {
+        //   id: 'employeeMaster',
+        //   title: 'Employee',
+        //   type: 'item',
+        //   url: '/basicmasters/employeemaster'
+        // },
+        // {
+        //   id: 'userCreationMaster',
+        //   title: 'User Creation',
+        //   type: 'item',
+        //   url: '/basicmasters/usercreationmaster'
+        // },
+        // {
+        //   id: 'itemMaster',
+        //   title: 'Item',
+        //   type: 'item',
+        //   url: '/basicmasters/itemmaster'
+        // },
+        // {
+        //   id: 'buyerMaster',
+        //   title: 'Buyer',
+        //   type: 'item',
+        //   url: '/basicmasters/buyermaster'
+        // },
+        // {
+        //   id: 'carrierMaster',
+        //   title: 'Carrier',
+        //   type: 'item',
+        //   url: '/basicmasters/carriermaster'
+        // },
+        // {
+        //   id: 'supplierMaster',
+        //   title: 'Supplier',
+        //   type: 'item',
+        //   url: '/basicmasters/suppliermaster'
+        // },
+        // {
+        //   id: 'externalDataMismatchMaster',
+        //   title: 'External Data Mismatch',
+        //   type: 'item',
+        //   url: '/basicmasters/externaldatamismatchmaster'
+        // },
+        // {
+        //   id: 'materialLabelMappingMaster',
+        //   title: 'Material Label Mapping',
+        //   type: 'item',
+        //   url: '/basicmasters/materiallabelmappingmaster'
+        // },
+        // {
+        //   id: 'departmentMaster',
+        //   title: 'Department',
+        //   type: 'item',
+        //   url: '/basicmasters/departmentmaster'
+        // },
+        // {
+        //   id: 'designationMaster',
+        //   title: 'Designation',
+        //   type: 'item',
+        //   url: '/basicmasters/designationmaster'
+        // },
+
         // {
         //   id: 'unitMaster',
         //   title: 'Unit',
@@ -158,31 +153,32 @@ const basicMasters = {
           title: 'Region',
           type: 'item',
           url: '/basicmasters/regionmaster'
-        },
-        {
-          id: 'documentTypeMaster',
-          title: 'Document Type',
-          type: 'item',
-          url: '/basicmasters/documenttype'
-        },
-        {
-          id: 'documentTypeMappingMaster',
-          title: 'DocumentType Mapping',
-          type: 'item',
-          url: '/basicmasters/documenttypemapping'
-        },
-        {
-          id: 'finYearMaster',
-          title: 'Financial Year',
-          type: 'item',
-          url: '/basicmasters/finyearmaster'
-        },
-        {
-          id: 'fullfeaturedcurdgrid',
-          title: 'Grid table',
-          type: 'item',
-          url: '/basicmasters/fullfeaturedcurdgrid'
         }
+        // {
+        //   id: 'documentTypeMaster',
+        //   title: 'Document Type',
+        //   type: 'item',
+        //   url: '/basicmasters/documenttype'
+        // },
+        // {
+        //   id: 'documentTypeMappingMaster',
+        //   title: 'DocumentType Mapping',
+        //   type: 'item',
+        //   url: '/basicmasters/documenttypemapping'
+        // },
+        // {
+        //   id: 'finYearMaster',
+        //   title: 'Financial Year',
+        //   type: 'item',
+        //   url: '/basicmasters/finyearmaster'
+        // },
+        //GRID TABLE
+        // {
+        //   id: 'fullfeaturedcurdgrid',
+        //   title: 'Grid table',
+        //   type: 'item',
+        //   url: '/basicmasters/fullfeaturedcurdgrid'
+        // }
       ]
     }
   ]
