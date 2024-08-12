@@ -9,7 +9,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from './CommonListViewTable';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import axios from 'axios';
 import { useRef, useState, useMemo, useEffect } from 'react';
 import 'react-tabs/style/react-tabs.css';
@@ -23,27 +23,29 @@ import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import apiCalls from 'apicall';
 
-export const DesignationMaster = () => {
+export const GroupMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     active: true,
-    designationCode: '',
-    designationName: ''
+
+    groupName: ''
   });
   const [editId, setEditId] = useState('');
 
+  const theme = useTheme();
+  const anchorRef = useRef(null);
+
   const [fieldErrors, setFieldErrors] = useState({
-    designationName: '',
-    designationCode: ''
+    groupName: ''
   });
   const [listView, setListView] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
     {
-      accessorKey: 'designation',
-      header: 'Designation',
+      accessorKey: 'groupName',
+      header: 'Group',
       size: 140
     },
     { accessorKey: 'active', header: 'Active', size: 140 }
@@ -51,30 +53,30 @@ export const DesignationMaster = () => {
   const [listViewData, setListViewData] = useState([]);
 
   useEffect(() => {
-    getAllDesignation();
+    getAllGroups();
   }, []);
 
-  const getAllDesignation = async () => {
+  const getAllGroups = async () => {
     try {
-      const response = await apiCalls('get', `commonmaster/getAllDesignationByOrgId?orgId=${orgId}`);
-      setListViewData(response.paramObjectsMap.designationVO);
-      console.log('Test', response);
+      const result = await apiCalls('get', `commonmaster/country?orgid=1000000001`);
+      setListViewData(result.paramObjectsMap.countryVO);
+      console.log('Test', result);
     } catch (err) {
       console.log('error', err);
     }
   };
 
-  const getDesignationById = async (row) => {
-    console.log('THE SELECTED DESIGNATION ID IS:', row.original.id);
+  const getGroupById = async (row) => {
+    console.log('THE SELECTED Group ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `commonmaster/getAllDesignationById?id=${row.original.id}`);
+      const response = await apiCalls('get', `commonmaster/group/${row.original.id}`);
 
       if (response.status === true) {
-        const particularDesignation = response.paramObjectsMap.designationVO;
+        const particularGroup = response.paramObjectsMap.group;
         setFormData({
-          designationName: particularDesignation.designation,
-          active: particularDesignation.active === 'Active' ? true : false
+          groupName: particularGroup.groupName,
+          active: particularGroup.active === 'Active' ? true : false
         });
         setListView(false);
       } else {
@@ -86,35 +88,33 @@ export const DesignationMaster = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+    const { name, value } = e.target;
+    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
 
-    if (name === 'designationName' && !nameRegex.test(value)) {
+    if (name === 'groupName' && !nameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else {
-      setFormData({ ...formData, [name]: name === 'active' ? checked : value.toUpperCase() });
+      setFormData({ ...formData, [name]: value.toUpperCase() });
       setFieldErrors({ ...fieldErrors, [name]: '' });
     }
   };
 
   const handleClear = () => {
     setFormData({
-      designationName: '',
-      designationCode: '',
+      groupName: '',
+
       active: true
     });
     setFieldErrors({
-      designationName: '',
-      designationCode: ''
+      groupName: ''
     });
-    setEditId('');
   };
 
   const handleSave = async () => {
     const errors = {};
-
-    if (!formData.designationName) {
-      errors.designationName = 'Designation is required';
+    if (!formData.groupName) {
+      errors.groupName = 'Group Name is required';
     }
 
     if (Object.keys(errors).length === 0) {
@@ -122,29 +122,29 @@ export const DesignationMaster = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        designation: formData.designationName,
+        groupName: formData.groupName,
         orgId: orgId,
-        createdBy: loginUserName
+        createdby: loginUserName
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const response = await apiCalls('put', `commonmaster/createUpdateDesignation`, saveFormData);
+        const result = await apiCalls('post', `commonmaster/createUpdateCountry`, saveFormData);
 
-        if (response.status === true) {
-          console.log('Response:', response);
-          showToast('success', editId ? ' Designation Updated Successfully' : 'Designation created successfully');
+        if (result.status === true) {
+          console.log('Response:', result);
+          showToast('success', editId ? ' Group Updated Successfully' : 'Group created successfully');
           handleClear();
-          getAllDesignation();
+          getAllGroups();
           setIsLoading(false);
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Designation creation failed');
+          showToast('error', result.paramObjectsMap.errorMessage || 'Group creation failed');
           setIsLoading(false);
         }
       } catch (err) {
         console.log('error', err);
-        showToast('error', 'Designation creation failed');
+        showToast('error', 'Group creation failed');
         setIsLoading(false);
       }
     } else {
@@ -159,11 +159,16 @@ export const DesignationMaster = () => {
   const handleClose = () => {
     setEditMode(false);
     setFormData({
-      designationName: '',
-      designationCode: ''
+      country: ''
     });
   };
 
+  const handleCheckboxChange = (event) => {
+    setFormData({
+      ...formData,
+      active: event.target.checked
+    });
+  };
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -181,7 +186,7 @@ export const DesignationMaster = () => {
               data={listViewData}
               columns={listViewColumns}
               blockEdit={true} // DISAPLE THE MODAL IF TRUE
-              toEdit={getDesignationById}
+              toEdit={getGroupById}
             />
           </div>
         ) : (
@@ -189,21 +194,22 @@ export const DesignationMaster = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Designation Name"
+                  label="Name"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="designationName"
-                  value={formData.designationName}
+                  name="groupName"
+                  value={formData.groupName}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.designationName}
-                  helperText={fieldErrors.designationName}
+                  error={!!fieldErrors.groupName}
+                  helperText={fieldErrors.groupName}
                 />
               </div>
               <div className="col-md-3 mb-3">
                 <FormControlLabel
-                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
+                  control={<Checkbox checked={formData.active} onChange={handleCheckboxChange} />}
                   label="Active"
+                  labelPlacement="end"
                 />
               </div>
             </div>
@@ -216,4 +222,4 @@ export const DesignationMaster = () => {
     </>
   );
 };
-export default DesignationMaster;
+export default GroupMaster;

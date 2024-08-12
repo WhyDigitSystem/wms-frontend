@@ -5,7 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { Avatar, ButtonBase, FormHelperText, Tooltip, FormControlLabel, Checkbox } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from './CommonListViewTable';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
@@ -32,7 +32,7 @@ export const WarehouseLocationMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
-  const [editId, setEditId] = useState('');
+  const [viewId, setViewId] = useState('');
   const [warehouseList, setWarehouseList] = useState([]);
   const [locationTypeList, setLocationTypeList] = useState([]);
   const [binCategoryList, setBinCategoryList] = useState([]);
@@ -65,26 +65,6 @@ export const WarehouseLocationMaster = () => {
     }
   ]);
 
-  // const handleAddRow = () => {
-  //   const newRow = {
-  //     id: Date.now(),
-  //     bin: '',
-  //     binCategory: '',
-  //     status: '',
-  //     core: ''
-  //   };
-  //   setBinTableData([...binTableData, newRow]);
-  //   setBinTableErrors([
-  //     ...binTableErrors,
-  //     {
-  //       bin: '',
-  //       binCategory: '',
-  //       status: '',
-  //       core: ''
-  //     }
-  //   ]);
-  // };
-
   const [binTableErrors, setBinTableErrors] = useState([
     {
       bin: '',
@@ -93,9 +73,6 @@ export const WarehouseLocationMaster = () => {
       core: ''
     }
   ]);
-
-  const theme = useTheme();
-  const anchorRef = useRef(null);
 
   const [fieldErrors, setFieldErrors] = useState({
     branch: '',
@@ -109,38 +86,15 @@ export const WarehouseLocationMaster = () => {
   const listViewColumns = [
     { accessorKey: 'branch', header: 'Branch', size: 140 },
     { accessorKey: 'warehouse', header: 'Warehouse', size: 140 },
-    { accessorKey: 'locationType', header: 'Location Type', size: 140 },
+    { accessorKey: 'binType', header: 'Bin Type', size: 140 },
     { accessorKey: 'rowNo', header: 'Row', size: 140 },
-    { accessorKey: 'identityLevel', header: 'Identity Level', size: 140 },
-    { accessorKey: 'start', header: 'Start', size: 140 },
-    { accessorKey: 'end', header: 'End', size: 140 },
+    { accessorKey: 'level', header: 'Identity Level', size: 140 },
+    { accessorKey: 'cellFrom', header: 'Start', size: 140 },
+    { accessorKey: 'cellTo', header: 'End', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
-  const [listViewData, setListViewData] = useState([
-    {
-      id: 1,
-      branch: 'Branch1',
-      warehouse: 'Warehouse1',
-      locationType: 'locationType1',
-      rowNo: 'rowNo1',
-      identityLevel: 'identityLevel1',
-      start: 'start1',
-      end: 'end1',
-      active: 'Active'
-    },
-    {
-      id: 2,
-      branch: 'Branch2',
-      warehouse: 'Warehouse2',
-      locationType: 'locationType2',
-      rowNo: 'rowNo2',
-      identityLevel: 'identityLevel2',
-      start: 'start2',
-      end: 'end1',
-      active: 'Active'
-    }
-  ]);
+  const [listViewData, setListViewData] = useState([]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -150,14 +104,63 @@ export const WarehouseLocationMaster = () => {
     getAllWarehousesByLoginBranch();
     getAllLocationTypes();
     getAllCellCategories();
+    getAllWarehousesLocations();
   }, []);
 
+  const getAllWarehousesLocations = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `warehousemastercontroller/warehouselocation?branch=${loginBranch}&orgid=${orgId}&warehouse=${loginWarehouse}`
+      );
+      console.log('THE WAREHOUSES IS:', response);
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.warehouseLocationVO);
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
   const getAllWarehousesByLoginBranch = async () => {
     try {
       const response = await apiCalls('get', `warehousemastercontroller/warehouse/branch?branchcode=${loginBranchCode}&orgid=${orgId}`);
       console.log('THE WAREHOUSEES IS:', response);
       if (response.status === true) {
         setWarehouseList(response.paramObjectsMap.Warehouse);
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+  const getWarehouseById = async (row) => {
+    console.log('THE SELECTED WAREHOUSE ID IS:', row.original.id);
+
+    try {
+      const response = await apiCalls('get', `warehousemastercontroller/getWarehouselocationById?id=${row.original.id}`);
+      console.log('THE WAREHOUSEES IS:', response);
+
+      if (response.status === true) {
+        setViewId(row.original.id);
+        const particularWarehouseLocation = response.paramObjectsMap.warehouseLocationVO;
+        setFormData({
+          warehouse: particularWarehouseLocation.warehouse,
+          locationType: particularWarehouseLocation.binType,
+          rowNo: particularWarehouseLocation.rowNo,
+          levelIdentity: particularWarehouseLocation.level,
+          cellFrom: particularWarehouseLocation.cellFrom,
+          cellTo: particularWarehouseLocation.cellTo,
+          active: particularWarehouseLocation.active === 'Active' ? true : false
+        });
+        setBinTableData(
+          particularWarehouseLocation.warehouseLocationDetailsVO.map((loc) => ({
+            id: loc.id,
+            bin: loc.bin,
+            binCategory: loc.binCategory,
+            status: loc.status,
+            core: loc.core
+          }))
+        );
+        setListView(false);
       }
     } catch (error) {
       console.error('Error fetching employee data:', error);
@@ -201,7 +204,7 @@ export const WarehouseLocationMaster = () => {
           palletDetails.map((plt) => ({
             id: plt.id,
             bin: plt.bin,
-            binCategory: plt.binCategory,
+            binCategory: plt.bincategory,
             status: plt.status === 'T' ? 'True' : 'False',
             core: plt.core
           }))
@@ -255,9 +258,6 @@ export const WarehouseLocationMaster = () => {
     }
   };
 
-  // const handleDeleteRow = (id) => {
-  //   setBinTableData(binTableData.filter((row) => row.id !== id));
-  // };
   const handleKeyDown = (e, row, table) => {
     if (e.key === 'Tab' && row.id === table[table.length - 1].id) {
       e.preventDefault();
@@ -272,12 +272,6 @@ export const WarehouseLocationMaster = () => {
     }
   };
 
-  // const handleKeyDown = (e, row) => {
-  //   if (e.key === 'Tab' && row.id === binTableData[binTableData.length - 1].id) {
-  //     e.preventDefault();
-  //     handleAddRow();
-  //   }
-  // };
   const handleAddRow = () => {
     if (isLastRowEmpty(binTableData)) {
       displayRowError(binTableData);
@@ -336,13 +330,8 @@ export const WarehouseLocationMaster = () => {
     setTable(table.filter((row) => row.id !== id));
   };
 
-  // const handleDeleteRow = (id) => {
-  //   setBinTableData(binTableData.filter((row) => row.id !== id));
-  // };
-
   const handleClear = () => {
     setFormData({
-      branch: '',
       warehouse: '',
       locationType: '',
       rowNo: '',
@@ -361,7 +350,6 @@ export const WarehouseLocationMaster = () => {
       }
     ]);
     setFieldErrors({
-      branch: '',
       warehouse: '',
       locationType: '',
       rowNo: '',
@@ -403,10 +391,10 @@ export const WarehouseLocationMaster = () => {
         rowErrors.bin = 'Bin is required';
         binTableDataValid = false;
       }
-      // if (!row.binCategory) {
-      //   rowErrors.binCategory = 'Bin Category is required';
-      //   binTableDataValid = false;
-      // }
+      if (!row.binCategory) {
+        rowErrors.binCategory = 'Bin Category is required';
+        binTableDataValid = false;
+      }
       if (!row.status) {
         rowErrors.status = 'Status is required';
         binTableDataValid = false;
@@ -422,9 +410,10 @@ export const WarehouseLocationMaster = () => {
     setBinTableErrors(newTableErrors);
 
     if (Object.keys(errors).length === 0 && binTableDataValid) {
-      // setIsLoading(true);
+      setIsLoading(true);
       const binVo = binTableData.map((row) => ({
-        id: row.id,
+        // id: row.id,
+        ...(viewId && { id: row.id }),
         bin: row.bin,
         binCategory: row.binCategory,
         status: row.status,
@@ -432,43 +421,42 @@ export const WarehouseLocationMaster = () => {
       }));
 
       const saveFormData = {
-        ...(editId && { id: editId }),
+        ...(viewId && { id: viewId }),
         active: formData.active,
         branch: loginBranch,
-        branchcode: loginBranchCode,
+        branchCode: loginBranchCode,
         warehouse: formData.warehouse,
-        locationtype: formData.locationType,
-        rowno: formData.rowNo,
+        binType: formData.locationType,
+        rowNo: formData.rowNo,
         level: formData.levelIdentity,
-        cellfrom: formData.cellFrom,
-        cellto: formData.cellTo,
-        warehouseLocationDetailsVO: binVo,
+        cellFrom: formData.cellFrom,
+        cellTo: formData.cellTo,
+        warehouseLocationDetailsDTO: binVo,
         orgId: orgId,
-        createdby: loginUserName,
-        userid: loginUserId,
-        warehouse: loginWarehouse
+        createdBy: loginUserName
+        // userid: loginUserId,
+        // warehouse: loginWarehouse
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
 
-      // try {
-      //   const method = editId ? 'put' : 'post';
-      //   const response = await apiCalls(method, `warehousemastercontroller/warehouselocation`, saveFormData);
+      try {
+        const response = await apiCalls('put', `warehousemastercontroller/warehouselocation`, saveFormData);
 
-      //   if (response.status === true) {
-      //     console.log('Response:', response);
-      //     handleClear();
-      //     showToast('success', editId ? ' Warehouse Location Updated Successfully' : 'Warehouse Location created successfully');
-      //     setIsLoading(false);
-      //   } else {
-      //     showToast('error', response.data.paramObjectsMap.errorMessage || 'Warehouse Location creation failed');
-      //     setIsLoading(false);
-      //   }
-      // } catch (error) {
-      //   console.error('Error:', error);
-      //   showToast('error', 'Warehouse Location creation failed');
-      //   setIsLoading(false);
-      // }
+        if (response.status === true) {
+          console.log('Response:', response);
+          handleClear();
+          showToast('success', viewId ? ' Warehouse Location Updated Successfully' : 'Warehouse Location created successfully');
+          setIsLoading(false);
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Warehouse Location creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Warehouse Location creation failed');
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }
@@ -503,7 +491,14 @@ export const WarehouseLocationMaster = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} />
+            <CommonListViewTable
+              data={listViewData}
+              columns={listViewColumns}
+              blockEdit={true}
+              disableEditIcon={true}
+              viewIcon={true}
+              toEdit={getWarehouseById}
+            />
           </div>
         ) : (
           <>
@@ -532,6 +527,7 @@ export const WarehouseLocationMaster = () => {
                     label="Warehouse"
                     value={formData.warehouse}
                     onChange={handleInputChange}
+                    disabled={viewId && true}
                   >
                     {warehouseList?.map((row, index) => (
                       <MenuItem key={index} value={row.Warehouse.toUpperCase()}>
@@ -553,6 +549,7 @@ export const WarehouseLocationMaster = () => {
                     label="Location Type"
                     value={formData.locationType}
                     onChange={handleInputChange}
+                    disabled={viewId && true}
                   >
                     {locationTypeList?.map((row) => (
                       <MenuItem key={row.id} value={row.binType.toUpperCase()}>
@@ -574,6 +571,7 @@ export const WarehouseLocationMaster = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.rowNo}
                   helperText={fieldErrors.rowNo}
+                  disabled={viewId && true}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -587,6 +585,7 @@ export const WarehouseLocationMaster = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.levelIdentity}
                   helperText={fieldErrors.levelIdentity}
+                  disabled={viewId && true}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -600,6 +599,7 @@ export const WarehouseLocationMaster = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.cellFrom}
                   helperText={fieldErrors.cellFrom}
+                  disabled={viewId && true}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -613,20 +613,25 @@ export const WarehouseLocationMaster = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.cellTo}
                   helperText={fieldErrors.cellTo}
+                  disabled={viewId && true}
                 />
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={formData.active}
-                      onChange={() => setFormData({ ...formData, active: !formData.active })}
-                      color="primary"
+              {!viewId && (
+                <>
+                  <div className="col-md-3 mb-3">
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={formData.active}
+                          onChange={() => setFormData({ ...formData, active: !formData.active })}
+                          color="primary"
+                        />
+                      }
+                      label="Active"
                     />
-                  }
-                  label="Active"
-                />
-              </div>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="row ">
@@ -638,7 +643,7 @@ export const WarehouseLocationMaster = () => {
                   indicatorColor="secondary"
                   aria-label="secondary tabs example"
                 >
-                  <Tab value={0} label="Location Details" />
+                  <Tab value={0} label="Bin Details" />
                 </Tabs>
               </Box>
               <Box className="mt-2" sx={{ padding: 1 }}>
@@ -656,12 +661,16 @@ export const WarehouseLocationMaster = () => {
                             <table className="table table-bordered" style={{ width: '100%' }}>
                               <thead>
                                 <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                    Action
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                    S.No
-                                  </th>
+                                  {!viewId && (
+                                    <>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                        Action
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                        S.No
+                                      </th>
+                                    </>
+                                  )}
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
                                     Bin
                                   </th>
@@ -676,131 +685,150 @@ export const WarehouseLocationMaster = () => {
                                   </th>
                                 </tr>
                               </thead>
-                              <tbody>
-                                {binTableData.map((row, index) => (
-                                  <tr key={row.id}>
-                                    <td className="border px-2 py-2 text-center">
-                                      <ActionButton
-                                        title="Delete"
-                                        icon={DeleteIcon}
-                                        onClick={() => handleDeleteRow(row.id, binTableData, setBinTableData)}
-                                      />
-                                    </td>
-                                    <td className="text-center">
-                                      <div className="pt-2">{index + 1}</div>
-                                    </td>
+                              {!viewId ? (
+                                <>
+                                  <tbody>
+                                    {binTableData.map((row, index) => (
+                                      <tr key={row.id}>
+                                        <td className="border px-2 py-2 text-center">
+                                          <ActionButton
+                                            title="Delete"
+                                            icon={DeleteIcon}
+                                            onClick={() => handleDeleteRow(row.id, binTableData, setBinTableData)}
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <div className="pt-2">{index + 1}</div>
+                                        </td>
 
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.bin}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setBinTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, bin: value } : r)));
-                                          setBinTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], bin: !value ? 'Gst In is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={binTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
-                                      />
-                                      {binTableErrors[index]?.bin && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {binTableErrors[index].bin}
-                                        </div>
-                                      )}
-                                    </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.bin}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setBinTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, bin: value } : r)));
+                                              setBinTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], bin: !value ? 'Gst In is required' : '' };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            className={binTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
+                                          />
+                                          {binTableErrors[index]?.bin && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {binTableErrors[index].bin}
+                                            </div>
+                                          )}
+                                        </td>
 
-                                    <td className="border px-2 py-2">
-                                      <select
-                                        value={row.binCategory}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setBinTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, binCategory: value } : r)));
-                                          setBinTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              binCategory: !value ? 'Cell Category is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={binTableErrors[index]?.binCategory ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">--Select--</option>
-                                        {binCategoryList?.map((row) => (
-                                          <option key={row.id} value={row.cellType}>
-                                            {row.cellType}
-                                          </option>
-                                        ))}
-                                      </select>
-                                      {binTableErrors[index]?.binCategory && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {binTableErrors[index].binCategory}
-                                        </div>
-                                      )}
-                                    </td>
+                                        <td className="border px-2 py-2">
+                                          <select
+                                            value={row.binCategory}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setBinTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, binCategory: value } : r))
+                                              );
+                                              setBinTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  binCategory: !value ? 'Cell Category is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            className={binTableErrors[index]?.binCategory ? 'error form-control' : 'form-control'}
+                                          >
+                                            <option value="">--Select--</option>
+                                            {binCategoryList?.map((row) => (
+                                              <option key={row.id} value={row.cellType}>
+                                                {row.cellType}
+                                              </option>
+                                            ))}
+                                          </select>
+                                          {binTableErrors[index]?.binCategory && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {binTableErrors[index].binCategory}
+                                            </div>
+                                          )}
+                                        </td>
 
-                                    <td className="border px-2 py-2">
-                                      <select
-                                        value={row.status}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setBinTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, status: value } : r)));
-                                          setBinTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              status: !value ? 'Status is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={binTableErrors[index]?.status ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">Select Option</option>
-                                        <option value="True">True</option>
-                                        <option value="False">False</option>
-                                      </select>
-                                      {binTableErrors[index]?.status && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {binTableErrors[index].status}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <select
-                                        value={row.core}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setBinTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, core: value } : r)));
-                                          setBinTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              core: !value ? 'Core is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        onKeyDown={(e) => handleKeyDown(e, row, binTableData)}
-                                        className={binTableErrors[index]?.core ? 'error form-control' : 'form-control'}
-                                      >
-                                        {/* <option value="">Select Option</option> */}
-                                        <option value="Multi">Multi</option>
-                                        <option value="Single">Single</option>
-                                      </select>
-                                      {binTableErrors[index]?.core && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {binTableErrors[index].core}
-                                        </div>
-                                      )}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
+                                        <td className="border px-2 py-2">
+                                          <select
+                                            value={row.status}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setBinTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, status: value } : r)));
+                                              setBinTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  status: !value ? 'Status is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            className={binTableErrors[index]?.status ? 'error form-control' : 'form-control'}
+                                          >
+                                            <option value="">Select Option</option>
+                                            <option value="True">True</option>
+                                            <option value="False">False</option>
+                                          </select>
+                                          {binTableErrors[index]?.status && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {binTableErrors[index].status}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <select
+                                            value={row.core ? row.core : 'Multi'}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setBinTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, core: value } : r)));
+                                              setBinTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  core: !value ? 'Core is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            onKeyDown={(e) => handleKeyDown(e, row, binTableData)}
+                                            className={binTableErrors[index]?.core ? 'error form-control' : 'form-control'}
+                                          >
+                                            {/* <option value="">Select Option</option> */}
+                                            <option value="Multi">Multi</option>
+                                            <option value="Single">Single</option>
+                                          </select>
+                                          {binTableErrors[index]?.core && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {binTableErrors[index].core}
+                                            </div>
+                                          )}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </>
+                              ) : (
+                                <>
+                                  <tbody>
+                                    {binTableData.map((row, index) => (
+                                      <tr key={row.id}>
+                                        <td className="text-center">{row.bin}</td>
+                                        <td className="text-center">{row.binCategory}</td>
+                                        <td className="text-center">{row.status}</td>
+                                        <td className="text-center">{row.core}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </>
+                              )}
                             </table>
                           </div>
                         </div>

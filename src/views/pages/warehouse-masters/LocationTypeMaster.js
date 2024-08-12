@@ -9,7 +9,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from './CommonListViewTable';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import axios from 'axios';
 import { useRef, useState, useMemo, useEffect } from 'react';
 import 'react-tabs/style/react-tabs.css';
@@ -23,50 +23,43 @@ import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import apiCalls from 'apicall';
 
-export const DepartmentMaster = () => {
+export const LocationTypeMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     active: true,
-    code: '',
-    departmentName: ''
+    binType: ''
   });
   const [editId, setEditId] = useState('');
 
   const theme = useTheme();
   const anchorRef = useRef(null);
-  const codeRef = useRef(null);
-  const departmentNameRef = useRef(null);
-
+  const inputRef = useRef(null);
   const [fieldErrors, setFieldErrors] = useState({
-    departmentName: '',
-    code: ''
+    binType: ''
   });
   const [listView, setListView] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'code', header: 'Code', size: 140 },
-    {
-      accessorKey: 'departmentName',
-      header: 'Department Name',
-      size: 140
-    },
+    { accessorKey: 'binType', header: 'Bin Type', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
   const [listViewData, setListViewData] = useState([]);
 
   useEffect(() => {
-    getAllDepart();
+    console.log('LISTVIEW FIELD CURRENT VALUE IS', listView);
+    getAllLocationTypes();
   }, []);
 
-  const getAllDepart = async () => {
+  const getAllLocationTypes = async () => {
     try {
-      const response = await apiCalls('get', `commonmaster/getAllDepartmentByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `warehousemastercontroller/locationType?orgid=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.departmentVOs);
+        setListViewData(response.paramObjectsMap.locationTypeVO);
       } else {
         console.error('API Error:', response);
       }
@@ -75,24 +68,38 @@ export const DepartmentMaster = () => {
     }
   };
 
-  const getDeptById = async (row) => {
-    console.log('THE SELECTED region ID IS:', row.original.id);
+  // const getAllLocationTypes = async () => {
+  //   try {
+  //     const response = await apiCalls('get', `warehousemastercontroller/locationType?orgId=${orgId}`);
+
+  //     console.log('API Response:', response);
+
+  //     if (response.status === 200) {
+  //       setListViewData(response.paramObjectsMap.countryVO);
+  //     } else {
+  //       console.error('API Error:', response);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
+  const getLocationTypeById = async (row) => {
+    console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `commonmaster/getAllDepartmentById?id=${row.original.id}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/warehousemastercontroller/locationType/${row.original.id}`);
       console.log('API Response:', response);
 
-      if (response.status === true) {
+      if (response.status === 200) {
         setListView(false);
-        const particularDepartment = response.paramObjectsMap.departmentVOs[0];
+        const particularLocationType = response.data.paramObjectsMap.locationTypeVO;
 
         setFormData({
-          code: particularDepartment.code,
-          departmentName: particularDepartment.departmentName,
-          active: particularDepartment.active === 'Active' ? true : false
+          binType: particularLocationType.binType,
+          active: particularLocationType.active === 'Active' ? true : false
         });
       } else {
-        console.error('API Error:', response);
+        console.error('API Error:', response.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -101,50 +108,59 @@ export const DepartmentMaster = () => {
 
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd } = e.target;
-    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-    const nameRegex = /^[A-Za-z ]*$/;
 
-    if (name === 'code' && !codeRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else if (name === 'departmentName' && !nameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else {
-      setFormData({ ...formData, [name]: value.toUpperCase() });
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+    const nameRegex = /^[A-Za-z0-9  ]*$/;
+    // const numericRegex = /^[0-9]*$/;
 
-      const refs = {
-        code: codeRef,
-        departmentName: departmentNameRef
-      };
+    let errorMessage = '';
 
-      setTimeout(() => {
-        const ref = refs[name];
-        if (ref && ref.current) {
-          ref.current.setSelectionRange(selectionStart, selectionEnd);
+    switch (name) {
+      case 'binType':
+        if (!nameRegex.test(value)) {
+          errorMessage = 'Only Alphanumeric characters are allowed';
         }
-      }, 10);
+        // else if (value.length > 10) {
+        //   errorMessage = 'Invalid Format';
+        // }
+        break;
+
+      default:
+        break;
+    }
+
+    if (errorMessage) {
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
+    } else {
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+
+      // Convert the input value to uppercase
+      const upperCaseValue = value.toUpperCase();
+
+      // Set the form data and preserve the cursor position
+      setFormData((prevData) => ({ ...prevData, [name]: upperCaseValue }));
+
+      // Use a timeout to ensure the cursor position is set after the state update
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 0);
     }
   };
 
   const handleClear = () => {
     setFormData({
-      departmentName: '',
-      code: '',
-      active: true
+      binType: ''
     });
     setFieldErrors({
-      departmentName: '',
-      code: ''
+      binType: ''
     });
   };
 
   const handleSave = async () => {
     const errors = {};
-    if (!formData.code) {
-      errors.code = 'Dept Code is required';
-    }
-    if (!formData.departmentName) {
-      errors.departmentName = 'Department Name is required';
+    if (!formData.binType) {
+      errors.binType = 'Bin Type is required';
     }
 
     if (Object.keys(errors).length === 0) {
@@ -152,29 +168,28 @@ export const DepartmentMaster = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        code: formData.code,
-        departmentName: formData.departmentName,
+        binType: formData.binType,
         orgId: orgId,
         createdBy: loginUserName
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
-
       try {
-        const result = await apiCalls('put', `commonmaster/createUpdateDepartment`, saveFormData);
+        const response = await apiCalls('put', `warehousemastercontroller/createUpdateLocationType`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response.data);
 
-        if (result.status === true) {
-          console.log('Response:', result);
-          showToast('success', editId ? ' Deptartment Updated Successfully' : 'Deptartment created successfully');
+          showToast('success', editId ? ' LocationType Updated Successfully' : 'LocationType created successfully');
+
           handleClear();
-          getAllDepart();
+          getAllLocationTypes();
           setIsLoading(false);
         } else {
-          showToast('error', result.paramObjectsMap.errorMessage || 'Deptartment creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'LocationType creation failed');
           setIsLoading(false);
         }
       } catch (error) {
-        console.log('error', error);
+        console.error('Error:', error);
         showToast('error', error.message);
         setIsLoading(false);
       }
@@ -190,8 +205,7 @@ export const DepartmentMaster = () => {
   const handleClose = () => {
     setEditMode(false);
     setFormData({
-      country: '',
-      code: ''
+      binType: ''
     });
   };
 
@@ -201,6 +215,7 @@ export const DepartmentMaster = () => {
       active: event.target.checked
     });
   };
+
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -209,7 +224,13 @@ export const DepartmentMaster = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" /> &nbsp;{' '}
+            <ActionButton
+              title="Save"
+              icon={SaveIcon}
+              isLoading={isLoading}
+              onClick={() => handleSave()}
+              margin="0 10px 0 10px"
+            /> &nbsp;{' '}
           </div>
         </div>
         {listView ? (
@@ -218,7 +239,7 @@ export const DepartmentMaster = () => {
               data={listViewData}
               columns={listViewColumns}
               blockEdit={true} // DISAPLE THE MODAL IF TRUE
-              toEdit={getDeptById}
+              toEdit={getLocationTypeById}
             />
           </div>
         ) : (
@@ -226,30 +247,16 @@ export const DepartmentMaster = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Code"
+                  label="Bin Type"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="code"
-                  value={formData.code}
+                  name="binType"
+                  value={formData.binType}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.code}
-                  helperText={fieldErrors.code}
-                  inputRef={codeRef}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Dept Name"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="departmentName"
-                  value={formData.departmentName}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.departmentName}
-                  helperText={fieldErrors.departmentName}
-                  inputRef={departmentNameRef}
+                  error={!!fieldErrors.binType}
+                  helperText={fieldErrors.binType}
+                  inputRef={inputRef}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -269,4 +276,4 @@ export const DepartmentMaster = () => {
     </>
   );
 };
-export default DepartmentMaster;
+export default LocationTypeMaster;
