@@ -19,7 +19,7 @@ import { useState } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
-import CommonListViewTable from './CommonListViewTable';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 export const CarrierMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
