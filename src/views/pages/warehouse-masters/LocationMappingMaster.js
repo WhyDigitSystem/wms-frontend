@@ -338,22 +338,11 @@ export const LocationMappingMaster = () => {
 
     let errorMessage = '';
 
-    switch (name) {
-      case 'cellFrom':
-      case 'cellTo':
-        if (!numericRegex.test(value)) {
-          errorMessage = 'Only Numbers are allowed';
-        }
-        break;
-      default:
-        break;
-    }
-
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
-      if (name === 'locationType') {
-      }
+      // if (name === 'locationType') {
+      // }
       setFormData({ ...formData, [name]: value });
       setFieldErrors({ ...fieldErrors, [name]: '' });
     }
@@ -416,7 +405,7 @@ export const LocationMappingMaster = () => {
       errors.rowNo = 'Row Number is required';
     }
     if (!formData.levelNo) {
-      errors.levelNo = 'Level Identity is required';
+      errors.levelNo = 'Level No is required';
     }
 
     let locationMappingTableDataValid = true;
@@ -587,7 +576,7 @@ export const LocationMappingMaster = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                  {fieldErrors.ltype && <FormHelperText error>{fieldErrors.ltype}</FormHelperText>}
+                  {fieldErrors.locationType && <FormHelperText error>{fieldErrors.locationType}</FormHelperText>}
                 </FormControl>
               </div>
 
@@ -857,8 +846,10 @@ export const LocationMappingMaster = () => {
                                         }
                                       >
                                         <option value="">Select Option</option>
-                                        <option value="True">True</option>
-                                        <option value="False">False</option>
+                                        <option value="Replace">Replace</option>
+                                        <option value="Hold">Hold</option>
+                                        <option value="Way">Way</option>
+                                        <option value="Unused">Unused</option>
                                       </select>
                                       {locationMappingTableErrors[index]?.LocationStatus && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>

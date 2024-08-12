@@ -87,6 +87,9 @@ export const EmployeeMaster = () => {
     const formattedDate = dayjs(date).format('DD-MM-YYYY');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
+
+  const maxDate = dayjs().subtract(18, 'years');
+
   const handleClear = () => {
     setFormData({
       empCode: '',
@@ -355,6 +358,7 @@ export const EmployeeMaster = () => {
                       label="Date of Birth"
                       value={formData.dob ? dayjs(formData.dob, 'DD-MM-YYYY') : null}
                       onChange={(date) => handleDateChange('dob', date)}
+                      maxDate={maxDate}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}

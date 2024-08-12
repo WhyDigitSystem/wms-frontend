@@ -55,7 +55,7 @@ export const BuyerMaster = () => {
     controlBranch: '',
     pincode: '',
     email: '',
-    gst: '',
+    gst: 'YES',
     gstNo: '',
     eccNo: '',
     active: true
@@ -239,11 +239,14 @@ export const BuyerMaster = () => {
         }
         break;
       case 'gstNo':
-        if (!alphanumericRegex.test(value)) {
-          errorMessage = 'Only AlphaNumeric are allowed';
-        } else if (value.length > 15) {
-          errorMessage = 'max Length is 15';
+        if (formData.gst === 'YES') {
+          if (!alphanumericRegex.test(value)) {
+            errorMessage = 'Only AlphaNumeric are allowed';
+          } else if (value.length > 15) {
+            errorMessage = 'Max Length is 15';
+          }
         }
+        break;
       case 'eccNo':
         if (!alphanumericRegex.test(value)) {
           errorMessage = 'Only AlphaNumeric are allowed';
@@ -280,7 +283,7 @@ export const BuyerMaster = () => {
       controlBranch: '',
       pincode: '',
       email: '',
-      gst: '',
+      gst: 'YES',
       gstNo: '',
       eccNo: '',
       active: true
@@ -308,7 +311,7 @@ export const BuyerMaster = () => {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
     if (!formData.buyerName) {
       errors.buyerName = 'Buyer Name is required';
@@ -316,7 +319,7 @@ export const BuyerMaster = () => {
     if (!formData.shortName) {
       errors.shortName = 'Short Name is required';
     }
-    if (formData.gstNo.length < 15) {
+    if (formData.gst === 'YES' && formData.gstNo.length < 15) {
       errors.gstNo = 'Invalid GST Format';
     }
     if (formData.pan.length < 10) {
@@ -361,25 +364,23 @@ export const BuyerMaster = () => {
 
       console.log('DATA TO SAVE IS:', saveFormData);
 
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/warehousemastercontroller/buyer`, saveFormData)
-        .then((response) => {
-          if (response.data.status === true) {
-            console.log('Response:', response.data);
-            handleClear();
-            showToast('success', editId ? ' Buyer Updated Successfully' : 'Buyer created successfully');
-            setIsLoading(false);
-            getAllBuyer();
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Buyer creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'Buyer creation failed');
+      try {
+        const response = await apiCalls('put', `warehousemastercontroller/buyer`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          handleClear();
+          showToast('success', editId ? ' Buyer Updated Successfully' : 'Buyer created successfully');
           setIsLoading(false);
-        });
+          getAllBuyer();
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Buyer creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Buyer creation failed');
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }
@@ -518,7 +519,7 @@ export const BuyerMaster = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="TAN No"
+                  label="TAN"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -636,27 +637,29 @@ export const BuyerMaster = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gst}>
-                  <InputLabel id="gst">GST</InputLabel>
-                  <Select labelId="gst" id="gst" name="gst" label="GST" value={formData.gst} onChange={handleInputChange}>
+                  <InputLabel id="gst">GST Registration</InputLabel>
+                  <Select labelId="gst" id="gst" name="gst" label="GST Registration" value={formData.gst} onChange={handleInputChange}>
                     <MenuItem value="YES">YES</MenuItem>
                     <MenuItem value="NO">NO</MenuItem>
                   </Select>
                   {fieldErrors.gst && <FormHelperText error>{fieldErrors.gst}</FormHelperText>}
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="GST No"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="gstNo"
-                  value={formData.gstNo}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.gstNo}
-                  helperText={fieldErrors.gstNo}
-                />
-              </div>
+              {formData.gst === 'YES' && (
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    label="GST"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="gstNo"
+                    value={formData.gstNo}
+                    onChange={handleInputChange}
+                    error={!!fieldErrors.gstNo}
+                    helperText={fieldErrors.gstNo}
+                  />
+                </div>
+              )}
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.city}>
                   <InputLabel id="controlBranch-label">Control Branch</InputLabel>

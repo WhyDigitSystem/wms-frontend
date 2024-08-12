@@ -43,7 +43,7 @@ export const CustomerMaster = () => {
     pan: '',
     contactPerson: '',
     mobile: '',
-    gstReg: '',
+    gstReg: 'YES',
     email: '',
     groupOf: '',
     tanNo: '',
@@ -289,12 +289,14 @@ export const CustomerMaster = () => {
         }
         break;
       case 'gst':
-        if (!alphaNumericRegex.test(value)) {
-          errorMessage = 'Only alphanumeric characters are allowed';
-        } else if (value.length > 15) {
-          errorMessage = 'Invalid Format';
+        if (formData.gst === 'YES') {
+          if (!alphaNumericRegex.test(value)) {
+            errorMessage = 'Only alphanumeric characters are allowed';
+          } else if (value.length > 15) {
+            errorMessage = 'Invalid Format';
+          }
+          break;
         }
-        break;
       default:
         break;
     }
@@ -400,9 +402,7 @@ export const CustomerMaster = () => {
     if (!formData.city) {
       errors.city = 'City is required';
     }
-    if (!formData.gst) {
-      errors.gst = 'GST is required';
-    } else if (formData.gst.length < 15) {
+    if (formData.gst === 'YES' && formData.gst.length < 15) {
       errors.gst = 'Invalid GST Format';
     }
     if (!formData.mobile) {
@@ -492,7 +492,7 @@ export const CustomerMaster = () => {
 
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('post', `warehousemastercontroller/createUpdateCustomer`, saveFormData);
+        const response = await apiCalls('put', `warehousemastercontroller/createUpdateCustomer`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
@@ -648,7 +648,7 @@ export const CustomerMaster = () => {
                   helperText={fieldErrors.pan}
                 />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label="GST Registration"
                   variant="outlined"
@@ -660,10 +660,10 @@ export const CustomerMaster = () => {
                   error={!!fieldErrors.gstReg}
                   helperText={fieldErrors.gstReg}
                 />
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="TAN No"
+                  label="TAN"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -727,18 +727,37 @@ export const CustomerMaster = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  label="GST"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="gst"
-                  value={formData.gst}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.gst}
-                  helperText={fieldErrors.gst}
-                />
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gstReg}>
+                  <InputLabel id="gstReg">GST Registration</InputLabel>
+                  <Select
+                    labelId="gstReg"
+                    id="gstReg"
+                    name="gstReg"
+                    label="GST Registration"
+                    value={formData.gstReg}
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="YES">YES</MenuItem>
+                    <MenuItem value="NO">NO</MenuItem>
+                  </Select>
+                  {fieldErrors.gstReg && <FormHelperText error>{fieldErrors.gstReg}</FormHelperText>}
+                </FormControl>
               </div>
+              {formData.gstReg === 'YES' && (
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    label="GST"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="gst"
+                    value={formData.gst}
+                    onChange={handleInputChange}
+                    error={!!fieldErrors.gst}
+                    helperText={fieldErrors.gst}
+                  />
+                </div>
+              )}
               <div className="col-md-3 mb-3">
                 <FormControlLabel
                   control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" color="primary" />}
@@ -782,7 +801,7 @@ export const CustomerMaster = () => {
                                   <th className="px-2 py-2 text-white text-center">Client</th>
                                   <th className="px-2 py-2 text-white text-center">Client Code</th>
                                   <th className="px-2 py-2 text-white text-center">Client Type</th>
-                                  <th className="px-2 py-2 text-white text-center">FIFO / FIFE</th>
+                                  <th className="px-2 py-2 text-white text-center">FEFO / FIFE / LILO</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -886,7 +905,7 @@ export const CustomerMaster = () => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              fifoFife: !value ? 'FIFE FIFO is required' : ''
+                                              fifoFife: !value ? 'FEFO FIFE LILO is required' : ''
                                             };
                                             return newErrors;
                                           });
@@ -895,8 +914,9 @@ export const CustomerMaster = () => {
                                         className={clientTableErrors[index]?.fifoFife ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        <option value="FIFO">FIFO</option>
+                                        <option value="FEFO">FEFO</option>
                                         <option value="FIFE">FIFE</option>
+                                        <option value="LILO">LILO</option>
                                       </select>
                                       {clientTableErrors[index]?.fifoFife && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
