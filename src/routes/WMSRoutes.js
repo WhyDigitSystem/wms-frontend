@@ -40,6 +40,10 @@ const FinYearMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/
 const Roles = Loadable(lazy(() => import('views/pages/rolesandResponsibility/Roles')));
 const ScreenNames = Loadable(lazy(() => import('views/pages/rolesandResponsibility/ScreenNames')));
 const FullFeaturedCrudGrid = Loadable(lazy(() => import('views/pages/warehouse-masters/FullFeaturedCrudGrid')));
+const InboundMain = Loadable(lazy(() => import('views/pages/inbound/InboundMain')));
+const OutboundMain = Loadable(lazy(() => import('views/pages/outbound/OutboundMain')));
+const VasMain = Loadable(lazy(() => import('views/pages/vas/VasMain')));
+const StockProcessMain = Loadable(lazy(() => import('views/pages/stockProcess/StockProcessMain')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
 
@@ -170,6 +174,22 @@ const WMSRoutes = {
     {
       path: '/basicmasters/fullfeaturedcurdgrid',
       element: <FullFeaturedCrudGrid />
+    },
+    {
+      path: '/inbound/inboundmain',
+      element: <InboundMain />
+    },
+    {
+      path: '/outbound/outboundmain',
+      element: <OutboundMain />
+    },
+    {
+      path: '/vas/vasmain',
+      element: <VasMain />
+    },
+    {
+      path: '/stock-process/stockprocessmain',
+      element: <StockProcessMain />
     }
   ]
 };
