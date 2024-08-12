@@ -46,10 +46,10 @@ export const LocationMappingMaster = () => {
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
 
   const [formData, setFormData] = useState({
-    branch: localStorage.getItem('branch'),
+    branch: loginBranch,
     warehouse: localStorage.getItem('warehouse'),
     locationType: '',
-    clientType: '',
+    clientType: 'FIXED',
     rowNo: '',
     levelNo: '',
     client: loginClient,
@@ -74,7 +74,7 @@ export const LocationMappingMaster = () => {
     if (!lastRow) return false;
 
     if (table === locationMappingTableData) {
-      return !lastRow.rowNo || !lastRow.levelNo || !lastRow.palletNo || !lastRow.multiCore || !lastRow.LocationStatus || !lastRow.vasBinSeq;
+      return !lastRow.rowNo || !lastRow.levelNo || !lastRow.palletNo || !lastRow.multiCore || !lastRow.LocationStatus;
       // } else if (table === branchTableData) {
       //   return !lastRow.branchCode;
       // } else if (table === clientTableData) {
@@ -91,10 +91,10 @@ export const LocationMappingMaster = () => {
           ...newErrors[table.length - 1],
           rowNo: !table[table.length - 1].rowNo ? 'Row No is required' : '',
           levelNo: !table[table.length - 1].levelNo ? 'Level No is required' : '',
-          palletNo: !table[table.length - 1].palletNo ? 'Pallet No is required' : '',
+          palletNo: !table[table.length - 1].palletNo ? 'Bin is required' : '',
           multiCore: !table[table.length - 1].multiCore ? 'Multi Core is required' : '',
-          LocationStatus: !table[table.length - 1].LocationStatus ? 'Location Status is required' : '',
-          vasBinSeq: !table[table.length - 1].vasBinSeq ? 'Bin Seq is required' : ''
+          LocationStatus: !table[table.length - 1].LocationStatus ? 'Bin Status is required' : ''
+          // vasBinSeq: !table[table.length - 1].vasBinSeq ? 'Bin Seq is required' : ''
         };
         return newErrors;
       });
@@ -123,10 +123,38 @@ export const LocationMappingMaster = () => {
         levelNo: '',
         palletNo: '',
         multiCore: '',
-        LocationStatus: '',
-        vasBinSeq: ''
+        LocationStatus: ''
+        // vasBinSeq: ''
       }
     ]);
+  };
+
+  const getAllbinsByCompanyAndWarehouseAndLocationTypeAndRownoAndLevel = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `warehousemastercontroller/bins/levelno/rowno/locationtype/warehouse?level=${formData.levelNo}&locationtype=${formData.locationType}&orgid=${orgId}&rowno=${formData.rowNo}&warehouse=${loginWarehouse}`
+      );
+      console.log('THE WAREHOUSE IS:', response);
+      if (response.status === true) {
+        const bins = response.paramObjectsMap.Bins;
+        console.log('THE BIN DETAILS ARE:', bins);
+
+        setLocationMappingTableData(
+          bins.map((bin) => ({
+            id: bin.id,
+            rowNo: bin.rowno,
+            levelNo: bin.level,
+            palletNo: bin.bin,
+            multiCore: bin.core,
+            LocationStatus: bin.status === 'True' ? 'True' : 'False',
+            vasBinSeq: ''
+          }))
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
   };
 
   const [locationMappingTableErrors, setLocationMappingTableErrors] = useState([
@@ -154,36 +182,21 @@ export const LocationMappingMaster = () => {
   });
   const listViewColumns = [
     { accessorKey: 'branch', header: 'Branch', size: 140 },
+    { accessorKey: 'branchCode', header: 'Branch Code', size: 140 },
     { accessorKey: 'warehouse', header: 'Warehouse', size: 140 },
-    { accessorKey: 'locationType', header: 'Location Type', size: 140 },
+    { accessorKey: 'binType', header: 'Bin Type', size: 140 },
+    { accessorKey: 'client', header: 'Client', size: 140 },
     { accessorKey: 'clientType', header: 'Client Type', size: 140 },
+    { accessorKey: 'customer', header: 'Customer', size: 200 },
     { accessorKey: 'rowNo', header: 'Row', size: 140 },
-    { accessorKey: 'identityLevel', header: 'Identity Level', size: 140 },
-    { accessorKey: 'active', header: 'Active', size: 140 }
+    { accessorKey: 'levelNo', header: 'Level No', size: 140 }
+    // { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
-  const [listViewData, setListViewData] = useState([
-    {
-      id: 1,
-      branch: 'Branch1',
-      warehouse: 'Warehouse1',
-      locationType: 'locationType1',
-      rowNo: 'rowNo1',
-      identityLevel: 'identityLevel1',
-      active: 'Active'
-    },
-    {
-      id: 2,
-      branch: 'Branch2',
-      warehouse: 'Warehouse2',
-      locationType: 'locationType2',
-      rowNo: 'rowNo2',
-      identityLevel: 'identityLevel2',
-      active: 'Active'
-    }
-  ]);
+  const [listViewData, setListViewData] = useState([]);
 
   useEffect(() => {
+    getAllLocationMapping();
     getAllWarehousesByLoginBranch();
     getAllLocationTypes();
     getAllRownoByCompanyAndWarehouseAndLocationType();
@@ -196,6 +209,63 @@ export const LocationMappingMaster = () => {
   useEffect(() => {
     getAllLevelnoByCompanyAndWarehouseAndLocationTypeAndRowno();
   }, [formData.rowNo]);
+
+  const getAllLocationMapping = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `warehousemastercontroller/locationmapping?branch=${loginBranch}&client=${loginClient}&orgid=${orgId}&warehouse=${loginWarehouse}`
+      );
+      console.log('THE locationMapping IS:', response);
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.locationMappingVO);
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+
+  const getLocationmappingid = async (row) => {
+    console.log('THE LOCATION ID IS:', row.original.id);
+
+    try {
+      const response = await apiCalls('get', `warehousemastercontroller/locationmapping/${row.original.id}`);
+      console.log('THE WAREHOUSEES IS:', response);
+
+      if (response.status === true) {
+        setEditId(row.original.id);
+        const particularLocation = response.paramObjectsMap.LocationMapping;
+        setFormData({
+          branch: particularLocation.branch,
+          branchCode: particularLocation.branchCode,
+          locationType: particularLocation.binType,
+          rowNo: particularLocation.rowNo,
+          levelNo: particularLocation.levelNo,
+          client: particularLocation.client,
+          clientType: particularLocation.clientType,
+          customer: particularLocation.customer,
+          warehouse: particularLocation.warehouse,
+          active: particularLocation.active === 'Active' ? true : false
+        });
+        setLocationMappingTableData(
+          particularLocation.locationMappingDetails.map((loc) => ({
+            id: loc.id,
+            palletNo: loc.bin,
+            binCategory: loc.binCategory,
+            LocationStatus: loc.binStatus === 'True' ? 'True' : 'False',
+            vasBinSeq: loc.binSeq,
+            multiCore: loc.core,
+            levelNo: loc.levelNo,
+            rowNo: loc.rowNo,
+            warehouse: loc.warehouse
+          }))
+        );
+        setListView(false);
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
 
   const getAllWarehousesByLoginBranch = async () => {
     try {
@@ -301,13 +371,11 @@ export const LocationMappingMaster = () => {
 
   const handleClear = () => {
     setFormData({
-      // branch: '',
       warehouse: '',
       locationType: '',
-      clientType: '',
+      clientType: 'FIXED',
       rowNo: '',
       levelNo: '',
-      client: '',
       active: true
     });
     setLocationMappingTableData([
@@ -374,10 +442,10 @@ export const LocationMappingMaster = () => {
         rowErrors.LocationStatus = 'Location Status is required';
         locationMappingTableDataValid = false;
       }
-      if (!row.vasBinSeq) {
-        rowErrors.vasBinSeq = 'Bin Seq is required';
-        locationMappingTableDataValid = false;
-      }
+      // if (!row.vasBinSeq) {
+      //   rowErrors.vasBinSeq = 'Bin Seq is required';
+      //   locationMappingTableDataValid = false;
+      // }
 
       return rowErrors;
     });
@@ -387,26 +455,27 @@ export const LocationMappingMaster = () => {
     if (Object.keys(errors).length === 0 && locationMappingTableDataValid) {
       setIsLoading(true);
       const locationMappingDetailsDTO = locationMappingTableData.map((row) => ({
-        rowNo: row.rowNo,
+        bin: row.palletNo,
+        binCategory: 'ACTIVE',
+        binSeq: row.vasBinSeq,
+        binStatus: row.LocationStatus,
+        core: row.multiCore,
         levelNo: row.levelNo,
-        palletNo: row.palletNo,
-        multiCore: row.multiCore,
-        LocationStatus: row.LocationStatus,
-        vasBinSeq: row.vasBinSeq
+        rowNo: row.rowNo
       }));
 
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
+        binType: formData.locationType,
         branch: formData.branch,
-        branchCode: formData.branchCode,
+        branchCode: loginBranchCode,
         client: loginClient,
         clientType: formData.clientType,
         customer: loginCustomer,
-        createdby: loginUserName,
-        // levelNo: formData.levelNo,
+        createdBy: loginUserName,
+        levelNo: formData.levelNo,
         locationMappingDetailsDTO,
-        // locationType: formData.locationType,
         orgId: orgId,
         rowNo: formData.rowNo,
         warehouse: formData.warehouse
@@ -432,28 +501,6 @@ export const LocationMappingMaster = () => {
     } else {
       setFieldErrors(errors);
     }
-
-    //   axios
-    //     .put(`${process.env.REACT_APP_API_URL}/api/location`, saveFormData)
-    //     .then((response) => {
-    //       if (response.data.status === true) {
-    //         console.log('Response:', response.data);
-    //         handleClear();
-    //         showToast('success', editId ? ' LocationMapping Updated Successfully' : 'LocationMapping created successfully');
-    //         setIsLoading(false);
-    //       } else {
-    //         showToast('error', response.data.paramObjectsMap.errorMessage || 'LocationMapping creation failed');
-    //         setIsLoading(false);
-    //       }
-    //     })
-    //     .catch((error) => {
-    //       console.error('Error:', error);
-    //       showToast('error', 'LocationMapping creation failed');
-    //       setIsLoading(false);
-    //     });
-    // } else {
-    //   setFieldErrors(errors);
-    // }
   };
 
   const handleView = () => {
@@ -462,13 +509,10 @@ export const LocationMappingMaster = () => {
 
   const handleClose = () => {
     setFormData({
-      branch: '',
-      warehouse: '',
       locationType: '',
       clientType: '',
       rowNo: '',
       levelNo: '',
-      client: '',
       active: true
     });
   };
@@ -485,7 +529,7 @@ export const LocationMappingMaster = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getLocationmappingid} />
           </div>
         ) : (
           <>
@@ -497,7 +541,7 @@ export const LocationMappingMaster = () => {
                   size="small"
                   fullWidth
                   name="branch"
-                  value={formData.branch}
+                  value={loginBranch}
                   onChange={handleInputChange}
                   error={!!fieldErrors.branch}
                   helperText={fieldErrors.branch}
@@ -512,10 +556,10 @@ export const LocationMappingMaster = () => {
                     id="warehouse"
                     name="warehouse"
                     label="Warehouse"
-                    value={formData.warehouse}
+                    value={loginWarehouse}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value={formData.warehouse}>{formData.warehouse}</MenuItem>
+                    <MenuItem value={loginWarehouse}>{loginWarehouse}</MenuItem>
                     {/* {warehouseList?.map((row, index) => (
                       <MenuItem key={index} value={row.Warehouse.toUpperCase()}>
                         {row.Warehouse.toUpperCase()}
@@ -544,23 +588,6 @@ export const LocationMappingMaster = () => {
                     ))}
                   </Select>
                   {fieldErrors.ltype && <FormHelperText error>{fieldErrors.ltype}</FormHelperText>}
-                </FormControl>
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.client}>
-                  <InputLabel id="client-label">Client</InputLabel>
-                  <Select
-                    labelId="client-label"
-                    id="client"
-                    name="client"
-                    label="Client"
-                    value={formData.client}
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value={formData.client}>{formData.client}</MenuItem>
-                  </Select>
-                  {fieldErrors.client && <FormHelperText error>{fieldErrors.client}</FormHelperText>}
                 </FormControl>
               </div>
 
@@ -600,6 +627,21 @@ export const LocationMappingMaster = () => {
               </div>
 
               <div className="col-md-3 mb-3">
+                <TextField
+                  label="Client"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="client"
+                  value={loginClient}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.client}
+                  helperText={fieldErrors.client}
+                  disabled
+                />
+              </div>
+
+              <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.clientType}>
                   <InputLabel id="clientType-label">Client Type</InputLabel>
                   <Select
@@ -610,8 +652,8 @@ export const LocationMappingMaster = () => {
                     value={formData.clientType}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="Client_Type 1">Client Type 1</MenuItem>
-                    <MenuItem value="Client_Type 2">Client Type 2</MenuItem>
+                    <MenuItem value="FIXED">FIXED</MenuItem>
+                    <MenuItem value="OPEN">OPEN</MenuItem>
                   </Select>
                   {fieldErrors.clientType && <FormHelperText error>{fieldErrors.clientType}</FormHelperText>}
                 </FormControl>
@@ -650,7 +692,11 @@ export const LocationMappingMaster = () => {
                     <div className="row d-flex ml">
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                        <ActionButton title="Fill Grid" icon={GridOnIcon} />
+                        <ActionButton
+                          title="Fill Grid"
+                          icon={GridOnIcon}
+                          onClick={getAllbinsByCompanyAndWarehouseAndLocationTypeAndRownoAndLevel}
+                        />
                         <ActionButton title="Clear" icon={ClearIcon} />
                       </div>
                       <div className="row mt-2">
@@ -670,11 +716,11 @@ export const LocationMappingMaster = () => {
                                     Level No
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 130 }}>
-                                    Pallet No
+                                    Bin
                                   </th>
                                   <th className="px-2 py-2 text-white text-center">Multi Core</th>
-                                  <th className="px-2 py-2 text-white text-center">Location Status</th>
-                                  <th className="px-2 py-2 text-white text-center">VAS Bin Seq</th>
+                                  <th className="px-2 py-2 text-white text-center">Bin Status</th>
+                                  <th className="px-2 py-2 text-white text-center">Bin Seq</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -722,7 +768,7 @@ export const LocationMappingMaster = () => {
                                           );
                                           setLocationMappingTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], levelNo: !value ? 'levelNo is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], levelNo: !value ? 'Level No is required' : '' };
                                             return newErrors;
                                           });
                                         }}
@@ -745,7 +791,7 @@ export const LocationMappingMaster = () => {
                                           );
                                           setLocationMappingTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], palletNo: !value ? 'palletNo is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], palletNo: !value ? 'Bin is required' : '' };
                                             return newErrors;
                                           });
                                         }}
@@ -789,8 +835,7 @@ export const LocationMappingMaster = () => {
                                     </td>
 
                                     <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
+                                      <select
                                         value={row.LocationStatus}
                                         onChange={(e) => {
                                           const value = e.target.value;
@@ -801,15 +846,20 @@ export const LocationMappingMaster = () => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              LocationStatus: !value ? 'LocationStatus is required' : ''
+                                              LocationStatus: !value ? 'Bin Status is required' : ''
                                             };
                                             return newErrors;
                                           });
                                         }}
+                                        onKeyDown={(e) => handleKeyDown(e, row)}
                                         className={
                                           locationMappingTableErrors[index]?.LocationStatus ? 'error form-control' : 'form-control'
                                         }
-                                      />
+                                      >
+                                        <option value="">Select Option</option>
+                                        <option value="True">True</option>
+                                        <option value="False">False</option>
+                                      </select>
                                       {locationMappingTableErrors[index]?.LocationStatus && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                           {locationMappingTableErrors[index].LocationStatus}
