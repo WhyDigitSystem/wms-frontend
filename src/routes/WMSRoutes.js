@@ -11,35 +11,39 @@ const AuthLogin3 = Loadable(lazy(() => import('views/pages/authentication/authen
 const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 const CreateCompany = Loadable(lazy(() => import('views/pages/companySetup/CreateCompany')));
 const CompanySetup = Loadable(lazy(() => import('views/pages/companySetup/CompanySetup')));
-const CountryMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/CountryMaster')));
-const StateMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/StateMaster')));
-const CityMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/CityMaster')));
-const CustomerMaster = Loadable(lazy(() => import('views/pages/basic-masters/CustomerMaster')));
-const WarehouseMaster = Loadable(lazy(() => import('views/pages/basic-masters/WarehouseMaster')));
-const LocationTypeMaster = Loadable(lazy(() => import('views/pages/basic-masters/LocationTypeMaster')));
-const WarehouseLocationMaster = Loadable(lazy(() => import('views/pages/basic-masters/WarehouseLocationMaster')));
-const LocationMappingMaster = Loadable(lazy(() => import('views/pages/basic-masters/LocationMappingMaster')));
-const CellTypeMaster = Loadable(lazy(() => import('views/pages/basic-masters/CellTypeMaster')));
-const EmployeeMaster = Loadable(lazy(() => import('views/pages/basic-masters/EmployeeMaster')));
-const UserCreationMaster = Loadable(lazy(() => import('views/pages/basic-masters/UserCreationMaster')));
-const ItemMaster = Loadable(lazy(() => import('views/pages/basic-masters/ItemMaster')));
-const BuyerMaster = Loadable(lazy(() => import('views/pages/basic-masters/BuyerMaster')));
-const CarrierMaster = Loadable(lazy(() => import('views/pages/basic-masters/CarrierMaster')));
-const SupplierMaster = Loadable(lazy(() => import('views/pages/basic-masters/SupplierMaster')));
-const ExternalDataMismatch = Loadable(lazy(() => import('views/pages/basic-masters/ExternalDataMismatch')));
-const MaterialLabelMappingMaster = Loadable(lazy(() => import('views/pages/basic-masters/MaterialLabelMappingMaster')));
-const DepartmentMaster = Loadable(lazy(() => import('views/pages/basic-masters/DepartmentMaster')));
-const DesignationMaster = Loadable(lazy(() => import('views/pages/basic-masters/DesignationMaster')));
-const GroupMaster = Loadable(lazy(() => import('views/pages/basic-masters/GroupMaster')));
-const UnitMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/UnitMaster')));
-const CurrencyMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/CurrencyMaster')));
+const CountryMaster = Loadable(lazy(() => import('views/pages/basic-masters/CountryMaster')));
+const StateMaster = Loadable(lazy(() => import('views/pages/basic-masters/StateMaster')));
+const CityMaster = Loadable(lazy(() => import('views/pages/basic-masters/CityMaster')));
+const CustomerMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/CustomerMaster')));
+const WarehouseMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/WarehouseLocationMaster')));
+const LocationTypeMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/LocationTypeMaster')));
+const WarehouseLocationMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/WarehouseLocationMaster')));
+const LocationMappingMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/LocationMappingMaster')));
+const CellTypeMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/CellTypeMaster')));
+const EmployeeMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/EmployeeMaster')));
+const UserCreationMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/UserCreationMaster')));
+const ItemMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/ItemMaster')));
+const BuyerMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/BuyerMaster')));
+const CarrierMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/CarrierMaster')));
+const SupplierMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/SupplierMaster')));
+const ExternalDataMismatch = Loadable(lazy(() => import('views/pages/warehouse-masters/ExternalDataMismatch')));
+const MaterialLabelMappingMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/MaterialLabelMappingMaster')));
+const DepartmentMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/DepartmentMaster')));
+const DesignationMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/DesignationMaster')));
+const GroupMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/GroupMaster')));
+const UnitMaster = Loadable(lazy(() => import('views/pages/basic-masters/UnitMaster')));
+const CurrencyMaster = Loadable(lazy(() => import('views/pages/basic-masters/CurrencyMaster')));
 const RegionMaster = Loadable(lazy(() => import('views/pages/basic-masters/RegionMaster')));
-const DocumentTypeMaster = Loadable(lazy(() => import('views/pages/basic-masters/DocumentTypeMaster')));
-const DocumentTypeMappingMaster = Loadable(lazy(() => import('views/pages/basic-masters/DocumentTypeMappingMaster')));
-const FinYearMaster = Loadable(lazy(() => import('views/pages/basic-masters/FinYearMaster')));
+const DocumentTypeMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/DocumentTypeMaster')));
+const DocumentTypeMappingMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/DocumentTypeMappingMaster')));
+const FinYearMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/FinYearMaster')));
 const Roles = Loadable(lazy(() => import('views/pages/rolesandResponsibility/Roles')));
 const ScreenNames = Loadable(lazy(() => import('views/pages/rolesandResponsibility/ScreenNames')));
-const FullFeaturedCrudGrid = Loadable(lazy(() => import('views/pages/basic-masters/FullFeaturedCrudGrid')));
+const FullFeaturedCrudGrid = Loadable(lazy(() => import('views/pages/warehouse-masters/FullFeaturedCrudGrid')));
+const InboundMain = Loadable(lazy(() => import('views/pages/inbound/InboundMain')));
+const OutboundMain = Loadable(lazy(() => import('views/pages/outbound/OutboundMain')));
+const VasMain = Loadable(lazy(() => import('views/pages/vas/VasMain')));
+const StockProcessMain = Loadable(lazy(() => import('views/pages/stockProcess/StockProcessMain')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
 
@@ -170,6 +174,22 @@ const WMSRoutes = {
     {
       path: '/basicmasters/fullfeaturedcurdgrid',
       element: <FullFeaturedCrudGrid />
+    },
+    {
+      path: '/inbound/inboundmain',
+      element: <InboundMain />
+    },
+    {
+      path: '/outbound/outboundmain',
+      element: <OutboundMain />
+    },
+    {
+      path: '/vas/vasmain',
+      element: <VasMain />
+    },
+    {
+      path: '/stock-process/stockprocessmain',
+      element: <StockProcessMain />
     }
   ]
 };
