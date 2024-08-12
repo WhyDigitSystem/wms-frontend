@@ -32,7 +32,7 @@ import {
   getAllActiveRepacks
 } from 'utils/CommonFunctions';
 import ActionButton from 'utils/ActionButton';
-import CommonListViewTable from './CommonListViewTable';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 const MaterialLabelMappingMaster = () => {
   const [isLoading, setIsLoading] = useState(false);

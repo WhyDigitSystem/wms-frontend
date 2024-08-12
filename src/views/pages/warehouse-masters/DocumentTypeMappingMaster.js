@@ -5,7 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { FormHelperText, Tooltip, FormControlLabel, Checkbox } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from './CommonListViewTable';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import axios from 'axios';
 import { useRef, useState, useMemo, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
@@ -34,117 +34,69 @@ export const DocumentTypeMappingMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
+  const [finYrId, setFinYrId] = useState(null);
+  const [branchCodeId, setBranchCodeId] = useState(null);
+  const [branchNameGrid, setBranchNameGrid] = useState(null);
+  const [finYearGrid, setFinYearGrid] = useState(null);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const [formData, setFormData] = useState({
     branchName: '',
-    branchCode: '',
-    finYr: '',
-    finYrId: ''
+    finYr: ''
   });
   const [value, setValue] = useState(0);
 
-  const [mapTableData, setMapTableData] = useState([
-    {
-      id: 1,
-      screenName: '',
-      screenCode: '',
-      client: '',
-      clientCode: '',
-      docCode: '',
-      branch: '',
-      branchCode: '',
-      prefix: '',
-      finyr: '',
-      identifier: ''
-    }
-  ]);
-  const [mapTableDataErrors, setMapTableDataErrors] = useState([
-    {
-      screenName: '',
-      screenCode: '',
-      client: '',
-      clientCode: '',
-      docCode: '',
-      branch: '',
-      branchCode: '',
-      prefix: '',
-      finyr: '',
-      identifier: ''
-    }
-  ]);
-
   const [fieldErrors, setFieldErrors] = useState({
     branchName: '',
-    branchCode: '',
-    finYr: '',
-    finYrId: ''
+    finYr: ''
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'branchName', header: 'Employee', size: 140 },
-    { accessorKey: 'userName', header: 'Emp Code', size: 140 },
-    { accessorKey: 'userType', header: 'User Type', size: 140 },
-    { accessorKey: 'email', header: 'Email', size: 140 },
-    {
-      accessorKey: 'roleAccessVO',
-      header: 'Roles',
-      Cell: ({ cell }) => {
-        const roles = cell
-          .getValue()
-          .map((role) => role.role)
-          .join(', ');
-        return roles;
-      }
-    },
-    { accessorKey: 'active', header: 'Active', size: 140 }
+    { accessorKey: 'branch', header: 'Branch', size: 140 },
+    { accessorKey: 'finYear', header: 'Fin Year', size: 140 }
   ];
   const [listViewData, setListViewData] = useState([]);
   const [employeeList, setEmployeeList] = useState([]);
   const [roleList, setRoleList] = useState([]);
   const [branchList, setBranchList] = useState([]);
   const [customerList, setCustomerList] = useState([]);
+  const [finYearList, setFinYearList] = useState([]);
   const [clientList, setClientList] = useState([]);
+  const [fillGridData, setFillGridData] = useState([]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
   useEffect(() => {
     getAllBranches();
-    // getAllUsers();
+    getAllFinYear();
+    getAllDocumentTypeMapping();
   }, []);
+
+  useEffect(() => {
+    if (branchNameGrid && finYearGrid) {
+      getAllFillGrid();
+    }
+  }, [branchNameGrid, finYearGrid]);
 
   const getAllBranches = async () => {
     try {
       const branchData = await getAllActiveBranches(orgId);
-      console.log('THE BRANCH LIST IS:', branchData);
-
       setBranchList(branchData);
     } catch (error) {
       console.error('Error fetching country data:', error);
     }
   };
-  const getAllCustomers = async () => {
+
+  const getAllFinYear = async () => {
     try {
-      const response = await apiCalls('get', `warehousemastercontroller/customer?orgid=${orgId}`);
+      const response = await apiCalls('get', `commonmaster/getAllAciveFInYear?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setCustomerList(response.paramObjectsMap.CustomerVO);
-      } else {
-        console.error('API Error:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-  const getAllClientsByCustomer = async (customer) => {
-    try {
-      const response = await apiCalls('get', `warehousemastercontroller/client?customer=${customer}&orgid=${orgId}`);
-      console.log('API Response:', response);
-
-      if (response.status === true) {
-        setClientList(response.paramObjectsMap.clientVO);
+        setFinYearList(response.paramObjectsMap.financialYearVOs);
+        console.log('fin', response.paramObjectsMap.financialYearVOs);
       } else {
         console.error('API Error:', response);
       }
@@ -153,13 +105,13 @@ export const DocumentTypeMappingMaster = () => {
     }
   };
 
-  const getAllUsers = async () => {
+  const getAllDocumentTypeMapping = async () => {
     try {
-      const response = await apiCalls('get', `auth/allUsersByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `warehousemastercontroller/getAllDocumentTypeMapping?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.userVO);
+        setListViewData(response.paramObjectsMap.documentTypeMappingVO);
       } else {
         console.error('API Error:', response);
       }
@@ -168,44 +120,55 @@ export const DocumentTypeMappingMaster = () => {
     }
   };
 
-  const getUserById = async (row) => {
+  const getAllFillGrid = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `warehousemastercontroller/getPendingDocumentTypeMapping?branch=${branchNameGrid}&branchCode=${branchCodeId}&finYear=${finYearGrid}&finYearIdentifier=${finYrId}&orgId=${orgId}`
+      );
+
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setFillGridData(response.paramObjectsMap.documentTypeMappingVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getAllDocumentTypeMappingById = async (row) => {
+    setIsEditMode(true);
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `auth/getUserById?userId=${row.original.id}`);
+      const response = await apiCalls('get', `warehousemastercontroller/documentTypeMappingById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
         setListView(false);
-        const particularUser = response.paramObjectsMap.userVO;
-        const foundBranch1 = branchList.find((branch) => branch.branchCode === particularUser.branchAccessibleVO.branchcode);
-        console.log('THE FOUND BRANCH 1 IS:', foundBranch1);
+        const particularUser = response.paramObjectsMap.documentTypeMappingVO;
+        // const foundBranch1 = branchList.find((branch) => branch.branchCode === particularUser.branchAccessibleVO.branchcode);
+        // console.log('THE FOUND BRANCH 1 IS:', foundBranch1);
 
         setFormData({
-          branchCode: particularUser.userName,
-          branchName: particularUser.branchName,
+          branchName: particularUser.branch,
+          finYr: particularUser.finYear,
           active: particularUser.active === 'Active' ? true : false
         });
-        setMapTableData(
-          particularUser.roleAccessVO.map((role) => ({
+        setFillGridData(
+          particularUser.documentTypeMappingDetailsVO.map((role) => ({
             id: role.id,
-            role: role.role,
-            roleId: role.roleId,
-            startDate: role.startDate,
-            endDate: role.endDate
+            screenName: role.screenName,
+            screenCode: role.screenCode,
+            client: role.client,
+            clientCode: role.clientCode,
+            docCode: role.docCode,
+            prefixField: role.prefixField
           }))
         );
-
-        // const alreadySelectedBranch = particularUser.branchAccessibleVO.map((role) => {
-        //   const foundBranch = branchList.find((branch) => branch.branchCode === role.branchcode);
-        //   console.log(`Searching for branch with code ${role.branchcode}:`, foundBranch);
-        //   return {
-        //     id: role.id,
-        //     branchCode: foundBranch ? foundBranch.branchCode : 'Not Found',
-        //     branch: foundBranch.branch ? foundBranch.branch : 'Not Found'
-        //   };
-        // });
-        // setBranchTableData(alreadySelectedBranch);
       } else {
         console.error('API Error:', response);
       }
@@ -217,29 +180,7 @@ export const DocumentTypeMappingMaster = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    const nameRegex = /^[A-Za-z ]*$/;
-    const alphaNumericRegex = /^[A-Za-z0-9]*$/;
-    const numericRegex = /^[0-9]*$/;
-    const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
-    const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex for email validation
-
     let errorMessage = '';
-    switch (name) {
-      case 'mobileNo':
-        if (!numericRegex.test(value)) {
-          errorMessage = 'Only numeric characters are allowed';
-        } else if (value.length > 10) {
-          errorMessage = 'Invalid Format';
-        }
-        break;
-
-      case 'nickName':
-        if (!nameRegex.test(value)) {
-          errorMessage = 'Only alphabet are allowed';
-        }
-        break;
-    }
 
     if (errorMessage) {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
@@ -247,23 +188,32 @@ export const DocumentTypeMappingMaster = () => {
       if (name === 'branchName') {
         const selectedBranch = branchList.find((branch) => branch.branch === value);
         if (selectedBranch) {
+          console.log('Selected branchId:', selectedBranch.branchCode); // Log the finYrId value
+          setBranchNameGrid(selectedBranch.branch);
+          setBranchCodeId(selectedBranch.branchCode);
           setFormData((prevData) => ({
             ...prevData,
-            branchName: selectedBranch.branch,
-            branchCode: selectedBranch.branchCode
+            branchName: selectedBranch.branch
+            // branchCode: selectedBranch.branchCode
           }));
         }
       } else if (name === 'finYr') {
-        const selectedFinYr = branchList.find((branch) => branch.branch === value);
+        const selectedFinYr = finYearList.find((fin) => fin.finYear === value);
         if (selectedFinYr) {
+          console.log('Selected FinYrId:', selectedFinYr.finYearIdentifier); // Log the finYrId value
+          setFinYearGrid(selectedFinYr.finYear);
+          setFinYrId(selectedFinYr.finYearIdentifier);
           setFormData((prevData) => ({
             ...prevData,
-            finYr: selectedFinYr.branch,
-            finYrId: selectedFinYr.branchCode
+            finYr: selectedFinYr.finYear
+            // finYrId: selectedFinYr.finYearIdentifier
           }));
+          // getAllFillGrid();
         }
       }
-      setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+      const formattedValue = name === 'finYr' ? value : value.toUpperCase();
+
+      setFormData((prevData) => ({ ...prevData, [name]: formattedValue }));
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
     }
   };
@@ -271,30 +221,17 @@ export const DocumentTypeMappingMaster = () => {
   const handleClear = () => {
     setFormData({
       branchName: '',
-      branchCode: '',
+      finYr: '',
       active: true
     });
-    setMapTableData([
-      {
-        id: 1,
-        screenName: '',
-        screenCode: '',
-        client: '',
-        clientCode: '',
-        docCode: '',
-        branch: '',
-        branchCode: '',
-        prefix: '',
-        finyr: '',
-        identifier: ''
-      }
-    ]);
+    setFillGridData([]);
+
     setFieldErrors({
       branchName: '',
       branchCode: ''
     });
-    setMapTableDataErrors('');
     setEditId('');
+    setIsEditMode(false);
   };
 
   const handleSave = async () => {
@@ -302,59 +239,57 @@ export const DocumentTypeMappingMaster = () => {
 
     const errors = {};
     if (!formData.branchName) {
-      errors.branchName = 'Employee Name is required';
+      errors.branchName = 'Branch is required';
+    }
+    if (!formData.finYr) {
+      errors.finYr = 'Fin Year is required';
     }
 
     setFieldErrors(errors);
 
-    // setMapTableDataErrors(newTableErrors);
-
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
-      const mappingVo = mapTableData.map((row) => ({
+      const mappingVo = fillGridData.map((row) => ({
         screenName: row.screenName,
         screenCode: row.screenCode,
         client: row.client,
         clientCode: row.clientCode,
-        docCode: row.docCode,
         branch: row.branch,
         branchCode: row.branchCode,
-        prefix: row.prefix,
-        finyr: row.finyr,
-        identifier: row.identifier
+        finYear: row.finYear,
+        finYearIdentifier: row.finYearIdentifier,
+        docCode: row.docCode,
+        prefixField: row.prefixField
       }));
 
       const saveFormData = {
         ...(editId && { id: editId }),
-        branchName: formData.branchName,
-        userType: formData.userType,
-        email: formData.email,
-        password: encryptPassword(formData.password),
-        mobileNo: formData.mobileNo,
-        nickName: formData.nickName,
-        userName: formData.branchCode,
-        mapVo: mappingVo,
-        active: formData.active,
+        branch: formData.branchName,
+        branchCode: branchCodeId,
+        finYear: formData.finYr,
+        finYearIdentifier: finYrId,
+        documentTypeMappingDetailsDTO: mappingVo,
+        // active: formData.active,
         orgId: orgId,
         createdBy: loginUserName
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `auth/signup`, saveFormData);
+        const response = await apiCalls('put', `warehousemastercontroller/createDocumentTypeMapping`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
-          showToast('success', editId ? 'User Updated Successfully' : 'User created successfully');
+          showToast('success', editId ? 'DocumentType Mapping Updated Successfully' : 'DocumentType Mapping created successfully');
           handleClear();
-          getAllUsers();
+          getAllDocumentTypeMapping();
           setIsLoading(false);
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'User creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'DocumentType Mapping creation failed');
           setIsLoading(false);
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'User creation failed');
+        showToast('error', error.message);
         setIsLoading(false);
       }
     } else {
@@ -386,7 +321,7 @@ export const DocumentTypeMappingMaster = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getUserById} />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getAllDocumentTypeMappingById} />
           </div>
         ) : (
           <>
@@ -400,6 +335,7 @@ export const DocumentTypeMappingMaster = () => {
                     value={formData.branchName}
                     onChange={handleInputChange}
                     name="branchName"
+                    disabled={isEditMode}
                   >
                     {branchList?.map((row) => (
                       <MenuItem key={row.id} value={row.branch}>
@@ -413,10 +349,17 @@ export const DocumentTypeMappingMaster = () => {
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.finYr}>
                   <InputLabel id="finYr-label">Fin Year</InputLabel>
-                  <Select labelId="finYr-label" label="finYr" value={formData.finYr} onChange={handleInputChange} name="finYr">
-                    {branchList?.map((row) => (
-                      <MenuItem key={row.id} value={row.branch}>
-                        {row.branch}
+                  <Select
+                    labelId="finYr-label"
+                    label="finYr"
+                    value={formData.finYr}
+                    onChange={handleInputChange}
+                    name="finYr"
+                    disabled={isEditMode}
+                  >
+                    {finYearList?.map((row) => (
+                      <MenuItem key={row.id} value={row.finYear}>
+                        {row.finYear}
                       </MenuItem>
                     ))}
                   </Select>
@@ -440,11 +383,9 @@ export const DocumentTypeMappingMaster = () => {
                 {value === 0 && (
                   <>
                     <div className="row d-flex ml">
-                      <div className="mb-1">
-                        {/*<ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
-
-                        <ActionButton title="Fill Grid" icon={GridOnIcon} />
-                      </div>
+                      {/* <div className="mb-1">
+                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={getAllFillGrid} />
+                      </div> */}
 
                       {/* <div className="row mt-2">
                         <div className="col-lg-12"> */}
@@ -470,39 +411,45 @@ export const DocumentTypeMappingMaster = () => {
                               <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                 Doc Code
                               </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                Branch
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                Branch Code
-                              </th>
                               <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                 Prefix
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                Fin Yr
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                Identifier
                               </th>
                             </tr>
                           </thead>
                           <tbody>
-                            {mapTableData > 0 &&
-                              mapTableData.map((row, index) => (
-                                <tr key={row.id}>
-                                  {/* <td className="border px-2 py-2 text-center">
-                                      <ActionButton
-                                        title="Delete"
-                                        icon={DeleteIcon}
-                                        onClick={() => handleDeleteRow(row.id, roleTableData, setRoleTableData)}
-                                      />
-                                    </td> */}
+                            {fillGridData.length > 0 ? (
+                              fillGridData.map((row, index) => (
+                                <tr key={index}>
                                   <td className="text-center">
                                     <div className="pt-2">{index + 1}</div>
                                   </td>
+                                  <td className="text-center">
+                                    <div className="pt-2">{row.screenName}</div>
+                                  </td>
+                                  <td className="text-center">
+                                    <div className="pt-2">{row.screenCode}</div>
+                                  </td>
+                                  <td className="text-center">
+                                    <div className="pt-2">{row.client}</div>
+                                  </td>
+                                  <td className="text-center">
+                                    <div className="pt-2">{row.clientCode}</div>
+                                  </td>
+                                  <td className="text-center">
+                                    <div className="pt-2">{row.docCode}</div>
+                                  </td>
+                                  <td className="text-center">
+                                    <div className="pt-2">{row.prefixField}</div>
+                                  </td>
                                 </tr>
-                              ))}
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan="11" className="text-center">
+                                  <strong>No Data Available</strong>
+                                </td>
+                              </tr>
+                            )}
                           </tbody>
                         </table>
                       </div>

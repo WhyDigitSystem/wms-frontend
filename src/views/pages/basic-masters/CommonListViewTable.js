@@ -1,11 +1,12 @@
 import EditIcon from '@mui/icons-material/Edit';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Box, Chip, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { MaterialReactTable } from 'material-react-table';
 import { useEffect, useState } from 'react';
 import ActionButton from 'utils/ActionButton';
 
-const CommonListViewTable = ({ data, columns, editCallback, countryVO, roleData, blockEdit, toEdit }) => {
+const CommonListViewTable = ({ data, columns, editCallback, countryVO, roleData, blockEdit, toEdit, disableEditIcon, viewIcon }) => {
   const [tableData, setTableData] = useState(data || []);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
@@ -82,7 +83,7 @@ const CommonListViewTable = ({ data, columns, editCallback, countryVO, roleData,
 
   const renderRowActions = ({ row }) => (
     <Box sx={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-      <ActionButton title="Edit" icon={EditIcon} onClick={() => handleButtonClick(row)} />
+      {!disableEditIcon && <ActionButton title="Edit" icon={EditIcon} onClick={() => handleButtonClick(row)} />}
     </Box>
   );
 

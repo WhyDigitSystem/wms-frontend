@@ -5,7 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { Avatar, ButtonBase, FormHelperText, Tooltip, FormControlLabel, Checkbox } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from './CommonListViewTable';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import axios from 'axios';
 import { useRef, useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
@@ -495,6 +495,7 @@ export const ItemMaster = () => {
           handleClear();
           showToast('success', editId ? ' Item Updated Successfully' : 'Item created successfully');
           setIsLoading(false);
+          getAllItems();
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Item creation failed');
           setIsLoading(false);
