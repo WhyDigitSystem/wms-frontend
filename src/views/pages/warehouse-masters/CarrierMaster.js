@@ -1,132 +1,82 @@
-import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
-import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
-import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { Checkbox, FormControlLabel, FormHelperText } from '@mui/material';
-import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
-import axios from 'axios';
-import { useState } from 'react';
+import apiCalls from 'apicall';
+import { useEffect, useState } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import ToastComponent, { showToast } from 'utils/toast-component';
+import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 export const CarrierMaster = () => {
-  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId')));
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
   const [editId, setEditId] = useState('');
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [branch] = useState(localStorage.getItem('branch'));
+  const [branchCode] = useState(localStorage.getItem('branchCode'));
+  const [customer] = useState(localStorage.getItem('customer'));
+  const [client] = useState(localStorage.getItem('client'));
+  const [warehouse] = useState(localStorage.getItem('warehouse'));
 
   const [formData, setFormData] = useState({
-    carrierName: '',
-    shortName: '',
+    carrier: '',
+    carrierShortName: '',
     shipmentMode: '',
-    controlBranch: '',
+    cbranch: localStorage.getItem('branchCode'),
     active: true,
-    orgId: 1000000001
+    branch: branch,
+    branchCode: branchCode,
+    warehouse: warehouse,
+    customer: customer,
+    client: client,
+    orgId: orgId
   });
   const [value, setValue] = useState(0);
-  const [carrierDetailsData, setCarrierDetailsData] = useState([
-    {
-      id: 1,
-      addressType: '',
-      address: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      country: '',
-      contact: '',
-      phone: '',
-      email: ''
-    }
-  ]);
-
-  const handleAddRow = () => {
-    const newRow = {
-      id: Date.now(),
-      addressType: '',
-      address: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      country: '',
-      contact: '',
-      phone: '',
-      email: ''
-    };
-    setCarrierDetailsData([...carrierDetailsData, newRow]);
-    setCarrierDetailTableErrors([
-      ...carrierDetailTableErrors,
-      {
-        addressType: '',
-        address: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        country: '',
-        contact: '',
-        phone: '',
-        email: ''
-      }
-    ]);
-  };
-
-  const [carrierDetailTableErrors, setCarrierDetailTableErrors] = useState([
-    {
-      addressType: '',
-      address: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      country: '',
-      contact: '',
-      phone: '',
-      email: ''
-    }
-  ]);
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [listViewData, setListViewData] = useState([]);
 
   const [fieldErrors, setFieldErrors] = useState({
-    carrierName: '',
-    shortName: '',
+    carrier: '',
+    carrierShortName: '',
     shipmentMode: '',
-    controlBranch: ''
+    cbranch: ''
   });
-  const listViewColumns = [
-    { accessorKey: 'carrierName', header: 'Carrier Name', size: 140 },
-    { accessorKey: 'shortName', header: 'Short Name', size: 140 },
-    { accessorKey: 'shipmentMode', header: 'Shipment Mode', size: 140 },
-    { accessorKey: 'controlBranch', header: 'Control Branch', size: 140 }
-  ];
 
-  //   const [listViewData, setListViewData] = useState([
-  //     {
-  //       id: 1,
-  //       carrierName: 'carrierName1',
-  //       shortName: 'shortName1',
-  //       shipmentMode: 'shipmentMode1',
-  //       controlBranch: 'controlBranch1',
-  //       active: 'Active'
-  //     },
-  //     {
-  //       id: 1,
-  //       carrierName: 'carrierName2',
-  //       shortName: 'shortName2',
-  //       shipmentMode: 'shipmentMode2',
-  //       controlBranch: 'controlBranch2',
-  //       active: 'Active'
-  //     }
-  //   ]);
+  useEffect(() => {
+    getAllCarrier();
+  }, []);
+
+  const getAllCarrier = async () => {
+    try {
+      const response = await apiCalls('get', `warehousemastercontroller/carrier?orgid=${orgId}&client=${client}&cbranch=${branchCode}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.carrierVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const listViewColumns = [
+    { accessorKey: 'carrier', header: 'Carrier Name', size: 140 },
+    { accessorKey: 'carrierShortName', header: 'Short Name', size: 140 },
+    { accessorKey: 'shipmentMode', header: 'Shipment Mode', size: 140 },
+    { accessorKey: 'cbranch', header: 'Control Branch', size: 140 },
+    { accessorKey: 'active', header: 'Active', size: 140 }
+  ];
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -142,8 +92,8 @@ export const CarrierMaster = () => {
     let errorMessage = '';
 
     switch (name) {
-      case 'carrierName':
-      case 'shortName':
+      case '  carrier':
+      case 'carrierShortName':
         if (!nameRegex.test(value)) {
           errorMessage = 'Only alphabetic characters are allowed';
         }
@@ -161,156 +111,78 @@ export const CarrierMaster = () => {
     }
   };
 
-  const handleDeleteRow = (id) => {
-    setCarrierDetailsData(carrierDetailsData.filter((row) => row.id !== id));
-  };
-  const handleKeyDown = (e, row) => {
-    if (e.key === 'Tab' && row.id === carrierDetailsData[carrierDetailsData.length - 1].id) {
-      e.preventDefault();
-      handleAddRow();
-    }
-  };
-
   const handleClear = () => {
     setFormData({
-      carrierName: '',
-      shortName: '',
+      carrier: '',
+      carrierShortName: '',
       shipmentMode: '',
-      controlBranch: '',
+      cbranch: '',
       active: true
     });
-    setCarrierDetailsData([
-      {
-        id: 1,
-        addressType: '',
-        address: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        country: '',
-        contact: '',
-        phone: '',
-        email: ''
-      }
-    ]);
+
     setFieldErrors({
-      carrierName: '',
-      shortName: '',
+      carrier: '',
+      carrierShortName: '',
       shipmentMode: '',
-      controlBranch: ''
+      cbranch: ''
     });
-    setCarrierDetailTableErrors('');
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
-    if (!formData.carrierName) {
-      errors.carrierName = 'Carrier Name is required';
+    if (!formData.carrier) {
+      errors.carrier = 'Carrier Name is required';
     }
-    if (!formData.shortName) {
-      errors.shortName = 'Short Name is required';
+    if (!formData.carrierShortName) {
+      errors.carrierShortName = 'Short Name is required';
     }
     if (!formData.shipmentMode) {
       errors.shipmentMode = 'Shipment Mode is required';
     }
-    if (!formData.controlBranch) {
-      errors.controlBranch = 'Control Branch is required';
+    if (!formData.cbranch) {
+      errors.cbranch = 'Control Branch is required';
     }
 
-    let carrierDetailsDataValid = true;
-    const newTableErrors = carrierDetailsData.map((row) => {
-      const rowErrors = {};
-      if (!row.addressType) {
-        rowErrors.addressType = 'Address Type is required';
-        carrierDetailsDataValid = false;
-      }
-      if (!row.address) {
-        rowErrors.address = 'Address is required';
-        carrierDetailsDataValid = false;
-      }
-      if (!row.city) {
-        rowErrors.city = 'City is required';
-        carrierDetailsDataValid = false;
-      }
-      if (!row.state) {
-        rowErrors.state = 'State is required';
-        carrierDetailsDataValid = false;
-      }
-      if (!row.zipCode) {
-        rowErrors.zipCode = 'Zip Code is required';
-        carrierDetailsDataValid = false;
-      }
-      if (!row.country) {
-        rowErrors.country = 'Country is required';
-        carrierDetailsDataValid = false;
-      }
-      if (!row.contact) {
-        rowErrors.contact = 'Contact is required';
-        carrierDetailsDataValid = false;
-      }
-      if (!row.core) {
-        rowErrors.core = 'Core is required';
-        carrierDetailsDataValid = false;
-      }
-      if (!row.phone) {
-        rowErrors.phone = 'Phone is required';
-        carrierDetailsDataValid = false;
-      }
-      if (!row.email) {
-        rowErrors.email = 'Email is required';
-        carrierDetailsDataValid = false;
-      }
-
-      return rowErrors;
-    });
     setFieldErrors(errors);
-    setCarrierDetailTableErrors(newTableErrors);
 
-    if (Object.keys(errors).length === 0 && carrierDetailsDataValid) {
+    if (Object.keys(errors).length === 0) {
       setIsLoading(true);
-      const locationVo = carrierDetailsData.map((row) => ({
-        addressType: row.addressType,
-        address: row.address,
-        city: row.city,
-        state: row.state,
-        zipCode: row.zipCode,
-        country: row.country,
-        contact: row.contact,
-        phone: row.phone,
-        email: row.email
-      }));
 
       const saveFormData = {
         ...(editId && { id: editId }),
-        carrierName: formData.carrierName,
-        shortName: formData.shortName,
+        carrier: formData.carrier,
+        carrierShortName: formData.carrierShortName,
         shipmentMode: formData.shipmentMode,
-        controlBranch: formData.controlBranch,
-        locationVo: locationVo,
+        cbranch: formData.cbranch,
+        branch: formData.branch,
+        branchCode: formData.branchCode,
+        warehouse: formData.warehouse,
+        customer: formData.customer,
+        active: formData.active,
+        client: formData.client,
         orgId: orgId,
         createdby: loginUserName
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
 
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/carrierMaster`, saveFormData)
-        .then((response) => {
-          if (response.data.status === true) {
-            console.log('Response:', response.data);
-            handleClear();
-            showToast('success', editId ? ' Carrier Master Updated Successfully' : 'Carrier Master created successfully');
-            setIsLoading(false);
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Warehouse Location creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'Carrier Master creation failed');
+      try {
+        const response = await apiCalls('put', `warehousemastercontroller/createUpdateCarrier`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          showToast('success', editId ? ' Carrier Master Updated Successfully' : 'Carrier Master created successfully');
+          handleClear();
+          getAllCarrier();
           setIsLoading(false);
-        });
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Carrier Master creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Carrier Master creation failed');
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }
@@ -318,14 +190,48 @@ export const CarrierMaster = () => {
 
   const handleView = () => {
     setListView(!listView);
+    getAllCarrier();
+  };
+
+  const getCarrierById = async (row) => {
+    console.log('THE SELECTED CITY ID IS:', row.original.id);
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `warehousemastercontroller/carrier/${row.original.id}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListView(false);
+        const particularCarrier = response.paramObjectsMap.Carrier;
+
+        setFormData({
+          carrier: particularCarrier.carrier,
+          carrierShortName: particularCarrier.carrierShortName,
+          shipmentMode: particularCarrier.shipmentMode,
+          cbranch: particularCarrier.cbranch,
+          active: particularCarrier.active === 'Active' ? true : false,
+          id: particularCarrier.id,
+          branch: particularCarrier.branch,
+          branchCode: particularCarrier.branchCode,
+          warehouse: particularCarrier.warehouse,
+          customer: particularCarrier.customer,
+          client: particularCarrier.client,
+          orgId: orgId
+        });
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   };
 
   const handleClose = () => {
     setFormData({
-      carrierName: '',
-      shortName: '',
+      carrier: '',
+      carrierShortName: '',
       shipmentMode: '',
-      controlBranch: '',
+      cbranch: '',
       active: true
     });
   };
@@ -343,7 +249,7 @@ export const CarrierMaster = () => {
         {listView ? (
           <div className="mt-4">
             {/* <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} /> */}
-            <CommonListViewTable columns={listViewColumns} blockEdit={true} />
+            <CommonListViewTable columns={listViewColumns} blockEdit={true} data={listViewData} toEdit={getCarrierById} />
           </div>
         ) : (
           <>
@@ -354,11 +260,11 @@ export const CarrierMaster = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="carrierName"
-                  value={formData.carrierName}
+                  name="carrier"
+                  value={formData.carrier}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.carrierName}
-                  helperText={fieldErrors.carrierName}
+                  error={!!fieldErrors.carrier}
+                  helperText={fieldErrors.carrier}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -367,11 +273,11 @@ export const CarrierMaster = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="shortName"
-                  value={formData.shortName}
+                  name="carrierShortName"
+                  value={formData.carrierShortName}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.shortName}
-                  helperText={fieldErrors.shortName}
+                  error={!!fieldErrors.carrierShortName}
+                  helperText={fieldErrors.carrierShortName}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -379,9 +285,9 @@ export const CarrierMaster = () => {
                   <InputLabel id="shipmentMode-label">Shipment Mode</InputLabel>
                   <Select
                     labelId="shipmentMode-label"
-                    id="shipmentMode"
+                    id="shipmentMode-label"
                     name="shipmentMode"
-                    label="Warehouse"
+                    label="Shipment Mode"
                     value={formData.shipmentMode}
                     onChange={handleInputChange}
                   >
@@ -393,20 +299,20 @@ export const CarrierMaster = () => {
               </div>
 
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.controlBranch}>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.cbranch}>
                   <InputLabel id="controlBranch-label">Control Branch</InputLabel>
                   <Select
                     labelId="controlBranch-label"
-                    id="controlBranch"
-                    name="controlBranch"
-                    label="Location Type"
-                    value={formData.controlBranch}
+                    id="cbranch"
+                    name="cbranch"
+                    label="Control Branch"
+                    value={formData.cbranch}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="CONTROLBRANCH1">CONTROLBRANCH1</MenuItem>
-                    <MenuItem value="CONTROLBRANCH2">CONTROLBRANCH2</MenuItem>
+                    {loginBranchCode && <MenuItem value={loginBranchCode}>{loginBranchCode}</MenuItem>}
+                    <MenuItem value="ALL">ALL</MenuItem>
                   </Select>
-                  {fieldErrors.controlBranch && <FormHelperText error>{fieldErrors.controlBranch}</FormHelperText>}
+                  {fieldErrors.cbranch && <FormHelperText error>{fieldErrors.cbranch}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -423,7 +329,7 @@ export const CarrierMaster = () => {
               </div>
             </div>
 
-            <div className="row ">
+            {/* <div className="row ">
               <Box sx={{ width: '100%' }}>
                 <Tabs
                   value={value}
@@ -435,7 +341,7 @@ export const CarrierMaster = () => {
                   <Tab value={0} label="Carrier Details" />
                 </Tabs>
               </Box>
-              {/* <Box className="mt-4"> */}
+      
               <Box className="mt-2" sx={{ padding: 1 }}>
                 {value === 0 && (
                   <>
@@ -446,7 +352,7 @@ export const CarrierMaster = () => {
                         <ActionButton title="Clear" icon={ClearIcon} />
                       </div>
                       <div className="mt-3">
-                        {/* <div className="col-lg-12"> */}
+                     
                         <div style={{ overflowX: 'auto' }}>
                           <table className="table table-bordered">
                             <thead>
@@ -704,17 +610,16 @@ export const CarrierMaster = () => {
                             </tbody>
                           </table>
                         </div>
-                        {/* </div> */}
+                    
                       </div>
                     </div>
                   </>
                 )}
               </Box>
-            </div>
+            </div> */}
           </>
         )}
       </div>
-      <ToastComponent />
     </>
   );
 };
