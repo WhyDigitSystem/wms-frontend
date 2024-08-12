@@ -18,7 +18,7 @@ import axios from 'axios';
 import { useState } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
+import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from './CommonListViewTable';
 
 export const CarrierMaster = () => {
@@ -714,6 +714,7 @@ export const CarrierMaster = () => {
           </>
         )}
       </div>
+      <ToastComponent />
     </>
   );
 };
