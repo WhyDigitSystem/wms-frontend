@@ -847,10 +847,10 @@ export const ItemMaster = () => {
                     value={formData.skuCategory}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="OpenStorage">Open Storage</MenuItem>
-                    <MenuItem value="ColdStorage">Cold Storage</MenuItem>
-                    <MenuItem value="Strong">Strong</MenuItem>
-                    <MenuItem value="Regular">Regular</MenuItem>
+                    <MenuItem value="OPENSTORAGE">Open Storage</MenuItem>
+                    <MenuItem value="COLDSTORAGE">Cold Storage</MenuItem>
+                    <MenuItem value="STRONG">Strong</MenuItem>
+                    <MenuItem value="REGULAR">Regular</MenuItem>
                   </Select>
                   {fieldErrors.skuCategory && <FormHelperText error>{fieldErrors.skuCategory}</FormHelperText>}
                 </FormControl>
