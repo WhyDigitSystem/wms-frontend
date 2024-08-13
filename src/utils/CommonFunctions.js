@@ -167,3 +167,45 @@ export const getAllActiveLocationTypes = async (orgId) => {
     return error;
   }
 };
+
+export const getAllActiveSupplier = async (cbranch, client, orgId) => {
+  try {
+    const response = await apiCalls('get', `warehousemastercontroller/supplier?cbranch=${cbranch}&client=${client}&orgid=${orgId}`);
+    if (response.status === true) {
+      const supplierData = response.paramObjectsMap.supplierVO
+        .filter((row) => row.active === 'Active')
+        .map(({ id, supplierShortName, supplier }) => ({ id, supplierShortName, supplier }));
+
+      return supplierData;
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
+
+export const getAllActiveCarrier = async (cbranch, client, orgId, shipmentMode) => {
+  try {
+    const response = await apiCalls(
+      'get',
+      `warehousemastercontroller/getCarrierNameByCustomer?cbranch=${cbranch}&client=${client}&orgid=${orgId}&shipmentMode=${shipmentMode}`
+    );
+    if (response.status === true) {
+      const modeOfShipmentData = response.paramObjectsMap.CarrierVO.filter((row) => row.active === 'Active').map(({ id, carrier }) => ({
+        id,
+        carrier
+      }));
+
+      return modeOfShipmentData;
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
