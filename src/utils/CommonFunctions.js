@@ -194,10 +194,26 @@ export const getAllActiveCarrier = async (cbranch, client, orgId, shipmentMode) 
       `warehousemastercontroller/getCarrierNameByCustomer?cbranch=${cbranch}&client=${client}&orgid=${orgId}&shipmentMode=${shipmentMode}`
     );
     if (response.status === true) {
-      const modeOfShipmentData = response.paramObjectsMap.CarrierVO.filter((row) => row.active === 'Active').map(({ id, carrier }) => ({
+      const carrierData = response.paramObjectsMap.CarrierVO.filter((row) => row.active === 'Active').map(({ id, carrier }) => ({
         id,
         carrier
       }));
+
+      return carrierData;
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
+export const getAllShipmentModes = async (orgId) => {
+  try {
+    const response = await apiCalls('get', `inward/getAllModeOfShipment?orgId=${orgId}`);
+    if (response.status === true) {
+      const modeOfShipmentData = response.paramObjectsMap.modOfShipments;
 
       return modeOfShipmentData;
     } else {
@@ -209,3 +225,18 @@ export const getAllActiveCarrier = async (cbranch, client, orgId, shipmentMode) 
     return error;
   }
 };
+
+// const getAllModeOfShipment = async () => {
+//   try {
+//     const response = await apiCalls('get', inward/getAllModeOfShipment?orgId=${orgId});
+//     console.log('API Response:', response);
+
+//     if (response.status === true) {
+//       setModeOfShipmentList(response.paramObjectsMap.modOfShipments);
+//     } else {
+//       console.error('API Error:', response);
+//     }
+//   } catch (error) {
+//     console.error('Error fetching data:', error);
+//   }
+// };
