@@ -226,17 +226,23 @@ export const getAllShipmentModes = async (orgId) => {
   }
 };
 
-// const getAllModeOfShipment = async () => {
-//   try {
-//     const response = await apiCalls('get', inward/getAllModeOfShipment?orgId=${orgId});
-//     console.log('API Response:', response);
+export const getAllActivePartDetails = async (cBranch, client, orgId) => {
+  try {
+    const response = await apiCalls('get', `warehousemastercontroller/material?cbranch=${cBranch}&client=${client}&orgid=${orgId}`);
+    console.log('API Response:', response);
 
-//     if (response.status === true) {
-//       setModeOfShipmentList(response.paramObjectsMap.modOfShipments);
-//     } else {
-//       console.error('API Error:', response);
-//     }
-//   } catch (error) {
-//     console.error('Error fetching data:', error);
-//   }
-// };
+    if (response.status === true) {
+      const partData = response.paramObjectsMap.materialVO
+        .filter((row) => row.active === 'Active')
+        .map(({ id, itemType, partno, partDesc, sku }) => ({ id, itemType, partno, partDesc, sku }));
+
+      return partData;
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
