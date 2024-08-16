@@ -2,7 +2,6 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { FormHelperText } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
@@ -15,6 +14,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
+import { FormHelperText, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -24,15 +24,29 @@ import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import ActionButton from 'utils/ActionButton';
+import Checkbox from '@mui/material/Checkbox';
 import { showToast } from 'utils/toast-component';
 import apiCalls from 'apicall';
-import { getAllActiveBranches } from 'utils/CommonFunctions';
+import { getAllActiveBranches, getAllActiveBuyer } from 'utils/CommonFunctions';
+import Paper from '@mui/material/Paper';
+import Draggable from 'react-draggable';
+function PaperComponent(props) {
+  return (
+    <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
+      <Paper {...props} />
+    </Draggable>
+  );
+}
+const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
 export const BuyerOrder = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState('');
   const [branchList, setBranchList] = useState([]);
+  const [buyerList, setBuyerList] = useState([]);
   const [currencyList, setCurrencyList] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
@@ -44,50 +58,59 @@ export const BuyerOrder = () => {
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
 
   const [formData, setFormData] = useState({
+    avilQty: 10,
     billto: '',
+    billtoFullName: '',
     branch: loginBranch,
     branchCode: loginBranchCode,
     buyerShortName: '',
+    buyer: '',
     client: loginClient,
-    company: '',
+    company: 'String',
     createdBy: loginUserName,
     currency: '',
     customer: loginCustomer,
+    docId: '',
     docDate: null,
-    exRate: '',
-    finYear: '',
+    exRate: 1,
+    finYear: '2024',
     freeze: true,
     invoiceDate: null,
     invoiceNo: '',
-    location: '',
+    // location: '',
     orderDate: null,
     orderNo: '',
+    orderQty: 5,
     orgId: orgId,
     reMarks: '',
     refDate: null,
     refNo: '',
-    shipTo: ''
+    shipTo: '',
+    shipToFullName: '',
+    tax: 'TAX'
   });
   const [value, setValue] = useState(0);
 
   const [skuDetailsTableData, setSkuDetailsTableData] = useState([
     {
       id: 1,
-      availQty: '',
+      availQty: 100,
       batchNo: '',
       partDesc: '',
       partNo: '',
-      qcflag: '',
-      qty: '',
-      remarks: '',
-      sku: ''
+      qcflag: true,
+      qty: 0,
+      remarks: 'TEST',
+      sku: 'KG'
     }
   ]);
 
   useEffect(() => {
+    getBuyerOrderDocId();
     getAllCurrencies();
     getAllBranches();
     getAllBuyerOrderByOrgId();
+    getAllBuyerList();
   }, []);
 
   const handleAddRow = () => {
@@ -121,6 +144,41 @@ export const BuyerOrder = () => {
       }
     ]);
   };
+
+  const handleFullGrid = () => {
+    setModalOpen(true);
+  };
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  // const handleFullGridFunction = async () => {
+  //   try {
+  //     const response = await apiCalls(
+  //       'get',
+  //       `warehousemastercontroller/bins/levelno/rowno/locationtype/warehouse?level=${formData.levelNo}&locationtype=${formData.locationType}&orgid=${orgId}&rowno=${formData.rowNo}&warehouse=${loginWarehouse}`
+  //     );
+  //     console.log('THE WAREHOUSE IS:', response);
+  //     if (response.status === true) {
+  //       const bins = response.paramObjectsMap.Bins;
+  //       console.log('THE BIN DETAILS ARE:', bins);
+
+  //       setLocationMappingTableData(
+  //         bins.map((bin) => ({
+  //           id: bin.id,
+  //           rowNo: bin.rowno,
+  //           levelNo: bin.level,
+  //           palletNo: bin.bin,
+  //           multiCore: bin.core,
+  //           LocationStatus: bin.status === 'True' ? 'True' : 'False',
+  //           vasBinSeq: ''
+  //         }))
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching employee data:', error);
+  //   }
+  // };
 
   const [skuDetailsTableErrors, setSkuDetailsTableErrors] = useState([
     {
@@ -184,6 +242,24 @@ export const BuyerOrder = () => {
     setValue(newValue);
   };
 
+  const getBuyerOrderDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `outward/getBuyerOrderDocId?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=2024&orgId=${orgId}`
+      );
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        const buyerOrderDocId = response.paramObjectsMap.BuyerOrderDocId;
+        setFormData({ ...formData, docId: buyerOrderDocId });
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
   const getAllCurrencies = async () => {
     try {
       const response = await apiCalls('get', `commonmaster/currency?orgid=${orgId}`);
@@ -207,6 +283,18 @@ export const BuyerOrder = () => {
       console.error('Error fetching country data:', error);
     }
   };
+
+  const getAllBuyerList = async () => {
+    try {
+      const buyerData = await getAllActiveBuyer(loginBranchCode, loginClient, orgId);
+      console.log('THE buyerData IS:', buyerData);
+
+      setBuyerList(buyerData);
+    } catch (error) {
+      console.error('Error fetching buyerData data:', error);
+    }
+  };
+
   const getAllBuyerOrderByOrgId = async () => {
     try {
       const response = await apiCalls('get', `outward/getAllBuyerOrderByOrgId?orgId=${orgId}`);
@@ -235,7 +323,8 @@ export const BuyerOrder = () => {
         console.log('THE PARTICULAR BUYER ORDER IS:', particularBuyerOrder);
 
         setFormData({
-          docId: particularBuyerOrder.id,
+          ...formData,
+          docId: particularBuyerOrder.docId,
           docDate: particularBuyerOrder.docDate,
           orderNo: particularBuyerOrder.orderNo,
           orderDate: particularBuyerOrder.orderDate,
@@ -247,16 +336,16 @@ export const BuyerOrder = () => {
           billto: particularBuyerOrder.billto,
           refNo: particularBuyerOrder.refNo,
           refDate: particularBuyerOrder.refDate,
-          refDate: particularBuyerOrder.refDate,
           reMarks: particularBuyerOrder.reMarks
         });
         setSkuDetailsTableData(
-          particularBuyerOrder.buyerOrderDetailsDTO.map((bo) => ({
+          particularBuyerOrder.buyerOrderDetailsVO.map((bo) => ({
             id: bo.id,
             partNo: bo.partNo,
             partDesc: bo.partDesc,
             batchNo: bo.batchNo,
-            qty: bo.qty
+            qty: bo.qty,
+            availQty: bo.availQty
           }))
         );
       } else {
@@ -312,8 +401,33 @@ export const BuyerOrder = () => {
     } else {
       if (name === 'active') {
         setFormData({ ...formData, [name]: checked });
-      } else if (name === 'email') {
-        setFormData({ ...formData, [name]: value });
+      } else if (name === 'buyerShortName') {
+        const selectedBuyer = buyerList.find((row) => row.buyerShortName === value);
+        if (selectedBuyer) {
+          setFormData((prevData) => ({
+            ...prevData,
+            buyerShortName: value,
+            buyer: selectedBuyer.buyer
+          }));
+        }
+      } else if (name === 'billto') {
+        const selectedBuyer = buyerList.find((row) => row.buyerShortName === value);
+        if (selectedBuyer) {
+          setFormData((prevData) => ({
+            ...prevData,
+            billto: value,
+            billtoFullName: selectedBuyer.buyer
+          }));
+        }
+      } else if (name === 'shipTo') {
+        const selectedBuyer = buyerList.find((row) => row.buyerShortName === value);
+        if (selectedBuyer) {
+          setFormData((prevData) => ({
+            ...prevData,
+            shipTo: value,
+            shipToFullName: selectedBuyer.buyer
+          }));
+        }
       } else {
         setFormData({ ...formData, [name]: value.toUpperCase() });
       }
@@ -465,7 +579,7 @@ export const BuyerOrder = () => {
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
-      const buyerOrderDetailsDTO = skuDetailsTableData.map((row) => ({
+      const buyerOrderDetailsVO = skuDetailsTableData.map((row) => ({
         availQty: row.availQty,
         batchNo: row.batchNo,
         partDesc: row.partDesc,
@@ -478,47 +592,50 @@ export const BuyerOrder = () => {
 
       const saveFormData = {
         ...(editId && { id: editId }),
+        avilQty: formData.avilQty,
         billto: formData.billto,
         branch: formData.branch,
         branchCode: formData.branchCode,
-        buyerOrderDetailsDTO,
+        buyerOrderDetailsVO,
         buyerShortName: formData.buyerShortName,
         client: formData.client,
         company: formData.company,
         createdBy: formData.createdBy,
         currency: formData.currency,
         customer: formData.customer,
-        docDate: formData.docDate,
+        // docDate: formData.docDate,
         exRate: formData.exRate,
-        finYear: formData.billto,
+        finYear: formData.finYear,
         freeze: formData.freeze,
         invoiceDate: formData.invoiceDate,
         invoiceNo: formData.invoiceNo,
-        location: formData.location,
+        // location: formData.location,
         orderDate: formData.orderDate,
         orderNo: formData.orderNo,
+        orderQty: formData.orderQty,
         orgId: orgId,
         reMarks: formData.reMarks,
         refDate: formData.refDate,
         refNo: formData.refNo,
-        shipTo: formData.shipTo
+        shipTo: formData.shipTo,
+        tax: formData.tax
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `warehousemastercontroller/createUpdateCustomer`, saveFormData);
+        const response = await apiCalls('put', `outward/createUpdateBuyerOrder`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
-          showToast('success', editId ? ' Customer Updated Successfully' : 'Customer created successfully');
+          showToast('success', editId ? ' Buyer Order Updated Successfully' : 'Buyer Order created successfully');
           setIsLoading(false);
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Customer creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'Buyer Order creation failed');
           setIsLoading(false);
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'Customer creation failed');
+        showToast('error', 'Buyer Order creation failed');
         setIsLoading(false);
       }
     } else {
@@ -584,18 +701,22 @@ export const BuyerOrder = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  label="Doc Date"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="docDate"
-                  value={formData.docDate}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.docDate}
-                  helperText={fieldErrors.docDate}
-                  disabled
-                />
+                <FormControl fullWidth variant="filled" size="small">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Doc Date"
+                      value={formData.docDate ? dayjs(formData.docDate, 'DD-MM-YYYY') : null}
+                      onChange={(date) => handleDateChange('docDate', date)}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                      format="DD/MM/YYYY"
+                      error={fieldErrors.docDate}
+                      helperText={fieldErrors.docDate && 'Required'}
+                      disabled
+                    />
+                  </LocalizationProvider>
+                </FormControl>
               </div>
 
               <div className="col-md-3 mb-3">
@@ -670,9 +791,11 @@ export const BuyerOrder = () => {
                     value={formData.buyerShortName}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="">Select Option</MenuItem>
-                    <MenuItem value="BUYERSHORTNAME1">Buyer Short Name1</MenuItem>
-                    <MenuItem value="BUYERSHORTNAME2">Buyer Short Name2</MenuItem>
+                    {buyerList?.map((row) => (
+                      <MenuItem key={row.id} value={row.buyerShortName.toUpperCase()}>
+                        {row.buyerShortName.toUpperCase()}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.buyerShortName && <FormHelperText error>{fieldErrors.buyerShortName}</FormHelperText>}
                 </FormControl>
@@ -683,10 +806,10 @@ export const BuyerOrder = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="buyerFullName"
-                  value={formData.buyerFullName}
-                  error={!!fieldErrors.buyerFullName}
-                  helperText={fieldErrors.buyerFullName}
+                  name="buyer"
+                  value={formData.buyer}
+                  error={!!fieldErrors.buyer}
+                  helperText={fieldErrors.buyer}
                   disabled
                 />
               </div>
@@ -727,8 +850,11 @@ export const BuyerOrder = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.billto}>
                   <InputLabel id="billto">Bill To</InputLabel>
                   <Select labelId="billto" id="billto" name="billto" label="Bill To" value={formData.billto} onChange={handleInputChange}>
-                    <MenuItem value="BILLTO1">BILLTO 1</MenuItem>
-                    <MenuItem value="BILLTO2">BILLTO 2</MenuItem>
+                    {buyerList?.map((row) => (
+                      <MenuItem key={row.id} value={row.buyerShortName.toUpperCase()}>
+                        {row.buyerShortName.toUpperCase()}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.billto && <FormHelperText error>{fieldErrors.billto}</FormHelperText>}
                 </FormControl>
@@ -780,8 +906,11 @@ export const BuyerOrder = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.shipTo}>
                   <InputLabel id="shipTo">Ship To</InputLabel>
                   <Select labelId="shipTo" id="shipTo" name="shipTo" label="Ship To" value={formData.shipTo} onChange={handleInputChange}>
-                    <MenuItem value="SHIPTO1">SHIPTO1</MenuItem>
-                    <MenuItem value="SHIPTO2">SHIPTO2</MenuItem>
+                    {buyerList?.map((row) => (
+                      <MenuItem key={row.id} value={row.buyerShortName.toUpperCase()}>
+                        {row.buyerShortName.toUpperCase()}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.shipTo && <FormHelperText error>{fieldErrors.shipTo}</FormHelperText>}
                 </FormControl>
@@ -832,6 +961,7 @@ export const BuyerOrder = () => {
                     <div className="row d-flex ml">
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
                       </div>
                       {/* Table */}
                       <div className="row mt-2">
@@ -1040,6 +1170,66 @@ export const BuyerOrder = () => {
                   </>
                 )}
               </Box>
+              <Dialog
+                open={modalOpen}
+                maxWidth={'md'}
+                fullWidth={true}
+                onClose={handleCloseModal}
+                PaperComponent={PaperComponent}
+                aria-labelledby="draggable-dialog-title"
+              >
+                <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
+                  <h6>Grid Details</h6>
+                </DialogTitle>
+                <DialogContent className="pb-0">
+                  <div className="row">
+                    <div className="col-lg-12">
+                      <div className="table-responsive">
+                        <table className="table table-bordered">
+                          <thead>
+                            <tr style={{ backgroundColor: '#673AB7' }}>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                Action
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                S.No
+                              </th>
+                              <th className="px-2 py-2 text-white text-center">Part No *</th>
+                              <th className="px-2 py-2 text-white text-center">Part Desc</th>
+                              <th className="px-2 py-2 text-white text-center">Batch No</th>
+                              <th className="px-2 py-2 text-white text-center">Qty *</th>
+                              <th className="px-2 py-2 text-white text-center">Avl. Qty</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {skuDetailsTableData.map((row, index) => (
+                              <tr key={row.id}>
+                                <td className="border p-0 text-center">
+                                  <Checkbox {...label} />
+                                </td>
+                                <td className="text-center">
+                                  <div className="pt-1">{index + 1}</div>
+                                </td>
+                                <td className="border p-0">{row.partNo}</td>
+                                <td className="border p-0">{row.partDesc}</td>
+                                <td className="border p-0">{row.batchNo}</td>
+                                <td className="border p-0">{row.qty}</td>
+                                <td className="border p-0">{row.availQty}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </DialogContent>
+                <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
+                  <Button onClick={handleCloseModal}>Cancel</Button>
+                  <Button color="secondary" onClick={handleCloseModal} variant="contained">
+                    Save
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </div>
           </>
         )}
