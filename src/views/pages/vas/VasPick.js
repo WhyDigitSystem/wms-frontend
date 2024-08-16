@@ -181,20 +181,20 @@ export const VasPick = () => {
     getAllPickBinType();
   }, []);
 
-  // const getNewVasPickDocId = async () => {
-  //   try {
-  //     const response = await apiCalls(
-  //       'get',
-  //       `inward/getGRNDocid?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
-  //     );
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       docId: response.paramObjectsMap.grnDocid
-  //     }));
-  //   } catch (error) {
-  //     console.error('Error fetching gate passes:', error);
-  //   }
-  // };
+  const getNewVasPickDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `vascontroller/getVasPickDocId?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
+      );
+      setFormData((prevData) => ({
+        ...prevData,
+        docId: response.paramObjectsMap.vasPickDocId
+      }));
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
   // const getFillGridData = async () => {
   //   try {
   //     const response = await apiCalls(
