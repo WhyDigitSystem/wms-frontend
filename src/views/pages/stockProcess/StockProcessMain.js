@@ -1,14 +1,13 @@
-import React from 'react';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
-import LocationMovement from './LocationMovement';
-import StockRestate from './StockRestate';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import React from 'react';
 import CodeConversion from './CodeConversion';
-import Kitting from './Kitting';
-import DeKitting from './DeKitting';
-import StockConsolidation from './StockConsolidation';
 import CycleCount from './CycleCount';
+import DeKitting from './DeKitting';
+import LocationMovement from './LocationMovement';
+import StockConsolidation from './StockConsolidation';
+import StockRestate from './StockRestate';
 
 const StockProcessMain = () => {
   const [value, setValue] = React.useState(0);
@@ -25,7 +24,6 @@ const StockProcessMain = () => {
             <Tab value={1} label="Stock Restate" />
             <Tab value={2} label="Code Conversion" />
             <Tab value={3} label="Cycle Count" />
-            <Tab value={4} label="Kitting" />
             <Tab value={5} label="De-Kitting" />
             <Tab value={6} label="Stock Consolidtion" />
           </Tabs>
@@ -35,7 +33,6 @@ const StockProcessMain = () => {
           {value === 1 && <StockRestate />}
           {value === 2 && <CodeConversion />}
           {value === 3 && <CycleCount />}
-          {value === 4 && <Kitting />}
           {value === 5 && <DeKitting />}
           {value === 6 && <StockConsolidation />}
         </Box>

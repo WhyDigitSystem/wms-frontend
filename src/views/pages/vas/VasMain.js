@@ -1,11 +1,12 @@
-import React from 'react';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
-import VasPick from './VasPick';
-import VasPutaway from './VasPutaway';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import React from 'react';
 import CoPick from './CoPick';
 import CoPutaway from './CoPutaway';
+import Kitting from './Kitting';
+import VasPick from './VasPick';
+import VasPutaway from './VasPutaway';
 
 const VasMain = () => {
   const [value, setValue] = React.useState(0);
@@ -22,12 +23,16 @@ const VasMain = () => {
             <Tab value={1} label="VAS PutAway" />
             <Tab value={2} label="Co-Pick" />
             <Tab value={3} label="Co-PutAway" />
+            <Tab value={4} label="Kitting" />
           </Tabs>
         </Box>
-        <Box sx={{ padding: 2 }}>{value === 0 && <VasPick />}</Box>
-        <Box sx={{ padding: 2 }}>{value === 1 && <VasPutaway />}</Box>
-        <Box sx={{ padding: 2 }}>{value === 2 && <CoPick />}</Box>
-        <Box sx={{ padding: 2 }}>{value === 3 && <CoPutaway />}</Box>
+        <Box sx={{ padding: 2 }}>
+          {value === 0 && <VasPick />}
+          {value === 1 && <VasPutaway />}
+          {value === 2 && <CoPick />}
+          {value === 3 && <CoPutaway />}
+          {value === 4 && <Kitting />}
+        </Box>
       </div>
     </>
   );

@@ -230,13 +230,6 @@
 
 // export default FirebaseLogin;
 
-import Axios from 'axios';
-import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { setUserRole } from 'store/actions';
 import {
   Box,
   Button,
@@ -254,8 +247,12 @@ import {
   Typography
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { useRef } from 'react';
+import Axios from 'axios';
+import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // third party
 import { Formik } from 'formik';
@@ -336,12 +333,7 @@ const FirebaseLogin = ({ ...others }) => {
         localStorage.setItem('orgId', response.data.paramObjectsMap.userVO.orgId); // Replace with the actual token
         localStorage.setItem('userId', response.data.paramObjectsMap.userVO.usersId);
         localStorage.setItem('userName', response.data.paramObjectsMap.userVO.userName);
-        localStorage.setItem('branch', 'CHENNAI');
-        localStorage.setItem('branchCode', 'MAAW');
-        localStorage.setItem('warehouse', 'CHENNAI');
-        localStorage.setItem('finYear', '2024');
-        localStorage.setItem('customer', 'CASIO INDIA PVT LTD');
-        localStorage.setItem('client', 'CASIO');
+
         localStorage.setItem('LoginMessage', true);
         const userRoleVO = response.data.paramObjectsMap.userVO.roleVO;
         const roles = userRoleVO.map((row) => ({
