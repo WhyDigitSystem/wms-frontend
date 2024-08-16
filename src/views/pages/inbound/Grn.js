@@ -1,5 +1,6 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { FormHelperText, Tooltip, FormControlLabel, Checkbox } from '@mui/material';
@@ -27,21 +28,39 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers';
 // import 'react-datepicker/dist/react-datepicker.css';
 // import { DatePicker } from 'react-datepicker';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { width } from '@mui/system';
+import { getAllActiveCarrier, getAllActivePartDetails, getAllActiveSupplier, getAllShipmentModes } from 'utils/CommonFunctions';
 
 export const Grn = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [loginUserId, setLoginUserId] = useState(localStorage.getItem('userId'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
+  const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
+  const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
+  const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
+  // const [loginFinYear, setLoginFinYear] = useState(localStorage.getItem('finYear'));
+  const [loginFinYear, setLoginFinYear] = useState('2024');
+  const [supplierList, setSupplierList] = useState([]);
+  const [modeOfShipmentList, setModeOfShipmentList] = useState([]);
+  const [carrierList, setCarrierList] = useState([]);
+  const [gatePassIdList, setGatePassIdList] = useState([]);
+  const [binTypeList, setBinTypeList] = useState([]);
+  const [partNoList, setPartNoList] = useState([]);
+  const [gatePassIdEdit, setGatePassIdEdit] = useState('');
+  const [editDocDate, setEditDocDate] = useState(dayjs());
 
   const [formData, setFormData] = useState({
     docId: '',
     docDate: dayjs(),
+    editDocDate: dayjs(),
     grnType: '',
     entrySlNo: '',
-    date: dayjs(),
+    date: null,
     tax: '',
     gatePassId: '',
     gatePassDate: null,
@@ -81,7 +100,7 @@ export const Grn = () => {
     docDate: new Date(),
     grnType: '',
     entrySlNo: '',
-    date: new Date(),
+    date: null,
     tax: '',
     gatePassId: '',
     gatePassDate: null,
@@ -185,70 +204,246 @@ export const Grn = () => {
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
   const listViewColumns = [
-    { accessorKey: 'grnNo', header: 'GRN No', size: 140 },
-    { accessorKey: 'grnDate', header: 'GRN Date', size: 140 }
+    { accessorKey: 'grndDate', header: 'GRN Date', size: 140 },
+    { accessorKey: 'docId', header: 'GRN No', size: 140 },
+    { accessorKey: 'gatePassId', header: 'Gate Pass Id', size: 140 },
+    { accessorKey: 'supplier', header: 'Supplier', size: 140 },
+    { accessorKey: 'totalGrnQty', header: 'GRN QTY', size: 140 }
   ];
 
   useEffect(() => {
-    // getAllGatePassId();
-    // getAllSuppliers();
-    // getAllModesOfShipment();
+    getNewGrnDocId();
+    getAllGatePassId();
+    getAllSuppliers();
+    getAllModesOfShipment();
+    getAllBinLocationByWarehouse();
+    getAllPartNo();
+    getAllGrns();
     // getAllCarriers();
     // getAllVehicleTypes();
     // getAllGrns();
   }, []);
 
-  // const getAllGatePassId = async () => {
-  //   try {
-  //     const response = await apiCalls('get', '/api/gate-passes');
-  //     setDropdownLists((prev) => ({ ...prev, gatePasses: response.data }));
-  //   } catch (error) {
-  //     console.error('Error fetching gate passes:', error);
-  //   }
-  // };
+  const getNewGrnDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `inward/getGRNDocid?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
+      );
+      setFormData((prevData) => ({
+        ...prevData,
+        docId: response.paramObjectsMap.grnDocid
+      }));
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+  const getAllGatePassId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `inward/getGatePassInNoForPedningGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
+      );
+      setGatePassIdList(response.paramObjectsMap.gatePassInVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+  const getAllBinLocationByWarehouse = async () => {
+    try {
+      const response = await apiCalls('get', `warehousemastercontroller/locationtype/warehouse?orgid=${orgId}&warehouse=${loginWarehouse}`);
+      setBinTypeList(response.paramObjectsMap.Locationtype);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+  const getGatePassGridDetailsByGatePassId = async (selectedGatePassId) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `inward/getGatePassInDetailsForPendingGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&gatePassDocId=${selectedGatePassId}&orgId=${orgId}`
+      );
+      console.log('THE GATE PASS IDS GRID DETAILS IS:', response);
+      if (response.status === true) {
+        const gridDetails = response.paramObjectsMap.gatePassInVO;
+        console.log('THE PALLET DETAILS ARE:', gridDetails);
 
-  // const getAllSuppliers = async () => {
-  //   try {
-  //     const response = await apiCalls('get', '/api/suppliers');
-  //     setDropdownLists((prev) => ({ ...prev, suppliers: response.data }));
-  //   } catch (error) {
-  //     console.error('Error fetching suppliers:', error);
-  //   }
-  // };
+        setLrTableData(
+          gridDetails.map((row) => ({
+            // id: row.id,
+            lrNoHawbNo: row.lrNoHaw,
+            invoiceNo: row.invoiceNo,
+            invDate: row.invoiceDate ? dayjs(row.invoiceDate).format('YYYY-MM-DD') : null,
+            partNo: row.partNo,
+            partDesc: row.partDesc,
+            sku: row.sku,
+            invQty: row.invQty,
+            recQty: row.recQty,
+            shortQty: row.shortQty,
+            damageQty: row.damageQty,
+            grnQty: row.genQty,
+            invoiceDate: row.invoiceDate,
+            partNo: row.partNo,
+            partDesc: row.partDesc,
+            sku: row.sku,
+            invQty: row.invQty,
+            recQty: row.recQty,
+            shortQty: row.shortQty,
+            weight: row.weight,
+            batchNo: row.batchNo
+          }))
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
 
-  // const getAllModesOfShipment = async () => {
-  //   try {
-  //     const response = await apiCalls('get', '/api/modes-of-shipment');
-  //     setDropdownLists((prev) => ({ ...prev, modesOfShipment: response.data }));
-  //   } catch (error) {
-  //     console.error('Error fetching modes of shipment:', error);
-  //   }
-  // };
+  const getAllSuppliers = async () => {
+    try {
+      const supplierData = await getAllActiveSupplier(loginBranchCode, loginClient, orgId);
+      setSupplierList(supplierData);
+    } catch (error) {
+      console.error('Error fetching suppliers:', error);
+    }
+  };
 
-  // const getAllCarriers = async () => {
-  //   try {
-  //     const response = await apiCalls('get', '/api/carriers');
-  //     setDropdownLists((prev) => ({ ...prev, carriers: response.data }));
-  //   } catch (error) {
-  //     console.error('Error fetching carriers:', error);
-  //   }
-  // };
+  const getAllModesOfShipment = async () => {
+    try {
+      const shipmentModeData = await getAllShipmentModes(orgId);
+      setModeOfShipmentList(shipmentModeData);
+    } catch (error) {
+      console.error('Error fetching modes of shipment:', error);
+    }
+  };
 
-  // const getAllVehicleTypes = async () => {
-  //   try {
-  //     const response = await apiCalls('get', '/api/vehicle-types');
-  //     setDropdownLists((prev) => ({ ...prev, vehicleTypes: response.data }));
-  //   } catch (error) {
-  //     console.error('Error fetching vehicle types:', error);
-  //   }
-  // };
+  const getAllCarriers = async (selectedModeOfShipment) => {
+    try {
+      const carrierData = await getAllActiveCarrier(loginBranchCode, loginClient, orgId, selectedModeOfShipment);
+      setCarrierList(carrierData);
+    } catch (error) {
+      console.error('Error fetching carriers:', error);
+    }
+  };
+
+  const getAllPartNo = async () => {
+    try {
+      const partNoData = await getAllActivePartDetails(loginBranchCode, loginClient, orgId);
+      console.log('THE ACTIVE PART DETAILS ARE:', partNoData);
+
+      setPartNoList(partNoData);
+    } catch (error) {
+      console.error('Error fetching vehicle types:', error);
+    }
+  };
 
   const getAllGrns = async () => {
     try {
-      const response = await apiCalls('get', '/api/grn-data');
-      setListViewData(response.data);
+      const response = await apiCalls(
+        'get',
+        `inward/getAllGrn?branch=CHENNAI&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
+      );
+      setListViewData(response.paramObjectsMap.grnVO);
     } catch (error) {
       console.error('Error fetching GRN data:', error);
+    }
+  };
+
+  const getGrnById = async (row) => {
+    console.log('THE SELECTED GRN ID IS:', row.original.id);
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `inward/getGrnById?id=${row.original.id}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListView(false);
+        const particularGrn = response.paramObjectsMap.Grn;
+        setGatePassIdEdit(particularGrn.docId);
+
+        setFormData({
+          docId: particularGrn.docId,
+          editDocDate: particularGrn.docdate,
+          docDate: particularGrn.docdate,
+          entrySlNo: particularGrn.entryNo,
+          date: particularGrn.entryDate,
+          gatePassId: particularGrn.docId,
+          gatePassDate: particularGrn.gatePassDate,
+          grnDate: particularGrn.grndDate,
+          customerPo: particularGrn.customerPo,
+          vas: particularGrn.vas === true ? true : false,
+          supplierShortName: particularGrn.supplierShortName,
+          supplier: particularGrn.supplier,
+          billOfEntry: particularGrn.billOfEnrtyNo,
+          capacity: particularGrn.capacity,
+          modeOfShipment: particularGrn.modeOfShipment,
+          vesselNo: particularGrn.vesselNo,
+          hsnNo: particularGrn.hsnNo,
+          vehicleType: particularGrn.vehicleType,
+          contact: particularGrn.contact,
+          sealNo: particularGrn.sealNo,
+          lrNo: particularGrn.lrNo,
+          driverName: particularGrn.driverName,
+          securityName: particularGrn.securityName,
+          containerNo: particularGrn.containerNo,
+          lrDate: particularGrn.lrDate,
+          goodsDesc: particularGrn.goodsDescripition,
+          vehicleNo: particularGrn.vehicleNo,
+          vesselDetails: particularGrn.vesselDetails,
+          lotNo: particularGrn.lotNo,
+          destinationFrom: particularGrn.destinationFrom,
+          destinationTo: particularGrn.destinationTo,
+          noOfPallets: particularGrn.noOfBins,
+          invoiceNo: particularGrn.invoiceNo,
+          noOfPacks: particularGrn.noOfPacks,
+          totAmt: particularGrn.totAmt,
+          totGrnQty: particularGrn.totalGrnQty
+        });
+        getAllCarriers(particularGrn.modeOfShipment);
+        setFormData((prevData) => ({
+          ...prevData,
+          carrier: particularGrn.carrier.toUpperCase()
+        }));
+        setLrTableData(
+          particularGrn.grnDetailsVO.map((row) => ({
+            id: row.id,
+            qrCode: row.qrCode,
+            lr_Hawb_Hbl_No: row.lrNoHawbNo,
+            invNo: row.invoiceNo,
+            shipmentNo: row.shipmentNo,
+            // invDate: row.invoiceDate ? dayjs(row.invoiceDate).format('YYYY-MM-DD') : null,
+
+            invDate: row.invoiceDate,
+            partNo: row.partNo,
+            partDesc: row.partDesc,
+            sku: row.sku,
+            invQty: row.invQty,
+            recQty: row.recQty,
+            damageQty: row.damageQty,
+            grnQty: row.grnQty,
+            subStockQty: row.subStockQty,
+            batch_PalletNo: row.batchNo,
+            batchDate: row.batchDt,
+            expDate: row.expDate,
+            shortQty: row.shortQty,
+            damageQty: row.damageQty,
+            palletQty: row.binQty,
+            noOfPallets: row.noOfBins,
+            pkgs: row.pkgs,
+            weight: row.weight,
+            mrp: row.mrp,
+            amt: row.amt,
+            // EXTRA FIELDS
+            batchQty: 0,
+            rate: 0,
+            binType: 'abc'
+          }))
+        );
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
   };
 
@@ -263,29 +458,66 @@ export const Grn = () => {
 
     switch (name) {
       case 'docCode':
+      case 'capacity':
+      case 'vesselNo':
+      case 'hsnNo':
         if (!alphaNumericRegex.test(value)) {
-          errorMessage = 'Only numeric characters are allowed';
-        } else if (value.length > 10) {
-          errorMessage = 'Invalid Format';
+          errorMessage = 'Only alphanumeric characters are allowed';
         }
+        break;
+      case 'noOfPallets':
+        if (!numericRegex.test(value)) {
+          errorMessage = 'Only numeric characters are allowed';
+        }
+        break;
+      default:
         break;
     }
 
     if (errorMessage) {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
-      // if (name === 'screenCode') {
-      //   const selectedScreen = screenList.find((scr) => scr.screenCode === value);
-      //   if (selectedScreen) {
-      //     setFormData((prevData) => ({
-      //       ...prevData,
-      //       screenName: selectedScreen.screenName,
-      //       screenCode: selectedScreen.screenCode
-      //     }));
-      //   }
-      // }
-      if (name === 'vas') {
-        // setFormData({ ...formData, [name]: checked });
+      if (name === 'gatePassId') {
+        const selectedId = gatePassIdList.find((id) => id.docId === value);
+        const selectedGatePassId = selectedId.docId;
+        if (selectedId) {
+          setFormData((prevData) => ({
+            ...prevData,
+            gatePassId: selectedId.docId,
+            entrySlNo: selectedId.entryNo,
+            gatePassDate: dayjs(selectedId.docDate).format('YYYY-MM-DD'),
+            supplierShortName: selectedId.supplierShortName,
+            supplier: selectedId.supplier,
+            modeOfShipment: selectedId.modeOfShipment.toUpperCase(),
+            vehicleType: selectedId.vehicleType.toUpperCase(),
+            contact: selectedId.contact,
+            driverName: selectedId.driverName,
+            securityName: selectedId.securityName,
+            lrDate: dayjs(selectedId.lrDate).format('YYYY-MM-DD'),
+            goodsDesc: selectedId.goodsDescription,
+            vehicleNo: selectedId.vehicleNo,
+            lotNo: selectedId.lotNo
+          }));
+          getAllCarriers(selectedId.modeOfShipment);
+          setFormData((prevData) => ({
+            ...prevData,
+            carrier: selectedId.carrier.toUpperCase()
+          }));
+          getGatePassGridDetailsByGatePassId(selectedGatePassId);
+        }
+      } else if (name === 'supplierShortName') {
+        const selectedName = supplierList.find((supplier) => supplier.supplierShortName === value);
+        if (selectedName) {
+          setFormData((prevData) => ({
+            ...prevData,
+            supplierShortName: selectedName.supplierShortName,
+            supplier: selectedName.supplier
+          }));
+        }
+      } else if (name === 'modeOfShipment') {
+        setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+        getAllCarriers(value);
+      } else if (name === 'vas') {
         setFormData((prevData) => ({ ...prevData, [name]: checked }));
       } else {
         setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
@@ -383,7 +615,15 @@ export const Grn = () => {
     const lastRow = table[table.length - 1];
     if (!lastRow) return false;
     if (table === lrTableData) {
-      return !lastRow.lr_Hawb_Hbl_No || !lastRow.invNo || !lastRow.shipmentNo;
+      return (
+        !lastRow.lr_Hawb_Hbl_No ||
+        !lastRow.invNo ||
+        !lastRow.partNo ||
+        !lastRow.invQty ||
+        !lastRow.batch_PalletNo ||
+        !lastRow.palletQty ||
+        !lastRow.noOfPallets
+      );
     }
     return false;
   };
@@ -396,8 +636,11 @@ export const Grn = () => {
           ...newErrors[table.length - 1],
           lr_Hawb_Hbl_No: !table[table.length - 1].lr_Hawb_Hbl_No ? 'Lr_Hawb_Hbl_No is required' : '',
           invNo: !table[table.length - 1].invNo ? 'Invoice No is required' : '',
-          dnNo: !table[table.length - 1].dnNo ? 'DN No is required' : '',
-          shipmentNo: !table[table.length - 1].shipmentNo ? 'Shipment No is required' : ''
+          partNo: !table[table.length - 1].partNo ? 'Part No is required' : '',
+          invQty: !table[table.length - 1].invQty ? 'InvQty is required' : '',
+          batch_PalletNo: !table[table.length - 1].batch_PalletNo ? 'Batch No is required' : '',
+          palletQty: !table[table.length - 1].palletQty ? 'Pallet Qty is required' : '',
+          noOfPallets: !table[table.length - 1].noOfPallets ? 'No of Pallets is required' : ''
         };
         return newErrors;
       });
@@ -409,7 +652,9 @@ export const Grn = () => {
   };
 
   const handleDateChange = (field, date) => {
-    const formattedDate = dayjs(date).format('DD-MM-YYYY');
+    // const formattedDate = dayjs(date).format('DD-MM-YYYY');
+    const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null; // Updated format for consistency
+
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
 
@@ -419,13 +664,13 @@ export const Grn = () => {
 
   const handleClear = () => {
     setFormData({
-      docId: '',
-      docDate: null,
+      // docId: '',
+      docDate: dayjs(),
       grnType: '',
       entrySlNo: '',
       date: null,
       tax: '',
-      gatePassId: '',
+      vehicleDetails: '',
       gatePassDate: null,
       grnDate: null,
       customerPo: '',
@@ -459,7 +704,7 @@ export const Grn = () => {
       totGrnQty: ''
     });
     setFieldErrors({
-      docId: '',
+      // docId: '',
       docDate: '',
       grnType: '',
       entrySlNo: '',
@@ -467,7 +712,7 @@ export const Grn = () => {
       date: '',
       tax: '',
       gatePassId: '',
-      gatePassDate: null,
+      gatePassDate: '',
       grnDate: null,
       customerPo: '',
       vas: false,
@@ -499,6 +744,7 @@ export const Grn = () => {
       totAmt: '',
       totGrnQty: ''
     });
+    getNewGrnDocId();
     setEditId('');
     setLrTableData([
       {
@@ -537,83 +783,6 @@ export const Grn = () => {
   };
 
   const handleSave = async () => {
-    const lrVo = lrTableData.map((row) => ({
-      qrCode: row.qrCode,
-      lr_Hawb_Hbl_No: row.lr_Hawb_Hbl_No,
-      invNo: row.invNo,
-      dnNo: row.dnNo,
-      shipmentNo: row.shipmentNo,
-      invDate: dayjs(row.invDate).format('DD-MM-YYYY'),
-      glDate: dayjs(row.glDate).format('DD-MM-YYYY'),
-      locationType: row.locationType,
-      partNo: row.partNo,
-      partDesc: row.partDesc,
-      sku: row.sku,
-      invQty: row.invQty,
-      recQty: row.recQty,
-      shortQty: row.shortQty,
-      damageQty: row.damageQty,
-      grnQty: row.grnQty,
-      subStockQty: row.subStockQty,
-      batch_PalletNo: row.batch_PalletNo,
-      batchDate: dayjs(row.batchDate).format('DD-MM-YYYY'),
-      expDate: dayjs(row.expDate).format('DD-MM-YYYY'),
-      palletQty: row.palletQty,
-      noOfPallets: row.noOfPallets,
-      pkgs: row.pkgs,
-      weight: row.weight,
-      mrp: row.mrp,
-      amt: row.amt,
-      insAmt: row.insAmt,
-      remarks: row.remarks
-    }));
-
-    const saveFormData = {
-      ...(editId && { id: editId }),
-      docId: formData.docId,
-      docDate: dayjs(formData.docDate).format('DD-MM-YYYY'),
-      grnType: formData.grnType,
-      entrySlNo: formData.entrySlNo,
-      date: dayjs(formData.date).format('DD-MM-YYYY'),
-      tax: formData.tax,
-      gatePassId: formData.gatePassId,
-      gatePassDate: formData.gatePassDate,
-      grnDate: formData.grnDate,
-      customerPo: formData.customerPo,
-      vas: formData.vas,
-      supplierShortName: formData.supplierShortName,
-      supplier: formData.supplier,
-      billOfEntry: formData.billOfEntry,
-      capacity: formData.capacity,
-      modeOfShipment: formData.modeOfShipment,
-      carrier: formData.carrier,
-      vesselNo: formData.vesselNo,
-      hsnNo: formData.hsnNo,
-      vehicleType: formData.vehicleType,
-      contact: formData.contact,
-      sealNo: formData.sealNo,
-      lrNo: formData.lrNo,
-      driverName: formData.driverName,
-      securityName: formData.securityName,
-      containerNo: formData.containerNo,
-      lrDate: formData.lrDate,
-      goodsDesc: formData.goodsDesc,
-      vehicleNo: formData.vehicleNo,
-      vesselDetails: formData.vesselDetails,
-      lotNo: formData.lotNo,
-      destinationFrom: formData.destinationFrom,
-      destinationTo: formData.destinationTo,
-      noOfPallets: formData.noOfPallets,
-      invoiceNo: formData.invoiceNo,
-      noOfPacks: formData.noOfPacks,
-      totAmt: formData.totAmt,
-      totGrnQty: formData.totGrnQty,
-      orgId: orgId,
-      createdBy: loginUserName
-    };
-
-    console.log('DATA TO SAVE IS:', saveFormData);
-
     const errors = {};
     if (!formData.grnDate) errors.grnDate = 'GRN Date is required';
     if (!formData.supplierShortName) errors.supplierShortName = 'Supplier Short Name is required';
@@ -628,20 +797,12 @@ export const Grn = () => {
         rowErrors.lr_Hawb_Hbl_No = 'Lr_Hawb_Hbl_No is required';
         lrTableDataValid = false;
       }
-      if (!row.invoiceNo) {
-        rowErrors.invoiceNo = 'Invoice No is required';
+      if (!row.invNo) {
+        rowErrors.invNo = 'Invoice No is required';
         lrTableDataValid = false;
       }
       if (!row.partNo) {
         rowErrors.partNo = 'Part No is required';
-        lrTableDataValid = false;
-      }
-      if (!row.partDesc) {
-        rowErrors.partDesc = 'Part Desc is required';
-        lrTableDataValid = false;
-      }
-      if (!row.sku) {
-        rowErrors.sku = 'SKU is required';
         lrTableDataValid = false;
       }
       if (!row.invQty) {
@@ -666,77 +827,143 @@ export const Grn = () => {
 
     setLrTableErrors(newTableErrors);
 
-    // if (Object.keys(errors).length === 0) {
-    //   setIsLoading(true);
-    //   const saveFormData = {
-    //     ...(editId && { id: editId }),
-    //     docId: formData.docId,
-    //     docDate: dayjs(formData.docDate).format('DD-MM-YYYY'),
-    //     grnType: formData.grnType,
-    //     entrySlNo: formData.entrySlNo,
-    //     date: dayjs(formData.date).format('DD-MM-YYYY'),
-    //     tax: formData.tax,
-    //     gatePassId: formData.gatePassId,
-    //     gatePassDate: formData.gatePassDate,
-    //     grnDate: formData.grnDate,
-    //     customerPo: formData.customerPo,
-    //     vas: formData.vas,
-    //     supplierShortName: formData.supplierShortName,
-    //     supplier: formData.supplier,
-    //     billOfEntry: formData.billOfEntry,
-    //     capacity: formData.capacity,
-    //     modeOfShipment: formData.modeOfShipment,
-    //     carrier: formData.carrier,
-    //     vesselNo: formData.vesselNo,
-    //     hsnNo: formData.hsnNo,
-    //     vehicleType: formData.vehicleType,
-    //     contact: formData.contact,
-    //     sealNo: formData.sealNo,
-    //     lrNo: formData.lrNo,
-    //     driverName: formData.driverName,
-    //     securityName: formData.securityName,
-    //     containerNo: formData.containerNo,
-    //     lrDate: formData.lrDate,
-    //     goodsDesc: formData.goodsDesc,
-    //     vehicleNo: formData.vehicleNo,
-    //     vesselDetails: formData.vesselDetails,
-    //     lotNo: formData.lotNo,
-    //     destinationFrom: formData.destinationFrom,
-    //     destinationTo: formData.destinationTo,
-    //     noOfPallets: formData.noOfPallets,
-    //     invoiceNo: formData.invoiceNo,
-    //     noOfPacks: formData.noOfPacks,
-    //     totAmt: formData.totAmt,
-    //     totGrnQty: formData.totGrnQty,
-    //     orgId: orgId,
-    //     createdBy: loginUserName
-    //   };
+    if (Object.keys(errors).length === 0 && lrTableDataValid) {
+      setIsLoading(true);
 
-    //   console.log('DATA TO SAVE IS:', saveFormData);
-    //   try {
-    //     const response = await apiCalls('put', `inboundcontroller/createUpdategrn`, saveFormData);
-    //     if (response.status === true) {
-    //       console.log('Response:', response);
-    //       showToast('success', editId ? 'GRN Updated Successfully' : 'GRN created successfully');
-    //       handleClear();
-    //       getAllGrns();
-    //       setIsLoading(false);
-    //     } else {
-    //       showToast('error', response.paramObjectsMap.errorMessage || 'GRN creation failed');
-    //       setIsLoading(false);
-    //     }
-    //   } catch (error) {
-    //     console.error('Error:', error);
-    //     showToast('error', 'GRN creation failed');
-    //     setIsLoading(false);
-    //   }
-    // } else {
-    //   setFieldErrors(errors);
-    // }
+      const lrVo = lrTableData.map((row) => ({
+        // ...(editId && { id: row.id }),
+        qrCode: row.qrCode,
+        lrNoHawbNo: row.lr_Hawb_Hbl_No,
+        invoiceNo: row.invNo,
+        shipmentNo: row.shipmentNo,
+        invoiceDate: row.invDate ? dayjs(row.invDate).format('YYYY-MM-DD') : null,
+        partNo: row.partNo,
+        partDesc: row.partDesc,
+        sku: row.sku,
+        invQty: parseInt(row.invQty),
+        recQty: parseInt(row.recQty),
+        damageQty: parseInt(row.damageQty),
+        subStockQty: parseInt(row.subStockQty),
+        batchNo: row.batch_PalletNo,
+        batchDt: row.batchDate ? dayjs(row.batchDate).format('YYYY-MM-DD') : null,
+        expdate: row.expDate ? dayjs(row.expDate).format('YYYY-MM-DD') : null,
+        binQty: parseInt(row.palletQty),
+        noOfBins: parseInt(row.noOfPallets),
+        pkgs: parseInt(row.pkgs),
+        weight: row.weight,
+        mrp: parseInt(row.mrp),
+        amount: parseInt(row.amt),
+        // EXTRA FIELDS
+        batchQty: 0,
+        rate: 0,
+        binType: ''
+      }));
+      const saveFormData = {
+        ...(editId && { id: editId }),
+        // docDate: formData.docDate ? dayjs(formData.docDate).format('YYYY-MM-DD') : null,
+        // docDate: editId
+        //   ? formData.docDate
+        //     ? dayjs(formData.docDate).format('YYYY-MM-DD')
+        //     : null
+        //   : editDocDate
+        //     ? dayjs(editDocDate).format('YYYY-MM-DD')
+        //     : null,
+        entryNo: formData.entrySlNo,
+        entryDate: formData.date ? dayjs(formData.date).format('YYYY-MM-DD') : null,
+        gatePassId: editId ? gatePassIdEdit : formData.gatePassId,
+        gatePassDate: formData.gatePassDate ? dayjs(formData.gatePassDate).format('YYYY-MM-DD') : null,
+        grndDate: formData.grnDate ? dayjs(formData.grnDate).format('YYYY-MM-DD') : null,
+        customerPo: formData.customerPo,
+        vas: formData.vas,
+        supplierShortName: formData.supplierShortName,
+        supplier: formData.supplier,
+        billOfEnrtyNo: formData.billOfEntry,
+        // capacity: formData.capacity,
+        modeOfShipment: formData.modeOfShipment,
+        carrier: formData.carrier,
+        vesselNo: formData.vesselNo,
+        hsnNo: formData.hsnNo,
+        vehicleType: formData.vehicleType,
+        contact: formData.contact,
+        sealNo: formData.sealNo,
+        lrNo: formData.lrNo,
+        driverName: formData.driverName,
+        securityName: formData.securityName,
+        containerNo: formData.containerNo,
+        lrDate: formData.lrDate ? dayjs(formData.lrDate).format('YYYY-MM-DD') : null,
+        goodsDescripition: formData.goodsDesc,
+        vehicleNo: formData.vehicleNo,
+        vesselDetails: formData.vesselDetails,
+        lotNo: formData.lotNo,
+        destinationFrom: formData.destinationFrom,
+        destinationTo: formData.destinationTo,
+        noOfBins: formData.noOfPallets,
+        invoiceNo: formData.invoiceNo,
+        // totGrnQty: formData.totGrnQty,
+        orgId: orgId,
+        createdBy: loginUserName,
+        grnDetailsDTO: lrVo,
+        branch: loginBranch,
+        branchCode: loginBranchCode,
+        client: loginClient,
+        customer: loginCustomer,
+        finYear: '2024',
+        warehouse: loginWarehouse,
+        // EXTRA FIELDS
+        fifoFlag: 'abc',
+        vehicleDetails: 'abc'
+      };
+      console.log('DATA TO SAVE IS:', saveFormData);
+
+      try {
+        const response = await apiCalls('put', `inward/createUpdateGRN`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          showToast('success', editId ? 'GRN Updated Successfully' : 'GRN created successfully');
+          // handleClear();
+          // getAllGrns();
+          setIsLoading(false);
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'GRN creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'GRN creation failed');
+        setIsLoading(false);
+      }
+    } else {
+      setFieldErrors(errors);
+    }
   };
 
   const handleTabChange = (event, newValue) => {
     setValue(newValue);
+  };
+
+  const handlePartNoChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedPartNo = partNoList.find((p) => p.partno === value);
+    setLrTableData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              partNo: value,
+              partDesc: selectedPartNo ? selectedPartNo.partDesc : '',
+              sku: selectedPartNo ? selectedPartNo.sku : ''
+            }
+          : r
+      )
+    );
+    setLrTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        partNo: !value ? 'Part No is required' : ''
+      };
+      return newErrors;
+    });
   };
 
   return (
@@ -753,37 +980,20 @@ export const Grn = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable
-              data={listViewData}
-              columns={listViewColumns}
-              blockEdit={true}
-              // toEdit={getEmployeeById}
-            />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getGrnById} />
           </div>
         ) : (
           <>
             <div className="row">
               <div className="col-md-3 mb-3">
-                <TextField
-                  label="Doc ID"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="docId"
-                  value={formData.docId}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.docId}
-                  helperText={fieldErrors.docId}
-                  disabled
-                />
+                <TextField label="Doc ID" variant="outlined" size="small" fullWidth name="docId" value={formData.docId} disabled />
               </div>
-
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Doc Date"
-                      value={formData.docDate ? dayjs(formData.docDate, 'DD-MM-YYYY') : null}
+                      value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
@@ -793,16 +1003,20 @@ export const Grn = () => {
                   </LocalizationProvider>
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.grnType}>
-                  <InputLabel id="grnType-label">GRN Type</InputLabel>
-                  <Select labelId="grnType-label" label="GRN Type" value={formData.grnType} onChange={handleInputChange} name="grnType">
-                    <MenuItem value="GET PASS">Gate Pass</MenuItem>
-                    <MenuItem value="GRN">GRN</MenuItem>
-                  </Select>
-                  {fieldErrors.grnType && <FormHelperText>{fieldErrors.grnType}</FormHelperText>}
-                </FormControl>
-              </div>
+              {!editId && (
+                <>
+                  <div className="col-md-3 mb-3">
+                    <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.grnType}>
+                      <InputLabel id="grnType-label">GRN Type</InputLabel>
+                      <Select labelId="grnType-label" label="GRN Type" value={formData.grnType} onChange={handleInputChange} name="grnType">
+                        <MenuItem value="GET PASS">Gate Pass</MenuItem>
+                        <MenuItem value="GRN">GRN</MenuItem>
+                      </Select>
+                      {fieldErrors.grnType && <FormHelperText>{fieldErrors.grnType}</FormHelperText>}
+                    </FormControl>
+                  </div>
+                </>
+              )}
               {/* Entry SL No */}
               <div className="col-md-3 mb-3">
                 <TextField
@@ -824,7 +1038,7 @@ export const Grn = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Date"
-                      value={formData.date ? dayjs(formData.date, 'DD-MM-YYYY') : null}
+                      value={formData.date ? dayjs(formData.date, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('date', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -837,38 +1051,45 @@ export const Grn = () => {
                 </FormControl>
               </div>
 
-              {/* Tax */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Tax"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="tax"
-                  value={formData.tax}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.tax}
-                  helperText={fieldErrors.tax}
-                />
-              </div>
-
-              {/* Gate Pass ID */}
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gatePassId}>
-                  <InputLabel id="gatePassId-label">Gate Pass ID</InputLabel>
-                  <Select
-                    labelId="gatePassId-label"
-                    label="Gate Pass ID"
-                    value={formData.gatePassId}
-                    onChange={handleInputChange}
-                    name="gatePassId"
-                  >
-                    <MenuItem value="GET PASS 1">Gate Pass 1</MenuItem>
-                    <MenuItem value="GET PASS 2">Gate Pass 2</MenuItem>
-                  </Select>
-                  {fieldErrors.gatePassId && <FormHelperText>{fieldErrors.gatePassId}</FormHelperText>}
-                </FormControl>
-              </div>
+              {/* WHEN EDIT MODE THAT FIELD DISPLAY*/}
+              {editId ? (
+                <>
+                  <div className="col-md-3 mb-3">
+                    <TextField
+                      label="Gate Pass ID"
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      name="gatePassIdEdit"
+                      value={gatePassIdEdit}
+                      disabled
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Gate Pass ID */}
+                  <div className="col-md-3 mb-3">
+                    <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gatePassId}>
+                      <InputLabel id="gatePassId-label">Gate Pass ID</InputLabel>
+                      <Select
+                        labelId="gatePassId-label"
+                        label="Gate Pass ID"
+                        value={formData.gatePassId}
+                        onChange={handleInputChange}
+                        name="gatePassId"
+                      >
+                        {gatePassIdList?.map((row) => (
+                          <MenuItem key={row.id} value={row.docId.toUpperCase()}>
+                            {row.docId.toUpperCase()}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {fieldErrors.gatePassId && <FormHelperText>{fieldErrors.gatePassId}</FormHelperText>}
+                    </FormControl>
+                  </div>
+                </>
+              )}
 
               {/* Gate Pass Date */}
               <div className="col-md-3 mb-3">
@@ -876,7 +1097,7 @@ export const Grn = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Gate Pass Date"
-                      value={formData.gatePassDate ? dayjs(formData.gatePassDate, 'DD-MM-YYYY') : null}
+                      value={formData.gatePassDate ? dayjs(formData.gatePassDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('gatePassDate', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -891,7 +1112,7 @@ export const Grn = () => {
 
               {/* GRN Date */}
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled" size="small" error={Boolean(fieldErrors.grnDate)}>
+                <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label={
@@ -899,16 +1120,16 @@ export const Grn = () => {
                           GRN Date <span>&nbsp;*</span>
                         </span>
                       }
-                      value={formData.grnDate ? dayjs(formData.grnDate, 'DD-MM-YYYY') : null}
+                      value={formData.grnDate ? dayjs(formData.grnDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('grnDate', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
                       format="DD/MM/YYYY"
-                      error={Boolean(fieldErrors.grnDate)}
+                      error={fieldErrors.grnDate}
+                      helperText={fieldErrors.grnDate && 'Required'}
                     />
                   </LocalizationProvider>
-                  {fieldErrors.grnDate && <FormHelperText>{'Required'}</FormHelperText>}
                 </FormControl>
               </div>
 
@@ -938,8 +1159,11 @@ export const Grn = () => {
                     onChange={handleInputChange}
                     name="supplierShortName"
                   >
-                    <MenuItem value="SUPPLIER1">SUPPLIER 1</MenuItem>
-                    <MenuItem value="SUPPLIER2">SUPPLIER 2</MenuItem>
+                    {supplierList?.map((row) => (
+                      <MenuItem key={row.id} value={row.supplierShortName.toUpperCase()}>
+                        {row.supplierShortName.toUpperCase()}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.supplierShortName && <FormHelperText>{fieldErrors.supplierShortName}</FormHelperText>}
                 </FormControl>
@@ -975,21 +1199,6 @@ export const Grn = () => {
                 />
               </div>
 
-              {/* Capacity */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Capacity"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="capacity"
-                  value={formData.capacity}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.capacity}
-                  helperText={fieldErrors.capacity}
-                />
-              </div>
-
               {/* Mode of Shipment */}
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.modeOfShipment}>
@@ -1004,9 +1213,11 @@ export const Grn = () => {
                     name="modeOfShipment"
                     required
                   >
-                    <MenuItem value="AIR">AIR</MenuItem>
-                    <MenuItem value="SEA">SEA</MenuItem>
-                    <MenuItem value="LAND">LAND</MenuItem>
+                    {modeOfShipmentList?.map((row, index) => (
+                      <MenuItem key={index} value={row.shipmentMode.toUpperCase()}>
+                        {row.shipmentMode.toUpperCase()}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.modeOfShipment && <FormHelperText>{fieldErrors.modeOfShipment}</FormHelperText>}
                 </FormControl>
@@ -1024,72 +1235,16 @@ export const Grn = () => {
                     name="carrier"
                     required
                   >
-                    <MenuItem value="CARRIER 1">CARRIER 1</MenuItem>
-                    <MenuItem value="CARRIER 2">CARRIER 2</MenuItem>
+                    {carrierList?.map((row) => (
+                      <MenuItem key={row.id} value={row.carrier.toUpperCase()}>
+                        {row.carrier.toUpperCase()}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.carrier && <FormHelperText>{fieldErrors.carrier}</FormHelperText>}
                 </FormControl>
               </div>
 
-              {/* Vessel No */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Vessel No"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="vesselNo"
-                  value={formData.vesselNo}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.vesselNo}
-                  helperText={fieldErrors.vesselNo}
-                />
-              </div>
-
-              {/* HSN No */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="HSN No"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="hsnNo"
-                  value={formData.hsnNo}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.hsnNo}
-                  helperText={fieldErrors.hsnNo}
-                />
-              </div>
-
-              {/* No of Pallets */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="No of Pallets"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="noOfPallets"
-                  value={formData.noOfPallets}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.noOfPallets}
-                  helperText={fieldErrors.noOfPallets}
-                />
-              </div>
-
-              {/* Invoice No */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Invoice No"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="invoiceNo"
-                  value={formData.invoiceNo}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.invoiceNo}
-                  helperText={fieldErrors.invoiceNo}
-                />
-              </div>
               <div className="col-md-3 mb-3">
                 <FormControlLabel
                   control={<Checkbox checked={formData.active} onChange={handleInputChange} name="vas" color="primary" />}
@@ -1118,6 +1273,7 @@ export const Grn = () => {
                     <div className="row d-flex ml">
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={getGatePassGridDetailsByGatePassId} />
                       </div>
                       <div className="row mt-2">
                         <div className="col-lg-12">
@@ -1140,21 +1296,21 @@ export const Grn = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Invoice No <span>&nbsp;*</span>
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     DN No
-                                  </th>
+                                  </th> */}
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Shipment No
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
                                     Invoice Date
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     GL Date
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Bin Type
-                                  </th>
+                                  </th> */}
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Part No <span>&nbsp;*</span>
                                   </th>
@@ -1179,11 +1335,11 @@ export const Grn = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
                                     GRN QTY<span>&nbsp;*</span>
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Sub Stock QTY
-                                  </th>
+                                  </th> */}
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Batch / Pallet No
+                                    Batch No
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Batch Date
@@ -1197,7 +1353,7 @@ export const Grn = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
                                     No of Pallets<span>&nbsp;*</span>
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Pkgs
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
@@ -1211,7 +1367,7 @@ export const Grn = () => {
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Ins Amount
-                                  </th>
+                                  </th> */}
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Remarks
                                   </th>
@@ -1301,7 +1457,8 @@ export const Grn = () => {
                                         </div>
                                       )}
                                     </td>
-                                    <td className="border px-2 py-2">
+                                    {/* DN NO FIELD */}
+                                    {/* <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '150px' }}
                                         type="text"
@@ -1322,7 +1479,7 @@ export const Grn = () => {
                                           {lrTableErrors[index].dnNo}
                                         </div>
                                       )}
-                                    </td>
+                                    </td> */}
                                     <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '150px' }}
@@ -1337,7 +1494,6 @@ export const Grn = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        onKeyDown={(e) => handleKeyDown(e, row, lrTableData)}
                                         className={lrTableErrors[index]?.shipmentNo ? 'error form-control' : 'form-control'}
                                       />
                                       {lrTableErrors[index]?.shipmentNo && (
@@ -1350,7 +1506,6 @@ export const Grn = () => {
                                       <input
                                         type="date"
                                         value={row.invDate}
-                                        // style={{ width: '150px' }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, invDate: value } : r)));
@@ -1368,12 +1523,12 @@ export const Grn = () => {
                                         </div>
                                       )}
                                     </td>
-                                    <td className="border px-2 py-2" style={{ width: '150px' }}>
+                                    {/* GL DATE FIELD */}
+                                    {/* <td className="border px-2 py-2" style={{ width: '150px' }}>
                                       <input
                                         style={{ width: '150px' }}
                                         type="date"
                                         value={row.glDate}
-                                        // style={{ width: '150px' }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, glDate: value } : r)));
@@ -1390,40 +1545,39 @@ export const Grn = () => {
                                           {lrTableErrors[index].glDate}
                                         </div>
                                       )}
-                                    </td>
-                                    <td className="border px-2 py-2">
+                                    </td> */}
+                                    {/* <td className="border px-2 py-2">
                                       <select
                                         value={row.binType}
                                         style={{ width: '200px' }}
-                                        // onChange={(e) => handleBinTypeChange(row, index, e)}
                                         className={lrTableErrors[index]?.binType ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">-- Select --</option>
-                                        {/* {getAvailableBinTypes(row.id).map((binType) => (
-                                          <option key={role.id} value={role.bin}>
-                                            {role.bin}
+                                        {binTypeList?.map((binType, index) => (
+                                          <option key={index} value={binType.ltype}>
+                                            {binType.ltype}
                                           </option>
-                                        ))} */}
+                                        ))}
                                       </select>
                                       {lrTableErrors[index]?.binType && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                           {lrTableErrors[index].binType}
                                         </div>
                                       )}
-                                    </td>
+                                    </td> */}
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.partNo}
                                         style={{ width: '200px' }}
-                                        // onChange={(e) => handlePartNoChange(row, index, e)}
+                                        onChange={(e) => handlePartNoChange(row, index, e)}
                                         className={lrTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">-- Select --</option>
-                                        {/* {getAvailablePartNo(row.id).map((partNo) => (
-                                          <option key={role.id} value={role.bin}>
-                                            {role.bin}
+                                        {partNoList?.map((part) => (
+                                          <option key={part.id} value={part.partno}>
+                                            {part.partno}
                                           </option>
-                                        ))} */}
+                                        ))}
                                       </select>
                                       {lrTableErrors[index]?.partNo && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1646,7 +1800,8 @@ export const Grn = () => {
                                         disabled
                                       />
                                     </td>
-                                    <td className="border px-2 py-2">
+                                    {/* SUBSTOCKQTY FIELD */}
+                                    {/* <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '150px' }}
                                         type="text"
@@ -1656,7 +1811,6 @@ export const Grn = () => {
                                           const intPattern = /^\d*$/;
 
                                           if (intPattern.test(value) || value === '') {
-                                            // Allow empty values for clearing
                                             setLrTableData((prev) => {
                                               const updatedData = prev.map((r) => {
                                                 return r.id === row.id
@@ -1696,7 +1850,7 @@ export const Grn = () => {
                                           {lrTableErrors[index].subStockQty}
                                         </div>
                                       )}
-                                    </td>
+                                    </td> */}
                                     <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '150px' }}
@@ -1704,10 +1858,9 @@ export const Grn = () => {
                                         value={row.batch_PalletNo}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          const alphaNumericPattern = /^[a-zA-Z0-9]*$/; // Regex pattern to match only alphanumeric characters
+                                          const alphaNumericPattern = /^[a-zA-Z0-9]*$/;
 
                                           if (alphaNumericPattern.test(value) || value === '') {
-                                            // Input is valid or empty, update the state
                                             setLrTableData((prev) => {
                                               const updatedData = prev.map((r) => {
                                                 return r.id === row.id
@@ -1893,7 +2046,7 @@ export const Grn = () => {
                                         </div>
                                       )}
                                     </td>
-                                    <td className="border px-2 py-2">
+                                    {/* <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '150px' }}
                                         type="text"
@@ -1903,7 +2056,6 @@ export const Grn = () => {
                                           const intPattern = /^\d*$/;
 
                                           if (intPattern.test(value) || value === '') {
-                                            // Allow empty values for clearing
                                             setLrTableData((prev) => {
                                               const updatedData = prev.map((r) => {
                                                 return r.id === row.id
@@ -1925,7 +2077,6 @@ export const Grn = () => {
                                               return newErrors;
                                             });
                                           } else {
-                                            // Set error if input is invalid
                                             setLrTableErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
@@ -2099,7 +2250,7 @@ export const Grn = () => {
                                           {lrTableErrors[index].insAmt}
                                         </div>
                                       )}
-                                    </td>
+                                    </td> */}
                                     <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '400px' }}
@@ -2115,6 +2266,7 @@ export const Grn = () => {
                                           });
                                         }}
                                         className={lrTableErrors[index]?.remarks ? 'error form-control' : 'form-control'}
+                                        onKeyDown={(e) => handleKeyDown(e, row, lrTableData)}
                                       />
                                       {lrTableErrors[index]?.remarks && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2137,33 +2289,6 @@ export const Grn = () => {
                     <div className="row mt-3">
                       <div className="col-md-3 mb-3">
                         <TextField
-                          label="No of Packs"
-                          variant="outlined"
-                          size="small"
-                          fullWidth
-                          name="noOfPacks"
-                          value={formData.noOfPacks}
-                          onChange={handleInputChange}
-                          error={!!fieldErrors.noOfPacks}
-                          helperText={fieldErrors.noOfPacks}
-                        />
-                      </div>
-
-                      <div className="col-md-3 mb-3">
-                        <TextField
-                          label="Total Amount"
-                          variant="outlined"
-                          size="small"
-                          fullWidth
-                          name="totAmt"
-                          value={formData.totAmt}
-                          onChange={handleInputChange}
-                          error={!!fieldErrors.totAmt}
-                          helperText={fieldErrors.totAmt}
-                        />
-                      </div>
-                      <div className="col-md-3 mb-3">
-                        <TextField
                           label="Total GRN QTY"
                           variant="outlined"
                           size="small"
@@ -2183,21 +2308,17 @@ export const Grn = () => {
                     <div className="row mt-3">
                       {/* Vehicle Type */}
                       <div className="col-md-3 mb-3">
-                        <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.vehicleType}>
-                          <InputLabel id="vehicleType-label">Vehicle Type</InputLabel>
-                          <Select
-                            labelId="vehicleType-label"
-                            label="Vehicle Type"
-                            value={formData.vehicleType}
-                            onChange={handleInputChange}
-                            name="vehicleType"
-                          >
-                            <MenuItem value="TRUCK">TRUCK</MenuItem>
-                            <MenuItem value="VAN">VAN</MenuItem>
-                            <MenuItem value="OTHER">OTHER</MenuItem>
-                          </Select>
-                          {fieldErrors.vehicleType && <FormHelperText>{fieldErrors.vehicleType}</FormHelperText>}
-                        </FormControl>
+                        <TextField
+                          label="Vehicle Type"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="vehicleType"
+                          value={formData.vehicleType}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.vehicleType}
+                          helperText={fieldErrors.vehicleType}
+                        />
                       </div>
 
                       {/* Contact */}
@@ -2296,7 +2417,7 @@ export const Grn = () => {
                           <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DatePicker
                               label="LR Date"
-                              value={formData.lrDate ? dayjs(formData.lrDate, 'DD-MM-YYYY') : null}
+                              value={formData.lrDate ? dayjs(formData.lrDate, 'YYYY-MM-DD') : null}
                               onChange={(date) => handleDateChange('lrDate', date)}
                               slotProps={{
                                 textField: { size: 'small', clearable: true }
@@ -2396,6 +2517,73 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.destinationTo}
                           helperText={fieldErrors.destinationTo}
+                        />
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="HSN No"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="hsnNo"
+                          value={formData.hsnNo}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.hsnNo}
+                          helperText={fieldErrors.hsnNo}
+                        />
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Capacity"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="capacity"
+                          value={formData.capacity}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.capacity}
+                          helperText={fieldErrors.capacity}
+                        />
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Vessel No"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="vesselNo"
+                          value={formData.vesselNo}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.vesselNo}
+                          helperText={fieldErrors.vesselNo}
+                        />
+                      </div>
+
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="No of Pallets"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="noOfPallets"
+                          value={formData.noOfPallets}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.noOfPallets}
+                          helperText={fieldErrors.noOfPallets}
+                        />
+                      </div>
+
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Invoice No"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="invoiceNo"
+                          value={formData.invoiceNo}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.invoiceNo}
+                          helperText={fieldErrors.invoiceNo}
                         />
                       </div>
                     </div>
