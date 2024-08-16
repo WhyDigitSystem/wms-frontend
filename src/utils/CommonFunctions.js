@@ -246,3 +246,24 @@ export const getAllActivePartDetails = async (cBranch, client, orgId) => {
     return error;
   }
 };
+
+export const getAllActiveBuyer = async (cBranch, client, orgId) => {
+  try {
+    const response = await apiCalls('get', `warehousemastercontroller/buyer?cbranch=${cBranch}&client=${client}&orgid=${orgId}`);
+    console.log('API Response:', response);
+
+    if (response.status === true) {
+      const BuyerData = response.paramObjectsMap.buyerVO
+        .filter((row) => row.active === 'Active')
+        .map(({ id, buyer, buyerShortName }) => ({ id, buyer, buyerShortName }));
+
+      return BuyerData;
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
