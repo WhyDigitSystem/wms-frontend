@@ -8,6 +8,7 @@ import CodeConversion from './CodeConversion';
 import Kitting from './Kitting';
 import DeKitting from './DeKitting';
 import StockConsolidation from './StockConsolidation';
+import CycleCount from './CycleCount';
 
 const StockProcessMain = () => {
   const [value, setValue] = React.useState(0);
@@ -29,13 +30,15 @@ const StockProcessMain = () => {
             <Tab value={6} label="Stock Consolidtion" />
           </Tabs>
         </Box>
-        <Box sx={{ padding: 2 }}>{value === 0 && <LocationMovement />}</Box>
-        <Box sx={{ padding: 2 }}>{value === 1 && <StockRestate />}</Box>
-        <Box sx={{ padding: 2 }}>{value === 2 && <CodeConversion />}</Box>
-        <Box sx={{ padding: 2 }}>{value === 3 && <CycleCount />}</Box>
-        <Box sx={{ padding: 2 }}>{value === 4 && <Kitting />}</Box>
-        <Box sx={{ padding: 2 }}>{value === 5 && <DeKitting />}</Box>
-        <Box sx={{ padding: 2 }}>{value === 5 && <StockConsolidation />}</Box>
+        <Box sx={{ padding: 2 }}>
+          {value === 0 && <LocationMovement />}
+          {value === 1 && <StockRestate />}
+          {value === 2 && <CodeConversion />}
+          {value === 3 && <CycleCount />}
+          {value === 4 && <Kitting />}
+          {value === 5 && <DeKitting />}
+          {value === 6 && <StockConsolidation />}
+        </Box>
       </div>
     </>
   );
