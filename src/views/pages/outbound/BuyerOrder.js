@@ -1,34 +1,37 @@
-import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
-import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
-import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormHelperText } from '@mui/material';
-import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import Select from '@mui/material/Select';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
+import { useTheme } from '@mui/material/styles';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import { useState, useEffect } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import IconButton from '@mui/material/IconButton';
+import EditIcon from '@mui/icons-material/Edit';
 import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
-import Draggable from 'react-draggable';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { FormHelperText, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import ActionButton from 'utils/ActionButton';
-import { getAllActiveBranches, getAllActiveBuyer } from 'utils/CommonFunctions';
+import Checkbox from '@mui/material/Checkbox';
 import { showToast } from 'utils/toast-component';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import apiCalls from 'apicall';
+import { getAllActiveBranches, getAllActiveBuyer } from 'utils/CommonFunctions';
+import Paper from '@mui/material/Paper';
+import Draggable from 'react-draggable';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -45,6 +48,8 @@ export const BuyerOrder = () => {
   const [branchList, setBranchList] = useState([]);
   const [buyerList, setBuyerList] = useState([]);
   const [currencyList, setCurrencyList] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [loginUserId, setLoginUserId] = useState(localStorage.getItem('userId'));
@@ -57,6 +62,7 @@ export const BuyerOrder = () => {
   const [formData, setFormData] = useState({
     avilQty: 10,
     billto: '',
+    bin: 'CHENNAI',
     billtoFullName: '',
     branch: loginBranch,
     branchCode: loginBranchCode,
@@ -68,7 +74,7 @@ export const BuyerOrder = () => {
     currency: '',
     customer: loginCustomer,
     docId: '',
-    docDate: null,
+    docDate: dayjs(),
     exRate: 1,
     finYear: '2024',
     freeze: true,
@@ -77,7 +83,7 @@ export const BuyerOrder = () => {
     // location: '',
     orderDate: null,
     orderNo: '',
-    orderQty: 5,
+    orderQty: 0,
     orgId: orgId,
     reMarks: '',
     refDate: null,
@@ -88,7 +94,8 @@ export const BuyerOrder = () => {
   });
   const [value, setValue] = useState(0);
 
-  const [skuDetailsTableData, setSkuDetailsTableData] = useState([
+  const [skuDetailsTableData, setSkuDetailsTableData] = useState([]);
+  const [skuDetails, setSkuDetails] = useState([
     {
       id: 1,
       availQty: 100,
@@ -96,7 +103,7 @@ export const BuyerOrder = () => {
       partDesc: '',
       partNo: '',
       qcflag: true,
-      qty: 0,
+      // qty: 0,
       remarks: 'TEST',
       sku: 'KG'
     }
@@ -109,6 +116,18 @@ export const BuyerOrder = () => {
     getAllBuyerOrderByOrgId();
     getAllBuyerList();
   }, []);
+
+  useEffect(() => {
+    const totalQty = skuDetailsTableData.reduce((sum, row) => sum + (parseInt(row.qty, 10) || 0), 0);
+    const totalAvlQty = skuDetailsTableData.reduce((sum, row) => sum + (parseInt(row.availQty, 10) || 0), 0);
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      orderQty: totalQty,
+      avlQty: totalAvlQty
+    }));
+    console.log('oq', formData.orderQty);
+  }, [skuDetailsTableData]);
 
   const handleAddRow = () => {
     if (isLastRowEmpty(skuDetailsTableData)) {
@@ -144,38 +163,41 @@ export const BuyerOrder = () => {
 
   const handleFullGrid = () => {
     setModalOpen(true);
+    handleFullGridFunction();
   };
   const handleCloseModal = () => {
     setModalOpen(false);
   };
 
-  // const handleFullGridFunction = async () => {
-  //   try {
-  //     const response = await apiCalls(
-  //       'get',
-  //       `warehousemastercontroller/bins/levelno/rowno/locationtype/warehouse?level=${formData.levelNo}&locationtype=${formData.locationType}&orgid=${orgId}&rowno=${formData.rowNo}&warehouse=${loginWarehouse}`
-  //     );
-  //     console.log('THE WAREHOUSE IS:', response);
-  //     if (response.status === true) {
-  //       const bins = response.paramObjectsMap.Bins;
-  //       console.log('THE BIN DETAILS ARE:', bins);
+  const handleFullGridFunction = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `outward/getBoSkuDetails?batch=TEST01&branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&warehouse=${loginWarehouse}`
+      );
+      console.log('THE WAREHOUSE IS:', response);
+      if (response.status === true) {
+        const sku = response.paramObjectsMap.skuDetails;
+        console.log('THE SKU DETAILS ARE:', sku);
 
-  //       setLocationMappingTableData(
-  //         bins.map((bin) => ({
-  //           id: bin.id,
-  //           rowNo: bin.rowno,
-  //           levelNo: bin.level,
-  //           palletNo: bin.bin,
-  //           multiCore: bin.core,
-  //           LocationStatus: bin.status === 'True' ? 'True' : 'False',
-  //           vasBinSeq: ''
-  //         }))
-  //       );
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching employee data:', error);
-  //   }
-  // };
+        setSkuDetails(
+          sku.map((row) => ({
+            id: row.id,
+            availQty: row.sqty,
+            batchNo: row.batch,
+            partDesc: row.partDesc,
+            partNo: row.partNo,
+            qcflag: row.qcflag,
+            qty: row.qty,
+            remarks: row.remarks,
+            sku: row.sku
+          }))
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
 
   const [skuDetailsTableErrors, setSkuDetailsTableErrors] = useState([
     {
@@ -200,7 +222,7 @@ export const BuyerOrder = () => {
     createdBy: '',
     currency: '',
     customer: '',
-    docDate: '',
+    docDate: new Date(),
     exRate: '',
     finYear: '',
     freeze: true,
@@ -308,7 +330,7 @@ export const BuyerOrder = () => {
   };
 
   const getAllBuyerOrderById = async (row) => {
-    console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
+    console.log('THE SELECTED BUYER ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
       const response = await apiCalls('get', `outward/getAllBuyerOrderById?id=${row.original.id}`);
@@ -316,9 +338,9 @@ export const BuyerOrder = () => {
 
       if (response.status === true) {
         setListView(false);
-        const particularBuyerOrder = response.paramObjectsMap.buyerOrderVO;
+        const particularBuyerOrder = response.paramObjectsMap.buyerOrderVO[0];
         console.log('THE PARTICULAR BUYER ORDER IS:', particularBuyerOrder);
-
+        getAllCurrencies();
         setFormData({
           ...formData,
           docId: particularBuyerOrder.docId,
@@ -331,6 +353,7 @@ export const BuyerOrder = () => {
           currency: particularBuyerOrder.currency,
           exRate: particularBuyerOrder.exRate,
           billto: particularBuyerOrder.billto,
+          shipTo: particularBuyerOrder.shipTo,
           refNo: particularBuyerOrder.refNo,
           refDate: particularBuyerOrder.refDate,
           reMarks: particularBuyerOrder.reMarks
@@ -469,8 +492,26 @@ export const BuyerOrder = () => {
   };
 
   const handleDateChange = (field, date) => {
-    const formattedDate = dayjs(date).format('DD-MM-YYYY');
+    const formattedDate = dayjs(date).format('YYYY-MM-DD');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+  };
+
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(skuDetails.map((_, index) => index));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  const handleSaveSelectedRows = () => {
+    const selectedData = selectedRows.map((index) => skuDetails[index]);
+    setSkuDetailsTableData([...skuDetailsTableData, ...selectedData]);
+    console.log('data', selectedData);
+    setSelectedRows([]);
+    setSelectAll(false);
+    handleCloseModal();
   };
 
   const handleClear = () => {
@@ -484,7 +525,7 @@ export const BuyerOrder = () => {
       createdBy: '',
       currency: '',
       customer: '',
-      docDate: null,
+      docDate: dayjs(),
       exRate: '',
       finYear: '',
       freeze: true,
@@ -576,7 +617,7 @@ export const BuyerOrder = () => {
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
-      const buyerOrderDetailsVO = skuDetailsTableData.map((row) => ({
+      const buyerOrderDetailsDTO = skuDetailsTableData.map((row) => ({
         availQty: row.availQty,
         batchNo: row.batchNo,
         partDesc: row.partDesc,
@@ -591,9 +632,11 @@ export const BuyerOrder = () => {
         ...(editId && { id: editId }),
         avilQty: formData.avilQty,
         billto: formData.billto,
+        bin: formData.bin,
         branch: formData.branch,
         branchCode: formData.branchCode,
-        buyerOrderDetailsVO,
+        buyer: formData.buyer,
+        buyerOrderDetailsDTO,
         buyerShortName: formData.buyerShortName,
         client: formData.client,
         company: formData.company,
@@ -702,14 +745,11 @@ export const BuyerOrder = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Doc Date"
-                      value={formData.docDate ? dayjs(formData.docDate, 'DD-MM-YYYY') : null}
-                      onChange={(date) => handleDateChange('docDate', date)}
+                      value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
                       format="DD/MM/YYYY"
-                      error={fieldErrors.docDate}
-                      helperText={fieldErrors.docDate && 'Required'}
                       disabled
                     />
                   </LocalizationProvider>
@@ -734,7 +774,7 @@ export const BuyerOrder = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Order Date"
-                      value={formData.orderDate ? dayjs(formData.orderDate, 'DD-MM-YYYY') : null}
+                      value={formData.orderDate ? dayjs(formData.orderDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('orderDate', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -765,7 +805,7 @@ export const BuyerOrder = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Invoice Date"
-                      value={formData.invoiceDate ? dayjs(formData.invoiceDate, 'DD-MM-YYYY') : null}
+                      value={formData.invoiceDate ? dayjs(formData.invoiceDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('invoiceDate', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -887,7 +927,7 @@ export const BuyerOrder = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Ref Date"
-                      value={formData.refDate ? dayjs(formData.refDate, 'DD-MM-YYYY') : null}
+                      value={formData.refDate ? dayjs(formData.refDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('refDate', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -982,21 +1022,20 @@ export const BuyerOrder = () => {
                               </thead>
                               <tbody>
                                 {skuDetailsTableData.map((row, index) => (
-                                  <tr key={row.id}>
+                                  <tr key={index}>
                                     <td className="border px-2 py-2 text-center">
-                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(index)} />
                                     </td>
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
-
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.partNo}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setSkuDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, partNo: value.toUpperCase() } : r))
+                                            prev.map((r, i) => (i === index ? { ...r, partNo: value.toUpperCase() } : r))
                                           );
                                           setSkuDetailsTableErrors((prev) => {
                                             const newErrors = [...prev];
@@ -1010,7 +1049,7 @@ export const BuyerOrder = () => {
                                         className={skuDetailsTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        <option value="KM18">KM18</option>
+                                        <option value={row.partNo}>{row.partNo}</option>
                                         <option value="KM19">KM19</option>
                                       </select>
                                       {skuDetailsTableErrors[index]?.partNo && (
@@ -1019,7 +1058,6 @@ export const BuyerOrder = () => {
                                         </div>
                                       )}
                                     </td>
-
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
@@ -1027,7 +1065,7 @@ export const BuyerOrder = () => {
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setSkuDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, partDesc: value.toUpperCase() } : r))
+                                            prev.map((r, i) => (i === index ? { ...r, partDesc: value.toUpperCase() } : r))
                                           );
                                           setSkuDetailsTableErrors((prev) => {
                                             const newErrors = [...prev];
@@ -1043,14 +1081,13 @@ export const BuyerOrder = () => {
                                         </div>
                                       )}
                                     </td>
-
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.batchNo}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setSkuDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, batchNo: value.toUpperCase() } : r))
+                                            prev.map((r, i) => (i === index ? { ...r, batchNo: value.toUpperCase() } : r))
                                           );
                                           setSkuDetailsTableErrors((prev) => {
                                             const newErrors = [...prev];
@@ -1064,7 +1101,7 @@ export const BuyerOrder = () => {
                                         className={skuDetailsTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        <option value="ONE">ONE</option>
+                                        <option value={row.batchNo}>{row.batchNo}</option>
                                         <option value="TWO">TWO</option>
                                       </select>
                                       {skuDetailsTableErrors[index]?.batchNo && (
@@ -1073,21 +1110,68 @@ export const BuyerOrder = () => {
                                         </div>
                                       )}
                                     </td>
-
                                     <td className="border px-2 py-2">
                                       <input
+                                        style={{ width: '150px' }}
                                         type="text"
                                         value={row.qty}
-                                        onKeyDown={(e) => handleKeyDown(e, row)}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setSkuDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, qty: value.toUpperCase() } : r))
-                                          );
-                                          setSkuDetailsTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], qty: !value ? 'Qty is required' : '' };
-                                            return newErrors;
+                                          const intPattern = /^\d*$/;
+                                          const intValue = parseInt(value, 10) || 0;
+
+                                          if (intPattern.test(value) || value === '') {
+                                            // Check if the entered value is greater than availQty
+                                            if (intValue <= row.availQty) {
+                                              setSkuDetailsTableData((prev) => {
+                                                const updatedData = prev.map((r, i) => {
+                                                  if (i === index) {
+                                                    return {
+                                                      ...r,
+                                                      qty: intValue
+                                                    };
+                                                  }
+                                                  return r;
+                                                });
+                                                return updatedData;
+                                              });
+
+                                              setSkuDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], qty: '' };
+                                                return newErrors;
+                                              });
+                                            } else {
+                                              // Set error if input value exceeds availQty
+                                              setSkuDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], qty: 'Qty cannot be greater than Avail Qty' };
+                                                return newErrors;
+                                              });
+                                            }
+                                          } else {
+                                            // Set error if input is invalid
+                                            setSkuDetailsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], qty: 'Only numbers are allowed' };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        onBlur={() => {
+                                          // Ensure that the value on blur is within valid range
+                                          setSkuDetailsTableData((prev) => {
+                                            const updatedData = prev.map((r, i) => {
+                                              if (i === index) {
+                                                const correctedQty = Math.min(r.qty, r.availQty);
+                                                return {
+                                                  ...r,
+                                                  qty: correctedQty
+                                                };
+                                              }
+                                              return r;
+                                            });
+                                            return updatedData;
                                           });
                                         }}
                                         className={skuDetailsTableErrors[index]?.qty ? 'error form-control' : 'form-control'}
@@ -1098,6 +1182,7 @@ export const BuyerOrder = () => {
                                         </div>
                                       )}
                                     </td>
+
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
@@ -1105,7 +1190,7 @@ export const BuyerOrder = () => {
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setSkuDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, availQty: value.toUpperCase() } : r))
+                                            prev.map((r, i) => (i === index ? { ...r, availQty: value.toUpperCase() } : r))
                                           );
                                           setSkuDetailsTableErrors((prev) => {
                                             const newErrors = [...prev];
@@ -1142,7 +1227,7 @@ export const BuyerOrder = () => {
                           size="small"
                           fullWidth
                           name="orderQty"
-                          // value={formData.orderQty}
+                          value={formData.orderQty}
                           // onChange={handleInputChange}
                           // error={!!fieldErrors.orderQty}
                           // helperText={fieldErrors.orderQty}
@@ -1156,7 +1241,7 @@ export const BuyerOrder = () => {
                           size="small"
                           fullWidth
                           name="avlQty"
-                          // value={formData.avlQty}
+                          value={formData.avlQty}
                           // onChange={handleInputChange}
                           // error={!!fieldErrors.avlQty}
                           // helperText={fieldErrors.avlQty}
@@ -1186,7 +1271,7 @@ export const BuyerOrder = () => {
                           <thead>
                             <tr style={{ backgroundColor: '#673AB7' }}>
                               <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                Action
+                                <Checkbox checked={selectAll} onChange={handleSelectAll} />
                               </th>
                               <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                 S.No
@@ -1194,24 +1279,40 @@ export const BuyerOrder = () => {
                               <th className="px-2 py-2 text-white text-center">Part No *</th>
                               <th className="px-2 py-2 text-white text-center">Part Desc</th>
                               <th className="px-2 py-2 text-white text-center">Batch No</th>
-                              <th className="px-2 py-2 text-white text-center">Qty *</th>
+                              {/* <th className="px-2 py-2 text-white text-center">Qty *</th> */}
                               <th className="px-2 py-2 text-white text-center">Avl. Qty</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {skuDetailsTableData.map((row, index) => (
-                              <tr key={row.id}>
+                            {skuDetails.map((row, index) => (
+                              <tr key={index}>
                                 <td className="border p-0 text-center">
-                                  <Checkbox {...label} />
+                                  <Checkbox
+                                    checked={selectedRows.includes(index)}
+                                    onChange={(e) => {
+                                      const isChecked = e.target.checked;
+                                      setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
+                                    }}
+                                  />
                                 </td>
-                                <td className="text-center">
-                                  <div className="pt-1">{index + 1}</div>
+                                <td className="text-center p-0">
+                                  <div style={{ paddingTop: 12 }}>{index + 1}</div>
                                 </td>
-                                <td className="border p-0">{row.partNo}</td>
-                                <td className="border p-0">{row.partDesc}</td>
-                                <td className="border p-0">{row.batchNo}</td>
-                                <td className="border p-0">{row.qty}</td>
-                                <td className="border p-0">{row.availQty}</td>
+                                <td className="border text-center pb-0 ps-0 pe-0" style={{ paddingTop: 12 }}>
+                                  {row.partNo}
+                                </td>
+                                <td className="border text-center pb-0 ps-0 pe-0" style={{ paddingTop: 12 }}>
+                                  {row.partDesc}
+                                </td>
+                                <td className="border text-center pb-0 ps-0 pe-0" style={{ paddingTop: 12 }}>
+                                  {row.batchNo}
+                                </td>
+                                {/* <td className="border text-center pb-0 ps-0 pe-0" style={{ paddingTop: 12 }}>
+                                  {row.qty}
+                                </td> */}
+                                <td className="border text-center pb-0 ps-0 pe-0" style={{ paddingTop: 12 }}>
+                                  {row.availQty}
+                                </td>
                               </tr>
                             ))}
                           </tbody>
@@ -1222,8 +1323,8 @@ export const BuyerOrder = () => {
                 </DialogContent>
                 <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
                   <Button onClick={handleCloseModal}>Cancel</Button>
-                  <Button color="secondary" onClick={handleCloseModal} variant="contained">
-                    Save
+                  <Button color="secondary" onClick={handleSaveSelectedRows} variant="contained">
+                    Proceed
                   </Button>
                 </DialogActions>
               </Dialog>
