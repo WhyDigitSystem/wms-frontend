@@ -856,6 +856,7 @@ export const StockRestate = () => {
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.toBin}
+                                        style={{ width: '200px' }}
                                         // onChange={(e) => handleToBinChange(row, index, e)}
                                         className={detailTableErrors[index]?.toBin ? 'error form-control' : 'form-control'}
                                       >
