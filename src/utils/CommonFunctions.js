@@ -211,7 +211,7 @@ export const getAllActiveCarrier = async (cbranch, client, orgId, shipmentMode) 
 };
 export const getAllShipmentModes = async (orgId) => {
   try {
-    const response = await apiCalls('get', `inward/getAllModeOfShipment?orgId=${orgId}`);
+    const response = await apiCalls('get', `gatePassIn/getAllModeOfShipment?orgId=${orgId}`);
     if (response.status === true) {
       const modeOfShipmentData = response.paramObjectsMap.modOfShipments;
 

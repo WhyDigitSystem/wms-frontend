@@ -228,7 +228,7 @@ export const Grn = () => {
     try {
       const response = await apiCalls(
         'get',
-        `inward/getGRNDocid?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
+        `grn/getGRNDocid?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
       );
       setFormData((prevData) => ({
         ...prevData,
@@ -242,7 +242,7 @@ export const Grn = () => {
     try {
       const response = await apiCalls(
         'get',
-        `inward/getGatePassInNoForPedningGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
+        `grn/getGatePassInNoForPedningGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
       );
       setGatePassIdList(response.paramObjectsMap.gatePassInVO);
     } catch (error) {
@@ -261,7 +261,7 @@ export const Grn = () => {
     try {
       const response = await apiCalls(
         'get',
-        `inward/getGatePassInDetailsForPendingGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&gatePassDocId=${selectedGatePassId}&orgId=${orgId}`
+        `grn/getGatePassInDetailsForPendingGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&gatePassDocId=${selectedGatePassId}&orgId=${orgId}`
       );
       console.log('THE GATE PASS IDS GRID DETAILS IS:', response);
       if (response.status === true) {
@@ -341,7 +341,7 @@ export const Grn = () => {
     try {
       const response = await apiCalls(
         'get',
-        `inward/getAllGrn?branch=CHENNAI&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
+        `grn/getAllGrn?branch=CHENNAI&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
       );
       setListViewData(response.paramObjectsMap.grnVO);
     } catch (error) {
@@ -353,7 +353,7 @@ export const Grn = () => {
     console.log('THE SELECTED GRN ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `inward/getGrnById?id=${row.original.id}`);
+      const response = await apiCalls('get', `grn/getGrnById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -916,7 +916,7 @@ export const Grn = () => {
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const response = await apiCalls('put', `inward/createUpdateGRN`, saveFormData);
+        const response = await apiCalls('put', `grn/createUpdateGRN`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           showToast('success', editId ? 'GRN Updated Successfully' : 'GRN created successfully');
@@ -1071,10 +1071,10 @@ export const Grn = () => {
                   {/* Gate Pass ID */}
                   <div className="col-md-3 mb-3">
                     <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gatePassId}>
-                      <InputLabel id="gatePassId-label">Gate Pass ID</InputLabel>
+                      <InputLabel id="gatePassId-label">Gate Pass No</InputLabel>
                       <Select
                         labelId="gatePassId-label"
-                        label="Gate Pass ID"
+                        label="Gate Pass No"
                         value={formData.gatePassId}
                         onChange={handleInputChange}
                         name="gatePassId"
@@ -1187,7 +1187,7 @@ export const Grn = () => {
               {/* Bill of Entry */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Bill of Entry"
+                  label="E-Way Bill"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1243,13 +1243,6 @@ export const Grn = () => {
                   </Select>
                   {fieldErrors.carrier && <FormHelperText>{fieldErrors.carrier}</FormHelperText>}
                 </FormControl>
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControlLabel
-                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="vas" color="primary" />}
-                  label="VAS"
-                />
               </div>
             </div>
 
@@ -2584,6 +2577,12 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.invoiceNo}
                           helperText={fieldErrors.invoiceNo}
+                        />
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <FormControlLabel
+                          control={<Checkbox checked={formData.active} onChange={handleInputChange} name="vas" color="primary" />}
+                          label="VAS"
                         />
                       </div>
                     </div>

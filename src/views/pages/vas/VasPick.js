@@ -91,22 +91,7 @@ export const VasPick = () => {
     totalOrderQty: '',
     totalPickedQty: ''
   });
-  const [vasPickGridTableData, setVasPickGridTableData] = useState([
-    {
-      id: 1,
-      partNo: '',
-      partDesc: '',
-      sku: '',
-      bin: '',
-      batchNo: '',
-      batchDate: null,
-      grnNo: '',
-      grnDate: null,
-      avlQty: '',
-      pickQty: '',
-      remainingQty: ''
-    }
-  ]);
+  const [vasPickGridTableData, setVasPickGridTableData] = useState([]);
   const [vasPickGridTableErrors, setVasPickGridTableErrors] = useState([
     {
       id: 1,
@@ -135,12 +120,14 @@ export const VasPick = () => {
       batchDate: null,
       bin: '',
       binType: '',
+      binClass: '',
       core: '',
-      expDate: '',
+      cellType: '',
+      expDate: null,
       avlQty: '',
       pickQty: '',
       qcFlag: '',
-      stockDate: null
+      status: ''
     }
   ]);
   const [modalTableErrors, setModalTableErrors] = useState([
@@ -155,29 +142,41 @@ export const VasPick = () => {
       batchDate: null,
       bin: '',
       binType: '',
+      binClass: '',
       core: '',
-      expDate: '',
+      cellType: '',
+      expDate: null,
       avlQty: '',
       pickQty: '',
       qcFlag: '',
-      stockDate: null
+      status: ''
     }
   ]);
   const [value, setValue] = useState(0);
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
   const listViewColumns = [
-    { accessorKey: 'grndDate', header: 'GRN Date', size: 140 },
-    { accessorKey: 'docId', header: 'GRN No', size: 140 },
-    { accessorKey: 'gatePassId', header: 'Gate Pass Id', size: 140 },
-    { accessorKey: 'supplier', header: 'Supplier', size: 140 },
-    { accessorKey: 'totalGrnQty', header: 'GRN QTY', size: 140 }
+    { accessorKey: 'docId', header: 'VAS Pick ID', size: 140 },
+    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'picBin', header: 'Picked Bin', size: 140 },
+    { accessorKey: 'status', header: 'Status', size: 140 },
+    { accessorKey: 'pickedQty', header: 'Picked QTY', size: 140 }
   ];
 
   useEffect(() => {
     getNewVasPickDocId();
     getAllPickBinType();
+    getAllVasPick();
   }, []);
+
+  useEffect(() => {
+    const totalQty = vasPickGridTableData.reduce((sum, row) => sum + (parseInt(row.pickQty, 10) || 0), 0);
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      totalPickedQty: totalQty
+    }));
+  }, [vasPickGridTableData]);
 
   const getNewVasPickDocId = async () => {
     try {
@@ -207,8 +206,7 @@ export const VasPick = () => {
 
         setModalTableData(
           gridDetails.map((row) => ({
-            // id: row.id,
-            // invDate: row.invoiceDate ? dayjs(row.invoiceDate).format('YYYY-MM-DD') : null,
+            id: row.id,
             partNo: row.partNo,
             partDesc: row.partDesc,
             sku: row.sku,
@@ -218,12 +216,14 @@ export const VasPick = () => {
             batchDate: row.batchDate,
             bin: row.bin,
             binType: row.binType,
+            binClass: row.binClass,
             core: row.core,
             expDate: row.expDate,
             avlQty: row.avalQty,
             pickQty: row.pickQty,
             qcFlag: row.qcFlag,
-            stockDate: row.stockDate
+            cellType: row.cellType,
+            status: row.status
           }))
         );
       }
@@ -241,59 +241,71 @@ export const VasPick = () => {
     }
   };
 
-  // const getAllVasPick = async () => {
-  //   try {
-  //     const response = await apiCalls(
-  //       'get',
-  //       `inward/getAllGrn?branch=CHENNAI&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
-  //     );
-  //     setListViewData(response.paramObjectsMap.grnVO);
-  //   } catch (error) {
-  //     console.error('Error fetching GRN data:', error);
-  //   }
-  // };
+  const getAllVasPick = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `vascontroller/getAllVaspick?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
+      );
+      setListViewData(response.paramObjectsMap.vasPickVO);
+    } catch (error) {
+      console.error('Error fetching GRN data:', error);
+    }
+  };
 
-  // const getVasPickById = async (row) => {
-  //   console.log('THE SELECTED GRN ID IS:', row.original.id);
-  //   setEditId(row.original.id);
-  //   try {
-  //     const response = await apiCalls('get', `inward/getGrnById?id=${row.original.id}`);
-  //     console.log('API Response:', response);
+  const getVasPickById = async (row) => {
+    console.log('THE SELECTED GRN ID IS:', row.original.id);
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `vascontroller/getVaspickById?id=${row.original.id}`);
+      console.log('API Response:', response);
 
-  //     if (response.status === true) {
-  //       setListView(false);
-  //       const particularGrn = response.paramObjectsMap.Grn;
-  //       setGatePassIdEdit(particularGrn.docId);
+      if (response.status === true) {
+        setListView(false);
+        const particularVasPick = response.paramObjectsMap.vasPickVO;
+        // setGatePassIdEdit(particularVasPick.docId);
 
-  //       setFormData({
-  //         docId: particularGrn.docId,
-  //         editDocDate: particularGrn.docdate,
-  //         docDate: particularGrn.docdate,
-  //         entrySlNo: particularGrn.entryNo,
-  //         date: particularGrn.entryDate
-  //       });
-  //       getAllCarriers(particularGrn.modeOfShipment);
-  //       setFormData((prevData) => ({
-  //         ...prevData,
-  //         carrier: particularGrn.carrier.toUpperCase()
-  //       }));
-  //       setVasPickGridTableData(
-  //         particularGrn.grnDetailsVO.map((row) => ({
-  //           id: row.id,
-  //           qrCode: row.qrCode,
-  //           lr_Hawb_Hbl_No: row.lrNoHawbNo,
-  //           invNo: row.invoiceNo,
-  //           shipmentNo: row.shipmentNo
-  //           // invDate: row.invoiceDate ? dayjs(row.invoiceDate).format('YYYY-MM-DD') : null,
-  //         }))
-  //       );
-  //     } else {
-  //       console.error('API Error:', response);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
+        setFormData({
+          docId: particularVasPick.docId,
+          // editDocDate: particularVasPick.docdate,
+          docDate: particularVasPick.docDate,
+          pickBinType: particularVasPick.picBin,
+          stockState: particularVasPick.stockState,
+          status: particularVasPick.status
+        });
+        // getAllCarriers(particularVasPick.modeOfShipment);
+        // setFormData((prevData) => ({
+        //   ...prevData,
+        //   carrier: particularVasPick.carrier.toUpperCase()
+        // }));
+        setVasPickGridTableData(
+          particularVasPick.vasPickDetailsVO.map((row) => ({
+            id: row.id,
+            partNo: row.partNo,
+            partDesc: row.partDescription,
+            sku: row.sku,
+            avlQty: row.avlQty,
+            batchNo: row.batchNo,
+            batchDate: row.batchDate,
+            grnNo: row.grnNo,
+            grnDate: row.grnDate,
+            bin: row.bin,
+            binType: row.binType,
+            binClass: row.binClass,
+            core: row.core,
+            expDate: row.expDate,
+            qcFlag: row.qcflag,
+            pickQty: row.picQty,
+            cellType: row.cell
+          }))
+        );
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value, checked } = e.target;
@@ -363,7 +375,7 @@ export const VasPick = () => {
       totalOrderQty: '',
       totalPickedQty: ''
     });
-    // getNewVasPickDocId();
+    getNewVasPickDocId();
     setEditId('');
     setVasPickGridTableData([
       {
@@ -393,32 +405,12 @@ export const VasPick = () => {
     let vasPickGridTableDataValid = true;
     const newTableErrors = vasPickGridTableData.map((row) => {
       const rowErrors = {};
-      if (!row.lr_Hawb_Hbl_No) {
-        rowErrors.lr_Hawb_Hbl_No = 'Lr_Hawb_Hbl_No is required';
-        vasPickGridTableDataValid = false;
-      }
-      if (!row.invNo) {
-        rowErrors.invNo = 'Invoice No is required';
-        vasPickGridTableDataValid = false;
-      }
       if (!row.partNo) {
         rowErrors.partNo = 'Part No is required';
         vasPickGridTableDataValid = false;
       }
-      if (!row.invQty) {
-        rowErrors.invQty = 'Invoice QTY is required';
-        vasPickGridTableDataValid = false;
-      }
-      if (!row.grnQty) {
-        rowErrors.grnQty = 'GRN QTY is required';
-        vasPickGridTableDataValid = false;
-      }
-      if (!row.palletQty) {
-        rowErrors.palletQty = 'Pallet Qty is required';
-        vasPickGridTableDataValid = false;
-      }
-      if (!row.noOfPallets) {
-        rowErrors.noOfPallets = 'No of Pallets is required';
+      if (!row.pickQty) {
+        rowErrors.pickQty = 'Pick QTY is required';
         vasPickGridTableDataValid = false;
       }
       return rowErrors;
@@ -426,40 +418,53 @@ export const VasPick = () => {
     setFieldErrors(errors);
 
     setVasPickGridTableErrors(newTableErrors);
-
     if (Object.keys(errors).length === 0 && vasPickGridTableDataValid) {
       setIsLoading(true);
-
       const gridVo = vasPickGridTableData.map((row) => ({
-        invoiceDate: row.invDate ? dayjs(row.invDate).format('YYYY-MM-DD') : null,
+        ...(editId && { id: row.id }),
         partNo: row.partNo,
-        partDesc: row.partDesc,
-        sku: row.sku
+        partDescription: row.partDesc,
+        sku: row.sku,
+        avlQty: row.avlQty,
+        batchNo: row.batchNo,
+        batchDate: row.batchDate,
+        grnNo: row.grnNo,
+        grnDate: row.grnDate,
+        bin: row.bin,
+        binType: row.binType,
+        binClass: row.binClass,
+        core: row.core,
+        expDate: row.expDate,
+        qcflag: row.qcFlag,
+        picQty: row.pickQty,
+        cellType: row.cellType,
+        remainingQty: 0
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
-        pickBinType: formData.pickBinType,
+        picBin: formData.pickBinType,
         stockState: formData.stockState,
+        stateStatus: formData.stockStateFlag,
         status: formData.status,
         orgId: orgId,
-        createdBy: loginUserName,
-        grnDetailsDTO: gridVo,
         branch: loginBranch,
         branchCode: loginBranchCode,
         client: loginClient,
         customer: loginCustomer,
         finYear: '2024',
-        warehouse: loginWarehouse
+        warehouse: loginWarehouse,
+        vasPickDetailsDTO: gridVo,
+        createdBy: loginUserName
       };
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const response = await apiCalls('put', `inward/createUpdateGRN`, saveFormData);
+        const response = await apiCalls('put', `vascontroller/createUpdateVasPic`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           showToast('success', editId ? 'VAS Pick Updated Successfully' : 'VAS Pick created successfully');
-          // handleClear();
-          // getAllGrns();
+          handleClear();
+          getAllVasPick();
           setIsLoading(false);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'VAS Pick creation failed');
@@ -516,12 +521,7 @@ export const VasPick = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable
-              data={listViewData}
-              columns={listViewColumns}
-              blockEdit={true}
-              //  toEdit={getGrnById}
-            />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getVasPickById} />
           </div>
         ) : (
           <>
@@ -614,11 +614,6 @@ export const VasPick = () => {
                   <>
                     <div className="row d-flex ml">
                       <div className="mb-1">
-                        <ActionButton
-                          title="Add"
-                          icon={AddIcon}
-                          // onClick={handleAddRow}
-                        />
                         <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
                       </div>
                       <div className="row mt-2">
@@ -638,6 +633,9 @@ export const VasPick = () => {
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Part Desc
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                    SKU
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
                                     Bin
@@ -674,107 +672,12 @@ export const VasPick = () => {
                                     </td>
                                     <td>{row.partNo}</td>
                                     <td>{row.partDesc}</td>
+                                    <td>{row.sku}</td>
                                     <td>{row.grnNo}</td>
                                     <td>{row.batchNo}</td>
                                     <td>{row.bin}</td>
-                                    {/* <td>{row.avlQty}</td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.pickQty}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const intPattern = /^\d*$/;
-
-                                          if (intPattern.test(value) || value === '') {
-                                            setVasPickGridTableData((prev) =>
-                                              prev.map((r) =>
-                                                r.id === row.id ? { ...r, pickQty: value, remainingQty: avlQty - value } : r
-                                              )
-                                            );
-
-                                            // Clear the error if input is valid
-                                            setVasPickGridTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                pickQty: ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            // Set error if input is invalid
-                                            setVasPickGridTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                pickQty: 'only numbers are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={vasPickGridTableErrors[index]?.pickQty ? 'error form-control' : 'form-control'}
-                                      />
-                                      {vasPickGridTableErrors[index]?.pickQty && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {vasPickGridTableErrors[index].pickQty}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td>{row.remainingQty}</td> */}
                                     <td>{row.avlQty}</td>
                                     <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.pickQty}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const intPattern = /^\d*$/;
-
-                                          if (intPattern.test(value) || value === '') {
-                                            // Convert value to number, default to 0 if empty
-                                            const pickQty = value === '' ? 0 : parseInt(value, 10);
-
-                                            // Ensure pickQty does not exceed avlQty
-                                            const remainingQty = Math.max(0, row.avlQty - pickQty);
-
-                                            setVasPickGridTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, pickQty: value, remainingQty } : r))
-                                            );
-
-                                            // Clear error if input is valid
-                                            setVasPickGridTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                pickQty: ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            // Set error if input is invalid
-                                            setVasPickGridTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                pickQty: 'Only numbers are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={vasPickGridTableErrors[index]?.pickQty ? 'error form-control' : 'form-control'}
-                                      />
-                                      {vasPickGridTableErrors[index]?.pickQty && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {vasPickGridTableErrors[index].pickQty}
-                                        </div>
-                                      )}
-                                    </td>
-                                    {/* <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '150px' }}
                                         type="text"
@@ -837,7 +740,7 @@ export const VasPick = () => {
                                           {vasPickGridTableErrors[index].pickQty}
                                         </div>
                                       )}
-                                    </td> */}
+                                    </td>
                                     <td>{row.remainingQty}</td>
                                   </tr>
                                 ))}
@@ -852,7 +755,7 @@ export const VasPick = () => {
                 {value === 1 && (
                   <>
                     <div className="row mt-3">
-                      <div className="col-md-3 mb-3">
+                      {/* <div className="col-md-3 mb-3">
                         <TextField
                           label="Total Order QTY"
                           variant="outlined"
@@ -864,7 +767,7 @@ export const VasPick = () => {
                           error={!!fieldErrors.totalOrderQty}
                           helperText={fieldErrors.totalOrderQty}
                         />
-                      </div>
+                      </div> */}
                       <div className="col-md-3 mb-3">
                         <TextField
                           label="Total Picked QTY"
@@ -876,6 +779,7 @@ export const VasPick = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.totalPickedQty}
                           helperText={fieldErrors.totalPickedQty}
+                          disabled
                         />
                       </div>
                     </div>
@@ -901,7 +805,6 @@ export const VasPick = () => {
                       <table className="table table-bordered ">
                         <thead>
                           <tr style={{ backgroundColor: '#673AB7' }}>
-                            {/* <th className="px-2 py-2 text-white text-center">Action</th> */}
                             <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                               <Checkbox checked={selectAll} onChange={handleSelectAll} />
                             </th>
