@@ -118,8 +118,8 @@ export const StateMaster = () => {
 
     if (name === 'stateCode' && !codeRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else if (name === 'stateCode' && value.length > 3) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Max Lenght is 3' });
+    } else if (name === 'stateCode' && value.length > 2) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Max Lenght is 2' });
     } else if (name === 'stateNo' && !numericRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else if (name === 'stateNo' && value.length > 3) {

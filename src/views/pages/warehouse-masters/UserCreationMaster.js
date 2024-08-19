@@ -800,7 +800,7 @@ export const UserCreationMaster = () => {
                   helperText={fieldErrors.email}
                 />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label="Password"
                   variant="outlined"
@@ -813,7 +813,7 @@ export const UserCreationMaster = () => {
                   error={!!fieldErrors.password}
                   helperText={fieldErrors.password}
                 />
-              </div>
+              </div> */}
 
               <div className="col-md-3 mb-3">
                 <FormControlLabel

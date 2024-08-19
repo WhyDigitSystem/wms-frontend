@@ -48,7 +48,7 @@ const Customization = () => {
       break;
   }
 
-  const [fontFamily, setFontFamily] = useState(initialFont);
+  const [fontFamily, setFontFamily] = useState('Roboto');
   useEffect(() => {
     let newFont;
     switch (fontFamily) {

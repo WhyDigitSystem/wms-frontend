@@ -350,7 +350,7 @@ export const SupplierMaster = () => {
       errors.pan = 'Pan is required';
     }
     if (!formData.tanNo) {
-      errors.tanNo = 'Tan No is required';
+      errors.tanNo = 'Tan is required';
     }
     if (!formData.contactPerson) {
       errors.contactPerson = 'Contact Person is required';
@@ -572,7 +572,7 @@ export const SupplierMaster = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="TAN No"
+                  label="TAN"
                   variant="outlined"
                   size="small"
                   fullWidth

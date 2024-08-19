@@ -92,20 +92,7 @@ export const DocumentTypeMaster = () => {
       console.error('Error fetching data:', error);
     }
   };
-  // const getAllCustomers = async () => {
-  //   try {
-  //     const response = await apiCalls('get', `warehousemastercontroller/customer?orgid=${orgId}`);
-  //     console.log('API Response:', response);
 
-  //     if (response.status === true) {
-  //       setCustomerList(response.paramObjectsMap.CustomerVO);
-  //     } else {
-  //       console.error('API Error:', response);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
   const getAllClients = async () => {
     try {
       const response = await apiCalls('get', `warehousemastercontroller/getClientAndClientCodeByOrgId?orgId=${orgId}`);
@@ -189,12 +176,6 @@ export const DocumentTypeMaster = () => {
           errorMessage = 'Invalid Format';
         }
         break;
-
-      // case 'desc':
-      //   if (!nameRegex.test(value)) {
-      //     errorMessage = 'Only alphabet are allowed';
-      //   }
-      //   break;
     }
 
     if (errorMessage) {
@@ -260,27 +241,6 @@ export const DocumentTypeMaster = () => {
   };
 
   const displayRowError = (table) => {
-    // if (table === roleTableData) {
-    //   setRoleTableDataErrors((prevErrors) => {
-    //     const newErrors = [...prevErrors];
-    //     newErrors[table.length - 1] = {
-    //       ...newErrors[table.length - 1],
-    //       role: !table[table.length - 1].role ? 'Role is required' : '',
-    //       startDate: !table[table.length - 1].startDate ? 'Start Date is required' : ''
-    //     };
-    //     return newErrors;
-    //   });
-    // }
-    // if (table === branchTableData) {
-    //   setBranchTableErrors((prevErrors) => {
-    //     const newErrors = [...prevErrors];
-    //     newErrors[table.length - 1] = {
-    //       ...newErrors[table.length - 1],
-    //       branchCode: !table[table.length - 1].branchCode ? 'Branch Code is required' : ''
-    //     };
-    //     return newErrors;
-    //   });
-    // }
     if (table === clientTableData) {
       setClientTableErrors((prevErrors) => {
         const newErrors = [...prevErrors];

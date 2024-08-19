@@ -75,6 +75,7 @@ export const ItemMaster = () => {
     status: 'R',
     parentChildKey: 'CHILD',
     barcode: '',
+    skuCategory: '',
     active: true
   });
   const [value, setValue] = useState(0);
@@ -145,7 +146,8 @@ export const ItemMaster = () => {
     criticalStock: '',
     bchk: '',
     status: '',
-    barcode: ''
+    barcode: '',
+    skuCategory: ''
   });
   const listViewColumns = [
     { accessorKey: 'partno', header: 'Part No', size: 140 },
@@ -253,6 +255,7 @@ export const ItemMaster = () => {
           // bchk: particularItem.bchk, //no
           status: particularItem.status,
           barcode: particularItem.barcode,
+          skuCategory: particularItem.skuCategory,
           // itemVo: itemVo, //no
           // orgId: orgId,
           // createdby: loginUserName,
@@ -369,6 +372,7 @@ export const ItemMaster = () => {
       status: 'R',
       parentChildKey: 'CHILD',
       barcode: '',
+      skuCategory: '',
       active: true
     });
     setItemTableData([
@@ -408,7 +412,8 @@ export const ItemMaster = () => {
       criticalStock: '',
       bchk: '',
       status: '',
-      barcode: ''
+      barcode: '',
+      skuCategory: ''
     });
     setItemTableErrors('');
     setEditId('');
@@ -461,6 +466,7 @@ export const ItemMaster = () => {
         skuQty: formData.skuQty,
         ssku: formData.ssku,
         sskuQty: formData.sskuQty,
+        skuCategory: formData.skuCategory,
         // zoneType: formData.zoneType, //no
         weightofSkuAndUom: formData.weightSkuUom,
         hsnCode: formData.hsnCode,
@@ -827,6 +833,26 @@ export const ItemMaster = () => {
                     <MenuItem value="CHILD">CHILD</MenuItem>
                   </Select>
                   {fieldErrors.parentChildKey && <FormHelperText error>{fieldErrors.parentChildKey}</FormHelperText>}
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.skuCategory}>
+                  <InputLabel id="skuCategory-label">Sku Category</InputLabel>
+                  <Select
+                    labelId="skuCategory-label"
+                    id="skuCategory"
+                    name="skuCategory"
+                    label="Sku Category"
+                    value={formData.skuCategory}
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="OPENSTORAGE">Open Storage</MenuItem>
+                    <MenuItem value="COLDSTORAGE">Cold Storage</MenuItem>
+                    <MenuItem value="STRONG">Strong</MenuItem>
+                    <MenuItem value="REGULAR">Regular</MenuItem>
+                  </Select>
+                  {fieldErrors.skuCategory && <FormHelperText error>{fieldErrors.skuCategory}</FormHelperText>}
                 </FormControl>
               </div>
 

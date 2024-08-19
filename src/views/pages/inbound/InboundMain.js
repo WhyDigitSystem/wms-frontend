@@ -17,9 +17,9 @@ const InboundMain = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <Box sx={{ width: '100%' }}>
           <Tabs value={value} onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="secondary tabs example">
-            <Tab value={0} label="GatePassIn" />
+            <Tab value={0} label="Gate Pass In" />
             <Tab value={1} label="GRN" />
-            <Tab value={2} label="PutAway" />
+            <Tab value={2} label="Put Away" />
           </Tabs>
         </Box>
         <Box sx={{ padding: 2 }}>

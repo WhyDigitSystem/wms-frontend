@@ -47,7 +47,7 @@ const warehouseMasters = {
         },
         {
           id: 'locationMappingMaster',
-          title: 'Location Mapping',
+          title: 'Bin Mapping',
           type: 'item',
           url: '/warehousemasters/locationmappingmaster'
         },

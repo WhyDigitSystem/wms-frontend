@@ -167,3 +167,103 @@ export const getAllActiveLocationTypes = async (orgId) => {
     return error;
   }
 };
+
+export const getAllActiveSupplier = async (cbranch, client, orgId) => {
+  try {
+    const response = await apiCalls('get', `warehousemastercontroller/supplier?cbranch=${cbranch}&client=${client}&orgid=${orgId}`);
+    if (response.status === true) {
+      const supplierData = response.paramObjectsMap.supplierVO
+        .filter((row) => row.active === 'Active')
+        .map(({ id, supplierShortName, supplier }) => ({ id, supplierShortName, supplier }));
+
+      return supplierData;
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
+
+export const getAllActiveCarrier = async (cbranch, client, orgId, shipmentMode) => {
+  try {
+    const response = await apiCalls(
+      'get',
+      `warehousemastercontroller/getCarrierNameByCustomer?cbranch=${cbranch}&client=${client}&orgid=${orgId}&shipmentMode=${shipmentMode}`
+    );
+    if (response.status === true) {
+      const carrierData = response.paramObjectsMap.CarrierVO.filter((row) => row.active === 'Active').map(({ id, carrier }) => ({
+        id,
+        carrier
+      }));
+
+      return carrierData;
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
+export const getAllShipmentModes = async (orgId) => {
+  try {
+    const response = await apiCalls('get', `inward/getAllModeOfShipment?orgId=${orgId}`);
+    if (response.status === true) {
+      const modeOfShipmentData = response.paramObjectsMap.modOfShipments;
+
+      return modeOfShipmentData;
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
+
+export const getAllActivePartDetails = async (cBranch, client, orgId) => {
+  try {
+    const response = await apiCalls('get', `warehousemastercontroller/material?cbranch=${cBranch}&client=${client}&orgid=${orgId}`);
+    console.log('API Response:', response);
+
+    if (response.status === true) {
+      const partData = response.paramObjectsMap.materialVO
+        .filter((row) => row.active === 'Active')
+        .map(({ id, itemType, partno, partDesc, sku }) => ({ id, itemType, partno, partDesc, sku }));
+
+      return partData;
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
+
+export const getAllActiveBuyer = async (cBranch, client, orgId) => {
+  try {
+    const response = await apiCalls('get', `warehousemastercontroller/buyer?cbranch=${cBranch}&client=${client}&orgid=${orgId}`);
+    console.log('API Response:', response);
+
+    if (response.status === true) {
+      const BuyerData = response.paramObjectsMap.buyerVO
+        .filter((row) => row.active === 'Active')
+        .map(({ id, buyer, buyerShortName }) => ({ id, buyer, buyerShortName }));
+
+      return BuyerData;
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
