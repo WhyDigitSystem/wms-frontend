@@ -3,7 +3,6 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-// import { FormHelperText, Tooltip, FormControlLabel, Checkbox, Dialog } from '@mui/material';
 import {
   FormHelperText,
   Dialog,
@@ -37,8 +36,6 @@ import apiCalls from 'apicall';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers';
-// import 'react-datepicker/dist/react-datepicker.css';
-// import { DatePicker } from 'react-datepicker';
 import dayjs, { Dayjs } from 'dayjs';
 import { width } from '@mui/system';
 import { getAllActiveLocationTypes } from 'utils/CommonFunctions';
@@ -130,28 +127,6 @@ export const VasPick = () => {
       status: ''
     }
   ]);
-  const [modalTableErrors, setModalTableErrors] = useState([
-    {
-      id: 1,
-      partNo: '',
-      partDesc: '',
-      sku: '',
-      grnNo: '',
-      grnDate: null,
-      batchNo: '',
-      batchDate: null,
-      bin: '',
-      binType: '',
-      binClass: '',
-      core: '',
-      cellType: '',
-      expDate: null,
-      avlQty: '',
-      pickQty: '',
-      qcFlag: '',
-      status: ''
-    }
-  ]);
   const [value, setValue] = useState(0);
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
@@ -160,7 +135,8 @@ export const VasPick = () => {
     { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
     { accessorKey: 'picBin', header: 'Picked Bin', size: 140 },
     { accessorKey: 'status', header: 'Status', size: 140 },
-    { accessorKey: 'pickedQty', header: 'Picked QTY', size: 140 }
+    { accessorKey: 'pickedQty', header: 'Picked QTY', size: 140 },
+    { accessorKey: 'freeze', header: 'freeze', size: 140 }
   ];
 
   useEffect(() => {
@@ -263,21 +239,13 @@ export const VasPick = () => {
       if (response.status === true) {
         setListView(false);
         const particularVasPick = response.paramObjectsMap.vasPickVO;
-        // setGatePassIdEdit(particularVasPick.docId);
-
         setFormData({
           docId: particularVasPick.docId,
-          // editDocDate: particularVasPick.docdate,
           docDate: particularVasPick.docDate,
           pickBinType: particularVasPick.picBin,
           stockState: particularVasPick.stockState,
           status: particularVasPick.status
         });
-        // getAllCarriers(particularVasPick.modeOfShipment);
-        // setFormData((prevData) => ({
-        //   ...prevData,
-        //   carrier: particularVasPick.carrier.toUpperCase()
-        // }));
         setVasPickGridTableData(
           particularVasPick.vasPickDetailsVO.map((row) => ({
             id: row.id,
@@ -346,11 +314,6 @@ export const VasPick = () => {
   const handleDeleteRow = (id, table, setTable) => {
     setTable(table.filter((row) => row.id !== id));
   };
-
-  // const handleDateChange = (field, date) => {
-  //   const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null; // Updated format for consistency
-  //   setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
-  // };
 
   const handleView = () => {
     setListView(!listView);
@@ -755,19 +718,6 @@ export const VasPick = () => {
                 {value === 1 && (
                   <>
                     <div className="row mt-3">
-                      {/* <div className="col-md-3 mb-3">
-                        <TextField
-                          label="Total Order QTY"
-                          variant="outlined"
-                          size="small"
-                          fullWidth
-                          name="totalOrderQty"
-                          value={formData.totalOrderQty}
-                          onChange={handleInputChange}
-                          error={!!fieldErrors.totalOrderQty}
-                          helperText={fieldErrors.totalOrderQty}
-                        />
-                      </div> */}
                       <div className="col-md-3 mb-3">
                         <TextField
                           label="Total Picked QTY"
@@ -818,10 +768,6 @@ export const VasPick = () => {
                             <th className="px-2 py-2 text-white text-center">Batch Date</th>
                             <th className="px-2 py-2 text-white text-center">Bin</th>
                             <th className="px-2 py-2 text-white text-center">Bin Type</th>
-                            {/* <th className="px-2 py-2 text-white text-center">Core</th>
-                            <th className="px-2 py-2 text-white text-center">Exp Date</th>
-                            <th className="px-2 py-2 text-white text-center">Qc Flag</th>
-                            <th className="px-2 py-2 text-white text-center">Stock Date</th> */}
                             <th className="px-2 py-2 text-white text-center">Avl QTY</th>
                             <th className="px-2 py-2 text-white text-center">Pick QTY</th>
                           </tr>
@@ -860,10 +806,6 @@ export const VasPick = () => {
                               <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
                                 {row.binType}
                               </td>
-                              {/* <td className="border p-2">{row.core}</td>
-                              <td className="border p-2">{row.expDate}</td>
-                              <td className="border p-2">{row.qcFlag}</td>
-                              <td className="border p-2">{row.stockDate}</td> */}
                               <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
                                 {row.avlQty}
                               </td>

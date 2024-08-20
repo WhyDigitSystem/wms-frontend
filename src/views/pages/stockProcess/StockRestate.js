@@ -76,7 +76,7 @@ export const StockRestate = () => {
       toBinType: '',
       toBinClass: '',
       toCellType: '',
-      fromQty: '',
+      fromQty: 5000,
       toQty: '',
       remainQty: ''
     }
@@ -320,7 +320,7 @@ export const StockRestate = () => {
       toBinType: '',
       toBinClass: '',
       toCellType: '',
-      fromQty: '',
+      fromQty: 5000,
       toQty: '',
       remainQty: ''
     };
@@ -356,7 +356,7 @@ export const StockRestate = () => {
     if (!lastRow) return false;
 
     if (table === detailTableData) {
-      return !lastRow.bin || !lastRow.binCategory || !lastRow.status || !lastRow.core;
+      return !lastRow.partNo;
     }
     return false;
   };
@@ -367,10 +367,10 @@ export const StockRestate = () => {
         const newErrors = [...prevErrors];
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
-          bin: !table[table.length - 1].bin ? 'Bin is required' : '',
-          binCategory: !table[table.length - 1].binCategory ? 'Bin Category is required' : '',
-          status: !table[table.length - 1].status ? 'Status is required' : '',
-          core: !table[table.length - 1].core ? 'Core is required' : ''
+          partNo: !table[table.length - 1].partNo ? 'Part No is required' : ''
+          // binCategory: !table[table.length - 1].binCategory ? 'Bin Category is required' : '',
+          // status: !table[table.length - 1].status ? 'Status is required' : '',
+          // core: !table[table.length - 1].core ? 'Core is required' : ''
         };
         return newErrors;
       });
@@ -542,6 +542,19 @@ export const StockRestate = () => {
       active: true
     });
   };
+  const handlePartNoChange = (row, index, event) => {
+    const value = event.target.value;
+    setDetailTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, partNo: value } : r)));
+    setDetailTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        partNo: !value ? 'Part number is required' : ''
+      };
+      return newErrors;
+    });
+  };
+
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -756,15 +769,13 @@ export const StockRestate = () => {
                                       <select
                                         value={row.partNo}
                                         style={{ width: '200px' }}
-                                        // onChange={(e) => handlePartNoChange(row, index, e)}
+                                        onChange={(e) => handlePartNoChange(row, index, e)}
                                         className={detailTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">-- Select --</option>
-                                        {/* {partNoList?.map((part) => (
-                                          <option key={part.id} value={part.partno}>
-                                            {part.partno}
-                                          </option>
-                                        ))} */}
+                                        <option value="PART 1">PART 1</option>
+                                        <option value="PART 2">PART 2</option>
+                                        <option value="PART 3">PART 3</option>
                                       </select>
                                       {detailTableErrors[index]?.partNo && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -772,6 +783,7 @@ export const StockRestate = () => {
                                         </div>
                                       )}
                                     </td>
+
                                     <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '300px' }}
@@ -884,7 +896,7 @@ export const StockRestate = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        style={{ width: '300px' }}
+                                        style={{ width: '150px' }}
                                         type="text"
                                         value={row.fromQty}
                                         className={detailTableErrors[index]?.fromQty ? 'error form-control' : 'form-control'}
@@ -892,7 +904,7 @@ export const StockRestate = () => {
                                       />
                                     </td>
 
-                                    <td className="border px-2 py-2">
+                                    {/* <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '150px' }}
                                         type="text"
@@ -947,6 +959,84 @@ export const StockRestate = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '300px' }}
+                                        type="text"
+                                        value={row.remainQty}
+                                        className={detailTableErrors[index]?.remainQty ? 'error form-control' : 'form-control'}
+                                        disabled
+                                        onKeyDown={(e) => handleKeyDown(e, row, detailTableData)}
+                                      />
+                                    </td> */}
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        style={{ width: '150px' }}
+                                        type="text"
+                                        value={row.toQty}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const intPattern = /^\d*$/;
+
+                                          if (intPattern.test(value) || value === '') {
+                                            setDetailTableData((prev) => {
+                                              const updatedData = prev.map((r) => {
+                                                if (r.id === row.id) {
+                                                  let newRemainQty = r.remainQty;
+
+                                                  // Check if selected partNo is already in another row
+                                                  const existingRow = prev.find((item) => item.partNo === r.partNo && item.id !== r.id);
+
+                                                  if (existingRow) {
+                                                    // If partNo exists in another row, calculate remainQty based on that row's remainQty
+                                                    newRemainQty = existingRow.remainQty - value;
+                                                  } else {
+                                                    // If partNo doesn't exist in another row, calculate remainQty normally
+                                                    newRemainQty = r.fromQty - value;
+                                                  }
+
+                                                  return {
+                                                    ...r,
+                                                    toQty: value,
+                                                    remainQty: newRemainQty
+                                                  };
+                                                }
+                                                return r;
+                                              });
+
+                                              return updatedData;
+                                            });
+
+                                            // Clear the error if input is valid
+                                            setDetailTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                toQty: ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            // Set error if input is invalid
+                                            setDetailTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                toQty: 'only numbers are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={detailTableErrors[index]?.toQty ? 'error form-control' : 'form-control'}
+                                      />
+                                      {detailTableErrors[index]?.toQty && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {detailTableErrors[index].toQty}
+                                        </div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        style={{ width: '150px' }}
                                         type="text"
                                         value={row.remainQty}
                                         className={detailTableErrors[index]?.remainQty ? 'error form-control' : 'form-control'}
