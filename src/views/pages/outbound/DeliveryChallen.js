@@ -244,7 +244,7 @@ export const DeliveryChallen = () => {
     try {
       const response = await apiCalls(
         'get',
-        `outward/getDeliveryChallanDocId?branch=${branch}&branchCode=${cbranch}&client=${client}&finYear=${finYear}&orgId=${orgId}`
+        `deliverychallan/getDeliveryChallanDocId?branch=${branch}&branchCode=${cbranch}&client=${client}&finYear=${finYear}&orgId=${orgId}`
       );
 
       console.log('API Response:', response);
@@ -263,7 +263,7 @@ export const DeliveryChallen = () => {
     try {
       const response = await apiCalls(
         'get',
-        `outward/getAllPickRequestFromDeliveryChallan?branch=${branch}&branchCode=${cbranch}&client=${client}&finYear=${finYear}&orgId=${orgId}&warehouse=${warehouse}`
+        `deliverychallan/getAllPickRequestFromDeliveryChallan?branch=${branch}&branchCode=${cbranch}&client=${client}&finYear=${finYear}&orgId=${orgId}&warehouse=${warehouse}`
       );
 
       console.log('API Response:', response);
@@ -282,7 +282,7 @@ export const DeliveryChallen = () => {
     try {
       const response = await apiCalls(
         'get',
-        `outward/getBuyerShipToBillToFromBuyerOrderForDeliveryChallan?branch=${branch}&branchCode=${cbranch}&buyerOrderNo=${buyerOrderNo}&client=${client}&finYear=${finYear}&orgId=${orgId}`
+        `deliverychallan/getBuyerShipToBillToFromBuyerOrderForDeliveryChallan?branch=${branch}&branchCode=${cbranch}&buyerOrderNo=${buyerOrderNo}&client=${client}&finYear=${finYear}&orgId=${orgId}`
       );
 
       console.log('API Response:', response);
@@ -320,7 +320,7 @@ export const DeliveryChallen = () => {
     try {
       const response = await apiCalls(
         'get',
-        `outward/getDocidDocdatePartnoPartDescFromPickRequestForDeliveryChallan?branch=${branch}&branchCode=${cbranch}&buyerOrderNo=${buyerOrderNo}&client=${client}&finYear=${finYear}&orgId=${orgId}&warehouse=${warehouse}`
+        `deliverychallan/getDocidDocdatePartnoPartDescFromPickRequestForDeliveryChallan?branch=${branch}&branchCode=${cbranch}&buyerOrderNo=${buyerOrderNo}&client=${client}&finYear=${finYear}&orgId=${orgId}&warehouse=${warehouse}`
       );
 
       console.log('API Response:', response);
@@ -366,7 +366,7 @@ export const DeliveryChallen = () => {
     try {
       const response = await apiCalls(
         'get',
-        `outward/getAllDeliveryChallan?branch=${branch}&branchCode=${cbranch}&client=${client}&finYear=${finYear}&orgId=${orgId}&warehouse=${warehouse}`
+        `deliverychallan/getAllDeliveryChallan?branch=${branch}&branchCode=${cbranch}&client=${client}&finYear=${finYear}&orgId=${orgId}&warehouse=${warehouse}`
       );
 
       console.log('API Response:', response);
@@ -385,7 +385,7 @@ export const DeliveryChallen = () => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `outward/getDeliveryChallanById?id=${row.original.id}`);
+      const response = await apiCalls('get', `deliverychallan/getDeliveryChallanById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -831,7 +831,7 @@ export const DeliveryChallen = () => {
 
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `outward/createUpdatedDeliveryChallan`, saveFormData);
+        const response = await apiCalls('put', `deliverychallan/createUpdatedDeliveryChallan`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
@@ -1261,19 +1261,6 @@ export const DeliveryChallen = () => {
                 />
               </div>
 
-              {/* <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.pkgUom}>
-                  <InputLabel id="pkgUom">PKG UOM</InputLabel>
-                  <Select labelId="pkgUom" label="PKG UOM" value={formData.pkgUom} onChange={handleInputChange} name="pkgUom">
-                    {supplierList.map((supplier) => (
-                      <MenuItem key={supplier.id} value={supplier.supplierShortName}>
-                        {supplier.supplierShortName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.pkgUom && <FormHelperText>{fieldErrors.pkgUom}</FormHelperText>}
-                </FormControl>
-              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="PKG UOM"
@@ -1302,19 +1289,6 @@ export const DeliveryChallen = () => {
                 />
               </div>
 
-              {/* <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gwtUom}>
-                  <InputLabel id="gwtUom">GWT UOM</InputLabel>
-                  <Select labelId="gwtUom" label="GWT UOM" value={formData.gwtUom} onChange={handleInputChange} name="gwtUom">
-                    {supplierList.map((supplier) => (
-                      <MenuItem key={supplier.id} value={supplier.supplierShortName}>
-                        {supplier.supplierShortName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.gwtUom && <FormHelperText>{fieldErrors.gwtUom}</FormHelperText>}
-                </FormControl>
-              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="GWT UOM"
@@ -1328,26 +1302,6 @@ export const DeliveryChallen = () => {
                   helperText={fieldErrors.gwtUom}
                 />
               </div>
-
-              {/* <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.transportName}>
-                  <InputLabel id="transportName">Transporter Name</InputLabel>
-                  <Select
-                    labelId="transportName"
-                    label="Transporter Name"
-                    value={formData.transportName}
-                    onChange={handleInputChange}
-                    name="transportName"
-                  >
-                    {supplierList.map((supplier) => (
-                      <MenuItem key={supplier.id} value={supplier.supplierShortName}>
-                        {supplier.supplierShortName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.transportName && <FormHelperText>{fieldErrors.transportName}</FormHelperText>}
-                </FormControl>
-              </div> */}
 
               <div className="col-md-3 mb-3">
                 <TextField
@@ -1407,20 +1361,6 @@ export const DeliveryChallen = () => {
                   helperText={fieldErrors.bin}
                 />
               </div>
-
-              {/* <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.taxType}>
-                  <InputLabel id="taxType">Tax Type</InputLabel>
-                  <Select labelId="taxType" label="Tax Type" value={formData.taxType} onChange={handleInputChange} name="taxType">
-                    {supplierList.map((supplier) => (
-                      <MenuItem key={supplier.id} value={supplier.supplierShortName}>
-                        {supplier.supplierShortName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.taxType && <FormHelperText>{fieldErrors.taxType}</FormHelperText>}
-                </FormControl>
-              </div> */}
 
               <div className="col-md-3 mb-3">
                 <TextField
@@ -1518,235 +1458,7 @@ export const DeliveryChallen = () => {
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
-                                    {/* <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.pickRequestNo}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, pickRequestNo: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              pickRequestNo: !value ? 'pick Request No is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrNoDetailsError[index]?.pickRequestNo ? 'error form-control' : 'form-control'}
-                                        // //style={{ marginBottom: '10px' }}
-                                      />
-                                      {lrNoDetailsError[index]?.pickRequestNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].pickRequestNo}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                        <DatePicker
-                                          value={row.prDate ? dayjs(row.prDate, 'YYYY-MM-DD') : null}
-                                          onChange={(date) => {
-                                            const formattedDate = date ? date.format('YYYY-MM-DD') : '';
-                                            setLrNoDetailsTable((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, prDate: formattedDate } : r))
-                                            );
-                                            setLrNoDetailsError((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                prDate: !formattedDate ? 'PR Date is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          slotProps={{
-                                            textField: { size: 'small', clearable: true, style: { width: '200px' } }
-                                          }}
-                                          format="YYYY/MM/DD"
-                                          error={!!lrNoDetailsError[index]?.prDate}
-                                          helperText={lrNoDetailsError[index]?.prDate && 'PR Date is required'}
-                                        />
-                                      </LocalizationProvider>
-                                      {lrNoDetailsError[index]?.prDate && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].prDate}
-                                        </div>
-                                      )}
-                                    </td>
 
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.partNo}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, partNo: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], partNo: !value ? 'Part No is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrNoDetailsError[index]?.partNo ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrNoDetailsError[index]?.partNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].partNo}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.partDescription}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, partDescription: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              partDescription: !value ? 'Part Description is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrNoDetailsError[index]?.partDescription ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrNoDetailsError[index]?.partDescription && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].partDescription}
-                                        </div>
-                                      )}
-                                    </td> */}
-
-                                    {/* <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '200px' }}
-                                        value={row.pickRequestNo}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, pickRequestNo: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              pickRequestNo: !value ? 'Pick Request No is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrNoDetailsError[index]?.pickRequestNo ? 'error form-control' : 'form-control'}
-                                        disabled // Disable the input field
-                                      />
-                                      {lrNoDetailsError[index]?.pickRequestNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].pickRequestNo}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                        <DatePicker
-                                          value={row.prDate ? dayjs(row.prDate, 'YYYY-MM-DD') : null}
-                                          onChange={(date) => {
-                                            const formattedDate = date ? date.format('YYYY-MM-DD') : '';
-                                            setLrNoDetailsTable((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, prDate: formattedDate } : r))
-                                            );
-                                            setLrNoDetailsError((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                prDate: !formattedDate ? 'PR Date is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          slotProps={{
-                                            textField: { size: 'small', clearable: true, style: { width: '200px' }, disabled: true } // Disable the DatePicker
-                                          }}
-                                          format="YYYY/MM/DD"
-                                          error={!!lrNoDetailsError[index]?.prDate}
-                                          helperText={lrNoDetailsError[index]?.prDate && 'PR Date is required'}
-                                        />
-                                      </LocalizationProvider>
-                                      {lrNoDetailsError[index]?.prDate && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].prDate}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.partNo}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, partNo: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], partNo: !value ? 'Part No is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrNoDetailsError[index]?.partNo ? 'error form-control' : 'form-control'}
-                                        disabled // Disable the input field
-                                      />
-                                      {lrNoDetailsError[index]?.partNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].partNo}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.partDescription}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, partDescription: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              partDescription: !value ? 'Part Description is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrNoDetailsError[index]?.partDescription ? 'error form-control' : 'form-control'}
-                                        disabled // Disable the input field
-                                      />
-                                      {lrNoDetailsError[index]?.partDescription && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].partDescription}
-                                        </div>
-                                      )}
-                                    </td> */}
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
@@ -1756,6 +1468,7 @@ export const DeliveryChallen = () => {
                                         disabled // Disable the input field
                                       />
                                     </td>
+
                                     <td className="border px-2 py-2">
                                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                                         <DatePicker
@@ -1767,6 +1480,7 @@ export const DeliveryChallen = () => {
                                         />
                                       </LocalizationProvider>
                                     </td>
+
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
@@ -1814,55 +1528,6 @@ export const DeliveryChallen = () => {
                                       )}
                                     </td>
 
-                                    {/* <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        style={{ width: '100px' }}
-                                        value={row.shippedQty}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, shippedQty: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], shippedQty: !value ? 'Shipped Qty is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrNoDetailsError[index]?.shippedQty ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrNoDetailsError[index]?.shippedQty && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].shippedQty}
-                                        </div>
-                                      )}
-                                    </td> */}
-                                    {/* <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        style={{ width: '100px' }}
-                                        value={row.shippedQty}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, shippedQty: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], shippedQty: !value ? 'Shipped Qty is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrNoDetailsError[index]?.shippedQty ? 'error form-control' : 'form-control'}
-                                        disabled // Disable the input field
-                                      />
-                                      {lrNoDetailsError[index]?.shippedQty && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].shippedQty}
-                                        </div>
-                                      )}
-                                    </td> */}
                                     <td className="border px-2 py-2">
                                       <input
                                         type="number"
@@ -1971,40 +1636,6 @@ export const DeliveryChallen = () => {
                                         </div>
                                       )}
                                     </td>
-
-                                    {/* <td className="border px-2 py-2">
-                                      <select
-                                        value={row.gstTax}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-
-                                          setLrNoDetailsTable((prev) => prev.map((r) => (r.id === row.id ? { ...r, gstTax: value } : r)));
-
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              gstTax: !value ? 'Gst Tax is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrNoDetailsError[index]?.gstTax ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">Select Option</option>
-                                        {partNoList.map((part) => (
-                                          <option key={part.id} value={part.partNo}>
-                                            {part.partNo}
-                                          </option>
-                                        ))}
-                                      </select>
-                                      {lrNoDetailsError[index]?.gstTax && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].gstTax}
-                                        </div>
-                                      )}
-                                    </td> */}
 
                                     <td className="border px-2 py-2">
                                       <input
