@@ -25,7 +25,7 @@ const StockProcessMain = () => {
             <Tab value={2} label="Code Conversion" />
             <Tab value={3} label="Cycle Count" />
             <Tab value={4} label="De-Kitting" />
-            <Tab value={5} label="Stock Consolidtion" />
+            <Tab value={5} label="Stock Consolidation" />
           </Tabs>
         </Box>
         <Box sx={{ padding: 2 }}>

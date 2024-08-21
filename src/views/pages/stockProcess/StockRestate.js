@@ -509,7 +509,7 @@ export const StockRestate = () => {
       toBinType: '',
       toBinClass: '',
       toCellType: '',
-      fromQty: 5000,
+      fromQty: '',
       toQty: '',
       remainQty: '',
       fromCore: '',
@@ -551,7 +551,7 @@ export const StockRestate = () => {
     if (!lastRow) return false;
 
     if (table === detailTableData) {
-      return !lastRow.partNo;
+      return !lastRow.partNo || !lastRow.fromBin || !lastRow.grnNo || !lastRow.batchNo || !lastRow.toBin;
     }
     return false;
   };
@@ -562,10 +562,11 @@ export const StockRestate = () => {
         const newErrors = [...prevErrors];
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
-          partNo: !table[table.length - 1].partNo ? 'Part No is required' : ''
-          // binCategory: !table[table.length - 1].binCategory ? 'Bin Category is required' : '',
-          // status: !table[table.length - 1].status ? 'Status is required' : '',
-          // core: !table[table.length - 1].core ? 'Core is required' : ''
+          partNo: !table[table.length - 1].partNo ? 'Part No is required' : '',
+          fromBin: !table[table.length - 1].fromBin ? 'Bin Category is required' : '',
+          grnNo: !table[table.length - 1].grnNo ? 'Status is required' : '',
+          batchNo: !table[table.length - 1].batchNo ? 'Core is required' : '',
+          toBin: !table[table.length - 1].toBin ? 'Status is required' : ''
         };
         return newErrors;
       });
@@ -1147,12 +1148,12 @@ export const StockRestate = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.transferFrom}>
-                  <InputLabel id="transferFrom-label">Transfer From</InputLabel>
+                  <InputLabel id="transferFrom-label">Transfer From *</InputLabel>
                   <Select
                     labelId="transferFrom-label"
                     id="transferFrom"
                     name="transferFrom"
-                    label="Transfer From"
+                    label="Transfer From *"
                     value={formData.transferFrom}
                     onChange={handleInputChange}
                     disabled={viewId ? true : false}
@@ -1166,12 +1167,12 @@ export const StockRestate = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.transferTo}>
-                  <InputLabel id="transferTo-label">Transfer To</InputLabel>
+                  <InputLabel id="transferTo-label">Transfer To *</InputLabel>
                   <Select
                     labelId="transferTo-label"
                     id="transferTo"
                     name="transferTo"
-                    label="Transfer To"
+                    label="Transfer To *"
                     value={formData.transferTo}
                     onChange={handleInputChange}
                     disabled={viewId ? true : false}
@@ -1240,13 +1241,13 @@ export const StockRestate = () => {
                                     S.No
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    From Bin
+                                    From Bin *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
                                     From Bin Type
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Part No
+                                    Part No *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
                                     Part Desc
@@ -1255,13 +1256,13 @@ export const StockRestate = () => {
                                     SKU
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    GRN No
+                                    GRN No *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Batch No
+                                    Batch No *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    To Bin
+                                    To Bin *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
                                     To Bin Type
@@ -1270,7 +1271,7 @@ export const StockRestate = () => {
                                     From QTY
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    To QTY
+                                    To QTY *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
                                     Remain QTY
@@ -1342,7 +1343,10 @@ export const StockRestate = () => {
                                               )}
                                           </select>
                                           {detailTableErrors[index]?.partNo && (
-                                            <div className="mt-2 error-text">{detailTableErrors[index].partNo}</div>
+                                            // <div className="mt-2 error-text">{detailTableErrors[index].partNo}</div>
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailTableErrors[index].partNo}
+                                            </div>
                                           )}
                                         </td>
                                         <td className="border px-2 py-2">
