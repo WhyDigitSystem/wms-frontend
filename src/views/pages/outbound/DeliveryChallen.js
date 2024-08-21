@@ -761,7 +761,7 @@ export const DeliveryChallen = () => {
 
     setFieldErrors(errors);
 
-    if (Object.keys(errors).length === 0) {
+    if (Object.keys(errors).length === 0 && lrNoDetailsTableValid) {
       setIsLoading(true);
       const lrNoDetailsVO = lrNoDetailsTable.map((row) => ({
         pickRequestNo: row.pickRequestNo,
