@@ -1,37 +1,34 @@
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import { useState, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
-import { DatePicker } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import dayjs from 'dayjs';
-import { FormHelperText, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormHelperText } from '@mui/material';
+import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import GridOnIcon from '@mui/icons-material/GridOn';
-import ActionButton from 'utils/ActionButton';
-import Checkbox from '@mui/material/Checkbox';
-import { showToast } from 'utils/toast-component';
-import apiCalls from 'apicall';
-import { getAllActiveBranches, getAllActiveBuyer } from 'utils/CommonFunctions';
 import Paper from '@mui/material/Paper';
+import Select from '@mui/material/Select';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
+import { DatePicker } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import apiCalls from 'apicall';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
 import Draggable from 'react-draggable';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/ActionButton';
+import { getAllActiveBranches, getAllActiveBuyer } from 'utils/CommonFunctions';
+import { showToast } from 'utils/toast-component';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -53,7 +50,7 @@ export const BuyerOrder = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [loginUserId, setLoginUserId] = useState(localStorage.getItem('userId'));
-  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
@@ -507,7 +504,7 @@ export const BuyerOrder = () => {
 
   const handleSaveSelectedRows = () => {
     const selectedData = selectedRows.map((index) => skuDetails[index]);
-    setSkuDetailsTableData([...skuDetailsTableData, ...selectedData]);
+    setSkuDetailsTableData([...selectedData]);
     console.log('data', selectedData);
     setSelectedRows([]);
     setSelectAll(false);

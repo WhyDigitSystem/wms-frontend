@@ -23,27 +23,30 @@ import { useEffect, useRef, useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import { getAllActiveGroups, getAllActiveUnits } from 'utils/CommonFunctions';
+import { getAllActiveGroups } from 'utils/CommonFunctions';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 export const PickRequest = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
+  const [buyerOrderNoList, setBuyerOrderNoList] = useState([]);
   const [listView, setListView] = useState(false);
   const [editId, setEditId] = useState('');
   const [unitList, setUnitList] = useState([]);
   const [groupList, setGroupList] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
-  const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
-  const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
-  const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
-  const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
+  const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [client, setClient] = useState(localStorage.getItem('client'));
+  const [customer, setCustomer] = useState(localStorage.getItem('customer'));
+  const [warehouse, setWarehouse] = useState(localStorage.getItem('warehouse'));
+  // const [finYear, setFinYear] = useState(localStorage.getItem('finYear') ? localStorage.getItem('finYear') : '2024');
+  const [finYear, setFinYear] = useState('2024');
 
   const [formData, setFormData] = useState({
     docId: '',
-    docDate: '',
+    docDate: dayjs(),
     pickRequestId: '',
     dispatch: '',
     buyerOrderNo: '',
@@ -58,7 +61,7 @@ export const PickRequest = () => {
     outTime: '',
     clientAddress: '',
     customerAddress: '',
-    status: '',
+    status: 'Edit',
     boAmentment: '',
     controlBranch: localStorage.getItem('branchCode'),
     active: true,
@@ -67,13 +70,44 @@ export const PickRequest = () => {
     roundOff: '',
     invDiscountAmount: '',
     watAmountWithoutForm: '',
-    totalAmount: ''
+    totalAmount: '',
+    buyersReference: '',
+    invoiceNo: '',
+    clientShortName: '',
+    pickOrder: 'FIFO'
   });
 
   const [value, setValue] = useState(0);
   const [itemTableData, setItemTableData] = useState([
     {
-      id: 1,
+      amount: '',
+      avlQty: '',
+      batchDate: '',
+      batchNo: '',
+      binClass: '',
+      binType: '',
+      cellType: '',
+      clientCode: '',
+      core: '',
+      expDate: '',
+      location: '',
+      lotNo: '',
+      orderQty: '',
+      partDesc: '',
+      partNo: '',
+      pcKey: '',
+      pickQty: '',
+      pickQtyPerLocation: '',
+      rate: '',
+      remainingQty: '',
+      remarks: '',
+      runningQty: '',
+      sku: '',
+      ssku: '',
+      status: '',
+      stockDate: '',
+      tax: '',
+      weight: '',
       mrp: '',
       fDate: null,
       tDate: null
@@ -83,6 +117,34 @@ export const PickRequest = () => {
   const handleAddRow = () => {
     const newRow = {
       id: Date.now(),
+      amount: '',
+      avlQty: '',
+      batchDate: '',
+      batchNo: '',
+      binClass: '',
+      binType: '',
+      cellType: '',
+      clientCode: '',
+      core: '',
+      expDate: '',
+      location: '',
+      lotNo: '',
+      orderQty: '',
+      partDesc: '',
+      partNo: '',
+      pcKey: '',
+      pickQty: '',
+      pickQtyPerLocation: '',
+      rate: '',
+      remainingQty: '',
+      remarks: '',
+      runningQty: '',
+      sku: '',
+      ssku: '',
+      status: '',
+      stockDate: '',
+      tax: '',
+      weight: '',
       mrp: '',
       fDate: null,
       tDate: null
@@ -91,6 +153,34 @@ export const PickRequest = () => {
     setItemTableErrors([
       ...itemTableErrors,
       {
+        amount: '',
+        avlQty: '',
+        batchDate: '',
+        batchNo: '',
+        binClass: '',
+        binType: '',
+        cellType: '',
+        clientCode: '',
+        core: '',
+        expDate: '',
+        location: '',
+        lotNo: '',
+        orderQty: '',
+        partDesc: '',
+        partNo: '',
+        pcKey: '',
+        pickQty: '',
+        pickQtyPerLocation: '',
+        rate: '',
+        remainingQty: '',
+        remarks: '',
+        runningQty: '',
+        sku: '',
+        ssku: '',
+        status: '',
+        stockDate: '',
+        tax: '',
+        weight: '',
         mrp: '',
         fDate: null,
         tDate: null
@@ -100,6 +190,34 @@ export const PickRequest = () => {
 
   const [itemTableErrors, setItemTableErrors] = useState([
     {
+      amount: '',
+      avlQty: '',
+      batchDate: '',
+      batchNo: '',
+      binClass: '',
+      binType: '',
+      cellType: '',
+      clientCode: '',
+      core: '',
+      expDate: '',
+      location: '',
+      lotNo: '',
+      orderQty: '',
+      partDesc: '',
+      partNo: '',
+      pcKey: '',
+      pickQty: '',
+      pickQtyPerLocation: '',
+      rate: '',
+      remainingQty: '',
+      remarks: '',
+      runningQty: '',
+      sku: '',
+      ssku: '',
+      status: '',
+      stockDate: '',
+      tax: '',
+      weight: '',
       mrp: '',
       fDate: null,
       tDate: null
@@ -130,6 +248,7 @@ export const PickRequest = () => {
     controlBranch: localStorage.getItem('branchCode'),
     active: true,
     charges: '',
+    status: '',
     lineDiscount: '',
     roundOff: '',
     invDiscountAmount: '',
@@ -164,10 +283,52 @@ export const PickRequest = () => {
   ]);
   useEffect(() => {
     console.log('LISTVIEW FIELD CURRENT VALUE IS', listView);
-    getAllUnits();
+    // getAllUnits();
+    getBuyerOrderRefNo();
     getAllGroups();
-    getAllItems();
+    getDocId();
   }, []);
+
+  const getDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `guhan/getPickRequestDocId?orgId=${orgId}&branchCode=${branchCode}&client=${client}&branch=${branch}&finYear=${finYear}`
+      );
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        // setDocId(response.paramObjectsMap.locationMovementDocId);
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          docId: response.paramObjectsMap.pickRequestDocId
+        }));
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getBuyerOrderRefNo = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `pickrequest/getBuyerRefNoForPickRequest?orgId=${orgId}&branchCode=${branchCode}&client=${client}&warehouse=${warehouse}&finYear=${finYear}`
+      );
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        // Store the full buyerOrderVO objects in the list
+        setBuyerOrderNoList(response.paramObjectsMap.buyerOrderVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const getCurrentTime = () => {
     return dayjs().format('HH:mm:ss');
@@ -178,14 +339,6 @@ export const PickRequest = () => {
     setFormData((prev) => ({ ...prev, outTime: getCurrentTime() }));
   }, []);
 
-  const getAllUnits = async () => {
-    try {
-      const unitData = await getAllActiveUnits(orgId);
-      setUnitList(unitData);
-    } catch (error) {
-      console.error('Error fetching country data:', error);
-    }
-  };
   const getAllGroups = async () => {
     try {
       const groupData = await getAllActiveGroups(orgId);
@@ -196,18 +349,18 @@ export const PickRequest = () => {
       console.error('Error fetching country data:', error);
     }
   };
-  const getAllItems = async () => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `warehousemastercontroller/material?cbranch=${loginBranchCode}&client=${loginClient}&orgid=${orgId}`
-      );
-      setListViewData(response.paramObjectsMap.materialVO);
-      console.log('TEST LISTVIEW DATA', response);
-    } catch (err) {
-      console.log('error', err);
-    }
-  };
+  // const getAllItems = async () => {
+  //   try {
+  //     const response = await apiCalls(
+  //       'get',
+  //       `warehousemastercontroller/material?cbranch=${loginBranchCode}&client=${loginClient}&orgid=${orgId}`
+  //     );
+  //     setListViewData(response.paramObjectsMap.materialVO);
+  //     console.log('TEST LISTVIEW DATA', response);
+  //   } catch (err) {
+  //     console.log('error', err);
+  //   }
+  // };
   const getAllItemById = async (row) => {
     console.log('THE SELECTED ITEM ID IS:', row.original.id);
     setEditId(row.original.id);
@@ -280,20 +433,37 @@ export const PickRequest = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    const numericRegex = /^[0-9]*$/;
-    const alphanumericRegex = /^[A-Za-z0-9]*$/;
-    const specialCharsRegex = /^[A-Za-z0-9@_\-*]*$/;
-
-    let errorMessage = '';
 
     // Check if the value is a string before applying toUpperCase
     const processedValue = typeof value === 'string' ? value.toUpperCase() : value;
 
-    if (errorMessage) {
-      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-    } else {
-      setFormData({ ...formData, [name]: processedValue });
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+    setFormData({ ...formData, [name]: processedValue });
+
+    if (name === 'buyerOrderRefNo') {
+      // Find the selected order from the full list of orders
+      const selectedOrder = buyerOrderNoList.find(
+        (order) => order.orderNo && processedValue && order.orderNo.toLowerCase() === processedValue.toLowerCase()
+      );
+
+      if (selectedOrder) {
+        const refDate = selectedOrder.refDate ? dayjs(selectedOrder.refDate) : null;
+
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          buyerOrderRefNo: selectedOrder.orderNo || '',
+          buyerOrderRefDate: refDate, // Set as dayjs object
+          clientName: selectedOrder.billToName || '',
+          clientShortName: selectedOrder.billToShortName || '',
+          customerName: selectedOrder.buyer || '',
+          clientAddress: selectedOrder.billToAddress || '',
+          // customerAddress: selectedOrder.shipToName || '',
+          buyerOrderNo: selectedOrder.docId || '',
+          buyersReference: selectedOrder.refNo || '',
+          invoiceNo: selectedOrder.invoiceNo || ''
+        }));
+      } else {
+        console.log('No matching order found for the selected value.');
+      }
     }
   };
 
@@ -349,10 +519,37 @@ export const PickRequest = () => {
     });
     setItemTableData([
       {
-        id: 1,
+        amount: '',
+        avlQty: '',
+        batchDate: '',
+        batchNo: '',
+        binClass: '',
+        binType: '',
+        cellType: '',
+        clientCode: '',
+        core: '',
+        expDate: '',
+        location: '',
+        lotNo: '',
+        orderQty: '',
+        partDesc: '',
+        partNo: '',
+        pcKey: '',
+        pickQty: '',
+        pickQtyPerLocation: '',
+        rate: '',
+        remainingQty: '',
+        remarks: '',
+        runningQty: '',
+        sku: '',
+        ssku: '',
+        status: '',
+        stockDate: '',
+        tax: '',
+        weight: '',
         mrp: '',
-        fDate: '',
-        tDate: ''
+        fDate: null,
+        tDate: null
       }
     ]);
     setFieldErrors({
@@ -382,21 +579,18 @@ export const PickRequest = () => {
       watAmountWithoutForm: '',
       totalAmount: ''
     });
+    getDocId();
     setItemTableErrors('');
     setEditId('');
   };
 
   const handleSave = async () => {
     const errors = {};
-    if (!formData.partNo) {
-      errors.partNo = 'Part No is required';
+
+    if (!formData.buyerOrderRefNo) {
+      errors.buyerOrderRefNo = 'buyerOrderRefNo is required';
     }
-    if (!formData.partDesc) {
-      errors.partDesc = 'part Desc is required';
-    }
-    if (!formData.sku) {
-      errors.sku = 'SKU is required';
-    }
+
     if (!formData.status) {
       errors.status = 'Status is required';
     }
@@ -445,17 +639,17 @@ export const PickRequest = () => {
         barcode: formData.barcode,
         // itemVo: itemVo, //no
         orgId: orgId,
-        createdBy: loginUserName,
-        breadth: 0,
-        client: loginClient,
-        customer: loginCustomer,
-        height: 0,
-        length: 0,
-        palletQty: '',
-        warehouse: loginWarehouse,
-        weight: 0,
-        branch: loginBranch,
-        branchCode: loginBranchCode
+        // createdBy: loginUserName,
+        breadth: 0
+        // client: loginClient,
+        // customer: loginCustomer,
+        // height: 0,
+        // length: 0,
+        // palletQty: '',
+        // warehouse: loginWarehouse,
+        // weight: 0,
+        // branch: loginBranch,
+        // branchCode: loginBranchCode
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -467,7 +661,7 @@ export const PickRequest = () => {
           handleClear();
           showToast('success', editId ? ' Item Updated Successfully' : 'Item created successfully');
           setIsLoading(false);
-          getAllItems();
+          // getAllItems();
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Item creation failed');
           setIsLoading(false);
@@ -549,6 +743,7 @@ export const PickRequest = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
+                  disabled
                   name="docId"
                   value={formData.docId}
                   onChange={handleInputChange}
@@ -557,32 +752,48 @@ export const PickRequest = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  label="DocDate"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="DocDate"
-                  value={formData.DocDate}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.DocDate}
-                  helperText={fieldErrors.DocDate}
-                />
+                <FormControl fullWidth variant="filled" size="small">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Doc Date"
+                      value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                      format="DD/MM/YYYY"
+                      disabled
+                    />
+                  </LocalizationProvider>
+                </FormControl>
               </div>
 
               <div className="col-md-3 mb-3">
-                <TextField
-                  label="Buyer Order Ref No"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="buyerOrderRefNo"
-                  value={formData.buyerOrderRefNo}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.buyerOrderRefNo}
-                  helperText={fieldErrors.buyerOrderRefNo}
-                />
+                <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.buyerOrderRefNo}>
+                  <InputLabel id="buyerOrderRefNo-label">Buyer Order Ref No</InputLabel>
+                  <Select
+                    labelId="buyerOrderRefNo-label"
+                    id="buyerOrderRefNo"
+                    name="buyerOrderRefNo"
+                    label="Buyer Order Ref No"
+                    value={formData.buyerOrderRefNo}
+                    onChange={handleInputChange}
+                  >
+                    {/* Default option */}
+                    <MenuItem value="">
+                      <em>None</em>
+                    </MenuItem>
+
+                    {/* Dynamically mapping buyerOrderNoList to MenuItem components */}
+                    {buyerOrderNoList.map((order, index) => (
+                      <MenuItem key={index} value={order.orderNo}>
+                        {order.orderNo}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.buyerOrderRefNo && <FormHelperText error>{fieldErrors.buyerOrderRefNo}</FormHelperText>}
+                </FormControl>
               </div>
+
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -679,7 +890,7 @@ export const PickRequest = () => {
                   helperText={fieldErrors.clientAddress}
                 />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label="Dispatch"
                   variant="outlined"
@@ -691,7 +902,7 @@ export const PickRequest = () => {
                   error={!!fieldErrors.dispatch}
                   helperText={fieldErrors.dispatch}
                 />
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="Customer Name"
@@ -719,7 +930,7 @@ export const PickRequest = () => {
                 />
               </div>
 
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label="Due Days"
                   variant="outlined"
@@ -731,9 +942,9 @@ export const PickRequest = () => {
                   error={!!fieldErrors.dueDays}
                   helperText={fieldErrors.dueDays}
                 />
-              </div>
+              </div> */}
 
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label="NoOfBoxes"
                   variant="outlined"
@@ -745,7 +956,7 @@ export const PickRequest = () => {
                   error={!!fieldErrors.noOfBoxes}
                   helperText={fieldErrors.noOfBoxes}
                 />
-              </div>
+              </div> */}
 
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
@@ -758,11 +969,28 @@ export const PickRequest = () => {
                     value={formData.pickOrder}
                     onChange={handleInputChange}
                   >
-                    {unitList?.map((row) => (
-                      <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
-                        {row.unitName.toUpperCase()}
-                      </MenuItem>
-                    ))}
+                    <MenuItem value="FIFO" default>
+                      FIFO
+                    </MenuItem>
+                    <MenuItem value="LILO">LIFO</MenuItem>
+                    <MenuItem value="FIFO">FIFO</MenuItem>
+                  </Select>
+                  {fieldErrors.pickOrder && <FormHelperText error>{fieldErrors.pickOrder}</FormHelperText>}
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
+                  <InputLabel id="purchaseUnit-label">Status</InputLabel>
+                  <Select
+                    labelId="purchaseUnit-label"
+                    id="purchaseUnit"
+                    name="status"
+                    label="Status"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="Edit">Edit</MenuItem>
+                    <MenuItem value="Confirm">Confirm</MenuItem>
                   </Select>
                   {fieldErrors.pickOrder && <FormHelperText error>{fieldErrors.pickOrder}</FormHelperText>}
                 </FormControl>
@@ -824,38 +1052,39 @@ export const PickRequest = () => {
                                     Part Description
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
+                                    SKU
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
+                                    CORE
+                                  </th>
+
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
+                                    Location
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     Batch No
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     Lot No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    SKU
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Location
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    To Location
-                                  </th>
+
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     Order Qty
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Picked Qty Per Location
+                                    Avail Qty
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Revised Qty Per Location
+                                    Pick Qty
                                   </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
+                                    Remaining Qty
+                                  </th>
+
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     Weight
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    PGroup
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Exp Date
-                                  </th>
+
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     Rate
                                   </th>
@@ -871,287 +1100,282 @@ export const PickRequest = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {itemTableData.map((row, index) => (
-                                  <tr key={row.id}>
-                                    <td className="border px-2 py-2 text-center">
-                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
-                                    </td>
-                                    <td className="text-center">
-                                      <div className="pt-2">{index + 1}</div>
-                                    </td>
-
-                                    {/* Part Code */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        style={{ width: '100px' }}
-                                        value={row.partCode}
-                                        onChange={(e) => handleInputChange(e, index, 'partCode')}
-                                        className={itemTableErrors[index]?.partCode ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.partCode && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].partCode}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Part Description */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.partDescription}
-                                        onChange={(e) => handleInputChange(e, index, 'partDescription')}
-                                        className={itemTableErrors[index]?.partDescription ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.partDescription && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].partDescription}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Batch No */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.batchNo}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'batchNo')}
-                                        className={itemTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.batchNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].batchNo}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Lot No */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.lotNo}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'lotNo')}
-                                        className={itemTableErrors[index]?.lotNo ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.lotNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].lotNo}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* SKU */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.sku}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'sku')}
-                                        className={itemTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.sku && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].sku}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Location */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.location}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'location')}
-                                        className={itemTableErrors[index]?.location ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.location && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].location}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* To Location */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.toLocation}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'toLocation')}
-                                        className={itemTableErrors[index]?.toLocation ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.toLocation && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].toLocation}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Order Qty */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.orderQty}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'orderQty')}
-                                        className={itemTableErrors[index]?.orderQty ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.orderQty && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].orderQty}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Picked Qty Per Location */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.pickedQtyPerLocation}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'pickedQtyPerLocation')}
-                                        className={itemTableErrors[index]?.pickedQtyPerLocation ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.pickedQtyPerLocation && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].pickedQtyPerLocation}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Revised Qty Per Location */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.revisedQtyPerLocation}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'revisedQtyPerLocation')}
-                                        className={itemTableErrors[index]?.revisedQtyPerLocation ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.revisedQtyPerLocation && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].revisedQtyPerLocation}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Weight */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.weight}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'weight')}
-                                        className={itemTableErrors[index]?.weight ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.weight && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].weight}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* PGroup */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.pGroup}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'pGroup')}
-                                        className={itemTableErrors[index]?.pGroup ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.pGroup && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].pGroup}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Exp Date */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="date"
-                                        value={row.expDate}
-                                        onChange={(e) => handleInputChange(e, index, 'expDate')}
-                                        className={itemTableErrors[index]?.expDate ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.expDate && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].expDate}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Rate */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.rate}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'rate')}
-                                        className={itemTableErrors[index]?.rate ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.rate && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].rate}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Tax */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.tax}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'tax')}
-                                        className={itemTableErrors[index]?.tax ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.tax && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].tax}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Amount */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.amount}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'amount')}
-                                        className={itemTableErrors[index]?.amount ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.amount && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].amount}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Remarks */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.remarks}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'remarks')}
-                                        className={itemTableErrors[index]?.remarks ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.remarks && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].remarks}
-                                        </div>
-                                      )}
+                                {itemTableData.length === 0 ? (
+                                  <tr>
+                                    <td colSpan="18" className="text-center py-2">
+                                      No Data Found
                                     </td>
                                   </tr>
-                                ))}
+                                ) : (
+                                  itemTableData.map((row, index) => (
+                                    <tr key={row.id}>
+                                      <td className="border px-2 py-2 text-center">
+                                        <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+                                      </td>
+                                      <td className="text-center">
+                                        <div className="pt-2">{index + 1}</div>
+                                      </td>
+
+                                      {/* Part Code */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="number"
+                                          style={{ width: '100px' }}
+                                          value={row.partCode}
+                                          onChange={(e) => handleInputChange(e, index, 'partCode')}
+                                          className={itemTableErrors[index]?.partCode ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.partCode && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].partCode}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Part Description */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          style={{ width: '100px' }}
+                                          value={row.partDescription}
+                                          onChange={(e) => handleInputChange(e, index, 'partDescription')}
+                                          className={itemTableErrors[index]?.partDescription ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.partDescription && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].partDescription}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Batch No */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.batchNo}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'batchNo')}
+                                          className={itemTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.batchNo && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].batchNo}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Lot No */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.lotNo}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'lotNo')}
+                                          className={itemTableErrors[index]?.lotNo ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.lotNo && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].lotNo}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* SKU */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.sku}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'sku')}
+                                          className={itemTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.sku && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].sku}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Location */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.location}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'location')}
+                                          className={itemTableErrors[index]?.location ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.location && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].location}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* To Location */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.toLocation}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'toLocation')}
+                                          className={itemTableErrors[index]?.toLocation ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.toLocation && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].toLocation}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Order Qty */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="number"
+                                          value={row.orderQty}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'orderQty')}
+                                          className={itemTableErrors[index]?.orderQty ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.orderQty && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].orderQty}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Picked Qty Per Location */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="number"
+                                          value={row.pickedQtyPerLocation}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'pickedQtyPerLocation')}
+                                          className={itemTableErrors[index]?.pickedQtyPerLocation ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.pickedQtyPerLocation && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].pickedQtyPerLocation}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Revised Qty Per Location */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="number"
+                                          value={row.revisedQtyPerLocation}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'revisedQtyPerLocation')}
+                                          className={itemTableErrors[index]?.revisedQtyPerLocation ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.revisedQtyPerLocation && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].revisedQtyPerLocation}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Weight */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="number"
+                                          value={row.weight}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'weight')}
+                                          className={itemTableErrors[index]?.weight ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.weight && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].weight}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* PGroup */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.pGroup}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'pGroup')}
+                                          className={itemTableErrors[index]?.pGroup ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.pGroup && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].pGroup}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Exp Date */}
+
+                                      {/* Rate */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="number"
+                                          value={row.rate}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'rate')}
+                                          className={itemTableErrors[index]?.rate ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.rate && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].rate}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Tax */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="number"
+                                          value={row.tax}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'tax')}
+                                          className={itemTableErrors[index]?.tax ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.tax && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].tax}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Amount */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="number"
+                                          value={row.amount}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'amount')}
+                                          className={itemTableErrors[index]?.amount ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.amount && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].amount}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Remarks */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.remarks}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'remarks')}
+                                          className={itemTableErrors[index]?.remarks ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.remarks && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].remarks}
+                                          </div>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))
+                                )}
                               </tbody>
                             </table>
                           </div>

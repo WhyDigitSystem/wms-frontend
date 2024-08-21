@@ -5,6 +5,7 @@ import React from 'react';
 import BuyerOrder from './BuyerOrder';
 import PickRequest from './PickRequest';
 import ReversePick from './ReversePick';
+import SalesReturn from './SalesReturn';
 
 const OutboundMain = () => {
   const [value, setValue] = React.useState(0);
@@ -20,12 +21,14 @@ const OutboundMain = () => {
             <Tab value={0} label="Buyer Order" />
             <Tab value={1} label="Pick Request" />
             <Tab value={2} label="Reverse Pick" />
+            <Tab value={3} label="Sales Return" />
           </Tabs>
         </Box>
         <Box sx={{ padding: 2 }}>
           {value === 0 && <BuyerOrder />}
           {value === 1 && <PickRequest />}
           {value === 2 && <ReversePick />}
+          {value === 3 && <SalesReturn />}
         </Box>
       </div>
     </>
