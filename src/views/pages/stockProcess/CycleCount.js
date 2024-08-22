@@ -3,19 +3,16 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import {
-  Avatar,
-  Button,
-  ButtonBase,
   FormHelperText,
-  Tooltip,
-  FormControlLabel,
-  Checkbox,
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  Button,
+  Tooltip,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
-
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
@@ -38,7 +35,7 @@ import BrowserUpdatedIcon from '@mui/icons-material/BrowserUpdated';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import GridOnIcon from '@mui/icons-material/GridOn';
-import { getAllActiveLocationTypes } from 'utils/CommonFunctions';
+import { getAllActiveLocationTypes, getAllActivePartDetails } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -60,50 +57,60 @@ export const CycleCount = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
   const [viewId, setViewId] = useState('');
-  const [warehouseList, setWarehouseList] = useState([]);
-  const [locationTypeList, setLocationTypeList] = useState([]);
-  const [binCategoryList, setBinCategoryList] = useState([]);
+  const [fromBinList, setFromBinList] = useState([]);
+  const [partNoList, setPartNoList] = useState([]);
+  const [grnNoList, setGrnNoList] = useState([]);
+  const [batchNoList, setBatchNoList] = useState([]);
+  const [binList, setBinList] = useState([]);
+  const [fromQtyList, setFromQtyList] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [loginUserId, setLoginUserId] = useState(localStorage.getItem('userId'));
-  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
+  const [loginFinYear, setLoginFinYear] = useState(2024);
+  const [selectAll, setSelectAll] = useState(false);
+  const [selectedRows, setSelectedRows] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
+
   const [formData, setFormData] = useState({
     docId: '',
-    docDate: dayjs(),
-    partNo: ''
+    docDate: dayjs()
   });
   const [value, setValue] = useState(0);
   const [detailTableData, setDetailTableData] = useState([
-    {
-      id: 1,
-      bin: '',
-      binClass: '',
-      binType: '',
-      cellType: '',
-      partNo: '',
-      partDesc: '',
-      sku: '',
-      grnNo: '',
-      grnDate: '',
-      batchNo: '',
-      batchDate: '',
-      expDate: '',
-      avlQty: '',
-      actualQty: '',
-      balQty: ''
-    }
+    // {
+    //   id: 1,
+    //   fromBin: '',
+    //   fromBinClass: '',
+    //   fromBinType: '',
+    //   fromCellType: '',
+    //   partNo: '',
+    //   rowPartNoList: [],
+    //   partDesc: '',
+    //   sku: '',
+    //   grnNo: '',
+    //   grnDate: '',
+    //   batchNo: '',
+    //   batchDate: '',
+    //   expDate: '',
+    //   toBin: '',
+    //   toBinType: '',
+    //   toBinClass: '',
+    //   toCellType: '',
+    //   fromQty: 5000,
+    //   toQty: '',
+    //   remainQty: '',
+    //   fromCore: '',
+    //   toCore: '',
+    //   qcFlag: ''
+    // }
   ]);
 
   const [detailTableErrors, setDetailTableErrors] = useState([
     {
-      bin: '',
-      binClass: '',
-      binType: '',
-      cellType: '',
       partNo: '',
       partDesc: '',
       sku: '',
@@ -112,9 +119,16 @@ export const CycleCount = () => {
       batchNo: '',
       batchDate: '',
       expDate: '',
+      bin: '',
+      binType: '',
+      binClass: '',
+      cellType: '',
+      core: '',
+      lotNo: '',
+      qcFlag: '',
+      status: '',
       avlQty: '',
-      actualQty: '',
-      balQty: ''
+      actualQty: ''
     }
   ]);
   const [modalTableData, setModalTableData] = useState([
@@ -122,62 +136,32 @@ export const CycleCount = () => {
       id: 1,
       partNo: '',
       partDesc: '',
+      sku: '',
+      grnNo: '',
+      grnDate: '',
       batchNo: '',
-      batchDate: null,
-      palletNo: '',
-      sQty: '',
+      batchDate: '',
+      expDate: '',
+      bin: '',
+      binType: '',
+      binClass: '',
       cellType: '',
       core: '',
-      sku: '',
-      expDate: null,
-      pickQty: '',
-      avlQty: '',
-      runQty: '',
+      lotNo: '',
       qcFlag: '',
-      stockDate: null,
-      grnNo: '',
-      grnDate: null,
-      lotNo: ''
-    }
-  ]);
-  const [modalTableErrors, setModalTableErrors] = useState([
-    {
-      id: 1,
-      partNo: '',
-      partDesc: '',
-      batchNo: '',
-      batchDate: null,
-      palletNo: '',
-      sQty: '',
-      cellType: '',
-      core: '',
-      sku: '',
-      expDate: null,
-      pickQty: '',
+      status: '',
       avlQty: '',
-      runQty: '',
-      qcFlag: '',
-      stockDate: null,
-      grnNo: '',
-      grnDate: null,
-      lotNo: ''
+      actualQty: ''
     }
   ]);
 
   const [fieldErrors, setFieldErrors] = useState({
     docId: '',
-    docDate: null,
-    partNo: ''
+    docDate: null
   });
   const listViewColumns = [
-    { accessorKey: 'branch', header: 'Branch', size: 140 },
-    { accessorKey: 'warehouse', header: 'Warehouse', size: 140 },
-    { accessorKey: 'binType', header: 'Bin Type', size: 140 },
-    { accessorKey: 'rowNo', header: 'Row', size: 140 },
-    { accessorKey: 'level', header: 'Identity Level', size: 140 },
-    { accessorKey: 'cellFrom', header: 'Start', size: 140 },
-    { accessorKey: 'cellTo', header: 'End', size: 140 },
-    { accessorKey: 'active', header: 'Active', size: 140 }
+    { accessorKey: 'docId', header: 'Cycle Count ID', size: 140 },
+    { accessorKey: 'docDate', header: 'Cycle Count Date', size: 140 }
   ];
 
   const [listViewData, setListViewData] = useState([]);
@@ -187,63 +171,234 @@ export const CycleCount = () => {
   };
 
   useEffect(() => {
-    getAllWarehousesByLoginBranch();
-    getAllLocationTypes();
-    // getAllCellCategories();
-    // getAllWarehousesLocations();
+    getNewCycleCountDocId();
+    getFromBin();
+    getAllCycleCount();
+    getPartNo();
   }, []);
 
+  const getNewCycleCountDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `cycleCount/getCycleCountInDocId?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
+      );
+      console.log('THE NEW DOCID IS:', response);
+      if (response.status === true) {
+        setFormData((prevData) => ({
+          ...prevData,
+          docId: response.paramObjectsMap.CycleCountInDocId
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+  const getFillGridDetails = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `cycleCount/getCycleCountGridDetails?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&warehouse=${loginWarehouse}`
+      );
+      console.log('THE VAS PICK GRID DETAILS IS:', response);
+      if (response.status === true) {
+        const gridDetails = response.paramObjectsMap.cycleCountGrid;
+        console.log('THE MODAL TABLE DATA FROM API ARE:', gridDetails);
+
+        setModalTableData(
+          gridDetails.map((row) => ({
+            id: row.id,
+            partNo: row.partNo,
+            partDesc: row.partDesc,
+            sku: row.sku,
+            grnNo: row.grnNo,
+            grnDate: row.grnDate,
+            batchNo: row.batch,
+            batchDate: row.batchDate,
+            expDate: row.expdate,
+            bin: row.bin,
+            binType: row.bintype,
+            binClass: row.binclass,
+            cellType: row.cellType,
+            core: row.core,
+            lotNo: row.lotNo,
+            qcFlag: row.qcflag,
+            status: row.status,
+            avlQty: row.avlQty
+          }))
+        );
+        setDetailTableData([]);
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
   const getAllCycleCount = async () => {
     try {
       const response = await apiCalls(
         'get',
-        `warehousemastercontroller/warehouselocation?branch=${loginBranch}&orgid=${orgId}&warehouse=${loginWarehouse}`
+        `cycleCount/getAllCycleCount?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
       );
       console.log('THE WAREHOUSES IS:', response);
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.warehouseLocationVO);
+        setListViewData(response.paramObjectsMap.cycleCountVO);
       }
     } catch (error) {
       console.error('Error fetching employee data:', error);
     }
   };
-  const getAllWarehousesByLoginBranch = async () => {
+  const getFromBin = async (selectedTransferFromFlag) => {
     try {
-      const response = await apiCalls('get', `warehousemastercontroller/warehouse/branch?branchcode=${loginBranchCode}&orgid=${orgId}`);
-      console.log('THE WAREHOUSEES IS:', response);
+      const response = await apiCalls(
+        'get',
+        `stockRestate/getFromBinDetailsForStockRestate?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&tranferFromFlag=${selectedTransferFromFlag}&warehouse=CHENNAI%20WAREHOUSE`
+      );
+      console.log('THE FROM BIN LIST IS:', response);
       if (response.status === true) {
-        setWarehouseList(response.paramObjectsMap.Warehouse);
+        setFromBinList(response.paramObjectsMap.fromBinDetails);
       }
     } catch (error) {
       console.error('Error fetching employee data:', error);
     }
   };
+  const getPartNo = async () => {
+    try {
+      const partData = await getAllActivePartDetails(loginBranchCode, loginClient, orgId);
+      console.log('THE PART NO LIST IS:', partData);
+      setPartNoList(partData);
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+  const getGrnNo = async (selectedRowPartNo, row) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `cycleCount/getGrnNoByCycleCount?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&partNo=${selectedRowPartNo}&warehouse=${loginWarehouse}`
+      );
+      console.log('THE FROM GRN NO LIST IS:', response);
+      if (response.status === true) {
+        setDetailTableData((prev) =>
+          prev.map((r) =>
+            r.id === row.id
+              ? {
+                  ...r,
+                  rowGrnNoList: response.paramObjectsMap.cycleCountGrnNo
+                }
+              : r
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+  const getBatchNo = async (selectedPartNo, selectedGrnNo, row) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `cycleCount/getBatchByCycleCount?branchCode=${loginBranchCode}&client=${loginClient}&grnNO=${selectedGrnNo}&orgId=${orgId}&partNo=${selectedPartNo}&warehouse=${loginWarehouse}`
+      );
+      console.log('THE FROM BIN LIST IS:', response);
+      if (response.status === true) {
+        setDetailTableData((prev) =>
+          prev.map((r) =>
+            r.id === row.id
+              ? {
+                  ...r,
+                  rowBatchNoList: response.paramObjectsMap.cycleCountBatch
+                }
+              : r
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+  const getBinDetails = async (selectedBatchNo, selectedGrnNo, selectedPartNo, row) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `cycleCount/getBinDetailsByCycleCount?batch=${selectedBatchNo}&branchCode=${loginBranchCode}&client=${loginClient}&grnNO=${selectedGrnNo}&orgId=${orgId}&partNo=${selectedPartNo}&warehouse=${loginWarehouse}`
+      );
+      console.log('THE TO BIN LIST ARE:', response);
+      if (response.status === true) {
+        setDetailTableData((prev) =>
+          prev.map((r) =>
+            r.id === row.id
+              ? {
+                  ...r,
+                  rowBinList: response.paramObjectsMap.cycleBinDetails
+                }
+              : r
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+  const getAvlQty = async (selectedBatchNo, selectedBin, selectedGrnNo, selectedPartNo, row) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `cycleCount/getAvlQtyByCycleCount?batch=${selectedBatchNo}&bin=${selectedBin}&branchCode=${loginBranchCode}&client=${loginClient}&grnNO=${selectedGrnNo}&orgId=${orgId}&partNo=${selectedPartNo}&warehouse=${loginWarehouse}`
+      );
+      console.log('THE ROW. TO BIN IS IS:', selectedPartNo);
+
+      setDetailTableData((prevData) =>
+        prevData.map((r) =>
+          r.id === row.id
+            ? {
+                ...r,
+                avlQty: response.paramObjectsMap.avlQty[0]?.avlQty || r.avlQty,
+                status: response.paramObjectsMap.avlQty[0]?.status || r.status
+              }
+            : r
+        )
+      );
+    } catch (error) {
+      console.error('Error fetching locationType data:', error);
+    }
+  };
+
   const getCycleCountById = async (row) => {
-    console.log('THE SELECTED WAREHOUSE ID IS:', row.original.id);
+    console.log('THE SELECTED STOCK RESTATE  ID IS:', row.original.id);
 
     try {
-      const response = await apiCalls('get', `warehousemastercontroller/getWarehouselocationById?id=${row.original.id}`);
-      console.log('THE WAREHOUSEES IS:', response);
+      const response = await apiCalls('get', `cycleCount/getCycleCountById?id=${row.original.id}`);
+      console.log('THE STOCK RESTATE DATA IS:', response);
 
       if (response.status === true) {
         setViewId(row.original.id);
-        const particularWarehouseLocation = response.paramObjectsMap.warehouseLocationVO;
+        const particularCycleCount = response.paramObjectsMap.cycleCountVO;
         setFormData({
-          warehouse: particularWarehouseLocation.warehouse,
-          locationType: particularWarehouseLocation.binType,
-          rowNo: particularWarehouseLocation.rowNo,
-          levelIdentity: particularWarehouseLocation.level,
-          cellFrom: particularWarehouseLocation.cellFrom,
-          cellTo: particularWarehouseLocation.cellTo,
-          active: particularWarehouseLocation.active === 'Active' ? true : false
+          docId: particularCycleCount.docId,
+          docDate: particularCycleCount.docDate
         });
+
         setDetailTableData(
-          particularWarehouseLocation.warehouseLocationDetailsVO.map((loc) => ({
-            id: loc.id,
-            bin: loc.bin,
-            binCategory: loc.binCategory,
-            status: loc.status,
-            core: loc.core
+          particularCycleCount.cycleCountDetailsVO.map((row) => ({
+            id: row.id,
+            partNo: row.partNo,
+            partDesc: row.partDescription,
+            sku: row.sku,
+            grnNo: row.grnNo,
+            grnDate: row.grnDate,
+            batchNo: row.batchNo,
+            batchDate: row.batchDate,
+            expDate: row.expDate,
+            bin: row.bin,
+            binType: row.binType,
+            binClass: row.binClass,
+            cellType: row.cellType,
+            core: row.core,
+            lotNo: row.lotNo,
+            qcFlag: row.qcFlag,
+            status: row.status,
+            avlQty: row.avlQty,
+            actualQty: row.actualQty
           }))
         );
         setListView(false);
@@ -252,59 +407,9 @@ export const CycleCount = () => {
       console.error('Error fetching employee data:', error);
     }
   };
-  // const getAllCellCategories = async () => {
-  //   try {
-  //     const response = await apiCalls('get', `warehousemastercontroller/getAllCellTypeByOrgId?orgId=${orgId}`);
-  //     console.log('THE CELL CATEGORIES IS:', response);
-  //     if (response.status === true) {
-  //       setBinCategoryList(response.paramObjectsMap.cellTypeVO);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching employee data:', error);
-  //   }
-  // };
-
-  const getAllLocationTypes = async () => {
-    try {
-      const locationTypeData = await getAllActiveLocationTypes(orgId);
-      console.log('THE LOCATIONTYPE IS:', locationTypeData);
-
-      setLocationTypeList(locationTypeData);
-    } catch (error) {
-      console.error('Error fetching locationType data:', error);
-    }
-  };
-
-  const getAllBinDetails = async () => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `warehousemastercontroller/getPalletno?endno=${formData.cellTo}&level=${formData.levelIdentity}&rowno=${formData.rowNo}&startno=${formData.cellFrom}`
-      );
-      console.log('THE WAREHOUSE IS:', response);
-      if (response.status === true) {
-        const palletDetails = response.paramObjectsMap.pallet;
-        console.log('THE PALLET DETAILS ARE:', palletDetails);
-
-        setDetailTableData(
-          palletDetails.map((plt) => ({
-            id: plt.id,
-            bin: plt.bin,
-            binCategory: plt.bincategory,
-            status: plt.status === 'T' ? 'True' : 'False',
-            core: plt.core
-          }))
-        );
-      }
-    } catch (error) {
-      console.error('Error fetching employee data:', error);
-    }
-  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    const numericRegex = /^[0-9]*$/;
-    const alphanumericRegex = /^[A-Za-z0-9 ]*$/;
     const specialCharsRegex = /^[A-Za-z0-9#_\-/\\]*$/;
 
     let errorMessage = '';
@@ -323,21 +428,26 @@ export const CycleCount = () => {
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
+      let updatedData = { ...formData, [name]: value.toUpperCase() };
+
       if (name === 'transferFrom') {
-        setFormData((prevData) => ({
-          ...prevData,
-          transferFrom: value,
-          transferFromFlag: (value === 'DEFECTIVE' && 'D') || (value === 'HOLD' && 'H') || (value === 'RELEASE' && 'R') || ''
-        }));
+        updatedData.transferFromFlag = value === 'DEFECTIVE' ? 'D' : value === 'HOLD' ? 'H' : value === 'RELEASE' ? 'R' : '';
+        setFromBinList([]);
+        getFromBin(updatedData.transferFromFlag);
+        // getToBinDetails(updatedData.transferFromFlag);
       } else if (name === 'transferTo') {
-        setFormData((prevData) => ({
-          ...prevData,
-          transferTo: value,
-          transferToFlag: (value === 'DEFECTIVE' && 'D') || (value === 'HOLD' && 'H') || (value === 'RELEASE' && 'R') || ''
-        }));
+        updatedData.transferToFlag = value === 'DEFECTIVE' ? 'D' : value === 'HOLD' ? 'H' : value === 'RELEASE' ? 'R' : '';
       }
-      setFormData({ ...formData, [name]: value.toUpperCase() });
+
+      setFormData(updatedData);
       setFieldErrors({ ...fieldErrors, [name]: '' });
+
+      // Log the updated flag for debugging
+      if (name === 'transferFrom') {
+        console.log('THE TRANSFER FROM FLAG IS:', updatedData.transferFromFlag);
+      } else if (name === 'transferTo') {
+        console.log('THE TRANSFER TO FLAG IS:', updatedData.transferToFlag);
+      }
     }
   };
 
@@ -360,41 +470,53 @@ export const CycleCount = () => {
     }
     const newRow = {
       id: Date.now(),
-      bin: '',
-      binClass: '',
-      binType: '',
-      cellType: '',
       partNo: '',
       partDesc: '',
       sku: '',
+      rowGrnNoList: [],
+      rowBatchNoList: [],
+      rowBinList: [],
       grnNo: '',
       grnDate: '',
       batchNo: '',
       batchDate: '',
       expDate: '',
+      bin: '',
+      binType: '',
+      binClass: '',
+      cellType: '',
+      core: '',
+      lotNo: '',
+      qcFlag: '',
+      status: '',
       avlQty: '',
-      actualQty: '',
-      balQty: ''
+      actualQty: ''
     };
     setDetailTableData([...detailTableData, newRow]);
     setDetailTableErrors([
       ...detailTableErrors,
       {
-        bin: '',
-        binClass: '',
-        binType: '',
-        cellType: '',
         partNo: '',
         partDesc: '',
         sku: '',
+        rowGrnNoList: '',
+        rowBatchNoList: '',
+        rowBinList: '',
         grnNo: '',
         grnDate: '',
         batchNo: '',
         batchDate: '',
         expDate: '',
+        bin: '',
+        binType: '',
+        binClass: '',
+        cellType: '',
+        core: '',
+        lotNo: '',
+        qcFlag: '',
+        status: '',
         avlQty: '',
-        actualQty: '',
-        balQty: ''
+        actualQty: ''
       }
     ]);
   };
@@ -404,7 +526,13 @@ export const CycleCount = () => {
     if (!lastRow) return false;
 
     if (table === detailTableData) {
-      return !lastRow.bin || !lastRow.binCategory || !lastRow.status || !lastRow.core;
+      return (
+        !lastRow.partNo ||
+        // !lastRow.actualQty ||
+        !lastRow.grnNo ||
+        !lastRow.batchNo ||
+        !lastRow.bin
+      );
     }
     return false;
   };
@@ -415,10 +543,11 @@ export const CycleCount = () => {
         const newErrors = [...prevErrors];
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
-          bin: !table[table.length - 1].bin ? 'Bin is required' : '',
-          binCategory: !table[table.length - 1].binCategory ? 'Bin Category is required' : '',
-          status: !table[table.length - 1].status ? 'Status is required' : '',
-          core: !table[table.length - 1].core ? 'Core is required' : ''
+          partNo: !table[table.length - 1].partNo ? 'Part No is required' : '',
+          grnNo: !table[table.length - 1].grnNo ? 'GRN No is required' : '',
+          batchNo: !table[table.length - 1].batchNo ? 'Batch No is required' : '',
+          bin: !table[table.length - 1].bin ? 'Bin is required' : ''
+          // actualQty: !table[table.length - 1].actualQty ? 'Actual QTY is required' : ''
         };
         return newErrors;
       });
@@ -431,116 +560,130 @@ export const CycleCount = () => {
 
   const handleClear = () => {
     setFormData({
-      docId: '',
       docDate: dayjs(),
-      partNo: ''
+      transferFrom: '',
+      transferto: '',
+      entryNo: ''
     });
     setDetailTableData([
-      {
-        id: 1,
-        bin: '',
-        binClass: '',
-        binType: '',
-        cellType: '',
-        partNo: '',
-        partDesc: '',
-        sku: '',
-        grnNo: '',
-        grnDate: '',
-        batchNo: '',
-        batchDate: '',
-        expDate: '',
-        avlQty: '',
-        actualQty: '',
-        balQty: ''
-      }
+      // {
+      //   fromBin: '',
+      //   fromBinClass: '',
+      //   fromBinType: '',
+      //   fromBCellType: '',
+      //   partNo: '',
+      //   partDesc: '',
+      //   sku: '',
+      //   grnNo: '',
+      //   grnDate: '',
+      //   batchNo: '',
+      //   batchDate: '',
+      //   expDate: '',
+      //   toBin: '',
+      //   toBinType: '',
+      //   toBinClass: '',
+      //   toCellType: '',
+      //   fromQty: '',
+      //   toQty: '',
+      //   remainQty: ''
+      // }
     ]);
     setFieldErrors({
       docId: '',
       docDate: null,
-      partNo: ''
+      transferFrom: '',
+      transferto: '',
+      entryNo: ''
     });
     setDetailTableErrors('');
+    setViewId('');
+    getNewCycleCountDocId();
   };
 
   const handleSave = async () => {
+    console.log('first');
+
     const errors = {};
-    if (!formData.partNo) {
-      errors.partNo = 'Part No is required';
-    }
+    console.log('detailTableData is:', detailTableData);
 
     let detailTableDataValid = true;
-    const newTableErrors = detailTableData.map((row) => {
-      const rowErrors = {};
-      if (!row.bin) {
-        rowErrors.bin = 'Bin is required';
-        detailTableDataValid = false;
-      }
-      if (!row.binCategory) {
-        rowErrors.binCategory = 'Bin Category is required';
-        detailTableDataValid = false;
-      }
-      if (!row.status) {
-        rowErrors.status = 'Status is required';
-        detailTableDataValid = false;
-      }
-      if (!row.core) {
-        rowErrors.core = 'Core is required';
-        detailTableDataValid = false;
-      }
+    if (!detailTableData || !Array.isArray(detailTableData) || detailTableData.length === 0) {
+      detailTableDataValid = false;
+      setDetailTableErrors([{ general: 'Detail Table Data is required' }]); // Assuming you want to handle general errors too
+    } else {
+      const newTableErrors = detailTableData.map((row, index) => {
+        const rowErrors = {};
 
-      return rowErrors;
-    });
-    setFieldErrors(errors);
-    setDetailTableErrors(newTableErrors);
+        if (!row.partNo) rowErrors.partNo = 'Part No is required';
+        if (!row.grnNo) rowErrors.grnNo = 'Grn No is required';
+        if (!row.batchNo) rowErrors.batchNo = 'Batch No is required';
+        if (!row.bin) rowErrors.bin = 'To Bin is required';
+        if (!row.avlQty) rowErrors.avlQty = 'To QTY is required';
+        if (!row.actualQty) rowErrors.actualQty = 'Actual QTY is required';
 
-    if (Object.keys(errors).length === 0 && detailTableDataValid) {
+        if (Object.keys(rowErrors).length > 0) detailTableDataValid = false;
+
+        return rowErrors;
+      });
+
+      setDetailTableErrors(newTableErrors);
+    }
+
+    if (detailTableDataValid) {
       setIsLoading(true);
-      const binVo = detailTableData.map((row) => ({
-        // id: row.id,
+
+      const cycleCountVo = detailTableData.map((row) => ({
         ...(viewId && { id: row.id }),
+        partNo: row.partNo,
+        partDescription: row.partDesc,
+        sku: row.sku,
+        grnNo: row.grnNo,
+        grnDate: row.grnDate,
+        batchNo: row.batchNo,
+        batchDate: row.batchDate,
+        expDate: row.expDate,
         bin: row.bin,
-        binCategory: row.binCategory,
+        binType: row.binType,
+        binClass: row.binClass,
+        cellType: row.cellType,
+        core: row.core,
+        lotNo: row.lotNo,
+        qcFlag: row.qcFlag,
         status: row.status,
-        core: row.core
+        avlQty: parseInt(row.avlQty, 10),
+        actualQty: parseInt(row.actualQty, 10)
       }));
 
       const saveFormData = {
         ...(viewId && { id: viewId }),
-        active: formData.active,
         branch: loginBranch,
         branchCode: loginBranchCode,
-        warehouse: formData.warehouse,
-        binType: formData.locationType,
-        rowNo: formData.rowNo,
-        level: formData.levelIdentity,
-        cellFrom: formData.cellFrom,
-        cellTo: formData.cellTo,
-        warehouseLocationDetailsDTO: binVo,
-        orgId: orgId,
-        createdBy: loginUserName
-        // userid: loginUserId,
-        // warehouse: loginWarehouse
+        client: loginClient,
+        customer: loginCustomer,
+        warehouse: loginWarehouse,
+        finYear: loginFinYear,
+        orgId: parseInt(orgId, 10),
+        createdBy: loginUserName,
+        cycleCountDetailsDTO: cycleCountVo
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const response = await apiCalls('put', `warehousemastercontroller/cyclecount`, saveFormData);
+        const response = await apiCalls('put', `cycleCount/createUpdateCycleCount`, saveFormData);
 
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
-          showToast('success', viewId ? ' Cycle Count Updated Successfully' : 'Cycle Count created successfully');
-          // getAllStockRestate();
-          setIsLoading(false);
+          showToast('success', viewId ? 'Cycle Count Updated Successfully' : 'Cycle Count created successfully');
+          getAllCycleCount();
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Cycle Count creation failed');
-          setIsLoading(false);
+          showToast('error', response.paramObjectsMap?.errorMessage || 'Cycle Count creation failed');
         }
       } catch (error) {
         console.error('Error:', error);
         showToast('error', 'Cycle Count creation failed');
+      } finally {
         setIsLoading(false);
       }
     } else {
@@ -564,7 +707,311 @@ export const CycleCount = () => {
       active: true
     });
   };
+  const handleFromBinChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedFromBin = fromBinList.find((b) => b.fromBin === value);
+    setDetailTableData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              fromBin: selectedFromBin.fromBin,
+              fromBinType: selectedFromBin ? selectedFromBin.fromBinType : '',
+              fromBinClass: selectedFromBin ? selectedFromBin.fromBinClass : '',
+              fromCellType: selectedFromBin ? selectedFromBin.fromCellType : '',
+              fromCore: selectedFromBin ? selectedFromBin.fromCore : ''
+            }
+          : r
+      )
+    );
+    setDetailTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        partNo: !value ? 'Part number is required' : ''
+      };
+      return newErrors;
+    });
+    getPartNo(value, formData.transferFromFlag, row);
+  };
+
+  const handlePartNoChange = (row, index, event) => {
+    const value = event.target.value;
+
+    // Find the selected part number from the row's partNoList
+    const selectedFromPartNo = partNoList.find((b) => b.partno === value);
+
+    // Update the detail table data
+    setDetailTableData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              partNo: selectedFromPartNo ? selectedFromPartNo.partno : '', // Safeguard for undefined
+              partDesc: selectedFromPartNo ? selectedFromPartNo.partDesc : '', // Safeguard for undefined
+              sku: selectedFromPartNo ? selectedFromPartNo.sku : '' // Safeguard for undefined
+            }
+          : r
+      )
+    );
+
+    // Update validation errors
+    setDetailTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        partNo: !value ? 'Part number is required' : '' // Set error if partNo is empty
+      };
+      return newErrors;
+    });
+
+    // Call getGrnNo only if value is not empty
+    if (value) {
+      getGrnNo(value, row);
+    }
+  };
+
+  const handleGrnNoChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedGrnNo = row.rowGrnNoList.find((row) => row.grnNo === value);
+    setDetailTableData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              grnNo: selectedGrnNo.grnNo,
+              grnDate: selectedGrnNo ? selectedGrnNo.grnDate : ''
+            }
+          : r
+      )
+    );
+    setDetailTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        grnNo: !value ? 'GRN No is required' : ''
+      };
+      return newErrors;
+    });
+    getBatchNo(row.partNo, value, row);
+  };
+  const handleBatchNoChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedBatchNo = row.rowBatchNoList.find((row) => row.batch === value);
+    setDetailTableData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              batchNo: selectedBatchNo.batch,
+              batchDate: selectedBatchNo ? selectedBatchNo.batchDate : '',
+              expDate: selectedBatchNo ? selectedBatchNo.expDate : ''
+            }
+          : r
+      )
+    );
+    setDetailTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        grnNo: !value ? 'GRN No is required' : ''
+      };
+      return newErrors;
+    });
+    getBinDetails(value, row.grnNo, row.partNo, row);
+  };
+  const handleBinChange = (row, index, event) => {
+    const value = event.target.value;
+    console.log('THE ROW.PARTNO IS:', row);
+
+    const selectedBin = row.rowBinList.find((row) => row.bin === value);
+    setDetailTableData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              bin: selectedBin.bin,
+              binType: selectedBin ? selectedBin.binType : '',
+              binClass: selectedBin ? selectedBin.binClass : '',
+              cellType: selectedBin ? selectedBin.cellType : '',
+              core: selectedBin ? selectedBin.core : '',
+              lotNo: selectedBin ? selectedBin.lotNo : '',
+              qcFlag: selectedBin ? selectedBin.qcFlag : ''
+            }
+          : r
+      )
+    );
+    setDetailTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        grnNo: !value ? 'GRN No is required' : ''
+      };
+      return newErrors;
+    });
+    getAvlQty(row.batchNo, value, row.grnNo, row.partNo, row);
+    // const getAvlQty = async (selectedBatchNo, selectedBin, selectedGrnNo, selectedPartNo, row) => {
+  };
+
+  const getAvailableBins = (currentRowId, row) => {
+    // Get the partNo and grnNo of the current row
+    const currentRow = detailTableData.find((row) => row.id === currentRowId);
+    if (!currentRow) {
+      return row.rowBinList; // If currentRowId is not found, return all bins
+    }
+
+    const { partNo, grnNo, batchNo } = currentRow;
+
+    // Filter out bins that are already selected in other rows with the same partNo and grnNo
+    const selectedBins = detailTableData
+      .filter((row) => row.id !== currentRowId && row.partNo === partNo && row.grnNo === grnNo && row.batchNo === batchNo)
+      .map((row) => row.bin);
+
+    return binList.filter((bin) => !selectedBins.includes(bin.bin));
+  };
+
+  const handleFromQtyChange = (row, index, event) => {
+    const value = event.target.value;
+    // const selectedToBin = toBinList.find((row) => row.toBin === value);
+    setDetailTableData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              fromQty: value
+              // toBinType: selectedToBin ? selectedToBin.tobinType : '',
+              // toBinClass: selectedToBin ? selectedToBin.toBinClass : '',
+              // toCellType: selectedToBin ? selectedToBin.toCellType : '',
+              // toCore: selectedToBin ? selectedToBin.toCore : ''
+            }
+          : r
+      )
+    );
+    setDetailTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        fromQty: !value ? 'GRN No is required' : ''
+      };
+      return newErrors;
+    });
+    // getBatchNo(row.fromBin, row.partNo, value);
+  };
+  const handleToQtyChange = (e, row, index) => {
+    const value = e.target.value;
+    const numericValue = isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10); // Ensure value is a number
+    const numericFromQty = isNaN(parseInt(row.fromQty, 10)) ? 0 : parseInt(row.fromQty, 10); // Ensure fromQty is a number
+    const intPattern = /^\d*$/;
+
+    if (intPattern.test(value) || value === '') {
+      setDetailTableData((prev) => {
+        const updatedData = prev.map((r) => {
+          if (r.id === row.id) {
+            let newRemainQty = numericFromQty - numericValue; // Initial remainQty calculation
+
+            // Calculate the cumulative toQty for all rows with the same partNo
+            const cumulativeToQty = prev.reduce((total, item) => {
+              if (
+                item.fromBin === r.fromBin &&
+                item.partNo === r.partNo &&
+                item.grnNo === r.grnNo &&
+                item.batchNo === r.batchNo &&
+                item.id !== r.id
+              ) {
+                return total + (isNaN(parseInt(item.toQty, 10)) ? 0 : parseInt(item.toQty, 10));
+              }
+              return total;
+            }, numericValue); // Include the current row's toQty in the cumulative total
+
+            // Subtract cumulativeToQty from fromQty to get new remainQty
+            newRemainQty = numericFromQty - cumulativeToQty;
+
+            // Ensure remainQty is non-negative
+            newRemainQty = Math.max(newRemainQty, 0);
+
+            console.log(`Updated remainQty for row ${r.id}: ${newRemainQty}`); // Debugging line
+
+            return {
+              ...r,
+              toQty: value,
+              remainQty: newRemainQty
+            };
+          }
+          return r;
+        });
+
+        return updatedData;
+      });
+
+      // Clear the error if input is valid
+      setDetailTableErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = {
+          ...newErrors[index],
+          toQty: ''
+        };
+        return newErrors;
+      });
+    } else {
+      // Set error if input is invalid
+      setDetailTableErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = {
+          ...newErrors[index],
+          toQty: 'Only numbers are allowed'
+        };
+        return newErrors;
+      });
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(modalTableData.map((_, index) => index));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  const handleSubmitSelectedRows = async () => {
+    const selectedData = selectedRows.map((index) => modalTableData[index]);
+
+    // Adding selected data to the existing table data
+    setDetailTableData([...detailTableData, ...selectedData]);
+
+    console.log('Data selected:', selectedData);
+
+    setSelectedRows([]);
+    setSelectAll(false);
+    handleCloseModal();
+
+    try {
+      await Promise.all(
+        selectedData.map(async (data, idx) => {
+          // Simulate the event object for handleToQtyChange
+          const simulatedEvent = {
+            target: {
+              value: data.toQty // Assuming you have a toQty field in your data
+            }
+          };
+
+          // await getPartNo(data.fromBin, formData.transferFromFlag, data);
+          await getGrnNo(data.partNo, data);
+          await getBatchNo(data.partNo, data.grnNo, data);
+          await getBinDetails(data.batchNo, data.grnNo, data.partNo, data);
+
+          // Call handleToQtyChange with simulated event, row data, and index
+          // handleToQtyChange(simulatedEvent, data, detailTableData.length + idx);
+        })
+      );
+    } catch (error) {
+      console.error('Error processing selected data:', error);
+    }
+  };
+
   const handleFullGrid = () => {
+    getFillGridDetails();
     setModalOpen(true);
   };
   const handleCloseModal = () => {
@@ -579,7 +1026,14 @@ export const CycleCount = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            <ActionButton
+              title="Save"
+              icon={SaveIcon}
+              isLoading={isLoading}
+              onClick={!viewId ? handleSave : undefined}
+              // onClick={handleSave}
+              margin="0 10px 0 10px"
+            />
           </div>
         </div>
         {listView ? (
@@ -588,9 +1042,9 @@ export const CycleCount = () => {
               data={listViewData}
               columns={listViewColumns}
               blockEdit={true}
-              disableEditIcon={true}
-              viewIcon={true}
-              // toEdit={getStockRestateById}
+              // disableEditIcon={true}
+              // viewIcon={true}
+              toEdit={getCycleCountById}
             />
           </div>
         ) : (
@@ -614,24 +1068,58 @@ export const CycleCount = () => {
                   </LocalizationProvider>
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.partNo}>
-                  <InputLabel id="partNo-label">Part No</InputLabel>
+              {/* <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.transferFrom}>
+                  <InputLabel id="transferFrom-label">Transfer From</InputLabel>
                   <Select
-                    labelId="partNo-label"
-                    id="partNo"
-                    name="partNo"
-                    label="Part No"
-                    value={formData.partNo}
+                    labelId="transferFrom-label"
+                    id="transferFrom"
+                    name="transferFrom"
+                    label="Transfer From"
+                    value={formData.transferFrom}
                     onChange={handleInputChange}
+                    disabled={viewId ? true : false}
                   >
                     <MenuItem value="DEFECTIVE">DEFECTIVE</MenuItem>
                     <MenuItem value="HOLD">HOLD</MenuItem>
                     <MenuItem value="RELEASE">RELEASE</MenuItem>
                   </Select>
-                  {fieldErrors.partNo && <FormHelperText error>{fieldErrors.partNo}</FormHelperText>}
+                  {fieldErrors.transferFrom && <FormHelperText error>{fieldErrors.transferFrom}</FormHelperText>}
                 </FormControl>
               </div>
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.transferTo}>
+                  <InputLabel id="transferTo-label">Transfer To</InputLabel>
+                  <Select
+                    labelId="transferTo-label"
+                    id="transferTo"
+                    name="transferTo"
+                    label="Transfer To"
+                    value={formData.transferTo}
+                    onChange={handleInputChange}
+                    disabled={viewId ? true : false}
+                  >
+                    <MenuItem value="DEFECTIVE">DEFECTIVE</MenuItem>
+                    <MenuItem value="HOLD">HOLD</MenuItem>
+                    <MenuItem value="RELEASE">RELEASE</MenuItem>
+                  </Select>
+                  {fieldErrors.transferTo && <FormHelperText error>{fieldErrors.transferTo}</FormHelperText>}
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="Entry No"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="entryNo"
+                  value={formData.entryNo}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.entryNo}
+                  helperText={fieldErrors.entryNo}
+                  disabled={viewId && true}
+                />
+              </div> */}
             </div>
 
             <div className="row ">
@@ -651,9 +1139,13 @@ export const CycleCount = () => {
                   <>
                     <div className="row d-flex ml">
                       <div className="mb-1">
-                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
-                        <ActionButton title="Clear" icon={ClearIcon} />
+                        {!viewId && (
+                          <>
+                            <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                            <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
+                            <ActionButton title="Clear" icon={ClearIcon} onClick={() => setDetailTableData([])} />
+                          </>
+                        )}
                       </div>
                       <div className="row mt-2">
                         <div className="col-lg-12">
@@ -661,20 +1153,16 @@ export const CycleCount = () => {
                             <table className="table table-bordered" style={{ width: '100%' }}>
                               <thead>
                                 <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                    Action
-                                  </th>
+                                  {!viewId && (
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                      Action
+                                    </th>
+                                  )}
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Bin
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Bin Type
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Part No
+                                    Part No *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
                                     Part Desc
@@ -683,218 +1171,328 @@ export const CycleCount = () => {
                                     SKU
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    GRN No
+                                    GRN No *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Batch No
+                                    Batch No *
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                    Bin *
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                    Bin Type
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                    Core
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
                                     Avl QTY
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Actual QTY
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Bal QTY
+                                    Actual QTY *
                                   </th>
                                 </tr>
                               </thead>
-                              <tbody>
-                                {detailTableData.map((row, index) => (
-                                  <tr key={row.id}>
-                                    <td className="border px-2 py-2 text-center">
-                                      <ActionButton
-                                        title="Delete"
-                                        icon={DeleteIcon}
-                                        onClick={() => handleDeleteRow(row.id, detailTableData, setDetailTableData)}
-                                      />
-                                    </td>
-                                    <td className="text-center">
-                                      <div className="pt-2">{index + 1}</div>
-                                    </td>
+                              {!viewId ? (
+                                <>
+                                  <tbody>
+                                    {detailTableData.map((row, index) => (
+                                      <tr key={row.id}>
+                                        <td className="border px-2 py-2 text-center">
+                                          <ActionButton
+                                            title="Delete"
+                                            icon={DeleteIcon}
+                                            onClick={() => handleDeleteRow(row.id, detailTableData, setDetailTableData)}
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <div className="pt-2">{index + 1}</div>
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <select
+                                            value={row.partNo}
+                                            style={{ width: '200px' }}
+                                            onChange={(e) => handlePartNoChange(row, index, e)}
+                                            className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
+                                          >
+                                            <option value="">-- Select --</option>
+                                            {partNoList?.map((row, index) => (
+                                              <option key={index} value={row.partno}>
+                                                {row.partno}
+                                              </option>
+                                            ))}
+                                          </select>
+                                          {detailTableErrors[index]?.partNo && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailTableErrors[index].partNo}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '300px' }}
+                                            type="text"
+                                            value={row.partDesc}
+                                            className={detailTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
+                                            disabled
+                                          />
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '300px' }}
+                                            type="text"
+                                            value={row.sku}
+                                            className={detailTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
+                                            disabled
+                                          />
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <select
+                                            value={row.grnNo}
+                                            style={{ width: '200px' }}
+                                            onChange={(e) => handleGrnNoChange(row, index, e)}
+                                            className={detailTableErrors[index]?.grnNo ? 'error form-control' : 'form-control'}
+                                          >
+                                            <option value="">-- Select --</option>
 
-                                    <td className="border px-2 py-2">
-                                      <select
-                                        value={row.fromBin}
-                                        style={{ width: '200px' }}
-                                        // onChange={(e) => handleFromBinChange(row, index, e)}
-                                        className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">-- Select --</option>
-                                        {/* {binList?.map((part) => (
-                                          <option key={part.id} value={part.bin}>
-                                            {part.bin}
-                                          </option>
-                                        ))} */}
-                                      </select>
-                                      {detailTableErrors[index]?.fromBin && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {detailTableErrors[index].fromBin}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '300px' }}
-                                        type="text"
-                                        value={row.fromBinType}
-                                        className={detailTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
-                                        disabled
-                                      />
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <select
-                                        value={row.partNo}
-                                        style={{ width: '200px' }}
-                                        // onChange={(e) => handlePartNoChange(row, index, e)}
-                                        className={detailTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">-- Select --</option>
-                                        {/* {partNoList?.map((part) => (
-                                          <option key={part.id} value={part.partno}>
-                                            {part.partno}
-                                          </option>
-                                        ))} */}
-                                      </select>
-                                      {detailTableErrors[index]?.partNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {detailTableErrors[index].partNo}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '300px' }}
-                                        type="text"
-                                        value={row.partDesc}
-                                        className={detailTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
-                                        disabled
-                                      />
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '300px' }}
-                                        type="text"
-                                        value={row.sku}
-                                        className={detailTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
-                                        disabled
-                                      />
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <select
-                                        value={row.grnNo}
-                                        style={{ width: '200px' }}
-                                        // onChange={(e) => handleGrnNoChange(row, index, e)}
-                                        className={detailTableErrors[index]?.grnNo ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">-- Select --</option>
-                                        {/* {grnNoList?.map((part) => (
-                                          <option key={part.id} value={part.grnNo}>
-                                            {part.grnNo}
-                                          </option>
-                                        ))} */}
-                                      </select>
-                                      {detailTableErrors[index]?.grnNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {detailTableErrors[index].grnNo}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <select
-                                        value={row.batchNo}
-                                        style={{ width: '200px' }}
-                                        // onChange={(e) => handleBatchNoChange(row, index, e)}
-                                        className={detailTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">-- Select --</option>
-                                        {/* {batchNoList?.map((batch) => (
-                                          <option key={batch.id} value={batch.batchNo}>
-                                            {batch.batchNo}
-                                          </option>
-                                        ))} */}
-                                      </select>
-                                      {detailTableErrors[index]?.batchNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {detailTableErrors[index].batchNo}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '300px' }}
-                                        type="text"
-                                        value={row.fromQty}
-                                        className={detailTableErrors[index]?.fromQty ? 'error form-control' : 'form-control'}
-                                        disabled
-                                      />
-                                    </td>
+                                            {Array.isArray(row.rowGrnNoList) &&
+                                              row.rowGrnNoList.map(
+                                                (g, idx) =>
+                                                  g &&
+                                                  g.grnNo && (
+                                                    <option key={g.grnNo} value={g.grnNo}>
+                                                      {g.grnNo}
+                                                    </option>
+                                                  )
+                                              )}
+                                          </select>
+                                          {detailTableErrors[index]?.grnNo && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailTableErrors[index].grnNo}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <select
+                                            value={row.batchNo}
+                                            style={{ width: '200px' }}
+                                            onChange={(e) => handleBatchNoChange(row, index, e)}
+                                            className={detailTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
+                                          >
+                                            <option value="">-- Select --</option>
+                                            {Array.isArray(row.rowBatchNoList) &&
+                                              row.rowBatchNoList.map(
+                                                (g, idx) =>
+                                                  g &&
+                                                  g.batch && (
+                                                    <option key={g.batch} value={g.batch}>
+                                                      {g.batch}
+                                                    </option>
+                                                  )
+                                              )}
+                                            {batchNoList?.map((batch, index) => (
+                                              <option key={index} value={batch.batch}>
+                                                {batch.batch}
+                                              </option>
+                                            ))}
+                                          </select>
+                                          {detailTableErrors[index]?.batchNo && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailTableErrors[index].batchNo}
+                                            </div>
+                                          )}
+                                        </td>
+                                        {/* <td className="border px-2 py-2">
+                                          <select
+                                            value={row.bin}
+                                            style={{ width: '200px' }}
+                                            onChange={(e) => handleBinChange(row, index, e)}
+                                            className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
+                                          >
+                                            <option value="">--Select--</option>
+                                            {Array.isArray(row.rowBinList) &&
+                                              row.rowBinList.map(
+                                                (g, idx) =>
+                                                  g &&
+                                                  g.bin && (
+                                                    <option key={g.bin} value={g.bin}>
+                                                      {g.bin}
+                                                    </option>
+                                                  )
+                                              )}
+                                          </select>
+                                          {detailTableErrors[index]?.bin && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailTableErrors[index].bin}
+                                            </div>
+                                          )}
+                                        </td> */}
+                                        <td className="border px-2 py-2">
+                                          <select
+                                            value={row.bin}
+                                            style={{ width: '200px' }}
+                                            onChange={(e) => handleBinChange(row, index, e)}
+                                            className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
+                                          >
+                                            <option value="">--Select--</option>
+                                            {Array.isArray(row.rowBinList) && row.rowBinList.length > 0 ? (
+                                              row.rowBinList.map((g) =>
+                                                g && g.bin ? (
+                                                  <option key={g.bin} value={g.bin}>
+                                                    {g.bin}
+                                                  </option>
+                                                ) : null
+                                              )
+                                            ) : (
+                                              <option value="" disabled>
+                                                No bins available
+                                              </option>
+                                            )}
+                                          </select>
+                                          {detailTableErrors[index]?.bin && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailTableErrors[index].bin}
+                                            </div>
+                                          )}
+                                        </td>
 
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.toQty}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const intPattern = /^\d*$/;
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '300px' }}
+                                            type="text"
+                                            value={row.binType}
+                                            className={detailTableErrors[index]?.binType ? 'error form-control' : 'form-control'}
+                                            disabled
+                                          />
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            value={row.core}
+                                            className={detailTableErrors[index]?.core ? 'error form-control' : 'form-control'}
+                                            disabled
+                                          />
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            value={row.avlQty}
+                                            className={detailTableErrors[index]?.avlQty ? 'error form-control' : 'form-control'}
+                                            disabled
+                                          />
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            value={row.actualQty}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const intPattern = /^\d*$/; // Pattern to match only whole numbers
 
-                                          if (intPattern.test(value) || value === '') {
-                                            setDetailTableData((prev) => {
-                                              const updatedData = prev.map((r) => {
-                                                return r.id === row.id
-                                                  ? {
-                                                      ...r,
-                                                      toQty: value,
-                                                      remainQty: row.fromQty - value
-                                                    }
-                                                  : r;
-                                              });
-                                              return updatedData;
-                                            });
+                                              if (intPattern.test(value) || value === '') {
+                                                // Allow empty values for clearing
+                                                const numericValue = parseInt(value, 10);
+                                                const numericAvlQty = parseInt(row.avlQty, 10) || 0;
 
-                                            // Clear the error if input is valid
-                                            setDetailTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                toQty: ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            // Set error if input is invalid
-                                            setDetailTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                toQty: 'only numbers are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={detailTableErrors[index]?.invQty ? 'error form-control' : 'form-control'}
-                                      />
-                                      {detailTableErrors[index]?.toQty && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {detailTableErrors[index].toQty}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '300px' }}
-                                        type="text"
-                                        value={row.remainQty}
-                                        className={detailTableErrors[index]?.remainQty ? 'error form-control' : 'form-control'}
-                                        disabled
-                                        onKeyDown={(e) => handleKeyDown(e, row, detailTableData)}
-                                      />
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
+                                                // if (value === '' || numericValue <= numericAvlQty) {
+                                                // if (value === '') {
+                                                setDetailTableData((prev) => {
+                                                  const updatedData = prev.map((r) => {
+                                                    const updatedActualQty = numericValue || 0;
+                                                    return r.id === row.id
+                                                      ? {
+                                                          ...r,
+                                                          actualQty: value
+                                                        }
+                                                      : r;
+                                                  });
+                                                  return updatedData;
+                                                });
+                                                setDetailTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    actualQty: !value ? 'Rec QTY is required' : ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                                // } else {
+                                                //   setDetailTableErrors((prev) => {
+                                                //     const newErrors = [...prev];
+                                                //     newErrors[index] = {
+                                                //       ...newErrors[index],
+                                                //       actualQty: 'Rec QTY cannot be greater than Inv QTY'
+                                                //     };
+                                                //     return newErrors;
+                                                //   });
+                                                // }
+                                              } else {
+                                                setDetailTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = { ...newErrors[index], actualQty: 'Invalid value' };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={detailTableErrors[index]?.actualQty ? 'error form-control' : 'form-control'}
+                                            disabled={!row.avlQty}
+                                          />
+                                          {row.avlQty && detailTableErrors[index]?.actualQty && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailTableErrors[index].actualQty}
+                                            </div>
+                                          )}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </>
+                              ) : (
+                                <>
+                                  <tbody>
+                                    {detailTableData.map((row, index) => (
+                                      <tr key={row.id}>
+                                        <td className="text-center">
+                                          <div className="pt-2">{index + 1}</div>
+                                        </td>
+                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                          {row.partNo}
+                                        </td>
+                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                          {row.partDesc}
+                                        </td>
+                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                          {row.sku}
+                                        </td>
+                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                          {row.grnNo}
+                                        </td>
+                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                          {row.batchNo}
+                                        </td>
+                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                          {row.bin}
+                                        </td>
+                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                          {row.binType}
+                                        </td>
+                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                          {row.core}
+                                        </td>
+                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                          {row.avlQty}
+                                        </td>
+                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                          {row.actualQty}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </>
+                              )}
                             </table>
                           </div>
                         </div>
@@ -903,93 +1501,117 @@ export const CycleCount = () => {
                   </>
                 )}
               </Box>
-            </div>
-            <Dialog
-              open={modalOpen}
-              maxWidth={'md'}
-              fullWidth={true}
-              onClose={handleCloseModal}
-              PaperComponent={PaperComponent}
-              aria-labelledby="draggable-dialog-title"
-            >
-              <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
-                <h6>Grid Details</h6>
-              </DialogTitle>
-              <DialogContent className="pb-0">
-                <div className="row">
-                  <div className="col-lg-12">
-                    <div className="table-responsive">
-                      <table className="table table-bordered">
-                        <thead>
-                          <tr style={{ backgroundColor: '#673AB7' }}>
-                            <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                              Action
-                            </th>
-                            <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                              S.No
-                            </th>
-                            <th className="px-2 py-2 text-white text-center">Part No *</th>
-                            <th className="px-2 py-2 text-white text-center">Part Desc</th>
-                            <th className="px-2 py-2 text-white text-center">Batch No</th>
-                            <th className="px-2 py-2 text-white text-center">Batch Date</th>
-                            <th className="px-2 py-2 text-white text-center">Pallet No</th>
-                            <th className="px-2 py-2 text-white text-center">SQTY</th>
-                            <th className="px-2 py-2 text-white text-center">Cell Type</th>
-                            <th className="px-2 py-2 text-white text-center">Core</th>
-                            <th className="px-2 py-2 text-white text-center">SKU</th>
-                            <th className="px-2 py-2 text-white text-center">Exp Date</th>
-                            <th className="px-2 py-2 text-white text-center">Pick QTY</th>
-                            <th className="px-2 py-2 text-white text-center">Avl QTY</th>
-                            <th className="px-2 py-2 text-white text-center">Run QTY</th>
-                            <th className="px-2 py-2 text-white text-center">Qc Flag</th>
-                            <th className="px-2 py-2 text-white text-center">Stock Date</th>
-                            <th className="px-2 py-2 text-white text-center">GRN No</th>
-                            <th className="px-2 py-2 text-white text-center">GRN Date</th>
-                            <th className="px-2 py-2 text-white text-center">Lot No</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {modalTableData.map((row, index) => (
-                            <tr key={row.id}>
-                              <td className="border p-0 text-center">
-                                <Checkbox {...label} />
-                              </td>
-                              <td className="text-center">
-                                <div className="pt-1">{index + 1}</div>
-                              </td>
-                              <td className="border p-0"> {row.partNo}</td>
-                              <td className="border p-0"> {row.partDesc}</td>
-                              <td className="border p-0"> {row.batchNo}</td>
-                              <td className="border p-0"> {row.batchDate}</td>
-                              <td className="border p-0"> {row.palletNo}</td>
-                              <td className="border p-0"> {row.sQty}</td>
-                              <td className="border p-0"> {row.cellType}</td>
-                              <td className="border p-0"> {row.core}</td>
-                              <td className="border p-0"> {row.sku}</td>
-                              <td className="border p-0"> {row.expDate}</td>
-                              <td className="border p-0"> {row.pickQty}</td>
-                              <td className="border p-0"> {row.avlQty}</td>
-                              <td className="border p-0"> {row.runQty}</td>
-                              <td className="border p-0"> {row.qcFlag}</td>
-                              <td className="border p-0"> {row.stockDate}</td>
-                              <td className="border p-0"> {row.grnNo}</td>
-                              <td className="border p-0"> {row.grnDate}</td>
-                              <td className="border p-0"> {row.lotNo}</td>
+              <Dialog
+                open={modalOpen}
+                maxWidth={'lg'}
+                fullWidth={true}
+                onClose={handleCloseModal}
+                PaperComponent={PaperComponent}
+                aria-labelledby="draggable-dialog-title"
+              >
+                <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
+                  <h6>Grid Details</h6>
+                </DialogTitle>
+                <DialogContent className="pb-0">
+                  <div className="row">
+                    <div className="col-lg-12">
+                      <div className="table-responsive">
+                        <table className="table table-bordered ">
+                          <thead>
+                            <tr style={{ backgroundColor: '#673AB7' }}>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                <Checkbox checked={selectAll} onChange={handleSelectAll} />
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                S.No
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                Part No
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                Part Desc
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                SKU
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                GRN No
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                Batch No
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                Bin
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                Bin Type
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                Core
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                Avl QTY
+                              </th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {modalTableData.map((row, index) => (
+                              <tr key={row.id}>
+                                <td className="border p-0 text-center">
+                                  <Checkbox
+                                    checked={selectedRows.includes(index)}
+                                    onChange={(e) => {
+                                      const isChecked = e.target.checked;
+                                      setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
+                                    }}
+                                  />
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '68px' }}>
+                                  {index + 1}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.partNo}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.partDesc}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.sku}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.grnNo}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.batchNo}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.bin}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.binType}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.core}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.avlQty}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </DialogContent>
-              <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
-                <Button onClick={handleCloseModal}>Cancel</Button>
-                <Button color="secondary" onClick={handleCloseModal} variant="contained">
-                  Save
-                </Button>
-              </DialogActions>
-            </Dialog>
+                </DialogContent>
+                <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
+                  <Button onClick={handleCloseModal}>Cancel</Button>
+                  <Button color="secondary" onClick={handleSubmitSelectedRows} variant="contained">
+                    Proceed
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </div>
           </>
         )}
       </div>
