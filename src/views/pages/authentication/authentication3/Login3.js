@@ -17,6 +17,13 @@ import efit_logo from '../../../../assets/images/efit_logo.png';
 // ================================|| AUTH3 - LOGIN ||================================ //
 
 const Login = () => {
+  const bevanRegularStyle = {
+    fontFamily: "'Bevan', serif",
+    fontWeight: 400,
+    fontStyle: 'normal',
+    fontSize: 40,
+    color: '#673ab7'
+  };
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -28,7 +35,7 @@ const Login = () => {
             <Grid item sx={{ m: { xs: 1, sm: 3 }, mb: 0 }}>
               <AuthCardWrapper>
                 <Grid container spacing={2} alignItems="center" justifyContent="center">
-                  <Grid item sx={{ mb: 3 }}>
+                  <Grid item>
                     <Link to="#">
                       {/* <Logo /> */}
                       <img src={efit_logo} alt="efit_logo" style={{ width: '150px', height: 'auto' }} />
@@ -38,10 +45,24 @@ const Login = () => {
                     <Grid container direction={matchDownSM ? 'column-reverse' : 'row'} alignItems="center" justifyContent="center">
                       <Grid item>
                         <Stack alignItems="center" justifyContent="center" spacing={1}>
-                          <Typography color={theme.palette.secondary.main} gutterBottom variant={matchDownSM ? 'h3' : 'h2'}>
+                          {/* <Typography color={theme.palette.secondary.main} gutterBottom variant={matchDownSM ? 'h3' : 'h1'}>
+                            WMS
+                          </Typography> */}
+                          <div style={bevanRegularStyle} className="my-2 mt-3">
+                            WMS
+                          </div>
+                        </Stack>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Grid container direction={matchDownSM ? 'column-reverse' : 'row'} alignItems="center" justifyContent="center">
+                      <Grid item>
+                        <Stack alignItems="center" justifyContent="center" spacing={1}>
+                          <Typography color={theme.palette.secondary.main} gutterBottom variant={matchDownSM ? 'h5' : 'h4'}>
                             Hi, Welcome Back
                           </Typography>
-                          <Typography variant="caption" fontSize="16px" textAlign={matchDownSM ? 'center' : 'inherit'}>
+                          <Typography variant="caption" fontSize="14px" textAlign={matchDownSM ? 'center' : 'inherit'}>
                             Enter your credentials to continue
                           </Typography>
                         </Stack>
