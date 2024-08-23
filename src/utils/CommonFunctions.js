@@ -267,3 +267,24 @@ export const getAllActiveBuyer = async (cBranch, client, orgId) => {
     return error;
   }
 };
+
+export const getAllActiveCpartNo = async (cBranch, client, orgId) => {
+  try {
+    const response = await apiCalls('get', `warehousemastercontroller/material?cbranch=${cBranch}&client=${client}&orgid=${orgId}`);
+    console.log('API Response:', response);
+
+    if (response.status === true) {
+      const cPartNoData = response.paramObjectsMap.materialVO
+        .filter((row) => row.active === 'Active')
+        .map(({ id, partno, partDesc, sku }) => ({ id, partno, partDesc, sku }));
+
+      return cPartNoData;
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
