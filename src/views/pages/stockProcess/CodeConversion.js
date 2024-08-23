@@ -55,7 +55,7 @@ export const CodeConversion = () => {
   const [palletList, setPalletList] = useState([]);
   const [avgQty, setAvgQty] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const [cbranch, setCbranch] = useState(localStorage.getItem('branchCode'));
+  const [cbranch, setCbranch] = useState(localStorage.getItem('branchcode'));
   const [client, setClient] = useState(localStorage.getItem('client'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [customer, setCustomer] = useState(localStorage.getItem('customer'));
@@ -81,8 +81,10 @@ export const CodeConversion = () => {
       sku: '',
       rowBinTypeList: [],
       binType: '',
+      rowBatchNoList: [],
       batchNo: '',
       lotNo: '',
+      rowBinList: [],
       bin: '',
       qty: '',
       actualQty: '',
@@ -162,35 +164,10 @@ export const CodeConversion = () => {
     { accessorKey: 'vehicleType', header: 'Vehicle Type', size: 140 },
     { accessorKey: 'driverName', header: 'Driver Name', size: 140 },
     { accessorKey: 'securityName', header: 'Security Person', size: 140 }
-    // { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
   const [listViewData, setListViewData] = useState([]);
-  const [codeConversionDetailsTable, setCodeConversionDetailsTable] = useState([
-    // {
-    //   id: 1,
-    //   partNo: '',
-    //   partDescription: '',
-    //   grnNo: '',
-    //   sku: '',
-    //   binType: '',
-    //   batchNo: '',
-    //   lotNo: '',
-    //   bin: '',
-    //   qty: '',
-    //   actualQty: '',
-    //   rate: '',
-    //   convertQty: '',
-    //   crate: '',
-    //   cpartNo: '',
-    //   cpartDesc: '',
-    //   csku: '',
-    //   cbatchNo: '',
-    //   clotNo: '',
-    //   cbin: '',
-    //   remarks: ''
-    // }
-  ]);
+  const [codeConversionDetailsTable, setCodeConversionDetailsTable] = useState([]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -240,6 +217,41 @@ export const CodeConversion = () => {
       console.error('Error fetching data:', error);
     }
   };
+  const handlePartNoChange = (row, index, event) => {
+    const value = event.target.value;
+
+    // Find the selected part number from the row's partNoList
+    const selectedFromPartNo = partNoList.find((b) => b.partNo === value);
+
+    // Update the detail table data
+    setCodeConversionDetailsTable((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              partNo: selectedFromPartNo ? selectedFromPartNo.partNo : '', // Safeguard for undefined
+              partDescription: selectedFromPartNo ? selectedFromPartNo.partDesc : '', // Safeguard for undefined
+              sku: selectedFromPartNo ? selectedFromPartNo.sku : '' // Safeguard for undefined
+            }
+          : r
+      )
+    );
+
+    // Update validation errors
+    setCodeConversionDetailsError((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        partNo: !value ? 'Part number is required' : '' // Set error if partNo is empty
+      };
+      return newErrors;
+    });
+
+    // Call getGrnNo only if value is not empty
+    if (value) {
+      getAllGrnNo(value, row);
+    }
+  };
 
   const getAllGrnNo = async (partNo, row) => {
     try {
@@ -249,12 +261,6 @@ export const CodeConversion = () => {
       );
 
       console.log('API Response:', response);
-
-      // if (response.status === true) {
-      //   setGrnNoList(response.paramObjectsMap.codeConversionVO);
-      // } else {
-      //   console.error('API Error:', response);
-      // }
       if (response.status === true) {
         setCodeConversionDetailsTable((prev) =>
           prev.map((r) =>
@@ -294,37 +300,11 @@ export const CodeConversion = () => {
       };
       return newErrors;
     });
-    getAllLocationType(value, row.partNo, row);
-    // getBatchNo(row.partNo, value, row);
-  };
-  const handleBinTypeChange = (row, index, event) => {
-    const value = event.target.value;
-    const selectedBinType = row.rowBinTypeList.find((row) => row.binType === value);
-    setCodeConversionDetailsTable((prev) =>
-      prev.map((r) =>
-        r.id === row.id
-          ? {
-              ...r,
-              binType: selectedBinType.binType
-              // grnDate: selectedGrnNo ? selectedGrnNo.grnDate : ''
-            }
-          : r
-      )
-    );
-    setCodeConversionDetailsError((prev) => {
-      const newErrors = [...prev];
-      newErrors[index] = {
-        ...newErrors[index],
-        grnNo: !value ? 'GRN No is required' : ''
-      };
-      return newErrors;
-    });
-    getAllBatchNo(value, row.grnNo, row.partNo);
-    // getAllLocationType(value, row.partNo, row);
+    getAllBinType(value, row.partNo, row);
     // getBatchNo(row.partNo, value, row);
   };
 
-  const getAllLocationType = async (grnNo, partNo, row) => {
+  const getAllBinType = async (grnNo, partNo, row) => {
     try {
       const response = await apiCalls(
         'get',
@@ -333,11 +313,6 @@ export const CodeConversion = () => {
 
       console.log('API Response:', response);
 
-      // if (response.status === true) {
-      //   setLocationTypeList(response.paramObjectsMap.codeConversionVO);
-      // } else {
-      //   console.error('API Error:', response);
-      // }
       if (response.status === true) {
         setCodeConversionDetailsTable((prev) =>
           prev.map((r) =>
@@ -354,8 +329,31 @@ export const CodeConversion = () => {
       console.error('Error fetching data:', error);
     }
   };
+  const handleBinTypeChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedBinType = row.rowBinTypeList.find((row) => row.binType === value);
+    setCodeConversionDetailsTable((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              binType: selectedBinType.binType
+            }
+          : r
+      )
+    );
+    setCodeConversionDetailsError((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        binType: !value ? 'GRN No is required' : ''
+      };
+      return newErrors;
+    });
+    getAllBatchNo(value, row.grnNo, row.partNo, row);
+  };
 
-  const getAllBatchNo = async (binType, grnNo, partNo) => {
+  const getAllBatchNo = async (binType, grnNo, partNo, row) => {
     try {
       const response = await apiCalls(
         'get',
@@ -365,16 +363,49 @@ export const CodeConversion = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setBatchNoList(response.paramObjectsMap.codeConversionVO);
-      } else {
-        console.error('API Error:', response);
+        // setBatchNoList(response.paramObjectsMap.codeConversionVO);
+        setCodeConversionDetailsTable((prev) =>
+          prev.map((r) =>
+            r.id === row.id
+              ? {
+                  ...r,
+                  rowBatchNoList: response.paramObjectsMap.codeConversionVO
+                }
+              : r
+          )
+        );
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
+  const handleBatchNoChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedBatchNo = row.rowBatchNoList.find((row) => row.batchNo === value);
+    setCodeConversionDetailsTable((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              batchNo: selectedBatchNo.batchNo
+              // lotNo: selectedBatchNo ? selectedBatchNo.lotNo : ''
+            }
+          : r
+      )
+    );
+    setCodeConversionDetailsError((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        batchNo: !value ? 'GRN No is required' : ''
+      };
+      return newErrors;
+    });
+    // getAllBatchNo(value, row.grnNo, row.partNo);
+    getAllBin(value, row.binType, row.grnNo, row.partNo, row);
+  };
 
-  const getAllPallet = async (batchNo, binType, grnNo, partNo) => {
+  const getAllBin = async (batchNo, binType, grnNo, partNo, row) => {
     try {
       const response = await apiCalls(
         'get',
@@ -384,15 +415,74 @@ export const CodeConversion = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setPalletList(response.paramObjectsMap.codeConversionVO);
-      } else {
-        console.error('API Error:', response);
+        setCodeConversionDetailsTable((prev) =>
+          prev.map((r) =>
+            r.id === row.id
+              ? {
+                  ...r,
+                  rowBinList: response.paramObjectsMap.codeConversionVO
+                }
+              : r
+          )
+        );
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
+  const handleBinChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedBin = row.rowBinList.find((row) => row.bin === value);
+    setCodeConversionDetailsTable((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              bin: selectedBin.bin
+            }
+          : r
+      )
+    );
+    setCodeConversionDetailsError((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        bin: !value ? 'Bin is required' : ''
+      };
+      return newErrors;
+    });
+
+    getTableQty(value, row.batchNo, row.binType, row.grnNo, row.partNo, row);
+  };
+
+  const getTableQty = async (bin, batchNo, binType, grnNo, partNo, row) => {
+    try {
+      const url = `codeconversion/getAvlQtyCodeConversion?batchNo=${batchNo}&bin=${bin}&binType=${binType}&branch=${branch}&branchCode=${cbranch}&client=${client}&grnNo=${grnNo}&orgId=${orgId}&partNo=${partNo}&warehouse=${warehouse}`;
+
+      const response = await apiCalls('get', url);
+
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setCodeConversionDetailsTable((prevData) =>
+          prevData.map((r) =>
+            r.id === row.id
+              ? {
+                  ...r,
+                  qty: response.paramObjectsMap.AvgQty || 0
+                }
+              : r
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return null;
+    }
+  };
+
+  //DOUBT LIST
   const getAllCPartNo = async () => {
     try {
       const cPartData = await getAllActiveCpartNo(cbranch, client, orgId);
@@ -406,7 +496,7 @@ export const CodeConversion = () => {
       console.error('Error fetching supplier data:', error);
     }
   };
-
+  // DOUBT LIST
   const getAllcPallet = async () => {
     try {
       const response = await apiCalls(
@@ -426,31 +516,7 @@ export const CodeConversion = () => {
     }
   };
 
-  const getTableQty = async (batchNo, binType, grnNo, partNo, bin) => {
-    try {
-      const url = `codeconversion/getAvlQtyCodeConversion?batchNo=${batchNo}&bin=${bin}&binType=${binType}&branch=${branch}&branchCode=${cbranch}&client=${client}&grnNo=${grnNo}&orgId=${orgId}&partNo=${partNo}&warehouse=${warehouse}`;
-
-      const response = await apiCalls('get', url);
-
-      console.log('API Response:', response);
-
-      if (response.status === true) {
-        const avgQty = response.paramObjectsMap.AvgQty;
-        setAvgQty(avgQty); // Set the avgQty state here
-        return avgQty;
-      } else {
-        console.error('API Error:', response);
-        setAvgQty(''); // Clear the avgQty state on error
-        return null;
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      setAvgQty(''); // Clear the avgQty state on exception
-      return null;
-    }
-  };
-
-  const getAllGatePass = async () => {
+  const getAllCodeConversions = async () => {
     try {
       const response = await apiCalls('get', `inward/gatePassIn?branchCode=${cbranch}&client=${client}&finYear=${finYear}&orgId=${orgId}`);
 
@@ -466,7 +532,7 @@ export const CodeConversion = () => {
     }
   };
 
-  const getGatePassById = async (row) => {
+  const getCodeConversionById = async (row) => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
@@ -525,16 +591,6 @@ export const CodeConversion = () => {
       console.error('Error fetching data:', error);
     }
   };
-
-  // const handleInputChange = (event) => {
-  //   const { name, value } = event.target;
-
-  //     setFormData({
-  //       ...formData,
-  //       [name]: value
-  //     });
-  //   }
-  // };
 
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date).format('YYYY-MM-DD');
@@ -729,7 +785,7 @@ export const CodeConversion = () => {
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
-          getAllGatePass();
+          // getAllGatePass();
           getCodeConversionDocId();
           showToast('success', editId ? ' Gate Pass In Updated Successfully' : 'Gate Pass In created successfully');
           setIsLoading(false);
@@ -766,47 +822,31 @@ export const CodeConversion = () => {
     setSelectAll(!selectAll);
   };
 
-  // const handleSubmitSelectedRows = async () => {
-  //   try {
-  //     const selectedData = selectedRows.map((index) => modalTableData[index]);
-
-  //     // Adding selected data to the existing table data
-  //     setCodeConversionDetailsTable([...codeConversionDetailsTable, ...selectedData]);
-
-  //     console.log('Data selected:', selectedData);
-
-  //     setSelectedRows([]);
-  //     setSelectAll(false);
-  //     handleCloseModal();
-  //   } catch (error) {
-  //     console.error('Error processing selected data:', error);
-  //   }
-  // };
-
   const handleSubmitSelectedRows = async () => {
+    const selectedData = selectedRows.map((index) => modalTableData[index]);
+    setCodeConversionDetailsTable([...codeConversionDetailsTable, ...selectedData]);
+    console.log('Data selected:', selectedData);
+    setSelectedRows([]);
+    setSelectAll(false);
+    handleCloseModal();
+
     try {
-      const selectedData = selectedRows.map((index) => {
-        const selectedRow = modalTableData[index];
-        const existingRow = codeConversionDetailsTable[index] || {}; // Existing row data if available
+      await Promise.all(
+        selectedData.map(async (data, idx) => {
+          await getAllGrnNo(data.partNo, data);
+          await getAllBinType(data.grnNo, data.partNo, data);
+          await getAllBatchNo(data.binType, data.grnNo, data.partNo, data);
+          await getAllBin(data.batchNo, data.binType, data.grnNo, data.partNo, data);
+          await getTableQty(data.bin, data.batchNo, data.binType, data.grnNo, data.partNo, data);
 
-        return {
-          id: selectedRow.id,
-          partNo: selectedRow.partNo || existingRow.partNo,
-          partDescription: selectedRow.partDesc || existingRow.partDescription,
-          grnNo: selectedRow.grnNo || existingRow.grnNo, // Use the API value if it exists, else fallback to existing
-          sku: selectedRow.sku || existingRow.sku,
-          binType: selectedRow.binType || existingRow.binType, // Use the API value if it exists, else fallback to existing
-          batchNo: selectedRow.batchNo || existingRow.batchNo, // Use the API value if it exists, else fallback to existing
-          bin: selectedRow.bin || existingRow.bin // Use the API value if it exists, else fallback to existing
-        };
-      });
-
-      // Add the updated data to the existing table
-      setCodeConversionDetailsTable((prevTableData) => [...prevTableData, ...selectedData]);
-
-      setSelectedRows([]);
-      setSelectAll(false);
-      handleCloseModal();
+          // Prepare simulated event object
+          const simulatedEvent = {
+            target: {
+              value: data.bin // Ensure this is the correct field for the bin value
+            }
+          };
+        })
+      );
     } catch (error) {
       console.error('Error processing selected data:', error);
     }
@@ -818,10 +858,18 @@ export const CodeConversion = () => {
       partNo: '',
       partDescription: '',
       grnNo: '',
+      grnDate: null,
       sku: '',
-      binType: '',
       batchNo: '',
-      bin: ''
+      batchDate: null,
+      expDate: null,
+      bin: '',
+      binType: '',
+      binClass: '',
+      qcFlag: '',
+      status: '',
+      core: '',
+      cellType: ''
     }
   ]);
 
@@ -840,12 +888,20 @@ export const CodeConversion = () => {
           gridDetails.map((row) => ({
             id: row.id,
             partNo: row.partNo,
-            partDesc: row.partDesc,
+            partDescription: row.partDesc,
             grnNo: row.grnNo,
+            grnDate: row.grnDate,
             sku: row.sku,
-            binType: row.binType,
             batchNo: row.batchNo,
-            bin: row.bin
+            batchDate: row.batchDate,
+            expDate: row.expDate,
+            bin: row.bin,
+            binType: row.binType,
+            binClass: row.binClass,
+            qcFlag: row.qcFlag,
+            status: row.status,
+            cellType: row.cellType,
+            core: row.core
           }))
         );
         setCodeConversionDetailsTable([]);
@@ -872,12 +928,24 @@ export const CodeConversion = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            {/* <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" /> */}
+            <ActionButton
+              title="Save"
+              icon={SaveIcon}
+              isLoading={isLoading}
+              // onClick={!viewId ? handleSave : undefined}
+              margin="0 10px 0 10px"
+            />
           </div>
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getGatePassById} />
+            <CommonListViewTable
+              data={listViewData}
+              columns={listViewColumns}
+              blockEdit={true}
+              // toEdit={getGatePassById}
+            />
           </div>
         ) : (
           <>
@@ -890,7 +958,6 @@ export const CodeConversion = () => {
                   fullWidth
                   name="codeConversionDocId"
                   value={codeConversionDocId}
-                  // onChange={handleInputChange}
                   disabled
                 />
               </div>
@@ -910,12 +977,6 @@ export const CodeConversion = () => {
                   </LocalizationProvider>
                 </FormControl>
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <FormControlLabel
-                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" color="primary" />}
-                  label="Active"
-                />
-              </div> */}
             </div>
             <div className="row mt-2">
               <Box sx={{ width: '100%' }}>
@@ -953,22 +1014,22 @@ export const CodeConversion = () => {
                                   </th>
                                   <th className="px-2 py-2 text-white text-center">Part No</th>
                                   <th className="px-2 py-2 text-white text-center">Part Description</th>
-                                  <th className="px-2 py-2 text-white text-center">GRN No</th>
                                   <th className="px-2 py-2 text-white text-center">SKU</th>
+                                  <th className="px-2 py-2 text-white text-center">GRN No</th>
                                   <th className="px-2 py-2 text-white text-center">Location Type</th>
                                   <th className="px-2 py-2 text-white text-center">Batch No</th>
-                                  <th className="px-2 py-2 text-white text-center">Lot No</th>
-                                  <th className="px-2 py-2 text-white text-center">Pallet</th>
+                                  {/* <th className="px-2 py-2 text-white text-center">Lot No</th> */}
+                                  <th className="px-2 py-2 text-white text-center">Bin</th>
                                   <th className="px-2 py-2 text-white text-center">QTY</th>
                                   <th className="px-2 py-2 text-white text-center">Actual QTY</th>
-                                  <th className="px-2 py-2 text-white text-center">Rate</th>
+                                  {/* <th className="px-2 py-2 text-white text-center">Rate</th> */}
                                   <th className="px-2 py-2 text-white text-center">Convert QTY</th>
-                                  <th className="px-2 py-2 text-white text-center">C Rate</th>
+                                  {/* <th className="px-2 py-2 text-white text-center">C Rate</th> */}
                                   <th className="px-2 py-2 text-white text-center">C Part No</th>
                                   <th className="px-2 py-2 text-white text-center">C Part Desc</th>
                                   <th className="px-2 py-2 text-white text-center">C SKU</th>
                                   <th className="px-2 py-2 text-white text-center">C Batchno</th>
-                                  <th className="px-2 py-2 text-white text-center">C Lotno</th>
+                                  {/* <th className="px-2 py-2 text-white text-center">C Lotno</th> */}
                                   <th className="px-2 py-2 text-white text-center">C Pallet</th>
                                   <th className="px-2 py-2 text-white text-center">Remarks</th>
                                 </tr>
@@ -986,41 +1047,7 @@ export const CodeConversion = () => {
                                       <select
                                         value={row.partNo}
                                         style={{ width: '100px' }}
-                                        onChange={async (e) => {
-                                          const value = e.target.value;
-
-                                          // Find the selected part's details
-                                          const selectedPart = partNoList.find((part) => part.partNo === value);
-
-                                          // Update the table row with selected part's details
-                                          setCodeConversionDetailsTable((prev) =>
-                                            prev.map((r) =>
-                                              r.id === row.id
-                                                ? {
-                                                    ...r,
-                                                    partNo: value,
-                                                    partDescription: selectedPart ? selectedPart.partDesc : '',
-                                                    sku: selectedPart ? selectedPart.sku : ''
-                                                  }
-                                                : r
-                                            )
-                                          );
-
-                                          // Update error state
-                                          setCodeConversionDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              partNo: !value ? 'Part No is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-
-                                          // Call the getAllGrnNo API with the selected partNo
-                                          if (value) {
-                                            await getAllGrnNo(value, row);
-                                          }
-                                        }}
+                                        onChange={(e) => handlePartNoChange(row, index, e)}
                                         className={codeConversionDetailsError[index]?.partNo ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
@@ -1052,31 +1079,19 @@ export const CodeConversion = () => {
                                       />
                                     </td>
                                     <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        style={{ width: '100px' }}
+                                        value={row.sku}
+                                        disabled
+                                        className="form-control"
+                                        title={row.sku}
+                                      />
+                                    </td>
+                                    <td className="border px-2 py-2">
                                       <select
                                         value={row.grnNo}
                                         style={{ width: '100px' }}
-                                        // onChange={async (e) => {
-                                        //   const grnNo = e.target.value;
-                                        //   const partNo = row.partNo; // Assuming partNo is already selected and available in the row
-                                        //   const selectedGrnNo = row.rowGrnNoList.find((row) => row.grnNo === grnNo);
-
-                                        //   // Update the table row with selected grnNo
-                                        //   setCodeConversionDetailsTable((prev) =>
-                                        //     prev.map((r) =>
-                                        //       r.id === row.id
-                                        //         ? {
-                                        //             ...r,
-                                        //             grnNo: selectedGrnNo.grnNo
-                                        //           }
-                                        //         : r
-                                        //     )
-                                        //   );
-
-                                        //   // Call the getAllLocationType API with the selected grnNo and partNo
-                                        //   if (grnNo && partNo) {
-                                        //     await getAllLocationType(grnNo, partNo, row);
-                                        //   }
-                                        // }}
                                         onChange={(e) => handleGrnNoChange(row, index, e)}
                                         className={codeConversionDetailsError[index]?.grnNo ? 'error form-control' : 'form-control'}
                                       >
@@ -1100,65 +1115,13 @@ export const CodeConversion = () => {
                                     </td>
 
                                     <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.sku}
-                                        disabled
-                                        className="form-control"
-                                        title={row.sku}
-                                      />
-                                    </td>
-                                    <td className="border px-2 py-2">
                                       <select
                                         value={row.binType}
                                         style={{ width: '100px' }}
-                                        // onChange={async (e) => {
-                                        //   const value = e.target.value;
-
-                                        //   // Update the table row with the selected binType
-                                        //   setCodeConversionDetailsTable((prev) =>
-                                        //     prev.map((r) =>
-                                        //       r.id === row.id
-                                        //         ? {
-                                        //             ...r,
-                                        //             binType: value
-                                        //           }
-                                        //         : r
-                                        //     )
-                                        //   );
-
-                                        //   // Update error state for binType
-                                        //   setCodeConversionDetailsError((prev) => {
-                                        //     const newErrors = [...prev];
-                                        //     newErrors[index] = {
-                                        //       ...newErrors[index],
-                                        //       binType: !value ? 'Bin Type is required' : ''
-                                        //     };
-                                        //     return newErrors;
-                                        //   });
-
-                                        //   // Call the getAllBatchNo API with the selected binType, grnNo, and partNo
-                                        //   const partNo = row.partNo; // Assuming partNo is already selected and available in the row
-                                        //   const grnNo = row.grnNo; // Assuming grnNo is already selected and available in the row
-
-                                        //   if (value && grnNo && partNo) {
-                                        //     await getAllBatchNo(value, grnNo, partNo);
-                                        //   }
-                                        // }}
                                         onChange={(e) => handleBinTypeChange(row, index, e)}
                                         className={codeConversionDetailsError[index]?.binType ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        {/* {locationTypeList && locationTypeList.length > 0 ? (
-                                          locationTypeList.map((location) => (
-                                            <option key={location.id} value={location.binType}>
-                                              {location.binType}
-                                            </option>
-                                          ))
-                                        ) : (
-                                          <option value="">Loading...</option>
-                                        )} */}
                                         {Array.isArray(row.rowBinTypeList) &&
                                           row.rowBinTypeList.map(
                                             (bin, idx) =>
@@ -1181,54 +1144,20 @@ export const CodeConversion = () => {
                                       <select
                                         value={row.batchNo}
                                         style={{ width: '100px' }}
-                                        onChange={async (e) => {
-                                          const value = e.target.value;
-
-                                          // Find the selected batch details from batchNoList
-                                          const selectedBatch = batchNoList.find((batch) => batch.batchNo === value);
-
-                                          // Update the table row with the selected batchNo and corresponding lotNo
-                                          setCodeConversionDetailsTable((prev) =>
-                                            prev.map((r) =>
-                                              r.id === row.id
-                                                ? {
-                                                    ...r,
-                                                    batchNo: value,
-                                                    lotNo: selectedBatch ? selectedBatch.lotNo : ''
-                                                  }
-                                                : r
-                                            )
-                                          );
-
-                                          setCodeConversionDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              batchNo: !value ? 'Batch No is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-
-                                          const binType = row.binType;
-                                          const partNo = row.partNo;
-                                          const grnNo = row.grnNo;
-
-                                          if (value && binType && grnNo && partNo) {
-                                            await getAllPallet(value, binType, grnNo, partNo);
-                                          }
-                                        }}
+                                        onChange={(e) => handleBatchNoChange(row, index, e)}
                                         className={codeConversionDetailsError[index]?.batchNo ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        {batchNoList && batchNoList.length > 0 ? (
-                                          batchNoList.map((batch) => (
-                                            <option key={batch.id} value={batch.batchNo}>
-                                              {batch.batchNo}
-                                            </option>
-                                          ))
-                                        ) : (
-                                          <option value="">Loading...</option>
-                                        )}
+                                        {Array.isArray(row.rowBatchNoList) &&
+                                          row.rowBatchNoList.map(
+                                            (batch, idx) =>
+                                              batch &&
+                                              batch.batchNo && (
+                                                <option key={batch.batchNo} value={batch.batchNo}>
+                                                  {batch.batchNo}
+                                                </option>
+                                              )
+                                          )}
                                       </select>
                                       {codeConversionDetailsError[index]?.batchNo && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1237,7 +1166,7 @@ export const CodeConversion = () => {
                                       )}
                                     </td>
 
-                                    <td className="border px-2 py-2">
+                                    {/* <td className="border px-2 py-2">
                                       <input
                                         type="text"
                                         style={{ width: '100px' }}
@@ -1246,53 +1175,26 @@ export const CodeConversion = () => {
                                         className="form-control"
                                         title={row.lotNo}
                                       />
-                                    </td>
+                                    </td> */}
 
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.bin}
                                         style={{ width: '100px' }}
-                                        onChange={async (e) => {
-                                          const value = e.target.value;
-
-                                          // Update the table row with the selected bin
-                                          setCodeConversionDetailsTable((prev) =>
-                                            prev.map((r) =>
-                                              r.id === row.id
-                                                ? {
-                                                    ...r,
-                                                    bin: value
-                                                  }
-                                                : r
-                                            )
-                                          );
-
-                                          // Update error state for bin
-                                          setCodeConversionDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              bin: !value ? 'Bin is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-
-                                          const { batchNo, binType, grnNo, partNo } = row;
-
-                                          // Call the getTableQty API with the selected bin, batchNo, binType, grnNo, and partNo
-                                          if (value && batchNo && binType && grnNo && partNo) {
-                                            await getTableQty(batchNo, binType, grnNo, partNo, value);
-                                            // The avgQty state will be automatically updated by the getTableQty function
-                                          }
-                                        }}
+                                        onChange={(e) => handleBinChange(row, index, e)}
                                         className={codeConversionDetailsError[index]?.bin ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        {palletList.map((pallet) => (
-                                          <option key={pallet.id} value={pallet.bin}>
-                                            {pallet.bin}
-                                          </option>
-                                        ))}
+                                        {Array.isArray(row.rowBinList) &&
+                                          row.rowBinList.map(
+                                            (bin, idx) =>
+                                              bin &&
+                                              bin.bin && (
+                                                <option key={bin.bin} value={bin.bin}>
+                                                  {bin.bin}
+                                                </option>
+                                              )
+                                          )}
                                       </select>
                                       {codeConversionDetailsError[index]?.bin && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1302,13 +1204,7 @@ export const CodeConversion = () => {
                                     </td>
 
                                     <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={avgQty || ''}
-                                        disabled
-                                        className="form-control"
-                                      />
+                                      <input type="text" style={{ width: '100px' }} value={row.qty} disabled className="form-control" />
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
@@ -1335,7 +1231,7 @@ export const CodeConversion = () => {
                                         </div>
                                       )}
                                     </td>
-                                    <td className="border px-2 py-2">
+                                    {/* <td className="border px-2 py-2">
                                       <input
                                         type="text"
                                         style={{ width: '100px' }}
@@ -1359,7 +1255,7 @@ export const CodeConversion = () => {
                                           {codeConversionDetailsError[index].rate}
                                         </div>
                                       )}
-                                    </td>
+                                    </td> */}
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
@@ -1385,7 +1281,7 @@ export const CodeConversion = () => {
                                         </div>
                                       )}
                                     </td>
-                                    <td className="border px-2 py-2">
+                                    {/* <td className="border px-2 py-2">
                                       <input
                                         type="text"
                                         style={{ width: '100px' }}
@@ -1409,7 +1305,7 @@ export const CodeConversion = () => {
                                           {codeConversionDetailsError[index].crate}
                                         </div>
                                       )}
-                                    </td>
+                                    </td> */}
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.cpartNo}
@@ -1503,7 +1399,7 @@ export const CodeConversion = () => {
                                         </div>
                                       )}
                                     </td>
-                                    <td className="border px-2 py-2">
+                                    {/* <td className="border px-2 py-2">
                                       <input
                                         type="text"
                                         style={{ width: '100px' }}
@@ -1527,7 +1423,7 @@ export const CodeConversion = () => {
                                           {codeConversionDetailsError[index].clotNo}
                                         </div>
                                       )}
-                                    </td>
+                                    </td> */}
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.cbin}
@@ -1564,36 +1460,19 @@ export const CodeConversion = () => {
                                       )}
                                     </td>
                                     <td className="border px-2 py-2">
-                                      <select
-                                        value={row.remarks}
+                                      <input
+                                        type="text"
                                         style={{ width: '100px' }}
+                                        value={row.remarks}
                                         onChange={(e) => {
                                           const value = e.target.value;
-
                                           setCodeConversionDetailsTable((prev) =>
                                             prev.map((r) => (r.id === row.id ? { ...r, remarks: value } : r))
                                           );
-
-                                          setCodeConversionDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              remarks: !value ? 'Remarks is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
                                         }}
+                                        onKeyDown={(e) => handleKeyDown(e, row)}
                                         className={codeConversionDetailsError[index]?.remarks ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">Select Option</option>
-                                        <option value="Promotion">Promotion</option>
-                                        <option value="Offer">Offer</option>
-                                      </select>
-                                      {codeConversionDetailsError[index]?.remarks && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {codeConversionDetailsError[index].remarks}
-                                        </div>
-                                      )}
+                                      />
                                     </td>
                                   </tr>
                                 ))}
@@ -1672,7 +1551,7 @@ export const CodeConversion = () => {
                                   {row.partNo}
                                 </td>
                                 <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
-                                  {row.partDesc}
+                                  {row.partDescription}
                                 </td>
                                 <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
                                   {row.grnNo}

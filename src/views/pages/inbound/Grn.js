@@ -38,7 +38,7 @@ export const Grn = () => {
   const [editId, setEditId] = useState('');
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [loginUserId, setLoginUserId] = useState(localStorage.getItem('userId'));
-  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
