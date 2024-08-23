@@ -293,7 +293,7 @@ export const SalesReturn = () => {
     try {
       const response = await apiCalls(
         'get',
-        `guhan/getPickRequestDocId?orgId=${orgId}&branchCode=${branchCode}&client=${client}&branch=${branch}&finYear=${finYear}`
+        `salesReturn/getSalesReturnDocId?orgId=${orgId}&branchCode=${branchCode}&client=${client}&branch=${branch}&finYear=${finYear}`
       );
       console.log('API Response:', response);
 
@@ -301,7 +301,7 @@ export const SalesReturn = () => {
         // setDocId(response.paramObjectsMap.locationMovementDocId);
         setFormData((prevFormData) => ({
           ...prevFormData,
-          docId: response.paramObjectsMap.pickRequestDocId
+          docId: response.paramObjectsMap.SalesReturnDocId
         }));
       } else {
         console.error('API Error:', response);
