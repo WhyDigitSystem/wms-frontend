@@ -95,7 +95,8 @@ const CreateCompany = () => {
 
       if (response.status === true) {
         setListView(false);
-        const particularCompany = response.paramObjectsMap.companyVO;
+        const particularCompany = response.paramObjectsMap.companyVO[0];
+        console.log('THE PARTICULAR COMPANY DETAILS ARE:', particularCompany);
 
         setFormData({
           companyCode: particularCompany.companyCode,
