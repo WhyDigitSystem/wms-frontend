@@ -2,13 +2,15 @@ import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Checkbox, FormControlLabel, FormHelperText } from '@mui/material';
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormHelperText } from '@mui/material';
 import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
+import Paper from '@mui/material/Paper';
 import Select from '@mui/material/Select';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -21,88 +23,157 @@ import apiCalls from 'apicall';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
+import Draggable from 'react-draggable';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import { getAllActiveGroups, getAllActiveUnits } from 'utils/CommonFunctions';
+import { getAllActiveGroups } from 'utils/CommonFunctions';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+
+function PaperComponent(props) {
+  return (
+    <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
+      <Paper {...props} />
+    </Draggable>
+  );
+}
+const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
 export const ReversePick = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
+  const [buyerOrderNoList, setBuyerOrderNoList] = useState([]);
   const [listView, setListView] = useState(false);
   const [editId, setEditId] = useState('');
   const [unitList, setUnitList] = useState([]);
   const [groupList, setGroupList] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
-  const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
-  const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
-  const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
-  const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
+  const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [client, setClient] = useState(localStorage.getItem('client'));
+  const [customer, setCustomer] = useState(localStorage.getItem('customer'));
+  const [warehouse, setWarehouse] = useState(localStorage.getItem('warehouse'));
+  // const [finYear, setFinYear] = useState(localStorage.getItem('finYear') ? localStorage.getItem('finYear') : '2024');
+  const [finYear, setFinYear] = useState('2024');
 
   const [formData, setFormData] = useState({
     docId: '',
-    docDate: '',
-    pickRequestId: '',
-    dispatch: '',
+    docDate: dayjs(),
     buyerOrderNo: '',
-    buyerOrderRefNo: '',
-    buyerOrderRefDate: null,
-    shipmentMethod: '',
-    refNo: '',
-    noOfBoxes: '',
-    dueDays: '',
+    buyerRefNo: '',
+    buyerRefDate: null,
     clientName: '',
     customerName: '',
-    outTime: '',
+    customerShortName: '',
+    inTime: '',
     clientAddress: '',
     customerAddress: '',
-    status: '',
-    boAmentment: '',
-    controlBranch: localStorage.getItem('branchCode'),
-    active: true,
-    charges: '',
-    lineDiscount: '',
-    roundOff: '',
-    invDiscountAmount: '',
-    watAmountWithoutForm: '',
-    totalAmount: ''
+    status: 'Edit',
+    buyersReference: '',
+    invoiceNo: '',
+    clientShortName: '',
+    pickRequestDocDate: '',
+    boAmendment: 'No',
+    buyerOrderDate: null,
+    revisedQty: ''
   });
 
   const [value, setValue] = useState(0);
+  const [fillGridData, setFillGridData] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
   const [itemTableData, setItemTableData] = useState([
     {
-      id: 1,
-      mrp: '',
-      fDate: null,
-      tDate: null
+      availQty: '',
+      batchDate: '',
+      batchNo: '',
+      binClass: '',
+      binType: '',
+      cellType: '',
+      clientCode: '',
+      core: '',
+      bin: '',
+      orderQty: '',
+      partDesc: '',
+      partNo: '',
+      pcKey: '',
+      pickQty: '',
+      remainQty: '',
+      sku: '',
+      ssku: '',
+      status: '',
+      revisedQty: ''
     }
   ]);
 
   const handleAddRow = () => {
     const newRow = {
-      id: Date.now(),
-      mrp: '',
-      fDate: null,
-      tDate: null
+      availQty: '',
+      batchDate: '',
+      batchNo: '',
+      binClass: '',
+      binType: '',
+      cellType: '',
+      clientCode: '',
+      core: '',
+      bin: '',
+      orderQty: '',
+      partDesc: '',
+      partNo: '',
+      pcKey: '',
+      pickQty: '',
+      remainQty: '',
+      sku: '',
+      ssku: '',
+      status: ''
     };
     setItemTableData([...itemTableData, newRow]);
     setItemTableErrors([
       ...itemTableErrors,
       {
-        mrp: '',
-        fDate: null,
-        tDate: null
+        availQty: '',
+        batchDate: '',
+        batchNo: '',
+        binClass: '',
+        binType: '',
+        cellType: '',
+        clientCode: '',
+        core: '',
+        bin: '',
+        orderQty: '',
+        partDesc: '',
+        partNo: '',
+        pcKey: '',
+        pickQty: '',
+        remainQty: '',
+        sku: '',
+        ssku: '',
+        status: ''
       }
     ]);
   };
 
   const [itemTableErrors, setItemTableErrors] = useState([
     {
-      mrp: '',
-      fDate: null,
-      tDate: null
+      availQty: '',
+      batchDate: '',
+      batchNo: '',
+      binClass: '',
+      binType: '',
+      cellType: '',
+      clientCode: '',
+      core: '',
+      bin: '',
+      orderQty: '',
+      partDesc: '',
+      partNo: '',
+      pcKey: '',
+      pickQty: '',
+      remainQty: '',
+      sku: '',
+      ssku: '',
+      status: ''
     }
   ]);
 
@@ -110,82 +181,108 @@ export const ReversePick = () => {
   const anchorRef = useRef(null);
 
   const [fieldErrors, setFieldErrors] = useState({
-    docDate: '',
-    pickRequestId: '',
-    dispatch: '',
+    docId: '',
+    docDate: dayjs(),
     buyerOrderNo: '',
-    buyerOrderRefNo: '',
-    buyerOrderRefDate: '',
-    shipmentMethod: '',
-    refNo: '',
-    noOfBoxes: '',
-    dueDays: '',
+    buyerRefNo: '',
+    buyerRefDate: null,
     clientName: '',
     customerName: '',
-    outTime: '',
+    customerShortName: '',
+    inTime: '',
     clientAddress: '',
     customerAddress: '',
-    status: '',
-    boAmentment: '',
-    controlBranch: localStorage.getItem('branchCode'),
-    active: true,
-    charges: '',
-    lineDiscount: '',
-    roundOff: '',
-    invDiscountAmount: '',
-    watAmountWithoutForm: '',
-    totalAmount: ''
+
+    buyersReference: '',
+    invoiceNo: '',
+    clientShortName: ''
   });
   const listViewColumns = [
-    { accessorKey: 'partno', header: 'Part No', size: 140 },
-    { accessorKey: 'partDesc', header: 'Part Desc', size: 140 },
-    { accessorKey: 'sku', header: 'SKU', size: 140 },
-    { accessorKey: 'status', header: 'Status', size: 140 },
-    { accessorKey: 'active', header: 'Active', size: 140 }
+    { accessorKey: 'docId', header: 'Doc Id', size: 140 },
+    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'pickRequestDocId', header: 'Pick Request DocId', size: 140 },
+    { accessorKey: 'pickRequestDocDate', header: 'Pick Request DocDate', size: 140 },
+    { accessorKey: 'status', header: 'Status', size: 140 }
   ];
 
-  const [listViewData, setListViewData] = useState([
-    {
-      id: 1,
-      partNo: 'partNo1',
-      partDesc: 'partDesc1',
-      sku: 'sku1',
-      status: 'status1',
-      active: 'Active'
-    },
-    {
-      id: 2,
-      partNo: 'partNo2',
-      partDesc: 'partDesc2',
-      sku: 'sku2',
-      status: 'status2',
-      active: 'Active'
-    }
-  ]);
+  const [listViewData, setListViewData] = useState([]);
+
   useEffect(() => {
     console.log('LISTVIEW FIELD CURRENT VALUE IS', listView);
-    getAllUnits();
+    getAllPickRequest();
+    getbuyerRefNo();
     getAllGroups();
-    getAllItems();
+    getDocId();
   }, []);
+
+  const getDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `reversePick/getReversePickDocId?orgId=${orgId}&branchCode=${branchCode}&client=${client}&branch=${branch}&finYear=${finYear}`
+      );
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        // setDocId(response.paramObjectsMap.locationMovementDocId);
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          docId: response.paramObjectsMap.reversePickDocId
+        }));
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getAllPickRequest = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `reversePick/getAllReversePick?orgId=${orgId}&branchCode=${branchCode}&branch=${branch}&client=${client}&warehouse=${warehouse}&finYear=${finYear}`
+      );
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.reversePickVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getbuyerRefNo = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `reversePick/getPickRequestDetailsForReversePick?orgId=${orgId}&branchCode=${branchCode}&client=${client}&finYear=${finYear}&branch=${branch}`
+      );
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        // Store the full buyerOrderVO objects in the list
+        setBuyerOrderNoList(response.paramObjectsMap.pickRequestVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const getCurrentTime = () => {
     return dayjs().format('HH:mm:ss');
   };
 
-  // Initialize the outTime field with the current time
+  // Initialize the inTime field with the current time
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, outTime: getCurrentTime() }));
+    setFormData((prev) => ({ ...prev, inTime: getCurrentTime() }));
   }, []);
 
-  const getAllUnits = async () => {
-    try {
-      const unitData = await getAllActiveUnits(orgId);
-      setUnitList(unitData);
-    } catch (error) {
-      console.error('Error fetching country data:', error);
-    }
-  };
   const getAllGroups = async () => {
     try {
       const groupData = await getAllActiveGroups(orgId);
@@ -196,76 +293,76 @@ export const ReversePick = () => {
       console.error('Error fetching country data:', error);
     }
   };
-  const getAllItems = async () => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `warehousemastercontroller/material?cbranch=${loginBranchCode}&client=${loginClient}&orgid=${orgId}`
-      );
-      setListViewData(response.paramObjectsMap.materialVO);
-      console.log('TEST LISTVIEW DATA', response);
-    } catch (err) {
-      console.log('error', err);
-    }
-  };
+  // const getAllItems = async () => {
+  //   try {
+  //     const response = await apiCalls(
+  //       'get',
+  //       `warehousemastercontroller/material?cbranch=${loginBranchCode}&client=${loginClient}&orgid=${orgId}`
+  //     );
+  //     setListViewData(response.paramObjectsMap.materialVO);
+  //     console.log('TEST LISTVIEW DATA', response);
+  //   } catch (err) {
+  //     console.log('error', err);
+  //   }
+  // };
   const getAllItemById = async (row) => {
     console.log('THE SELECTED ITEM ID IS:', row.original.id);
     setEditId(row.original.id);
+
     try {
-      const response = await apiCalls('get', `warehousemastercontroller/material/${row.original.id}`);
+      const response = await apiCalls('get', `reversePick/getReversePickById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
         setListView(false);
-        const particularItem = response.paramObjectsMap.materialVO;
-        // const selectedBranch = branchList.find((br) => br.branch === particularItem.branch);
-        console.log('THE SELECTED ITEM IS:', particularItem);
+        const data = response.paramObjectsMap.reversePickVO;
 
+        // Set formData from main response data
         setFormData({
-          itemType: particularItem.itemType,
-          partNo: particularItem.partno,
-          partDesc: particularItem.partDesc,
-          custPartNo: particularItem.custPartno,
-          groupName: particularItem.groupName,
-          styleCode: particularItem.styleCode,
-          baseSku: particularItem.baseSku,
-          // addDesc: particularItem.addDesc, //no
-          purchaseUnit: particularItem.purchaseUnit,
-          storageUnit: particularItem.storageUnit,
-          // fixedCapAcrossLocn: particularItem.fixedCapAcrossLocn, //no
-          fsn: particularItem.fsn,
-          saleUnit: particularItem.saleUnit,
-          type: particularItem.type,
-          // serialNoFlag: particularItem.serialNoFlag, //no
-          sku: particularItem.sku,
-          skuQty: particularItem.skuQty,
-          ssku: particularItem.ssku,
-          sskuQty: particularItem.sskuQty,
-          // zoneType: particularItem.zoneType, //no
-          weightSkuUom: particularItem.weightofSkuAndUom,
-          hsnCode: particularItem.hsnCode,
-          parentChildKey: particularItem.parentChildKey,
-          controlBranch: particularItem.cbranch,
-          criticalStockLevel: particularItem.criticalStockLevel,
-          // criticalStock: particularItem.criticalStock, //no
-          // bchk: particularItem.bchk, //no
-          status: particularItem.status,
-          barcode: particularItem.barcode,
-          // itemVo: itemVo, //no
-          // orgId: orgId,
-          // createdby: loginUserName,
-          // breadth: 0,
-          // client: loginClient,
-          // customer: loginCustomer,
-          // height: 0,
-          // length: 0,
-          // palletQty: '',
-          // warehouse: loginWarehouse,
-          // weight: 0,
-          // branch: loginBranch,
-          // branchCode: loginBranchCode,
-          active: particularItem.active === 'Active' ? true : false
+          docId: data.docId,
+          docDate: data.docDate,
+          buyerOrderNo: data.buyerOrderNo,
+          buyerOrderDate: data.buyerOrderDate,
+          buyerRefNo: data.buyerRefNo,
+          buyerRefDate: data.buyerRefDate,
+          clientName: data.clientName,
+          customerName: data.customerName,
+          customerShortName: data.customerShortName,
+          inTime: data.inTime,
+          clientAddress: data.clientAddress,
+          customerAddress: data.customerAddress,
+          status: data.status,
+          buyersReference: data.buyersReference,
+          invoiceNo: data.invoiceNo,
+          clientShortName: data.clientShortName,
+          pickOrder: data.pickOrder,
+          boAmendment: data.boAmendment,
+          pickRequestDocDate: data.pickRequestDocDate,
+          pickRequestDocId: data.pickRequestDocId
+          // Add other fields here as needed
         });
+
+        // Set itemTableData from pickRequestDetailsVO array
+        setItemTableData(
+          data.reversePickDetailsVO.map((detail) => ({
+            batchDate: detail.batchDate || '', // Map or set default value
+            batchNo: detail.batchNo || '',
+            binClass: detail.binClass || '',
+            binType: detail.binType || '',
+            cellType: detail.cellType || '',
+            clientCode: detail.clientCode || '',
+            core: detail.core || '',
+            bin: detail.bin || '',
+            orderQty: detail.orderQty || '',
+            partDesc: detail.partDesc || '',
+            partNo: detail.partNo || '',
+            pcKey: detail.pcKey || '',
+            pickQty: detail.pickQty || '',
+            revisedQty: detail.revisedQty,
+            sku: detail.sku || '',
+            qcFlag: detail.qcFlag
+          }))
+        );
       } else {
         console.error('API Error:', response);
       }
@@ -280,20 +377,47 @@ export const ReversePick = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    const numericRegex = /^[0-9]*$/;
-    const alphanumericRegex = /^[A-Za-z0-9]*$/;
-    const specialCharsRegex = /^[A-Za-z0-9@_\-*]*$/;
-
-    let errorMessage = '';
 
     // Check if the value is a string before applying toUpperCase
-    const processedValue = typeof value === 'string' ? value.toUpperCase() : value;
+    let processedValue = value;
 
-    if (errorMessage) {
-      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-    } else {
-      setFormData({ ...formData, [name]: processedValue });
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+    // Convert value to uppercase for fields other than 'status'
+    if (name !== 'boAmendment' && typeof value === 'string') {
+      processedValue = value.toUpperCase();
+    }
+
+    setFormData({ ...formData, [name]: processedValue });
+
+    if (name === 'pickRequestDocId') {
+      // Find the selected order from the full list of orders
+      const selectedOrder = buyerOrderNoList.find(
+        (order) => order.docId && processedValue && order.docId.toLowerCase() === processedValue.toLowerCase()
+      );
+
+      if (selectedOrder) {
+        const refDate = selectedOrder.buyerRefDate ? dayjs(selectedOrder.buyerRefDate) : null;
+
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          buyerRefNo: selectedOrder.buyerRefNo || '',
+          buyerRefDate: refDate, // Set as dayjs object
+          clientName: selectedOrder.clientName || '',
+          clientShortName: selectedOrder.clientShortName || '',
+          customerName: selectedOrder.customerName || '',
+          clientAddress: selectedOrder.clientAddress || '',
+          customerAddress: selectedOrder.customerAddress || '',
+          buyerOrderNo: selectedOrder.buyerOrderNo || '',
+          buyerOrderDate: selectedOrder.buyerOrderDate || '',
+          buyersReference: selectedOrder.buyersReference || '',
+          invoiceNo: selectedOrder.invoiceNo || '',
+          pickRequestDocDate: selectedOrder.docDate || '',
+          pickRequestDocId: selectedOrder.docId || '',
+          boAmendment: selectedOrder.boAmendment || '',
+          inTime: formData.inTime || ''
+        }));
+      } else {
+        console.log('No matching order found for the selected value.');
+      }
     }
   };
 
@@ -321,38 +445,44 @@ export const ReversePick = () => {
 
   const handleClear = () => {
     setFormData({
-      docDate: '',
-      pickRequestId: '',
-      dispatch: '',
+      docId: '',
+      docDate: dayjs(),
       buyerOrderNo: '',
-      buyerOrderRefNo: '',
-      buyerOrderRefDate: '',
-      shipmentMethod: '',
-      refNo: '',
-      noOfBoxes: '',
-      dueDays: '',
+      buyerRefNo: '',
+      buyerRefDate: null,
       clientName: '',
       customerName: '',
-      outTime: '',
+      customerShortName: '',
+      inTime: '',
       clientAddress: '',
       customerAddress: '',
-      status: '',
-      boAmentment: '',
-      controlBranch: localStorage.getItem('branchCode'),
-      active: true,
-      charges: '',
-      lineDiscount: '',
-      roundOff: '',
-      invDiscountAmount: '',
-      watAmountWithoutForm: '',
-      totalAmount: ''
+      status: 'Edit',
+      buyersReference: '',
+      invoiceNo: '',
+      clientShortName: '',
+      pickOrder: 'FIFO',
+      pickRequestDocId: ''
     });
     setItemTableData([
       {
-        id: 1,
-        mrp: '',
-        fDate: '',
-        tDate: ''
+        availQty: '',
+        batchDate: '',
+        batchNo: '',
+        binClass: '',
+        binType: '',
+        cellType: '',
+        clientCode: '',
+        core: '',
+        bin: '',
+        orderQty: '',
+        partDesc: '',
+        partNo: '',
+        pcKey: '',
+        pickQty: '',
+        remainQty: '',
+        sku: '',
+        ssku: '',
+        status: ''
       }
     ]);
     setFieldErrors({
@@ -360,19 +490,19 @@ export const ReversePick = () => {
       pickRequestId: '',
       dispatch: '',
       buyerOrderNo: '',
-      buyerOrderRefNo: '',
-      buyerOrderRefDate: '',
+      buyerRefNo: '',
+      buyerRefDate: '',
       shipmentMethod: '',
       refNo: '',
       noOfBoxes: '',
       dueDays: '',
       clientName: '',
       customerName: '',
-      outTime: '',
+      inTime: '',
       clientAddress: '',
       customerAddress: '',
       status: '',
-      boAmentment: '',
+      boAmendment: '',
       controlBranch: localStorage.getItem('branchCode'),
       active: true,
       charges: '',
@@ -382,21 +512,18 @@ export const ReversePick = () => {
       watAmountWithoutForm: '',
       totalAmount: ''
     });
+    getDocId();
     setItemTableErrors('');
     setEditId('');
   };
 
   const handleSave = async () => {
     const errors = {};
-    if (!formData.partNo) {
-      errors.partNo = 'Part No is required';
+
+    if (!formData.buyerRefNo) {
+      errors.buyerRefNo = 'buyerRefNo is required';
     }
-    if (!formData.partDesc) {
-      errors.partDesc = 'part Desc is required';
-    }
-    if (!formData.sku) {
-      errors.sku = 'SKU is required';
-    }
+
     if (!formData.status) {
       errors.status = 'Status is required';
     }
@@ -406,75 +533,82 @@ export const ReversePick = () => {
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       const itemVo = itemTableData.map((row) => ({
-        mrp: row.mrp,
-        fromdate: dayjs(row.fDate).format('DD-MM-YYYY'),
-        todate: dayjs(row.tDate).format('DD-MM-YYYY')
+        availQty: row.availQty,
+        batchDate: row.batchDate,
+        batchNo: row.batchNo,
+        binClass: row.binClass,
+        binType: row.binType,
+        cellType: row.cellType,
+        core: row.core,
+        bin: row.bin,
+        grnNo: row.grnNo,
+        orderQty: row.orderQty,
+        partDesc: row.partDesc,
+        partNo: row.partNo,
+        pickQty: row.pickQty,
+        remainQty: row.remainQty,
+        sku: row.sku,
+        qcFlag: row.qcFlag,
+        remarks: row.remarks,
+        stockDate: row.stockDate,
+        status: row.status,
+        expDate: row.expDate,
+        grnDate: row.grnDate,
+        revisedQty: parseInt(formData.revisedQty)
       }));
 
       const saveFormData = {
         ...(editId && { id: editId }),
-        active: formData.active,
-        itemType: formData.itemType,
-        partno: formData.partNo,
-        partDesc: formData.partDesc,
-        custPartno: formData.custPartNo,
-        groupName: formData.groupName,
-        styleCode: formData.styleCode,
-        baseSku: formData.baseSku,
-        // addDesc: formData.addDesc, //no
-        purchaseUnit: formData.purchaseUnit,
-        storageUnit: formData.storageUnit,
-        // fixedCapAcrossLocn: formData.fixedCapAcrossLocn, //no
-        fsn: formData.fsn,
-        saleUnit: formData.saleUnit,
-        type: formData.type,
-        // serialNoFlag: formData.serialNoFlag, //no
-        sku: formData.sku,
-        skuQty: formData.skuQty,
-        ssku: formData.ssku,
-        sskuQty: formData.sskuQty,
-        // zoneType: formData.zoneType, //no
-        weightofSkuAndUom: formData.weightSkuUom,
-        hsnCode: formData.hsnCode,
-        parentChildKey: formData.parentChildKey,
-        cbranch: formData.controlBranch,
-        criticalStockLevel: formData.criticalStockLevel,
-        // criticalStock: formData.criticalStock, //no
-        // bchk: formData.bchk, //no
+
+        docId: formData.docId,
+        docDate: formData.docDate,
+        buyerOrderNo: formData.buyerOrderNo,
+        buyerRefNo: formData.buyerRefNo,
+        buyerRefDate: formData.buyerRefDate,
+        clientName: formData.clientName,
+        client: client,
+        customerName: formData.customerName,
+        customerShortName: formData.customerShortName,
+        inTime: formData.inTime,
+        clientAddress: formData.clientAddress,
+        customerAddress: formData.customerAddress,
         status: formData.status,
-        barcode: formData.barcode,
-        // itemVo: itemVo, //no
+        buyersReference: formData.buyersReference,
+        invoiceNo: formData.invoiceNo,
+        clientShortName: formData.clientShortName,
+        pickOrder: formData.pickOrder,
+        reversePickDetailsDTO: itemVo,
+        branch: branch,
+        branchCode: branchCode,
+        finYear: finYear,
+        warehouse: warehouse,
         orgId: orgId,
+        customer: customer,
+        client: client,
         createdBy: loginUserName,
-        breadth: 0,
-        client: loginClient,
-        customer: loginCustomer,
-        height: 0,
-        length: 0,
-        palletQty: '',
-        warehouse: loginWarehouse,
-        weight: 0,
-        branch: loginBranch,
-        branchCode: loginBranchCode
+        boAmendment: formData.boAmendment,
+        buyerOrderDate: formData.buyerOrderDate,
+        pickRequestDocId: formData.pickRequestDocId,
+        pickRequestDocDate: formData.pickRequestDocDate
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const response = await apiCalls('put', `warehousemastercontroller/createUpdateMaterial`, saveFormData);
+        const response = await apiCalls('put', `reversePick/createUpdateReversePick`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
-          showToast('success', editId ? ' Item Updated Successfully' : 'Item created successfully');
+          showToast('success', editId ? ' Reverse Pick Updated Successfully' : 'Reverse Pick created successfully');
           setIsLoading(false);
-          getAllItems();
+          // getAllItems();
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Item creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'Reverse Pick creation failed');
           setIsLoading(false);
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'Item creation failed');
+        showToast('error', 'Reverse Pick creation failed');
         setIsLoading(false);
       }
     } else {
@@ -525,6 +659,63 @@ export const ReversePick = () => {
     const formattedDate = dayjs(date).format('DD-MM-YYYY');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
+
+  const handleFullGrid = () => {
+    setModalOpen(true);
+    getAllFillGrid();
+  };
+
+  const getAllFillGrid = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `reversePick/getFillGridDetailsForReversePick?orgId=${orgId}&branchCode=${branchCode}&client=${client}&pickRequestDocId=${formData.pickRequestDocId}`
+      );
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setFillGridData(response.paramObjectsMap.fillGridDetails);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleSaveSelectedRows = () => {
+    const selectedData = selectedRows.map((index) => fillGridData[index]);
+
+    // Extract the bin values from the selected data
+    const binValues = selectedData.map((row) => row.bin);
+
+    // Pass the bin values to the getAllPartNo function
+    // getAllPartNo(binValues);
+
+    // Add the selected data to childTableData
+    setItemTableData([...itemTableData, ...selectedData]);
+
+    console.log('Selected Data:', selectedData);
+
+    // Clear selections and close the modal
+    setSelectedRows([]);
+    setSelectAll(false);
+    handleCloseModal();
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(fillGridData.map((_, index) => index));
+    }
+    setSelectAll(!selectAll);
+  };
+
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -549,6 +740,7 @@ export const ReversePick = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
+                  disabled
                   name="docId"
                   value={formData.docId}
                   onChange={handleInputChange}
@@ -557,56 +749,96 @@ export const ReversePick = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  label="DocDate"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="DocDate"
-                  value={formData.DocDate}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.DocDate}
-                  helperText={fieldErrors.DocDate}
-                />
+                <FormControl fullWidth variant="filled" size="small">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Doc Date"
+                      value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                      format="DD/MM/YYYY"
+                      disabled
+                    />
+                  </LocalizationProvider>
+                </FormControl>
               </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.buyerRefNo}>
+                  <InputLabel id="buyerRefNo-label">Pick Request Id</InputLabel>
+                  <Select
+                    labelId="buyerRefNo-label"
+                    id="pickRequestDocId"
+                    name="pickRequestDocId"
+                    label="Pick Request Id"
+                    value={formData.pickRequestDocId}
+                    onChange={handleInputChange}
+                  >
+                    {/* Default option */}
+                    <MenuItem value="">
+                      <em>None</em>
+                    </MenuItem>
+
+                    {/* Dynamically mapping buyerOrderNoList to MenuItem components */}
+                    {buyerOrderNoList.map((order, index) => (
+                      <MenuItem key={index} value={order.docId}>
+                        {order.docId}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.pickRequestDocId && <FormHelperText error>{fieldErrors.pickRequestDocId}</FormHelperText>}
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled" size="small">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Pick Request Date"
+                      value={formData.pickRequestDocDate ? dayjs(formData.pickRequestDocDate, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('pickRequestDocDate', date)}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                      format="YYYY-MM-DD"
+                      error={fieldErrors.pickRequestDocDate}
+                      helperText={fieldErrors.pickRequestDocDate && 'Required'}
+                    />
+                  </LocalizationProvider>
+                </FormControl>
+              </div>
+
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Pick Reauest Id"
+                  label="Buyer Order Ref No"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="pickRequestId"
-                  value={formData.pickRequestId}
+                  name="buyerRefNo"
+                  value={formData.buyerRefNo}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.pickRequestId}
-                  helperText={fieldErrors.pickRequestId}
+                  error={!!fieldErrors.buyerRefNo}
+                  helperText={fieldErrors.buyerRefNo}
                 />
               </div>
+
               <div className="col-md-3 mb-3">
-                <TextField
-                  label="DatePicker"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="datePicker"
-                  value={formData.datePicker}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.datePicker}
-                  helperText={fieldErrors.datePicker}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Dispatch"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="dispatch"
-                  value={formData.dispatch}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.dispatch}
-                  helperText={fieldErrors.dispatch}
-                />
+                <FormControl fullWidth variant="filled" size="small">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Buyer Order Ref Date"
+                      value={formData.buyerRefDate ? dayjs(formData.buyerRefDate, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('buyerRefDate', date)}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                      format="YYYY-MM-DD"
+                      error={fieldErrors.buyerRefDate}
+                      helperText={fieldErrors.buyerRefDate && 'Required'}
+                    />
+                  </LocalizationProvider>
+                </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
@@ -622,105 +854,46 @@ export const ReversePick = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  label="Buyer Order Ref No"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="buyerOrderRefNo"
-                  value={formData.buyerOrderRefNo}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.buyerOrderRefNo}
-                  helperText={fieldErrors.buyerOrderRefNo}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                {/* <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.purchaseUnit}>
-                  <InputLabel id="purchaseUnit-label">Purchase Unit</InputLabel>
-                  <Select
-                    labelId="purchaseUnit-label"
-                    id="purchaseUnit"
-                    name="purchaseUnit"
-                    label="Purchase Unit"
-                    value={formData.purchaseUnit}
-                    onChange={handleInputChange}
-                  >
-                    {unitList?.map((row) => (
-                      <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
-                        {row.unitName.toUpperCase()}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.purchaseUnit && <FormHelperText error>{fieldErrors.purchaseUnit}</FormHelperText>}
-                </FormControl> */}
-                <TextField
-                  label="Shipment Method"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="shipmentMethod"
-                  value={formData.shipmentMethod}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.shipmentMethod}
-                  helperText={fieldErrors.shipmentMethod}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Ref No"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="refNo"
-                  value={formData.refNo}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.refNo}
-                  helperText={fieldErrors.refNo}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Buyer Order Ref Date"
-                      value={formData.buyerOrderRefDate ? dayjs(formData.buyerOrderRefDate, 'DD-MM-YYYY') : null}
-                      onChange={(date) => handleDateChange('buyerOrderRefDate', date)}
+                      label="Buyer Order Date"
+                      value={formData.buyerOrderDate ? dayjs(formData.buyerOrderDate, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('buyerOrderDate', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
-                      error={fieldErrors.buyerOrderRefDate}
-                      helperText={fieldErrors.buyerOrderRefDate && 'Required'}
+                      format="YYYY-MM-DD"
+                      error={fieldErrors.buyerOrderDate}
+                      helperText={fieldErrors.buyerOrderDate && 'Required'}
                     />
                   </LocalizationProvider>
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="NoOfBoxes"
+                  label="Buyers Reference"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="noOfBoxes"
-                  value={formData.noOfBoxes}
+                  name="buyersReference"
+                  value={formData.buyersReference}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.noOfBoxes}
-                  helperText={fieldErrors.noOfBoxes}
+                  error={!!fieldErrors.buyersReference}
+                  helperText={fieldErrors.buyersReference}
                 />
               </div>
-
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Due Days"
+                  label="Invoice No"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="dueDays"
-                  value={formData.dueDays}
+                  name="invoiceNo"
+                  value={formData.invoiceNo}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.dueDays}
-                  helperText={fieldErrors.dueDays}
+                  error={!!fieldErrors.invoiceNo}
+                  helperText={fieldErrors.invoiceNo}
                 />
               </div>
 
@@ -739,29 +912,15 @@ export const ReversePick = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Customer Name"
+                  label="Client Short Name"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="customerName"
-                  value={formData.customerName}
+                  name="clientShortName"
+                  value={formData.clientShortName}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.customerName}
-                  helperText={fieldErrors.customerName}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Out Time"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="outTime"
-                  value={formData.outTime}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.outTime}
-                  helperText={fieldErrors.outTime}
-                  disabled
+                  error={!!fieldErrors.clientShortName}
+                  helperText={fieldErrors.clientShortName}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -777,6 +936,32 @@ export const ReversePick = () => {
                   helperText={fieldErrors.clientAddress}
                 />
               </div>
+              {/* <div className="col-md-3 mb-3">
+                <TextField
+                  label="Dispatch"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="dispatch"
+                  value={formData.dispatch}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.dispatch}
+                  helperText={fieldErrors.dispatch}
+                />
+              </div> */}
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="Customer Name"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="customerName"
+                  value={formData.customerName}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.customerName}
+                  helperText={fieldErrors.customerName}
+                />
+              </div>
               <div className="col-md-3 mb-3">
                 <TextField
                   label="Customer Address"
@@ -790,59 +975,101 @@ export const ReversePick = () => {
                   helperText={fieldErrors.customerAddress}
                 />
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                  <InputLabel id="purchaseUnit-label">Status</InputLabel>
+
+              {/* <div className="col-md-3 mb-3">
+                <TextField
+                  label="Due Days"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="dueDays"
+                  value={formData.dueDays}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.dueDays}
+                  helperText={fieldErrors.dueDays}
+                />
+              </div> */}
+
+              {/* <div className="col-md-3 mb-3">
+                <TextField
+                  label="NoOfBoxes"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="noOfBoxes"
+                  value={formData.noOfBoxes}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.noOfBoxes}
+                  helperText={fieldErrors.noOfBoxes}
+                />
+              </div> */}
+
+              {/* <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.pickOrder}>
+                  <InputLabel id="purchaseUnit-label">Pick Order</InputLabel>
                   <Select
                     labelId="purchaseUnit-label"
                     id="purchaseUnit"
-                    name="purchaseUnit"
+                    name="pickOrder"
+                    label="Pick Order"
+                    value={formData.pickOrder}
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="FIFO">FIFO</MenuItem>
+                    <MenuItem value="LILO">LIFO</MenuItem>
+                    <MenuItem value="FIFO">FIFO</MenuItem>
+                  </Select>
+                  {fieldErrors.pickOrder && <FormHelperText error>{fieldErrors.pickOrder}</FormHelperText>}
+                </FormControl>
+              </div> */}
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
+                  <InputLabel id="status-label">Status</InputLabel>
+                  <Select
+                    labelId="status-label"
+                    id="status"
+                    name="status"
                     label="Status"
                     value={formData.status}
                     onChange={handleInputChange}
                   >
-                    {unitList?.map((row) => (
-                      <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
-                        {row.unitName.toUpperCase()}
-                      </MenuItem>
-                    ))}
+                    <MenuItem value="Edit">Edit</MenuItem>
+                    <MenuItem value="Confirm">Confirm</MenuItem>
                   </Select>
                   {fieldErrors.status && <FormHelperText error>{fieldErrors.status}</FormHelperText>}
                 </FormControl>
               </div>
 
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                  <InputLabel id="purchaseUnit-label">BO Amendment</InputLabel>
+                <TextField
+                  label="In Time"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="inTime"
+                  value={formData.inTime}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.inTime}
+                  helperText={fieldErrors.inTime}
+                  disabled
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.boAmendment}>
+                  <InputLabel id="status-label">BO Amentment</InputLabel>
                   <Select
-                    labelId="purchaseUnit-label"
-                    id="purchaseUnit"
-                    name="purchaseUnit"
+                    labelId="status-label"
+                    id="boAmendment"
+                    name="boAmendment"
                     label="BO Amentment"
-                    value={formData.boAmentment}
+                    value={formData.boAmendment}
                     onChange={handleInputChange}
                   >
-                    {unitList?.map((row) => (
-                      <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
-                        {row.unitName.toUpperCase()}
-                      </MenuItem>
-                    ))}
+                    <MenuItem value="Yes">Yes</MenuItem>
+                    <MenuItem value="No">No</MenuItem>
                   </Select>
-                  {fieldErrors.boAmentment && <FormHelperText error>{fieldErrors.boAmentment}</FormHelperText>}
+                  {fieldErrors.boAmendment && <FormHelperText error>{fieldErrors.boAmendment}</FormHelperText>}
                 </FormControl>
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={formData.active}
-                      onChange={() => setFormData({ ...formData, active: !formData.active })}
-                      color="primary"
-                    />
-                  }
-                  label="Active"
-                />
               </div>
             </div>
 
@@ -866,6 +1093,7 @@ export const ReversePick = () => {
                     <div className="row d-flex ml">
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
                       </div>
                       <div className="row mt-2">
                         <div className="col-lg-12">
@@ -880,340 +1108,232 @@ export const ReversePick = () => {
                                     S.No
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Part Code
+                                    Part No
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Part Description
+                                    Part Desc
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Batch No
+                                    Core
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Lot No
+                                    Bin
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     SKU
                                   </th>
+
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Location
+                                    Batch No
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    To Location
+                                    Batch Date
                                   </th>
+
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     Order Qty
                                   </th>
+
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Picked Qty Per Location
+                                    Pick Qty
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Revised Qty Per Location
+                                    Revised Qty
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Weight
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    PGroup
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Exp Date
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Rate
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Tax
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Amount
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Remarks
-                                  </th>
+                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
+                                    Remaining Qty
+                                  </th> */}
                                 </tr>
                               </thead>
                               <tbody>
-                                {itemTableData.map((row, index) => (
-                                  <tr key={row.id}>
-                                    <td className="border px-2 py-2 text-center">
-                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
-                                    </td>
-                                    <td className="text-center">
-                                      <div className="pt-2">{index + 1}</div>
-                                    </td>
-
-                                    {/* Part Code */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        style={{ width: '100px' }}
-                                        value={row.partCode}
-                                        onChange={(e) => handleInputChange(e, index, 'partCode')}
-                                        className={itemTableErrors[index]?.partCode ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.partCode && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].partCode}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Part Description */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.partDescription}
-                                        onChange={(e) => handleInputChange(e, index, 'partDescription')}
-                                        className={itemTableErrors[index]?.partDescription ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.partDescription && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].partDescription}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Batch No */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.batchNo}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'batchNo')}
-                                        className={itemTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.batchNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].batchNo}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Lot No */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.lotNo}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'lotNo')}
-                                        className={itemTableErrors[index]?.lotNo ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.lotNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].lotNo}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* SKU */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.sku}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'sku')}
-                                        className={itemTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.sku && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].sku}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Location */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.location}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'location')}
-                                        className={itemTableErrors[index]?.location ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.location && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].location}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* To Location */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.toLocation}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'toLocation')}
-                                        className={itemTableErrors[index]?.toLocation ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.toLocation && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].toLocation}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Order Qty */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.orderQty}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'orderQty')}
-                                        className={itemTableErrors[index]?.orderQty ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.orderQty && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].orderQty}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Picked Qty Per Location */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.pickedQtyPerLocation}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'pickedQtyPerLocation')}
-                                        className={itemTableErrors[index]?.pickedQtyPerLocation ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.pickedQtyPerLocation && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].pickedQtyPerLocation}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Revised Qty Per Location */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.revisedQtyPerLocation}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'revisedQtyPerLocation')}
-                                        className={itemTableErrors[index]?.revisedQtyPerLocation ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.revisedQtyPerLocation && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].revisedQtyPerLocation}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Weight */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.weight}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'weight')}
-                                        className={itemTableErrors[index]?.weight ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.weight && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].weight}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* PGroup */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.pGroup}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'pGroup')}
-                                        className={itemTableErrors[index]?.pGroup ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.pGroup && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].pGroup}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Exp Date */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="date"
-                                        value={row.expDate}
-                                        onChange={(e) => handleInputChange(e, index, 'expDate')}
-                                        className={itemTableErrors[index]?.expDate ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.expDate && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].expDate}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Rate */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.rate}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'rate')}
-                                        className={itemTableErrors[index]?.rate ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.rate && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].rate}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Tax */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.tax}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'tax')}
-                                        className={itemTableErrors[index]?.tax ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.tax && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].tax}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Amount */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.amount}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'amount')}
-                                        className={itemTableErrors[index]?.amount ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.amount && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].amount}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    {/* Remarks */}
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.remarks}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => handleInputChange(e, index, 'remarks')}
-                                        className={itemTableErrors[index]?.remarks ? 'error form-control' : 'form-control'}
-                                      />
-                                      {itemTableErrors[index]?.remarks && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {itemTableErrors[index].remarks}
-                                        </div>
-                                      )}
+                                {itemTableData.length === 0 ? (
+                                  <tr>
+                                    <td colSpan="18" className="text-center py-2">
+                                      No Data Found
                                     </td>
                                   </tr>
-                                ))}
+                                ) : (
+                                  itemTableData.map((row, index) => (
+                                    <tr key={row.id}>
+                                      <td className="border px-2 py-2 text-center">
+                                        <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+                                      </td>
+                                      <td className="text-center">
+                                        <div className="pt-2">{index + 1}</div>
+                                      </td>
+
+                                      {/* Part Code */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          style={{ width: '100px' }}
+                                          value={row.partNo}
+                                          onChange={(e) => handleInputChange(e, index, 'partNo')}
+                                          className={itemTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.partNo && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].partNo}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Part Description */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          style={{ width: '100px' }}
+                                          value={row.partDesc}
+                                          onChange={(e) => handleInputChange(e, index, 'partDesc')}
+                                          className={itemTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.partDesc && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].partDesc}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          style={{ width: '100px' }}
+                                          value={row.core}
+                                          onChange={(e) => handleInputChange(e, index, 'core')}
+                                          className={itemTableErrors[index]?.core ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.core && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].core}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          style={{ width: '100px' }}
+                                          value={row.bin}
+                                          onChange={(e) => handleInputChange(e, index, 'bin')}
+                                          className={itemTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.bin && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].bin}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Batch No */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.sku}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'sku')}
+                                          className={itemTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.sku && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].sku}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* Lot No */}
+
+                                      {/* SKU */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.batchNo}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'batchNo')}
+                                          className={itemTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.batchNo && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].batchNo}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.batchDate}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'batchDate')}
+                                          className={itemTableErrors[index]?.batchDate ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.batchDate && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].batchDate}
+                                          </div>
+                                        )}
+                                      </td>
+                                      {/* Location */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.orderQty}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'orderQty')}
+                                          className={itemTableErrors[index]?.orderQty ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.orderQty && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].orderQty}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="number"
+                                          value={Math.abs(row.pickQty)} // Ensure the value is always positive
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => {
+                                            const value = Math.abs(parseInt(e.target.value) || 0); // Convert to positive integer
+
+                                            // Update sQty and then recalculate remainQty for the specific row
+
+                                            // Call handleInputChange if needed for validation or other logic
+                                            handleInputChange({ ...e, target: { ...e.target, value } }, index, 'pickQty');
+                                          }}
+                                          className={itemTableErrors[index]?.pickQty ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.pickQty && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].pickQty}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.revisedQty}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'revisedQty')}
+                                          className={itemTableErrors[index]?.revisedQty ? 'error form-control' : 'form-control'}
+                                        />
+                                        {itemTableErrors[index]?.revisedQty && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {itemTableErrors[index].revisedQty}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      {/* <td className="border px-2 py-2">
+                                        <input
+                                          type="number"
+                                          value={row.trpQty}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleInputChange(e, index, 'trpQty')}
+                                          className={itemTableErrors[index]?.trpQty ? 'error form-control' : 'form-control'}
+                                        />
+                                      </td> */}
+                                    </tr>
+                                  ))
+                                )}
                               </tbody>
                             </table>
                           </div>
@@ -1228,82 +1348,29 @@ export const ReversePick = () => {
                       <div className="row">
                         <div className="col-md-3 mb-3">
                           <TextField
-                            label="Charges"
+                            label="Total Order Qty"
                             variant="outlined"
                             size="small"
                             fullWidth
-                            name="fsn"
-                            value={formData.charges}
+                            name="totalOrderQty"
+                            value={formData.totalOrderQty}
                             onChange={handleInputChange}
-                            error={!!fieldErrors.charges}
-                            helperText={fieldErrors.charges}
+                            error={!!fieldErrors.totalOrderQty}
+                            helperText={fieldErrors.totalOrderQty}
                           />
                         </div>
 
                         <div className="col-md-3 mb-3">
                           <TextField
-                            label="Line Discount"
+                            label="Total Picked Qty"
                             variant="outlined"
                             size="small"
                             fullWidth
-                            name="lineDiscount"
-                            value={formData.lineDiscount}
+                            name="totalPickedQty"
+                            value={formData.totalPickedQty}
                             onChange={handleInputChange}
-                            error={!!fieldErrors.lineDiscount}
-                            helperText={fieldErrors.lineDiscount}
-                          />
-                        </div>
-                        <div className="col-md-3 mb-3">
-                          <TextField
-                            label="Round Off"
-                            variant="outlined"
-                            size="small"
-                            fullWidth
-                            name="roundOff"
-                            value={formData.roundOff}
-                            onChange={handleInputChange}
-                            error={!!fieldErrors.roundOff}
-                            helperText={fieldErrors.roundOff}
-                          />
-                        </div>
-
-                        <div className="col-md-3 mb-3">
-                          <TextField
-                            label="Inv. Discount Amount"
-                            variant="outlined"
-                            size="small"
-                            fullWidth
-                            name="invDiscountAmount"
-                            value={formData.invDiscountAmount}
-                            onChange={handleInputChange}
-                            error={!!fieldErrors.invDiscountAmount}
-                            helperText={fieldErrors.invDiscountAmount}
-                          />
-                        </div>
-                        <div className="col-md-3 mb-3">
-                          <TextField
-                            label="WAT Amount Without Form"
-                            variant="outlined"
-                            size="small"
-                            fullWidth
-                            name="watAmountWithoutForm"
-                            value={formData.watAmountWithoutForm}
-                            onChange={handleInputChange}
-                            error={!!fieldErrors.watAmountWithoutForm}
-                            helperText={fieldErrors.watAmountWithoutForm}
-                          />
-                        </div>
-                        <div className="col-md-3 mb-3">
-                          <TextField
-                            label="Total Amount"
-                            variant="outlined"
-                            size="small"
-                            fullWidth
-                            name="totalAmount"
-                            value={formData.totalAmount}
-                            onChange={handleInputChange}
-                            error={!!fieldErrors.totalAmount}
-                            helperText={fieldErrors.totalAmount}
+                            error={!!fieldErrors.totalPickedQty}
+                            helperText={fieldErrors.totalPickedQty}
                           />
                         </div>
                       </div>
@@ -1312,6 +1379,117 @@ export const ReversePick = () => {
                 )}
               </Box>
             </div>
+            <Dialog
+              open={modalOpen}
+              maxWidth={'md'}
+              fullWidth={true}
+              onClose={handleCloseModal}
+              PaperComponent={PaperComponent}
+              aria-labelledby="draggable-dialog-title"
+            >
+              <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
+                <h6>Grid Details</h6>
+              </DialogTitle>
+              <DialogContent className="pb-0">
+                <div className="row">
+                  <div className="col-lg-12">
+                    <div className="table-responsive">
+                      <table className="table table-bordered">
+                        <thead>
+                          <tr style={{ backgroundColor: '#673AB7' }}>
+                            <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                              <Checkbox checked={selectAll} onChange={handleSelectAll} />
+                            </th>
+                            <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                              S.No
+                            </th>
+                            <th className="px-2 py-2 text-white text-center">Part No</th>
+                            <th className="px-2 py-2 text-white text-center">Part Desc</th>
+                            <th className="px-2 py-2 text-white text-center">Core</th>
+                            <th className="px-2 py-2 text-white text-center">SKU</th>
+                            <th className="px-2 py-2 text-white text-center">GRN No</th>
+                            <th className="px-2 py-2 text-white text-center">GRN Date</th>
+
+                            <th className="px-2 py-2 text-white text-center">Batch No</th>
+                            <th className="px-2 py-2 text-white text-center">Batch Date</th>
+                            <th className="px-2 py-2 text-white text-center">Bin</th>
+                            <th className="px-2 py-2 text-white text-center">Order Qty</th>
+                            <th className="px-2 py-2 text-white text-center">Pick Qty</th>
+                            {/* <th className="px-2 py-2 text-white text-center">Remaining Qty</th> */}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {fillGridData?.map((row, index) => (
+                            <tr key={row.index}>
+                              <td className="border p-0 text-center">
+                                <Checkbox
+                                  checked={selectedRows.includes(index)}
+                                  onChange={(e) => {
+                                    const isChecked = e.target.checked;
+                                    setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
+                                  }}
+                                />
+                              </td>
+                              <td className="text-center">
+                                <div className="pt-1">{index + 1}</div>
+                              </td>
+                              {/* <td className="border p-0">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.bin || ''}</div>
+                              </td> */}
+                              <td className="border p-0">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.partNo || ''}</div>
+                              </td>
+                              <td className="border p-0">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.partDesc || ''}</div>
+                              </td>
+                              <td className="border p-0">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.core || ''}</div>
+                              </td>
+                              <td className="border p-0">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.sku || ''}</div>
+                              </td>
+                              <td className="border p-0">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.grnNo || ''}</div>
+                              </td>
+                              <td className="border p-0">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.grnDate || ''}</div>
+                              </td>
+
+                              <td className="border p-0">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.batchNo || ''}</div>
+                              </td>
+                              <td className="border p-0">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.batchDate || ''}</div>
+                              </td>
+                              <td className="border p-0">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.bin || ''}</div>
+                              </td>
+                              <td className="border p-0">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.orderQty || ''}</div>
+                              </td>
+                              <td className="border p-0">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.pickQty || ''}</div>
+                              </td>
+                              {/* <td className="border p-0">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>
+                                  {row.remainOrderQty || ''}
+                                </div>
+                              </td> */}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </DialogContent>
+              <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
+                <Button onClick={handleCloseModal}>Cancel</Button>
+                <Button color="secondary" onClick={handleSaveSelectedRows} variant="contained">
+                  Save
+                </Button>
+              </DialogActions>
+            </Dialog>
           </>
         )}
       </div>
