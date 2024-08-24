@@ -244,7 +244,7 @@ export const LocationMovement = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockprocess/getLocationMovementDocId?orgId=${orgId}&branchCode=${branchCode}&client=${client}&branch=${branch}&finYear=${finYear}`
+        `locationMovement/getLocationMovementDocId?orgId=${orgId}&branchCode=${branchCode}&client=${client}&branch=${branch}&finYear=${finYear}`
       );
       console.log('API Response:', response);
 
@@ -266,7 +266,7 @@ export const LocationMovement = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockprocess/getAllLocationMovementByOrgId?orgId=${orgId}&branchCode=${branchCode}&branch=${branch}&client=${client}&customer=${customer}&warehouse=${warehouse}&finYear=${finYear}`
+        `locationMovement/getAllLocationMovementByOrgId?orgId=${orgId}&branchCode=${branchCode}&branch=${branch}&client=${client}&customer=${customer}&warehouse=${warehouse}&finYear=${finYear}`
       );
       console.log('API Response:', response);
 
@@ -284,7 +284,7 @@ export const LocationMovement = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockprocess/getAllForLocationMovementDetailsFillGrid?orgId=${orgId}&branchCode=${branchCode}&branch=${branch}&client=${client}`
+        `locationMovement/getAllForLocationMovementDetailsFillGrid?orgId=${orgId}&branchCode=${branchCode}&branch=${branch}&client=${client}`
       );
       console.log('API Response:', response);
 
@@ -302,7 +302,7 @@ export const LocationMovement = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockprocess/getBinFromStockForLocationMovement?&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}`
+        `locationMovement/getBinFromStockForLocationMovement?&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}`
       );
       console.log('API Response:', response);
 
@@ -329,7 +329,7 @@ export const LocationMovement = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockprocess/getPartNoAndPartDescFromStockForLocationMovement?&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&bin=${bin}`
+        `locationMovement/getPartNoAndPartDescFromStockForLocationMovement?&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&bin=${bin}`
       );
       console.log('API Response:', response);
 
@@ -382,7 +382,7 @@ export const LocationMovement = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockprocess/getToBinFromLocationStatusForLocationMovement?orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&warehouse=${warehouse}`
+        `locationMovement/getToBinFromLocationStatusForLocationMovement?orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&warehouse=${warehouse}`
       );
 
       if (response.status === true) {
@@ -409,7 +409,7 @@ export const LocationMovement = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockprocess/getGrnNoAndBatchAndBatchDateAndLotNoFromStockForLocationMovement?bin=${selectedBin}&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&partDesc=${selectedPart.partDesc}&partNo=${partNo}&sku=${selectedPart.sku}`
+        `locationMovement/getGrnNoAndBatchAndBatchDateAndLotNoFromStockForLocationMovement?bin=${selectedBin}&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&partDesc=${selectedPart.partDesc}&partNo=${partNo}&sku=${selectedPart.sku}`
       );
       console.log('API Response:', response);
 
@@ -446,7 +446,7 @@ export const LocationMovement = () => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `stockprocess/getLocationMovementById?id=${row.original.id}`);
+      const response = await apiCalls('get', `locationMovement/getLocationMovementById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -676,7 +676,7 @@ export const LocationMovement = () => {
 
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `stockprocess/createUpdateLocationMovement`, saveFormData);
+        const response = await apiCalls('put', `locationMovement/createUpdateLocationMovement`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();

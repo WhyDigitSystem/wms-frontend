@@ -234,7 +234,7 @@ export const PickRequest = () => {
     try {
       const response = await apiCalls(
         'get',
-        `guhan/getPickRequestDocId?orgId=${orgId}&branchCode=${branchCode}&client=${client}&branch=${branch}&finYear=${finYear}`
+        `pickrequest/getPickRequestDocId?orgId=${orgId}&branchCode=${branchCode}&client=${client}&branch=${branch}&finYear=${finYear}`
       );
       console.log('API Response:', response);
 

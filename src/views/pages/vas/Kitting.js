@@ -222,7 +222,7 @@ export const Kitting = () => {
     try {
       const response = await apiCalls(
         'get',
-        `vascontroller/getAllKitting?orgId=${orgId}&branchCode=${branchCode}&client=${client}&customer=${customer}`
+        `kitting/getAllKitting?orgId=${orgId}&branchCode=${branchCode}&client=${client}&customer=${customer}`
       );
       console.log('API Response:', response);
 
@@ -240,7 +240,7 @@ export const Kitting = () => {
     try {
       const response = await apiCalls(
         'get',
-        `vascontroller/getPartNOByChild?bin=${'BULK'}&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&customer=${customer}`
+        `kitting/getPartNOByChild?bin=${'BULK'}&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&customer=${customer}`
       );
       console.log('API Response:', response);
 
@@ -264,7 +264,7 @@ export const Kitting = () => {
     try {
       const response = await apiCalls(
         'get',
-        `vascontroller/getSqtyByKitting?orgId=${orgId}&branchCode=${branchCode}&client=${client}&partNo=${partNo}&warehouse=${warehouse}&grnno=${grnNo.grnnNo}`
+        `kitting/getSqtyByKitting?orgId=${orgId}&branchCode=${branchCode}&client=${client}&partNo=${partNo}&warehouse=${warehouse}&grnno=${grnNo.grnnNo}`
       );
       console.log('API Responseqq:', grnNo);
 
@@ -292,7 +292,7 @@ export const Kitting = () => {
     try {
       console.log('Current docId:', docId); // Log the current docId to verify its value
 
-      const response = await apiCalls('get', `vascontroller/getPartNOByParent?orgId=${orgId}&branchCode=${branchCode}&client=${client}`);
+      const response = await apiCalls('get', `kitting/getPartNOByParent?orgId=${orgId}&branchCode=${branchCode}&client=${client}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -333,7 +333,7 @@ export const Kitting = () => {
     try {
       const response = await apiCalls(
         'get',
-        `vascontroller/getGrnNOByChild?bin=${'BULK'}&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&partDesc=${selectedPart.partDescription}&partNo=${partNo}&sku=${selectedPart.sku}`
+        `kitting/getGrnNOByChild?bin=${'BULK'}&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&partDesc=${selectedPart.partDescription}&partNo=${partNo}&sku=${selectedPart.sku}`
       );
       console.log('API Response:', response);
 
@@ -369,7 +369,7 @@ export const Kitting = () => {
     try {
       const response = await apiCalls(
         'get',
-        `vascontroller/getGrnNOByParent?bin=${'BULK'}&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&partDesc=${selectedPart.partDescription}&partNo=${partNo}&sku=${selectedPart.sku}`
+        `kitting/getGrnNOByParent?bin=${'BULK'}&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&partDesc=${selectedPart.partDescription}&partNo=${partNo}&sku=${selectedPart.sku}`
       );
       console.log('API Response:', response);
 
@@ -393,7 +393,7 @@ export const Kitting = () => {
     try {
       const response = await apiCalls(
         'get',
-        `vascontroller/getKittingInDocId?orgId=${orgId}&branchCode=${branchCode}&client=${client}&branch=${branch}&finYear=${finYear}`
+        `kitting/getKittingInDocId?orgId=${orgId}&branchCode=${branchCode}&client=${client}&branch=${branch}&finYear=${finYear}`
       );
       console.log('API Response:', response);
 
@@ -424,7 +424,7 @@ export const Kitting = () => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `vascontroller/getKittingById?id=${row.original.id}`);
+      const response = await apiCalls('get', `kitting/getKittingById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -731,7 +731,7 @@ export const Kitting = () => {
 
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `vascontroller/createUpdateKitting`, saveFormData);
+        const response = await apiCalls('put', `kitting/createUpdateKitting`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
