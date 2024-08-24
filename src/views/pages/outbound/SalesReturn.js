@@ -4,7 +4,17 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { FormHelperText } from '@mui/material';
+import {
+  FormHelperText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Tooltip,
+  FormControlLabel,
+  Checkbox
+} from '@mui/material';
 import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -23,9 +33,21 @@ import { useEffect, useRef, useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import { getAllActiveGroups } from 'utils/CommonFunctions';
+import { getAllActiveCarrier, getAllActiveGroups, getAllActiveSupplier, getAllShipmentModes } from 'utils/CommonFunctions';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import GridOnIcon from '@mui/icons-material/GridOn';
+import Paper from '@mui/material/Paper';
+import Draggable from 'react-draggable';
+function PaperComponent(props) {
+  return (
+    <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
+      <Paper {...props} />
+    </Draggable>
+  );
+}
+
+const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
 export const SalesReturn = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -33,227 +55,145 @@ export const SalesReturn = () => {
   const [buyerOrderNoList, setBuyerOrderNoList] = useState([]);
   const [listView, setListView] = useState(false);
   const [editId, setEditId] = useState('');
-  const [unitList, setUnitList] = useState([]);
+  const [prNoList, setPrNoList] = useState([]);
+  const [supplierList, setSupplierList] = useState([]);
+  const [modeOfShipmentList, setModeOfShipmentList] = useState([]);
+  const [carrierList, setCarrierList] = useState([]);
   const [groupList, setGroupList] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const [branch, setBranch] = useState(localStorage.getItem('branch'));
-  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
-  const [client, setClient] = useState(localStorage.getItem('client'));
-  const [customer, setCustomer] = useState(localStorage.getItem('customer'));
-  const [warehouse, setWarehouse] = useState(localStorage.getItem('warehouse'));
-  // const [finYear, setFinYear] = useState(localStorage.getItem('finYear') ? localStorage.getItem('finYear') : '2024');
-  const [finYear, setFinYear] = useState('2024');
+  const [loginUserId, setLoginUserId] = useState(localStorage.getItem('userId'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
+  const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
+  const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
+  const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
+  const [loginFinYear, setLoginFinYear] = useState(2024);
+  const [selectAll, setSelectAll] = useState(false);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     docId: '',
     docDate: dayjs(),
-    pickRequestId: '',
-    dispatch: '',
-    buyerOrderNo: '',
-    buyerOrderRefNo: '',
-    buyerOrderRefDate: null,
-    shipmentMethod: '',
-    refNo: '',
-    noOfBoxes: '',
-    dueDays: '',
-    clientName: '',
-    customerName: '',
-    outTime: '',
-    clientAddress: '',
-    customerAddress: '',
-    status: 'Edit',
-    boAmentment: '',
-    controlBranch: localStorage.getItem('branchCode'),
-    active: true,
-    charges: '',
-    lineDiscount: '',
-    roundOff: '',
-    invDiscountAmount: '',
-    watAmountWithoutForm: '',
-    totalAmount: '',
-    buyersReference: '',
-    invoiceNo: '',
-    clientShortName: '',
-    pickOrder: 'FIFO'
+    prNo: '',
+    prDate: null,
+    boNo: '',
+    boDate: null,
+    entryNo: '',
+    entryDate: null,
+    buyerName: '',
+    buyerType: '',
+    supplierShotName: '',
+    supplier: '',
+    modeOfShipment: '',
+    carrier: '',
+    driver: '',
+    vehicleType: '',
+    vehicleNo: '',
+    contact: '',
+    securityPerson: '',
+    timeIn: '',
+    timeOut: '',
+    goodsDesc: ''
   });
 
   const [value, setValue] = useState(0);
-  const [itemTableData, setItemTableData] = useState([
+  const [detailTableData, setDetailTableData] = useState([
     {
-      amount: '',
-      avlQty: '',
-      batchDate: '',
-      batchNo: '',
-      binClass: '',
-      binType: '',
-      cellType: '',
-      clientCode: '',
-      core: '',
-      expDate: '',
-      location: '',
-      lotNo: '',
-      orderQty: '',
-      partDesc: '',
+      lrNo: '',
+      invNo: '',
       partNo: '',
-      pcKey: '',
+      partDesc: '',
+      unit: '',
       pickQty: '',
-      pickQtyPerLocation: '',
-      rate: '',
-      remainingQty: '',
-      remarks: '',
-      runningQty: '',
-      sku: '',
-      ssku: '',
-      status: '',
-      stockDate: '',
-      tax: '',
+      returnQty: '',
+      damageQty: '',
+      batchNo: '',
+      batchDate: null,
+      expDate: null,
+      noOfBin: '',
+      binQty: '',
       weight: '',
-      mrp: '',
-      fDate: null,
-      tDate: null
+      rate: '',
+      amount: '',
+      insAmt: '',
+      remarks: ''
     }
   ]);
 
-  const handleAddRow = () => {
-    const newRow = {
-      id: Date.now(),
-      amount: '',
-      avlQty: '',
-      batchDate: '',
-      batchNo: '',
-      binClass: '',
-      binType: '',
-      cellType: '',
-      clientCode: '',
-      core: '',
-      expDate: '',
-      location: '',
-      lotNo: '',
-      orderQty: '',
-      partDesc: '',
-      partNo: '',
-      pcKey: '',
-      pickQty: '',
-      pickQtyPerLocation: '',
-      rate: '',
-      remainingQty: '',
-      remarks: '',
-      runningQty: '',
-      sku: '',
-      ssku: '',
-      status: '',
-      stockDate: '',
-      tax: '',
-      weight: '',
-      mrp: '',
-      fDate: null,
-      tDate: null
-    };
-    setItemTableData([...itemTableData, newRow]);
-    setItemTableErrors([
-      ...itemTableErrors,
-      {
-        amount: '',
-        avlQty: '',
-        batchDate: '',
-        batchNo: '',
-        binClass: '',
-        binType: '',
-        cellType: '',
-        clientCode: '',
-        core: '',
-        expDate: '',
-        location: '',
-        lotNo: '',
-        orderQty: '',
-        partDesc: '',
-        partNo: '',
-        pcKey: '',
-        pickQty: '',
-        pickQtyPerLocation: '',
-        rate: '',
-        remainingQty: '',
-        remarks: '',
-        runningQty: '',
-        sku: '',
-        ssku: '',
-        status: '',
-        stockDate: '',
-        tax: '',
-        weight: '',
-        mrp: '',
-        fDate: null,
-        tDate: null
-      }
-    ]);
-  };
-
-  const [itemTableErrors, setItemTableErrors] = useState([
+  const [detailTableErrors, setDetailTableErrors] = useState([
     {
-      amount: '',
-      avlQty: '',
-      batchDate: '',
-      batchNo: '',
-      binClass: '',
-      binType: '',
-      cellType: '',
-      clientCode: '',
-      core: '',
-      expDate: '',
-      location: '',
-      lotNo: '',
-      orderQty: '',
-      partDesc: '',
+      lrNo: '',
+      invNo: '',
       partNo: '',
-      pcKey: '',
+      partDesc: '',
+      unit: '',
       pickQty: '',
-      pickQtyPerLocation: '',
-      rate: '',
-      remainingQty: '',
-      remarks: '',
-      runningQty: '',
-      sku: '',
-      ssku: '',
-      status: '',
-      stockDate: '',
-      tax: '',
+      returnQty: '',
+      damageQty: '',
+      batchNo: '',
+      batchDate: null,
+      expDate: null,
+      noOfBin: '',
+      binQty: '',
       weight: '',
-      mrp: '',
-      fDate: null,
-      tDate: null
+      rate: '',
+      amount: '',
+      insAmt: '',
+      remarks: ''
     }
   ]);
-
-  const theme = useTheme();
-  const anchorRef = useRef(null);
-
+  const [modalTableData, setModalTableData] = useState([
+    {
+      id: 1,
+      fromBin: '',
+      fromBinClass: '',
+      fromBinType: '',
+      fromCellType: '',
+      partNo: '',
+      rowPartNoList: [],
+      partDesc: '',
+      sku: '',
+      grnNo: '',
+      grnDate: '',
+      batchNo: '',
+      batchDate: '',
+      expDate: '',
+      toBin: '',
+      toBinType: '',
+      toBinClass: '',
+      toCellType: '',
+      fromQty: 5000,
+      toQty: '',
+      remainQty: '',
+      fromCore: '',
+      toCore: '',
+      qcFlag: ''
+    }
+  ]);
   const [fieldErrors, setFieldErrors] = useState({
-    docDate: '',
-    pickRequestId: '',
-    dispatch: '',
-    buyerOrderNo: '',
-    buyerOrderRefNo: '',
-    buyerOrderRefDate: '',
-    shipmentMethod: '',
-    refNo: '',
-    noOfBoxes: '',
-    dueDays: '',
-    clientName: '',
-    customerName: '',
-    outTime: '',
-    clientAddress: '',
-    customerAddress: '',
-    status: '',
-    boAmentment: '',
-    controlBranch: localStorage.getItem('branchCode'),
-    active: true,
-    charges: '',
-    status: '',
-    lineDiscount: '',
-    roundOff: '',
-    invDiscountAmount: '',
-    watAmountWithoutForm: '',
-    totalAmount: ''
+    docId: '',
+    docDate: dayjs(),
+    prNo: '',
+    prDate: null,
+    boNo: '',
+    boDate: null,
+    entryNo: '',
+    entryDate: null,
+    buyerName: '',
+    buyerType: '',
+    supplierShotName: '',
+    supplier: '',
+    modeOfShipment: '',
+    carrier: '',
+    driver: '',
+    vehicleType: '',
+    vehicleNo: '',
+    contact: '',
+    securityPerson: '',
+    timeIn: '',
+    timeOut: '',
+    goodsDesc: ''
   });
   const listViewColumns = [
     { accessorKey: 'partno', header: 'Part No', size: 140 },
@@ -283,22 +223,24 @@ export const SalesReturn = () => {
   ]);
   useEffect(() => {
     console.log('LISTVIEW FIELD CURRENT VALUE IS', listView);
+    getAllSalesReturns();
     // getAllUnits();
-    getBuyerOrderRefNo();
+    getPrNo();
+    getAllSuppliers();
+    getAllModesOfShipment();
     getAllGroups();
-    getDocId();
+    getNewSalesReturnDocId();
   }, []);
 
-  const getDocId = async () => {
+  const getNewSalesReturnDocId = async () => {
     try {
       const response = await apiCalls(
         'get',
-        `salesReturn/getSalesReturnDocId?orgId=${orgId}&branchCode=${branchCode}&client=${client}&branch=${branch}&finYear=${finYear}`
+        `salesReturn/getSalesReturnDocId?orgId=${orgId}&branchCode=${loginBranchCode}&client=${loginClient}&branch=${loginBranch}&finYear=${loginFinYear}`
       );
       console.log('API Response:', response);
 
       if (response.status === true) {
-        // setDocId(response.paramObjectsMap.locationMovementDocId);
         setFormData((prevFormData) => ({
           ...prevFormData,
           docId: response.paramObjectsMap.SalesReturnDocId
@@ -311,17 +253,60 @@ export const SalesReturn = () => {
     }
   };
 
-  const getBuyerOrderRefNo = async () => {
+  const getFillGridDetails = async () => {
     try {
       const response = await apiCalls(
         'get',
-        `pickrequest/getBuyerRefNoForPickRequest?orgId=${orgId}&branchCode=${branchCode}&client=${client}&warehouse=${warehouse}&finYear=${finYear}`
+        `stockRestate/getFillGridDetailsForStockRestate?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&tranferFromFlag=${formData.transferFromFlag}&tranferToFlag=${formData.transferToFlag}&warehouse=CHENNAI WAREHOUSE`
+      );
+      console.log('THE VAS PICK GRID DETAILS IS:', response);
+      if (response.status === true) {
+        const gridDetails = response.paramObjectsMap.fillGridDetails;
+        console.log('THE MODAL TABLE DATA FROM API ARE:', gridDetails);
+
+        setModalTableData(
+          gridDetails.map((row) => ({
+            id: row.id,
+            fromBin: row.fromBin,
+            fromBinClass: row.fromBinClass,
+            fromBinType: row.fromBinType,
+            fromCellType: row.fromCellType,
+            partNo: row.partNo,
+            partDesc: row.partDesc,
+            sku: row.sku,
+            grnNo: row.grnNo,
+            grnDate: row.grnDate,
+            batchNo: row.batchNo,
+            batchDate: row.batchDate,
+            expDate: row.expDate,
+            toBin: row.toBin,
+            toBinType: row.ToBinType,
+            toBinClass: row.ToBinClass,
+            toCellType: row.ToCellType,
+            fromQty: row.fromQty,
+            toQty: row.toQty,
+            fromCore: row.fromCore,
+            toCore: row.ToCore,
+            qcFlag: row.qcFlag
+          }))
+        );
+        setDetailTableData([]);
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+
+  const getPrNo = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `pickrequest/getAllPickRequestByOrgId?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
       );
       console.log('API Response:', response);
 
       if (response.status === true) {
-        // Store the full buyerOrderVO objects in the list
-        setBuyerOrderNoList(response.paramObjectsMap.buyerOrderVO);
+        setPrNoList(response.paramObjectsMap.buyerOrderVO);
       } else {
         console.error('API Error:', response);
       }
@@ -329,15 +314,141 @@ export const SalesReturn = () => {
       console.error('Error fetching data:', error);
     }
   };
+  const getAllSuppliers = async () => {
+    try {
+      const supplierData = await getAllActiveSupplier(loginBranchCode, loginClient, orgId);
+      setSupplierList(supplierData);
+    } catch (error) {
+      console.error('Error fetching suppliers:', error);
+    }
+  };
+  const getAllModesOfShipment = async () => {
+    try {
+      const shipmentModeData = await getAllShipmentModes(orgId);
+      setModeOfShipmentList(shipmentModeData);
+    } catch (error) {
+      console.error('Error fetching modes of shipment:', error);
+    }
+  };
+
+  const getAllCarriers = async (selectedModeOfShipment) => {
+    try {
+      const carrierData = await getAllActiveCarrier(loginBranchCode, loginClient, orgId, selectedModeOfShipment);
+      setCarrierList(carrierData);
+    } catch (error) {
+      console.error('Error fetching carriers:', error);
+    }
+  };
 
   const getCurrentTime = () => {
     return dayjs().format('HH:mm:ss');
   };
 
-  // Initialize the outTime field with the current time
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, outTime: getCurrentTime() }));
+    setFormData((prev) => ({ ...prev, timeOut: getCurrentTime() }));
   }, []);
+  const handleKeyDown = (e, row, table) => {
+    if (e.key === 'Tab' && row.id === table[table.length - 1].id) {
+      e.preventDefault();
+      if (isLastRowEmpty(table)) {
+        displayRowError(table);
+      } else {
+        // if (table === roleTableData) handleAddRow();
+        // else if (table === branchTableData) handleAddRow1();
+        handleAddRow();
+      }
+    }
+  };
+
+  const handleAddRow = () => {
+    if (isLastRowEmpty(detailTableData)) {
+      displayRowError(detailTableData);
+      return;
+    }
+    const newRow = {
+      id: Date.now(),
+      lrNo: '',
+      invNo: '',
+      partNo: '',
+      partDesc: '',
+      unit: '',
+      pickQty: '',
+      returnQty: '',
+      damageQty: '',
+      batchNo: '',
+      batchDate: null,
+      expDate: null,
+      noOfBin: '',
+      binQty: '',
+      weight: '',
+      rate: '',
+      amount: '',
+      insAmt: '',
+      remarks: ''
+    };
+    setDetailTableData([...detailTableData, newRow]);
+    setDetailTableErrors([
+      ...detailTableErrors,
+      {
+        lrNo: '',
+        invNo: '',
+        partNo: '',
+        partDesc: '',
+        unit: '',
+        pickQty: '',
+        returnQty: '',
+        damageQty: '',
+        batchNo: '',
+        batchDate: null,
+        expDate: null,
+        noOfBin: '',
+        binQty: '',
+        weight: '',
+        rate: '',
+        amount: '',
+        insAmt: '',
+        remarks: ''
+      }
+    ]);
+  };
+
+  const isLastRowEmpty = (table) => {
+    const lastRow = table[table.length - 1];
+    if (!lastRow) return false;
+    if (table === detailTableData) {
+      return (
+        !lastRow.lrNo || !lastRow.invNo
+        // !lastRow.partNo ||
+        // !lastRow.invQty ||
+        // !lastRow.batch_PalletNo ||
+        // !lastRow.palletQty ||
+        // !lastRow.noOfPallets
+      );
+    }
+    return false;
+  };
+
+  const displayRowError = (table) => {
+    if (table === detailTableData) {
+      setDetailTableErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          lrNo: !table[table.length - 1].lrNo ? 'Lr_Hawb_Hbl_No is required' : '',
+          invNo: !table[table.length - 1].invNo ? 'Invoice No is required' : ''
+          // partNo: !table[table.length - 1].partNo ? 'Part No is required' : '',
+          // invQty: !table[table.length - 1].invQty ? 'InvQty is required' : '',
+          // batch_PalletNo: !table[table.length - 1].batch_PalletNo ? 'Batch No is required' : '',
+          // palletQty: !table[table.length - 1].palletQty ? 'Pallet Qty is required' : '',
+          // noOfPallets: !table[table.length - 1].noOfPallets ? 'No of Pallets is required' : ''
+        };
+        return newErrors;
+      });
+    }
+  };
+  const handleDeleteRow = (id, table, setTable) => {
+    setTable(table.filter((row) => row.id !== id));
+  };
 
   const getAllGroups = async () => {
     try {
@@ -349,19 +460,19 @@ export const SalesReturn = () => {
       console.error('Error fetching country data:', error);
     }
   };
-  // const getAllItems = async () => {
-  //   try {
-  //     const response = await apiCalls(
-  //       'get',
-  //       `warehousemastercontroller/material?cbranch=${loginBranchCode}&client=${loginClient}&orgid=${orgId}`
-  //     );
-  //     setListViewData(response.paramObjectsMap.materialVO);
-  //     console.log('TEST LISTVIEW DATA', response);
-  //   } catch (err) {
-  //     console.log('error', err);
-  //   }
-  // };
-  const getAllItemById = async (row) => {
+  const getAllSalesReturns = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `warehousemastercontroller/material?cbranch=${loginBranchCode}&client=${loginClient}&orgid=${orgId}`
+      );
+      setListViewData(response.paramObjectsMap.materialVO);
+      console.log('TEST LISTVIEW DATA', response);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
+  const getSalesReturnById = async (row) => {
     console.log('THE SELECTED ITEM ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
@@ -412,7 +523,7 @@ export const SalesReturn = () => {
           // customer: loginCustomer,
           // height: 0,
           // length: 0,
-          // palletQty: '',
+          // binQty: '',
           // warehouse: loginWarehouse,
           // weight: 0,
           // branch: loginBranch,
@@ -432,38 +543,83 @@ export const SalesReturn = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, checked } = e.target;
 
-    // Check if the value is a string before applying toUpperCase
-    const processedValue = typeof value === 'string' ? value.toUpperCase() : value;
+    const nameRegex = /^[A-Za-z ]*$/;
+    const alphaNumericRegex = /^[A-Za-z0-9]*$/;
+    const numericRegex = /^[0-9]*$/;
 
-    setFormData({ ...formData, [name]: processedValue });
+    let errorMessage = '';
 
-    if (name === 'buyerOrderRefNo') {
-      // Find the selected order from the full list of orders
-      const selectedOrder = buyerOrderNoList.find(
-        (order) => order.orderNo && processedValue && order.orderNo.toLowerCase() === processedValue.toLowerCase()
-      );
+    switch (name) {
+      case 'docCode':
+      case 'capacity':
+      case 'vesselNo':
+      case 'hsnNo':
+        if (!alphaNumericRegex.test(value)) {
+          errorMessage = 'Only alphanumeric characters are allowed';
+        }
+        break;
+      case 'noOfPallets':
+        if (!numericRegex.test(value)) {
+          errorMessage = 'Only numeric characters are allowed';
+        }
+        break;
+      default:
+        break;
+    }
 
-      if (selectedOrder) {
-        const refDate = selectedOrder.refDate ? dayjs(selectedOrder.refDate) : null;
-
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          buyerOrderRefNo: selectedOrder.orderNo || '',
-          buyerOrderRefDate: refDate, // Set as dayjs object
-          clientName: selectedOrder.billToName || '',
-          clientShortName: selectedOrder.billToShortName || '',
-          customerName: selectedOrder.buyer || '',
-          clientAddress: selectedOrder.billToAddress || '',
-          // customerAddress: selectedOrder.shipToName || '',
-          buyerOrderNo: selectedOrder.docId || '',
-          buyersReference: selectedOrder.refNo || '',
-          invoiceNo: selectedOrder.invoiceNo || ''
-        }));
+    if (errorMessage) {
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
+    } else {
+      // if (name === 'gatePassId') {
+      //   const selectedId = gatePassIdList.find((id) => id.docId === value);
+      //   const selectedGatePassId = selectedId.docId;
+      //   if (selectedId) {
+      //     setFormData((prevData) => ({
+      //       ...prevData,
+      //       gatePassId: selectedId.docId,
+      //       entrySlNo: selectedId.entryNo,
+      //       gatePassDate: dayjs(selectedId.docDate).format('YYYY-MM-DD'),
+      //       supplierShortName: selectedId.supplierShortName,
+      //       supplier: selectedId.supplier,
+      //       modeOfShipment: selectedId.modeOfShipment.toUpperCase(),
+      //       vehicleType: selectedId.vehicleType.toUpperCase(),
+      //       contact: selectedId.contact,
+      //       driverName: selectedId.driverName,
+      //       securityName: selectedId.securityName,
+      //       lrDate: dayjs(selectedId.lrDate).format('YYYY-MM-DD'),
+      //       goodsDesc: selectedId.goodsDescription,
+      //       vehicleNo: selectedId.vehicleNo,
+      //       lotNo: selectedId.lotNo
+      //     }));
+      //     getAllCarriers(selectedId.modeOfShipment);
+      //     setFormData((prevData) => ({
+      //       ...prevData,
+      //       carrier: selectedId.carrier.toUpperCase()
+      //     }));
+      //     getGatePassGridDetailsByGatePassId(selectedGatePassId);
+      //   }
+      // } else
+      if (name === 'supplierShortName') {
+        const selectedName = supplierList.find((supplier) => supplier.supplierShortName === value);
+        if (selectedName) {
+          setFormData((prevData) => ({
+            ...prevData,
+            supplierShortName: selectedName.supplierShortName,
+            supplier: selectedName.supplier
+          }));
+        }
+      } else if (name === 'modeOfShipment') {
+        setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+        getAllCarriers(value);
+      } else if (name === 'vas') {
+        setFormData((prevData) => ({ ...prevData, [name]: checked }));
       } else {
-        console.log('No matching order found for the selected value.');
+        setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
       }
+
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
     }
   };
 
@@ -479,108 +635,78 @@ export const SalesReturn = () => {
   //   });
   // };
 
-  const handleDeleteRow = (id) => {
-    setItemTableData(itemTableData.filter((row) => row.id !== id));
-  };
-  const handleKeyDown = (e, row) => {
-    if (e.key === 'Tab' && row.id === itemTableData[itemTableData.length - 1].id) {
-      e.preventDefault();
-      handleAddRow();
-    }
-  };
-
   const handleClear = () => {
     setFormData({
-      docDate: '',
-      pickRequestId: '',
-      dispatch: '',
-      buyerOrderNo: '',
-      buyerOrderRefNo: '',
-      buyerOrderRefDate: '',
-      shipmentMethod: '',
-      refNo: '',
-      noOfBoxes: '',
-      dueDays: '',
-      clientName: '',
-      customerName: '',
-      outTime: '',
-      clientAddress: '',
-      customerAddress: '',
-      status: '',
-      boAmentment: '',
-      controlBranch: localStorage.getItem('branchCode'),
-      active: true,
-      charges: '',
-      lineDiscount: '',
-      roundOff: '',
-      invDiscountAmount: '',
-      watAmountWithoutForm: '',
-      totalAmount: ''
+      docDate: dayjs(),
+      prNo: '',
+      prDate: null,
+      boNo: '',
+      boDate: null,
+      entryNo: '',
+      entryDate: null,
+      buyerName: '',
+      buyerType: '',
+      supplierShotName: '',
+      supplier: '',
+      modeOfShipment: '',
+      carrier: '',
+      driver: '',
+      vehicleType: '',
+      vehicleNo: '',
+      contact: '',
+      securityPerson: '',
+      timeIn: '',
+      out: '',
+      goodsDesc: ''
     });
-    setItemTableData([
+    setDetailTableData([
       {
-        amount: '',
-        avlQty: '',
-        batchDate: '',
-        batchNo: '',
-        binClass: '',
-        binType: '',
-        cellType: '',
-        clientCode: '',
-        core: '',
-        expDate: '',
-        location: '',
-        lotNo: '',
-        orderQty: '',
-        partDesc: '',
+        lrNo: '',
+        invNo: '',
         partNo: '',
-        pcKey: '',
+        partDesc: '',
+        unit: '',
         pickQty: '',
-        pickQtyPerLocation: '',
-        rate: '',
-        remainingQty: '',
-        remarks: '',
-        runningQty: '',
-        sku: '',
-        ssku: '',
-        status: '',
-        stockDate: '',
-        tax: '',
+        returnQty: '',
+        damageQty: '',
+        batchNo: '',
+        batchDate: null,
+        expDate: null,
+        noOfBin: '',
+        binQty: '',
         weight: '',
-        mrp: '',
-        fDate: null,
-        tDate: null
+        rate: '',
+        amount: '',
+        insAmt: '',
+        remarks: ''
       }
     ]);
     setFieldErrors({
-      docDate: '',
-      pickRequestId: '',
-      dispatch: '',
-      buyerOrderNo: '',
-      buyerOrderRefNo: '',
-      buyerOrderRefDate: '',
-      shipmentMethod: '',
-      refNo: '',
-      noOfBoxes: '',
-      dueDays: '',
-      clientName: '',
-      customerName: '',
-      outTime: '',
-      clientAddress: '',
-      customerAddress: '',
-      status: '',
-      boAmentment: '',
-      controlBranch: localStorage.getItem('branchCode'),
-      active: true,
-      charges: '',
-      lineDiscount: '',
-      roundOff: '',
-      invDiscountAmount: '',
-      watAmountWithoutForm: '',
-      totalAmount: ''
+      docId: '',
+      docDate: dayjs(),
+      prNo: '',
+      prDate: null,
+      boNo: '',
+      boDate: null,
+      entryNo: '',
+      entryDate: null,
+      buyerName: '',
+      buyerType: '',
+      supplierShotName: '',
+      supplier: '',
+      modeOfShipment: '',
+      carrier: '',
+      driver: '',
+      vehicleType: '',
+      vehicleNo: '',
+      contact: '',
+      securityPerson: '',
+      timeIn: '',
+      out: '',
+      goodsDesc: ''
     });
-    getDocId();
-    setItemTableErrors('');
+    getNewSalesReturnDocId();
+    setDetailTableErrors('');
     setEditId('');
   };
 
@@ -599,7 +725,7 @@ export const SalesReturn = () => {
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
-      const itemVo = itemTableData.map((row) => ({
+      const salesReturnVo = detailTableData.map((row) => ({
         mrp: row.mrp,
         fromdate: dayjs(row.fDate).format('DD-MM-YYYY'),
         todate: dayjs(row.tDate).format('DD-MM-YYYY')
@@ -645,7 +771,7 @@ export const SalesReturn = () => {
         // customer: loginCustomer,
         // height: 0,
         // length: 0,
-        // palletQty: '',
+        // binQty: '',
         // warehouse: loginWarehouse,
         // weight: 0,
         // branch: loginBranch,
@@ -659,16 +785,16 @@ export const SalesReturn = () => {
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
-          showToast('success', editId ? ' Item Updated Successfully' : 'Item created successfully');
+          showToast('success', editId ? ' Sales Return Updated Successfully' : 'Sales Return created successfully');
           setIsLoading(false);
           // getAllItems();
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Item creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'Sales Return creation failed');
           setIsLoading(false);
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'Item creation failed');
+        showToast('error', 'Sales Return creation failed');
         setIsLoading(false);
       }
     } else {
@@ -714,7 +840,57 @@ export const SalesReturn = () => {
       active: true
     });
   };
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(modalTableData.map((_, index) => index));
+    }
+    setSelectAll(!selectAll);
+  };
 
+  const handleSubmitSelectedRows = async () => {
+    const selectedData = selectedRows.map((index) => modalTableData[index]);
+
+    // Adding selected data to the existing table data
+    setDetailTableData([...detailTableData, ...selectedData]);
+
+    console.log('Data selected:', selectedData);
+
+    setSelectedRows([]);
+    setSelectAll(false);
+    handleCloseModal();
+
+    // try {
+    //   await Promise.all(
+    //     selectedData.map(async (data, idx) => {
+    //       // Simulate the event object for handleToQtyChange
+    //       const simulatedEvent = {
+    //         target: {
+    //           value: data.toQty // Assuming you have a toQty field in your data
+    //         }
+    //       };
+
+    //       await getPartNo(data.fromBin, formData.transferFromFlag, data);
+    //       await getGrnNo(data.partNo, data.fromBin);
+    //       await getBatchNo(data.fromBin, data.partNo, data.grnNo);
+
+    //       // Call handleToQtyChange with simulated event, row data, and index
+    //       handleToQtyChange(simulatedEvent, data, detailTableData.length + idx);
+    //     })
+    //   );
+    // } catch (error) {
+    //   console.error('Error processing selected data:', error);
+    // }
+  };
+
+  const handleFullGrid = () => {
+    getFillGridDetails();
+    setModalOpen(true);
+  };
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date).format('DD-MM-YYYY');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
@@ -732,7 +908,12 @@ export const SalesReturn = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getAllItemById} />
+            <CommonListViewTable
+              data={listViewData}
+              columns={listViewColumns}
+              blockEdit={true}
+              // toEdit={getSalesReturnById}
+            />
           </div>
         ) : (
           <>
@@ -766,34 +947,19 @@ export const SalesReturn = () => {
                   </LocalizationProvider>
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
-                <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.buyerOrderRefNo}>
-                  <InputLabel id="buyerOrderRefNo-label">PR NO</InputLabel>
-                  <Select
-                    labelId="buyerOrderRefNo-label"
-                    id="buyerOrderRefNo"
-                    name="prNO"
-                    label="PR NO"
-                    value={formData.prNo}
-                    onChange={handleInputChange}
-                  >
-                    {/* Default option */}
+                <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.prNo}>
+                  <InputLabel id="prNo-label">PR No</InputLabel>
+                  <Select labelId="prNo-label" id="prNo" name="prNo" label="PR No" value={formData.prNo} onChange={handleInputChange}>
                     <MenuItem value="">
                       <em>None</em>
                     </MenuItem>
-
-                    {/* Dynamically mapping buyerOrderNoList to MenuItem components */}
-                    {buyerOrderNoList.map((order, index) => (
-                      <MenuItem key={index} value={order.orderNo}>
-                        {order.orderNo}
-                      </MenuItem>
-                    ))}
+                    <MenuItem value="PR1">PR1</MenuItem>
+                    <MenuItem value="PR2">PR2</MenuItem>
                   </Select>
                   {fieldErrors.prNo && <FormHelperText error>{fieldErrors.prNo}</FormHelperText>}
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -843,7 +1009,38 @@ export const SalesReturn = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="BuyerName"
+                  label="Entry No"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="entryNo"
+                  value={formData.entryNo}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.entryNo}
+                  helperText={fieldErrors.entryNo}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled" size="small">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Entry Date"
+                      value={formData.entryDate ? dayjs(formData.entryDate, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('prDate', date)}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                      format="DD/MM/YYYY"
+                      error={fieldErrors.entryDate}
+                      helperText={fieldErrors.entryDate && 'Required'}
+                    />
+                  </LocalizationProvider>
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="Buyer Name"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -852,158 +1049,103 @@ export const SalesReturn = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.buyerName}
                   helperText={fieldErrors.buyerName}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Supplier Short Name"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="supplierShortName"
-                  value={formData.supplierShortName}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.supplierShortName}
-                  helperText={fieldErrors.supplierShortName}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="supplierName"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="supplierName"
-                  value={formData.supplierName}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.supplierName}
-                  helperText={fieldErrors.supplierName}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Mode Of Shipment"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="modeOfShipment"
-                  value={formData.modeOfShipment}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.modeOfShipment}
-                  helperText={fieldErrors.modeOfShipment}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Carrier/Transport"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="carrierTransport"
-                  value={formData.carrierTransport}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.carrierTransport}
-                  helperText={fieldErrors.carrierTransport}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="VehicleType"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="vehicleType"
-                  value={formData.vehicleType}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.vehicleType}
-                  helperText={fieldErrors.vehicleType}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="vehicle No"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="vehicleNo"
-                  value={formData.vehicleNo}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.vehicleNo}
-                  helperText={fieldErrors.vehicleNo}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Contact"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="contact"
-                  value={formData.contact}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.contact}
-                  helperText={fieldErrors.contact}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Security Person Name"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="securityPersonName"
-                  value={formData.securityPersonName}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.securityPersonName}
-                  helperText={fieldErrors.securityPersonName}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Time In"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="timeIn"
-                  value={formData.timeIn}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.timeIn}
-                  helperText={fieldErrors.timeIn}
                   disabled
                 />
               </div>
-
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Out Time"
+                  label="Buyer Type"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="outTime"
-                  value={formData.outTime}
+                  name="buyerType"
+                  value={formData.buyerType}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.outTime}
-                  helperText={fieldErrors.outTime}
+                  error={!!fieldErrors.buyerType}
+                  helperText={fieldErrors.buyerType}
                   disabled
                 />
               </div>
-
+              <div className="col-md-3 mb-3">
+                <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.supplierShortName}>
+                  <InputLabel id="supplierShortName-label">Supplier Short Name</InputLabel>
+                  <Select
+                    labelId="supplierShortName-label"
+                    id="supplierShortName"
+                    name="supplierShortName"
+                    label="Supplier Short Name"
+                    value={formData.supplierShortName}
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="">
+                      <em>None</em>
+                    </MenuItem>
+                    {supplierList?.map((row) => (
+                      <MenuItem key={row.id} value={row.supplierShortName.toUpperCase()}>
+                        {row.supplierShortName.toUpperCase()}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.supplierShortName && <FormHelperText error>{fieldErrors.supplierShortName}</FormHelperText>}
+                </FormControl>
+              </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Goods Description"
+                  label="Supplier"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="goodsDescription"
-                  value={formData.goodsDescription}
+                  name="supplier"
+                  value={formData.supplier}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.goodsDescription}
-                  helperText={fieldErrors.goodsDescription}
+                  error={!!fieldErrors.supplier}
+                  helperText={fieldErrors.supplier}
                   disabled
                 />
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.modeOfShipment}>
+                  <InputLabel id="modeOfShipment-label">
+                    Mode of Shipment <span>&nbsp;*</span>
+                  </InputLabel>
+                  <Select
+                    labelId="modeOfShipment-label"
+                    label="Mode of Shipment"
+                    value={formData.modeOfShipment}
+                    onChange={handleInputChange}
+                    name="modeOfShipment"
+                    required
+                  >
+                    {modeOfShipmentList?.map((row, index) => (
+                      <MenuItem key={index} value={row.shipmentMode.toUpperCase()}>
+                        {row.shipmentMode.toUpperCase()}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.modeOfShipment && <FormHelperText>{fieldErrors.modeOfShipment}</FormHelperText>}
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.carrier}>
+                  <InputLabel id="carrier-label">
+                    Carrier <span>&nbsp;*</span>
+                  </InputLabel>
+                  <Select
+                    labelId="carrier-label"
+                    label="Carrier"
+                    value={formData.carrier}
+                    onChange={handleInputChange}
+                    name="carrier"
+                    required
+                  >
+                    {carrierList?.map((row) => (
+                      <MenuItem key={row.id} value={row.carrier.toUpperCase()}>
+                        {row.carrier.toUpperCase()}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.carrier && <FormHelperText>{fieldErrors.carrier}</FormHelperText>}
+                </FormControl>
               </div>
             </div>
 
@@ -1018,15 +1160,16 @@ export const SalesReturn = () => {
                 >
                   <Tab value={0} label="Details" />
                   <Tab value={1} label="Summary" />
+                  <Tab value={2} label="Other Info" />
                 </Tabs>
               </Box>
-              {/* <Box className="mt-4"> */}
               <Box className="mt-2" sx={{ padding: 1 }}>
                 {value === 0 && (
                   <>
                     <div className="row d-flex ml">
                       <div className="mb-1">
-                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={getFillGridDetails} />
+                        <ActionButton title="Clear" icon={ClearIcon} onClick={() => setDetailTableData([])} />
                       </div>
                       <div className="row mt-2">
                         <div className="col-lg-12">
@@ -1047,22 +1190,23 @@ export const SalesReturn = () => {
                                     Invoice No
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    part No
+                                    Part No
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     part Description
                                   </th>
-
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    unit
+                                    SKU
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
+                                    Unit
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     Pick Qty
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Ret. Qty
+                                    Return Qty
                                   </th>
-
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     Damage Qty
                                   </th>
@@ -1073,27 +1217,16 @@ export const SalesReturn = () => {
                                     Batch Date
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Exp.Date
+                                    Exp Date
                                   </th>
-
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
+                                    Pallet Qty
+                                  </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     No Of Pallet
                                   </th>
-
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    pallet Qty
-                                  </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     Weight
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Rate
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Amount
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Ins. Amount
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     Remarks
@@ -1101,14 +1234,14 @@ export const SalesReturn = () => {
                                 </tr>
                               </thead>
                               <tbody>
-                                {itemTableData.length === 0 ? (
+                                {detailTableData.length === 0 ? (
                                   <tr>
                                     <td colSpan="18" className="text-center py-2">
                                       No Data Found
                                     </td>
                                   </tr>
                                 ) : (
-                                  itemTableData.map((row, index) => (
+                                  detailTableData.map((row, index) => (
                                     <tr key={row.id}>
                                       <td className="border px-2 py-2 text-center">
                                         <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
@@ -1116,261 +1249,325 @@ export const SalesReturn = () => {
                                       <td className="text-center">
                                         <div className="pt-2">{index + 1}</div>
                                       </td>
-
-                                      {/* Part Code */}
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="number"
-                                          style={{ width: '100px' }}
-                                          value={row.partCode}
-                                          onChange={(e) => handleInputChange(e, index, 'partCode')}
-                                          className={itemTableErrors[index]?.partCode ? 'error form-control' : 'form-control'}
-                                        />
-                                        {itemTableErrors[index]?.partCode && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].partCode}
-                                          </div>
-                                        )}
-                                      </td>
-
-                                      {/* Part Description */}
-                                      <td className="border px-2 py-2">
-                                        <input
+                                          style={{ width: '150px' }}
                                           type="text"
-                                          style={{ width: '100px' }}
-                                          value={row.partDescription}
-                                          onChange={(e) => handleInputChange(e, index, 'partDescription')}
-                                          className={itemTableErrors[index]?.partDescription ? 'error form-control' : 'form-control'}
+                                          value={row.lrNo}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setDetailTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, lrNo: value } : r)));
+                                            setDetailTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], lrNo: !value ? 'QR Code is required' : '' };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={detailTableErrors[index]?.lrNo ? 'error form-control' : 'form-control'}
                                         />
-                                        {itemTableErrors[index]?.partDescription && (
+                                        {detailTableErrors[index]?.lrNo && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].partDescription}
+                                            {detailTableErrors[index].lrNo}
                                           </div>
                                         )}
                                       </td>
-
-                                      {/* Batch No */}
                                       <td className="border px-2 py-2">
                                         <input
+                                          style={{ width: '150px' }}
                                           type="text"
-                                          value={row.batchNo}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'batchNo')}
-                                          className={itemTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
+                                          value={row.invNo}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setDetailTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, invNo: value } : r)));
+                                            setDetailTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], invNo: !value ? 'Invoice No is required' : '' };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={detailTableErrors[index]?.invNo ? 'error form-control' : 'form-control'}
                                         />
-                                        {itemTableErrors[index]?.batchNo && (
+                                        {detailTableErrors[index]?.invNo && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].batchNo}
+                                            {detailTableErrors[index].invNo}
                                           </div>
                                         )}
                                       </td>
-
-                                      {/* Lot No */}
                                       <td className="border px-2 py-2">
                                         <input
+                                          value={row.partNo}
+                                          style={{ width: '200px' }}
+                                          className={detailTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
+                                          disabled
+                                        />
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          style={{ width: '300px' }}
                                           type="text"
-                                          value={row.lotNo}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'lotNo')}
-                                          className={itemTableErrors[index]?.lotNo ? 'error form-control' : 'form-control'}
+                                          value={row.partDesc}
+                                          className={detailTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
+                                          disabled
                                         />
-                                        {itemTableErrors[index]?.lotNo && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].lotNo}
-                                          </div>
-                                        )}
                                       </td>
-
-                                      {/* SKU */}
                                       <td className="border px-2 py-2">
                                         <input
+                                          style={{ width: '200px' }}
                                           type="text"
                                           value={row.sku}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'sku')}
-                                          className={itemTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
+                                          className={detailTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
+                                          disabled
                                         />
-                                        {itemTableErrors[index]?.sku && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].sku}
-                                          </div>
-                                        )}
                                       </td>
-
-                                      {/* Location */}
                                       <td className="border px-2 py-2">
                                         <input
+                                          style={{ width: '150px' }}
                                           type="text"
-                                          value={row.location}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'location')}
-                                          className={itemTableErrors[index]?.location ? 'error form-control' : 'form-control'}
+                                          value={row.unit}
+                                          className={detailTableErrors[index]?.unit ? 'error form-control' : 'form-control'}
+                                          disabled
                                         />
-                                        {itemTableErrors[index]?.location && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].location}
-                                          </div>
-                                        )}
                                       </td>
-
-                                      {/* To Location */}
                                       <td className="border px-2 py-2">
                                         <input
+                                          style={{ width: '150px' }}
                                           type="text"
-                                          value={row.toLocation}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'toLocation')}
-                                          className={itemTableErrors[index]?.toLocation ? 'error form-control' : 'form-control'}
+                                          value={row.pickQty}
+                                          className={detailTableErrors[index]?.pickQty ? 'error form-control' : 'form-control'}
+                                          disabled
                                         />
-                                        {itemTableErrors[index]?.toLocation && (
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          style={{ width: '150px' }}
+                                          type="text"
+                                          value={row.returnQty}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setDetailTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, returnQty: value } : r))
+                                            );
+                                            setDetailTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], returnQty: !value ? 'QR Code is required' : '' };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={detailTableErrors[index]?.returnQty ? 'error form-control' : 'form-control'}
+                                        />
+                                        {detailTableErrors[index]?.returnQty && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].toLocation}
+                                            {detailTableErrors[index].returnQty}
                                           </div>
                                         )}
                                       </td>
-
-                                      {/* Order Qty */}
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="number"
-                                          value={row.orderQty}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'orderQty')}
-                                          className={itemTableErrors[index]?.orderQty ? 'error form-control' : 'form-control'}
+                                          style={{ width: '150px' }}
+                                          type="text"
+                                          value={row.damageQty}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setDetailTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, damageQty: value } : r))
+                                            );
+                                            setDetailTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                damageQty: !value ? 'Damage Qty is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
                                         />
-                                        {itemTableErrors[index]?.orderQty && (
+                                        {detailTableErrors[index]?.damageQty && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].orderQty}
+                                            {detailTableErrors[index].damageQty}
                                           </div>
                                         )}
                                       </td>
-
-                                      {/* Picked Qty Per Location */}
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="number"
-                                          value={row.pickedQtyPerLocation}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'pickedQtyPerLocation')}
-                                          className={itemTableErrors[index]?.pickedQtyPerLocation ? 'error form-control' : 'form-control'}
+                                          style={{ width: '150px' }}
+                                          type="text"
+                                          value={row.batchNo}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setDetailTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, batchNo: value } : r)));
+                                            setDetailTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                batchNo: !value ? 'Batch No is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
                                         />
-                                        {itemTableErrors[index]?.pickedQtyPerLocation && (
+                                        {detailTableErrors[index]?.batchNo && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].pickedQtyPerLocation}
+                                            {detailTableErrors[index].batchNo}
                                           </div>
                                         )}
                                       </td>
-
-                                      {/* Revised Qty Per Location */}
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="number"
-                                          value={row.revisedQtyPerLocation}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'revisedQtyPerLocation')}
-                                          className={itemTableErrors[index]?.revisedQtyPerLocation ? 'error form-control' : 'form-control'}
+                                          type="date"
+                                          value={row.batchDate}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setDetailTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, batchDate: value } : r))
+                                            );
+                                            setDetailTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                batchDate: !value ? 'Invoice Date is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={detailTableErrors[index]?.batchDate ? 'error form-control' : 'form-control'}
                                         />
-                                        {itemTableErrors[index]?.revisedQtyPerLocation && (
+                                        {detailTableErrors[index]?.batchDate && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].revisedQtyPerLocation}
+                                            {detailTableErrors[index].batchDate}
                                           </div>
                                         )}
                                       </td>
-
-                                      {/* Weight */}
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="number"
+                                          type="date"
+                                          value={row.expDate}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setDetailTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, expDate: value } : r)));
+                                            setDetailTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                expDate: !value ? 'Invoice Date is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={detailTableErrors[index]?.expDate ? 'error form-control' : 'form-control'}
+                                        />
+                                        {detailTableErrors[index]?.expDate && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailTableErrors[index].expDate}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          style={{ width: '150px' }}
+                                          type="text"
+                                          value={row.binQty}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            const intPattern = /^\d*$/;
+
+                                            if (intPattern.test(value) || value === '') {
+                                              setDetailTableData((prev) => {
+                                                const updatedData = prev.map((r) => {
+                                                  return r.id === row.id
+                                                    ? {
+                                                        ...r,
+                                                        binQty: value
+                                                        // recQty: !value ? '' : r.recQty,
+                                                      }
+                                                    : r;
+                                                });
+                                                return updatedData;
+                                              });
+
+                                              // Clear the error if input is valid
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  binQty: ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else {
+                                              // Set error if input is invalid
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  binQty: 'only numbers are allowed'
+                                                };
+                                                return newErrors;
+                                              });
+                                            }
+                                          }}
+                                          className={detailTableErrors[index]?.binQty ? 'error form-control' : 'form-control'}
+                                        />
+                                        {detailTableErrors[index]?.binQty && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailTableErrors[index].binQty}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td>
+                                        <input
+                                          style={{ width: '150px' }}
+                                          type="text"
+                                          value={row.noOfBin}
+                                          className={detailTableErrors[index]?.noOfBin ? 'error form-control' : 'form-control'}
+                                          disabled
+                                        />
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          style={{ width: '150px' }}
+                                          type="text"
                                           value={row.weight}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'weight')}
-                                          className={itemTableErrors[index]?.weight ? 'error form-control' : 'form-control'}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setDetailTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, weight: value } : r)));
+                                            setDetailTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], weight: !value ? 'QR Code is required' : '' };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={detailTableErrors[index]?.weight ? 'error form-control' : 'form-control'}
                                         />
-                                        {itemTableErrors[index]?.weight && (
+                                        {detailTableErrors[index]?.weight && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].weight}
+                                            {detailTableErrors[index].weight}
                                           </div>
                                         )}
                                       </td>
-
-                                      {/* PGroup */}
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="text"
-                                          value={row.pGroup}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'pGroup')}
-                                          className={itemTableErrors[index]?.pGroup ? 'error form-control' : 'form-control'}
-                                        />
-                                        {itemTableErrors[index]?.pGroup && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].pGroup}
-                                          </div>
-                                        )}
-                                      </td>
-
-                                      {/* Exp Date */}
-
-                                      {/* Rate */}
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="number"
-                                          value={row.rate}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'rate')}
-                                          className={itemTableErrors[index]?.rate ? 'error form-control' : 'form-control'}
-                                        />
-                                        {itemTableErrors[index]?.rate && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].rate}
-                                          </div>
-                                        )}
-                                      </td>
-
-                                      {/* Tax */}
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="number"
-                                          value={row.tax}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'tax')}
-                                          className={itemTableErrors[index]?.tax ? 'error form-control' : 'form-control'}
-                                        />
-                                        {itemTableErrors[index]?.tax && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].tax}
-                                          </div>
-                                        )}
-                                      </td>
-
-                                      {/* Amount */}
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="number"
-                                          value={row.amount}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'amount')}
-                                          className={itemTableErrors[index]?.amount ? 'error form-control' : 'form-control'}
-                                        />
-                                        {itemTableErrors[index]?.amount && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].amount}
-                                          </div>
-                                        )}
-                                      </td>
-
-                                      {/* Remarks */}
-                                      <td className="border px-2 py-2">
-                                        <input
+                                          style={{ width: '300px' }}
                                           type="text"
                                           value={row.remarks}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'remarks')}
-                                          className={itemTableErrors[index]?.remarks ? 'error form-control' : 'form-control'}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setDetailTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, remarks: value } : r)));
+                                            setDetailTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                remarks: !value ? 'Remarks is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
                                         />
-                                        {itemTableErrors[index]?.remarks && (
+                                        {detailTableErrors[index]?.remarks && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {itemTableErrors[index].remarks}
+                                            {detailTableErrors[index].remarks}
                                           </div>
                                         )}
                                       </td>
@@ -1406,7 +1603,234 @@ export const SalesReturn = () => {
                     </div>
                   </>
                 )}
+                {value === 2 && (
+                  <>
+                    <div className="row mt-2">
+                      <div className="row">
+                        <div className="col-md-3 mb-3">
+                          <TextField
+                            label="Vehicle Type"
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            name="vehicleType"
+                            value={formData.vehicleType}
+                            onChange={handleInputChange}
+                            error={!!fieldErrors.vehicleType}
+                            helperText={fieldErrors.vehicleType}
+                          />
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <TextField
+                            label="Vehicle No"
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            name="vehicleNo"
+                            value={formData.vehicleNo}
+                            onChange={handleInputChange}
+                            error={!!fieldErrors.vehicleNo}
+                            helperText={fieldErrors.vehicleNo}
+                          />
+                        </div>
+
+                        <div className="col-md-3 mb-3">
+                          <TextField
+                            label="Contact"
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            name="contact"
+                            value={formData.contact}
+                            onChange={handleInputChange}
+                            error={!!fieldErrors.contact}
+                            helperText={fieldErrors.contact}
+                          />
+                        </div>
+
+                        <div className="col-md-3 mb-3">
+                          <TextField
+                            label="Security Person"
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            name="securityPerson"
+                            value={formData.securityPerson}
+                            onChange={handleInputChange}
+                            error={!!fieldErrors.securityPerson}
+                            helperText={fieldErrors.securityPerson}
+                          />
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <TextField
+                            label="Time In"
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            name="timeIn"
+                            value={formData.timeIn}
+                            onChange={handleInputChange}
+                            error={!!fieldErrors.timeIn}
+                            helperText={fieldErrors.timeIn}
+                            disabled
+                          />
+                        </div>
+
+                        <div className="col-md-3 mb-3">
+                          <TextField
+                            label="Out Time"
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            name="timeOut"
+                            value={formData.timeOut}
+                            onChange={handleInputChange}
+                            error={!!fieldErrors.timeOut}
+                            helperText={fieldErrors.timeOut}
+                            disabled
+                          />
+                        </div>
+
+                        <div className="col-md-3 mb-3">
+                          <TextField
+                            label="Goods Desc"
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            name="goodsDesc"
+                            value={formData.goodsDesc}
+                            onChange={handleInputChange}
+                            error={!!fieldErrors.goodsDesc}
+                            helperText={fieldErrors.goodsDesc}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </Box>
+              <Dialog
+                open={modalOpen}
+                maxWidth={'lg'}
+                fullWidth={true}
+                onClose={handleCloseModal}
+                PaperComponent={PaperComponent}
+                aria-labelledby="draggable-dialog-title"
+              >
+                <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
+                  <h6>Grid Details</h6>
+                </DialogTitle>
+                <DialogContent className="pb-0">
+                  <div className="row">
+                    <div className="col-lg-12">
+                      <div className="table-responsive">
+                        <table className="table table-bordered ">
+                          <thead>
+                            <tr style={{ backgroundColor: '#673AB7' }}>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                <Checkbox checked={selectAll} onChange={handleSelectAll} />
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                S.No
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                From Bin
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                From Bin Type
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                Part No
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                Part Desc
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                SKU
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                GRN No
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                Batch No
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                To Bin
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                To Bin Type
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                From QTY
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                To QTY
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {modalTableData.map((row, index) => (
+                              <tr key={row.id}>
+                                <td className="border p-0 text-center">
+                                  <Checkbox
+                                    checked={selectedRows.includes(index)}
+                                    onChange={(e) => {
+                                      const isChecked = e.target.checked;
+                                      setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
+                                    }}
+                                  />
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {index + 1}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.fromBin}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.fromBinType}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.partNo}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.partDesc}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.sku}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.grnNo}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.batchNo}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.toBin}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.toBinType}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.fromQty}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.toQty}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </DialogContent>
+                <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
+                  <Button onClick={handleCloseModal}>Cancel</Button>
+                  <Button color="secondary" onClick={handleSubmitSelectedRows} variant="contained">
+                    Proceed
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </div>
           </>
         )}
