@@ -81,34 +81,7 @@ export const PickRequest = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
-  const [itemTableData, setItemTableData] = useState([
-    {
-      availQty: '',
-      batchDate: '',
-      batchNo: '',
-      binClass: '',
-      binType: '',
-      cellType: '',
-      clientCode: '',
-      core: '',
-      bin: '',
-      orderQty: '',
-      partDesc: '',
-      partNo: '',
-      pcKey: '',
-      pickQty: '',
-      remainQty: '',
-      sku: '',
-      ssku: '',
-      status: '',
-      grnNo: '',
-      grnDate: '',
-      expDate: '',
-      stockDate: '',
-      qcFlag: '',
-      remarks: ''
-    }
-  ]);
+  const [itemTableData, setItemTableData] = useState([{}]);
 
   const handleAddRow = () => {
     const newRow = {
@@ -131,7 +104,7 @@ export const PickRequest = () => {
       ssku: '',
       status: ''
     };
-    setItemTableData([...itemTableData, newRow]);
+    // setItemTableData([...itemTableData, newRow]);
     setItemTableErrors([
       ...itemTableErrors,
       {
