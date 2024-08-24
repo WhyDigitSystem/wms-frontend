@@ -26,7 +26,7 @@ import Draggable from 'react-draggable';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import { getAllActiveBranches, getAllActiveBuyer } from 'utils/CommonFunctions';
+import { getAllActiveBranches, getAllActiveBuyer, getAllActivePartDetails } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 function PaperComponent(props) {
@@ -55,6 +55,7 @@ export const BuyerOrder = () => {
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
+  const [partNoList, setPartNoList] = useState([]);
 
   const [formData, setFormData] = useState({
     avilQty: 10,
@@ -112,6 +113,7 @@ export const BuyerOrder = () => {
     getAllBranches();
     getAllBuyerOrderByOrgId();
     getAllBuyerList();
+    getAllPartNo();
   }, []);
 
   useEffect(() => {
@@ -170,7 +172,7 @@ export const BuyerOrder = () => {
     try {
       const response = await apiCalls(
         'get',
-        `outward/getBoSkuDetails?batch=TEST01&branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&warehouse=${loginWarehouse}`
+        `buyerOrder/getBoSkuDetails?batch=TEST01&branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&warehouse=${loginWarehouse}`
       );
       console.log('THE WAREHOUSE IS:', response);
       if (response.status === true) {
@@ -262,7 +264,7 @@ export const BuyerOrder = () => {
     try {
       const response = await apiCalls(
         'get',
-        `outward/getBuyerOrderDocId?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=2024&orgId=${orgId}`
+        `buyerOrder/getBuyerOrderDocId?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=2024&orgId=${orgId}`
       );
       console.log('API Response:', response);
 
@@ -313,7 +315,7 @@ export const BuyerOrder = () => {
 
   const getAllBuyerOrderByOrgId = async () => {
     try {
-      const response = await apiCalls('get', `outward/getAllBuyerOrderByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `buyerOrder/getAllBuyerOrderByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -330,7 +332,7 @@ export const BuyerOrder = () => {
     console.log('THE SELECTED BUYER ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `outward/getAllBuyerOrderById?id=${row.original.id}`);
+      const response = await apiCalls('get', `buyerOrder/getAllBuyerOrderById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -370,6 +372,17 @@ export const BuyerOrder = () => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+
+  const getAllPartNo = async () => {
+    try {
+      const partNoData = await getAllActivePartDetails(loginBranchCode, loginClient, orgId);
+      console.log('THE ACTIVE PART DETAILS ARE:', partNoData);
+
+      setPartNoList(partNoData);
+    } catch (error) {
+      console.error('Error fetching vehicle types:', error);
     }
   };
 
@@ -660,7 +673,7 @@ export const BuyerOrder = () => {
 
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `outward/createUpdateBuyerOrder`, saveFormData);
+        const response = await apiCalls('put', `buyerOrder/createUpdateBuyerOrder`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
@@ -1031,8 +1044,14 @@ export const BuyerOrder = () => {
                                         value={row.partNo}
                                         onChange={(e) => {
                                           const value = e.target.value;
+                                          const selectedPartNo = partNoList.find((p) => p.partno === value);
+
                                           setSkuDetailsTableData((prev) =>
-                                            prev.map((r, i) => (i === index ? { ...r, partNo: value.toUpperCase() } : r))
+                                            prev.map((r, i) =>
+                                              i === index
+                                                ? { ...r, partNo: value, partDesc: selectedPartNo ? selectedPartNo.partDesc : '' }
+                                                : r
+                                            )
                                           );
                                           setSkuDetailsTableErrors((prev) => {
                                             const newErrors = [...prev];
@@ -1046,8 +1065,11 @@ export const BuyerOrder = () => {
                                         className={skuDetailsTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        <option value={row.partNo}>{row.partNo}</option>
-                                        <option value="KM19">KM19</option>
+                                        {partNoList?.map((part) => (
+                                          <option key={part.id} value={part.partno}>
+                                            {part.partno}
+                                          </option>
+                                        ))}
                                       </select>
                                       {skuDetailsTableErrors[index]?.partNo && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1059,17 +1081,7 @@ export const BuyerOrder = () => {
                                       <input
                                         type="text"
                                         value={row.partDesc}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setSkuDetailsTableData((prev) =>
-                                            prev.map((r, i) => (i === index ? { ...r, partDesc: value.toUpperCase() } : r))
-                                          );
-                                          setSkuDetailsTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], partDesc: !value ? 'Part Desc is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
+                                        disabled
                                         className={skuDetailsTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
                                       />
                                       {skuDetailsTableErrors[index]?.partDesc && (
