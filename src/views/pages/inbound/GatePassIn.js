@@ -40,7 +40,7 @@ export const GatePassIn = () => {
   const [partNoList, setPartNoList] = useState([]);
   const [modeOfShipmentList, setModeOfShipmentList] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const [cbranch, setCbranch] = useState(localStorage.getItem('branchCode'));
+  const [cbranch, setCbranch] = useState(localStorage.getItem('branchcode'));
   const [client, setClient] = useState(localStorage.getItem('client'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [customer, setCustomer] = useState(localStorage.getItem('customer'));

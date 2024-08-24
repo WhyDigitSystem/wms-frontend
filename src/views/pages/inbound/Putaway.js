@@ -70,7 +70,7 @@ export const Putaway = () => {
   const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
-  const [loginWarehouse, setLoginWarehouse] = useState('CHENNAI WAREHOUSE');
+  const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
   const [checkedState, setCheckedState] = useState({});
   const [checkAll, setCheckAll] = useState(false);
 

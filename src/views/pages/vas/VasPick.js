@@ -158,7 +158,7 @@ export const VasPick = () => {
     try {
       const response = await apiCalls(
         'get',
-        `vascontroller/getVasPickDocId?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
+        `vasPick/getVasPickDocId?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
       );
       setFormData((prevData) => ({
         ...prevData,
@@ -173,7 +173,7 @@ export const VasPick = () => {
     try {
       const response = await apiCalls(
         'get',
-        `vascontroller/getVasPicGridDetails?bintype=${formData.pickBinType}&branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&stateStatus=${formData.stockStateFlag}&warehouse=${loginWarehouse}`
+        `vasPick/getVasPicGridDetails?bintype=${formData.pickBinType}&branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&stateStatus=${formData.stockStateFlag}&warehouse=${loginWarehouse}`
       );
       console.log('THE VAS PICK GRID DETAILS IS:', response);
       if (response.status === true) {
@@ -221,7 +221,7 @@ export const VasPick = () => {
     try {
       const response = await apiCalls(
         'get',
-        `vascontroller/getAllVaspick?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
+        `vasPick/getAllVaspick?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
       );
       setListViewData(response.paramObjectsMap.vasPickVO);
     } catch (error) {
@@ -233,7 +233,7 @@ export const VasPick = () => {
     console.log('THE SELECTED GRN ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `vascontroller/getVaspickById?id=${row.original.id}`);
+      const response = await apiCalls('get', `vasPick/getVaspickById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -422,7 +422,7 @@ export const VasPick = () => {
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const response = await apiCalls('put', `vascontroller/createUpdateVasPic`, saveFormData);
+        const response = await apiCalls('put', `vasPick/createUpdateVasPic`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           showToast('success', editId ? 'VAS Pick Updated Successfully' : 'VAS Pick created successfully');

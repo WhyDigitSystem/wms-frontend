@@ -22,7 +22,7 @@ export const CarrierMaster = () => {
   const [editId, setEditId] = useState('');
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [branch] = useState(localStorage.getItem('branch'));
-  const [branchCode] = useState(localStorage.getItem('branchCode'));
+  const [branchCode] = useState(localStorage.getItem('branchcode'));
   const [customer] = useState(localStorage.getItem('customer'));
   const [client] = useState(localStorage.getItem('client'));
   const [warehouse] = useState(localStorage.getItem('warehouse'));
@@ -31,7 +31,7 @@ export const CarrierMaster = () => {
     carrier: '',
     carrierShortName: '',
     shipmentMode: '',
-    cbranch: localStorage.getItem('branchCode'),
+    cbranch: localStorage.getItem('branchcode'),
     active: true,
     branch: branch,
     branchCode: branchCode,
@@ -41,7 +41,7 @@ export const CarrierMaster = () => {
     orgId: orgId
   });
   const [value, setValue] = useState(0);
-  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [listViewData, setListViewData] = useState([]);
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -291,8 +291,9 @@ export const CarrierMaster = () => {
                     value={formData.shipmentMode}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="SHIPMENTMODE1">SHIPMENTMODE1</MenuItem>
-                    <MenuItem value="SHIPMENTMODE2">SHIPMENTMODE2</MenuItem>
+                    <MenuItem value="AIR">AIR</MenuItem>
+                    <MenuItem value="SEA">SEA</MenuItem>
+                    <MenuItem value="ROAD">ROAD</MenuItem>
                   </Select>
                   {fieldErrors.shipmentMode && <FormHelperText error>{fieldErrors.shipmentMode}</FormHelperText>}
                 </FormControl>

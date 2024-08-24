@@ -261,7 +261,8 @@ export const Grn = () => {
     try {
       const response = await apiCalls(
         'get',
-        `grn/getGatePassInDetailsForPendingGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&gatePassDocId=${selectedGatePassId}&orgId=${orgId}`
+        // `grn/getGatePassInDetailsForPendingGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&gatePassDocId=${selectedGatePassId}&orgId=${orgId}`
+        `grn/getGatePassInDetailsForPendingGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&gatePassDocId=${formData.gatePassId}&orgId=${orgId}`
       );
       console.log('THE GATE PASS IDS GRID DETAILS IS:', response);
       if (response.status === true) {
@@ -503,6 +504,8 @@ export const Grn = () => {
             ...prevData,
             carrier: selectedId.carrier.toUpperCase()
           }));
+          console.log('THE SELECTED GATEPASS ID IS:', selectedGatePassId);
+
           getGatePassGridDetailsByGatePassId(selectedGatePassId);
         }
       } else if (name === 'supplierShortName') {
@@ -921,7 +924,7 @@ export const Grn = () => {
           console.log('Response:', response);
           showToast('success', editId ? 'GRN Updated Successfully' : 'GRN created successfully');
           // handleClear();
-          // getAllGrns();
+          getAllGrns();
           setIsLoading(false);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'GRN creation failed');
@@ -1341,10 +1344,10 @@ export const Grn = () => {
                                     Exp Date
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Pallet QTY<span>&nbsp;*</span>
+                                    Bin QTY<span>&nbsp;*</span>
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    No of Pallets<span>&nbsp;*</span>
+                                    No of Bins<span>&nbsp;*</span>
                                   </th>
                                   {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Pkgs
