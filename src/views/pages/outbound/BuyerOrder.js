@@ -307,7 +307,10 @@ export const BuyerOrder = () => {
 
   const getAllBuyerOrders = async () => {
     try {
-      const response = await apiCalls('get', `buyerOrder/getAllBuyerOrderByOrgId?orgId=${orgId}`);
+      const response = await apiCalls(
+        'get',
+        `buyerOrder/getAllBuyerOrderByOrgId?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
+      );
       console.log('API Response:', response);
 
       if (response.status === true) {
