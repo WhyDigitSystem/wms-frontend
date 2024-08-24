@@ -335,7 +335,7 @@ export const BuyerOrder = () => {
 
       if (response.status === true) {
         setListView(false);
-        const particularBuyerOrder = response.paramObjectsMap.buyerOrderVO[0];
+        const particularBuyerOrder = response.paramObjectsMap.buyerOrderVO;
         console.log('THE PARTICULAR BUYER ORDER IS:', particularBuyerOrder);
         getAllCurrencies();
         setFormData({
