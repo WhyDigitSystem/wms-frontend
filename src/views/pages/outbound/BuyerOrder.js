@@ -111,7 +111,7 @@ export const BuyerOrder = () => {
     getNewBuyerOrderDocId();
     getAllCurrencies();
     getAllBranches();
-    getAllBuyerOrderByOrgId();
+    getAllBuyerOrders();
     getAllBuyerList();
     getAllPartNo();
   }, []);
@@ -239,20 +239,14 @@ export const BuyerOrder = () => {
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'id', header: 'Doc Id', size: 140 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'docId', header: 'Buyer Order ID', size: 140 },
+    { accessorKey: 'docDate', header: 'Buyer Order Date', size: 140 },
     { accessorKey: 'orderNo', header: 'Order No', size: 140 },
     { accessorKey: 'orderDate', header: 'Order Date', size: 140 },
     { accessorKey: 'invoiceNo', header: 'Invoice No', size: 140 },
     { accessorKey: 'invoiceDate', header: 'Invoice Date', size: 140 },
     { accessorKey: 'buyerShortName', header: 'Buyer Short Name', size: 140 },
-    { accessorKey: 'currency', header: 'Currency', size: 140 },
-    { accessorKey: 'exRate', header: 'Ex Rate', size: 140 },
-    { accessorKey: 'billto', header: 'Bill To', size: 140 },
-    { accessorKey: 'refNo', header: 'Ref No', size: 140 },
-    { accessorKey: 'refDate', header: 'Ref Date', size: 140 },
-    { accessorKey: 'refDate', header: 'Ship To', size: 140 },
-    { accessorKey: 'reMarks', header: 'Remarks', size: 140 }
+    { accessorKey: 'billToShortName', header: 'Bill To', size: 140 }
   ];
 
   const [listViewData, setListViewData] = useState([]);
@@ -311,7 +305,7 @@ export const BuyerOrder = () => {
     }
   };
 
-  const getAllBuyerOrderByOrgId = async () => {
+  const getAllBuyerOrders = async () => {
     try {
       const response = await apiCalls('get', `buyerOrder/getAllBuyerOrderByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
@@ -751,6 +745,7 @@ export const BuyerOrder = () => {
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
+          getAllBuyerOrders();
           showToast('success', editId ? ' Buyer Order Updated Successfully' : 'Buyer Order created successfully');
           setIsLoading(false);
         } else {

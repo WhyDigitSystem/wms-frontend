@@ -81,60 +81,7 @@ export const PickRequest = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
-  const [itemTableData, setItemTableData] = useState([{}]);
-
-  const handleAddRow = () => {
-    const newRow = {
-      availQty: '',
-      batchDate: '',
-      batchNo: '',
-      binClass: '',
-      binType: '',
-      cellType: '',
-      clientCode: '',
-      core: '',
-      bin: '',
-      orderQty: '',
-      partDesc: '',
-      partNo: '',
-      pcKey: '',
-      pickQty: '',
-      remainQty: '',
-      sku: '',
-      ssku: '',
-      status: ''
-    };
-    // setItemTableData([...itemTableData, newRow]);
-    setItemTableErrors([
-      ...itemTableErrors,
-      {
-        availQty: '',
-        batchDate: '',
-        batchNo: '',
-        binClass: '',
-        binType: '',
-        cellType: '',
-        clientCode: '',
-        core: '',
-        bin: '',
-        orderQty: '',
-        partDesc: '',
-        partNo: '',
-        pcKey: '',
-        pickQty: '',
-        remainQty: '',
-        sku: '',
-        ssku: '',
-        status: '',
-        grnNo: '',
-        grnDate: '',
-        expDate: '',
-        stockDate: '',
-        qcFlag: '',
-        remarks: ''
-      }
-    ]);
-  };
+  const [itemTableData, setItemTableData] = useState([]);
 
   const [itemTableErrors, setItemTableErrors] = useState([
     {
@@ -164,9 +111,6 @@ export const PickRequest = () => {
       remarks: ''
     }
   ]);
-
-  const theme = useTheme();
-  const anchorRef = useRef(null);
 
   const [fieldErrors, setFieldErrors] = useState({
     docId: '',
@@ -212,7 +156,6 @@ export const PickRequest = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        // setDocId(response.paramObjectsMap.locationMovementDocId);
         setFormData((prevFormData) => ({
           ...prevFormData,
           docId: response.paramObjectsMap.pickRequestDocId
@@ -419,6 +362,58 @@ export const PickRequest = () => {
   //     return newErrors;
   //   });
   // };
+  const handleAddRow = () => {
+    const newRow = {
+      availQty: '',
+      batchDate: '',
+      batchNo: '',
+      binClass: '',
+      binType: '',
+      cellType: '',
+      clientCode: '',
+      core: '',
+      bin: '',
+      orderQty: '',
+      partDesc: '',
+      partNo: '',
+      pcKey: '',
+      pickQty: '',
+      remainQty: '',
+      sku: '',
+      ssku: '',
+      status: ''
+    };
+    setItemTableData([...itemTableData, newRow]);
+    setItemTableErrors([
+      ...itemTableErrors,
+      {
+        availQty: '',
+        batchDate: '',
+        batchNo: '',
+        binClass: '',
+        binType: '',
+        cellType: '',
+        clientCode: '',
+        core: '',
+        bin: '',
+        orderQty: '',
+        partDesc: '',
+        partNo: '',
+        pcKey: '',
+        pickQty: '',
+        remainQty: '',
+        sku: '',
+        ssku: '',
+        status: '',
+        grnNo: '',
+        grnDate: '',
+        expDate: '',
+        stockDate: '',
+        qcFlag: '',
+        remarks: ''
+      }
+    ]);
+  };
 
   const handleDeleteRow = (id) => {
     setItemTableData(itemTableData.filter((row) => row.id !== id));
