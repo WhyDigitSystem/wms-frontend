@@ -78,9 +78,9 @@ export const SalesReturn = () => {
     prNo: '',
     prDate: null,
     boNo: '',
-    boDate: null,
+    boDate: dayjs(),
     entryNo: '',
-    entryDate: null,
+    entryDate: dayjs(),
     buyerName: '',
     buyerType: '',
     supplierShotName: '',
@@ -94,7 +94,8 @@ export const SalesReturn = () => {
     securityPerson: '',
     timeIn: '',
     timeOut: '',
-    goodsDesc: ''
+    goodsDesc: '',
+    totalReturnQty: ''
   });
 
   const [value, setValue] = useState(0);
@@ -104,7 +105,6 @@ export const SalesReturn = () => {
       invNo: '',
       partNo: '',
       partDesc: '',
-      unit: '',
       pickQty: '',
       returnQty: '',
       damageQty: '',
@@ -113,10 +113,6 @@ export const SalesReturn = () => {
       expDate: null,
       noOfBin: '',
       binQty: '',
-      weight: '',
-      rate: '',
-      amount: '',
-      insAmt: '',
       remarks: ''
     }
   ]);
@@ -193,7 +189,8 @@ export const SalesReturn = () => {
     securityPerson: '',
     timeIn: '',
     timeOut: '',
-    goodsDesc: ''
+    goodsDesc: '',
+    totalReturnQty: ''
   });
   const listViewColumns = [
     { accessorKey: 'partno', header: 'Part No', size: 140 },
@@ -231,6 +228,15 @@ export const SalesReturn = () => {
     getAllGroups();
     getNewSalesReturnDocId();
   }, []);
+
+  // useEffect(() => {
+  //   const totalQty = vasPickGridTableData.reduce((sum, row) => sum + (parseInt(row.pickQty, 10) || 0), 0);
+
+  //   setFormData((prevFormData) => ({
+  //     ...prevFormData,
+  //     totalPickedQty: totalQty
+  //   }));
+  // }, [vasPickGridTableData]);
 
   const getNewSalesReturnDocId = async () => {
     try {
@@ -305,15 +311,22 @@ export const SalesReturn = () => {
       );
       console.log('API Response:', response);
 
-      if (response.status === true) {
-        setPrNoList(response.paramObjectsMap.buyerOrderVO);
+      if (response.status === true && response.paramObjectsMap && Array.isArray(response.paramObjectsMap.pickRequestVO)) {
+        const prData = response.paramObjectsMap.pickRequestVO.filter((row) => row.cancel === false && row.status === 'Confirm');
+        console.log('THE PR DATA IS:', prData);
+        setPrNoList(prData);
+
+        return prData;
       } else {
-        console.error('API Error:', response);
+        console.warn('Unexpected API response structure or status:', response);
+        return null; // or return an empty array [] depending on your use case
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      return null; // or handle error accordingly
     }
   };
+
   const getAllSuppliers = async () => {
     try {
       const supplierData = await getAllActiveSupplier(loginBranchCode, loginClient, orgId);
@@ -322,6 +335,31 @@ export const SalesReturn = () => {
       console.error('Error fetching suppliers:', error);
     }
   };
+
+  const getBatchNo = async (selectedPartNo, selectedGrnNo, row) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `buyerOrder/getBatchByBuyerOrder?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&partNo=${selectedPartNo}&warehouse=${loginWarehouse}`
+      );
+      console.log('THE FROM BIN LIST IS:', response);
+      if (response.status === true) {
+        setDetailTableData((prev) =>
+          prev.map((r) =>
+            r.id === row.id
+              ? {
+                  ...r,
+                  rowBatchNoList: response.paramObjectsMap.skuDetails
+                }
+              : r
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+
   const getAllModesOfShipment = async () => {
     try {
       const shipmentModeData = await getAllShipmentModes(orgId);
@@ -375,6 +413,7 @@ export const SalesReturn = () => {
       pickQty: '',
       returnQty: '',
       damageQty: '',
+      rowBatchNoList: [],
       batchNo: '',
       batchDate: null,
       expDate: null,
@@ -572,36 +611,19 @@ export const SalesReturn = () => {
     if (errorMessage) {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
-      // if (name === 'gatePassId') {
-      //   const selectedId = gatePassIdList.find((id) => id.docId === value);
-      //   const selectedGatePassId = selectedId.docId;
-      //   if (selectedId) {
-      //     setFormData((prevData) => ({
-      //       ...prevData,
-      //       gatePassId: selectedId.docId,
-      //       entrySlNo: selectedId.entryNo,
-      //       gatePassDate: dayjs(selectedId.docDate).format('YYYY-MM-DD'),
-      //       supplierShortName: selectedId.supplierShortName,
-      //       supplier: selectedId.supplier,
-      //       modeOfShipment: selectedId.modeOfShipment.toUpperCase(),
-      //       vehicleType: selectedId.vehicleType.toUpperCase(),
-      //       contact: selectedId.contact,
-      //       driverName: selectedId.driverName,
-      //       securityName: selectedId.securityName,
-      //       lrDate: dayjs(selectedId.lrDate).format('YYYY-MM-DD'),
-      //       goodsDesc: selectedId.goodsDescription,
-      //       vehicleNo: selectedId.vehicleNo,
-      //       lotNo: selectedId.lotNo
-      //     }));
-      //     getAllCarriers(selectedId.modeOfShipment);
-      //     setFormData((prevData) => ({
-      //       ...prevData,
-      //       carrier: selectedId.carrier.toUpperCase()
-      //     }));
-      //     getGatePassGridDetailsByGatePassId(selectedGatePassId);
-      //   }
-      // } else
-      if (name === 'supplierShortName') {
+      if (name === 'prNo') {
+        const selectedPrNo = prNoList.find((id) => id.docId === value);
+        if (selectedPrNo) {
+          setFormData((prevData) => ({
+            ...prevData,
+            prNo: selectedPrNo.docId,
+            prDate: dayjs(selectedPrNo.docDate).format('YYYY-MM-DD'),
+            boNo: selectedPrNo.buyerOrderNo,
+            boDate: dayjs(selectedPrNo.buyerOrderDate).format('YYYY-MM-DD'),
+            buyerName: selectedPrNo.clientName
+          }));
+        }
+      } else if (name === 'supplierShortName') {
         const selectedName = supplierList.find((supplier) => supplier.supplierShortName === value);
         if (selectedName) {
           setFormData((prevData) => ({
@@ -612,7 +634,15 @@ export const SalesReturn = () => {
         }
       } else if (name === 'modeOfShipment') {
         setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
-        getAllCarriers(value);
+        String.prototype.initCaps = function () {
+          return this.toLowerCase()
+            .split(' ')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        };
+        const formattedValue = value.initCaps();
+
+        getAllCarriers(formattedValue);
       } else if (name === 'vas') {
         setFormData((prevData) => ({ ...prevData, [name]: checked }));
       } else {
@@ -726,68 +756,72 @@ export const SalesReturn = () => {
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       const salesReturnVo = detailTableData.map((row) => ({
-        mrp: row.mrp,
-        fromdate: dayjs(row.fDate).format('DD-MM-YYYY'),
-        todate: dayjs(row.tDate).format('DD-MM-YYYY')
+        ...(editId && { id: row.id }),
+        lrNo: row.lrNo,
+        invNo: row.invoiceNo,
+        partNo: row.partNo,
+        partDescripition: row.partDesc,
+        sku: row.sku,
+        pickQty: row.pickQty,
+        returnQty: row.retQty,
+        damageQty: row.damageQty,
+        batchNo: row.batchNo,
+        batchDate: row.batchDate,
+        expDate: row.expDate,
+        palletQty: row.binQty,
+        noOfPallet: row.noOfBins,
+        remarks: row.remarks,
+        //EXTRA FIELDS
+        qcFlag: ''
       }));
 
       const saveFormData = {
         ...(editId && { id: editId }),
-        active: formData.active,
-        itemType: formData.itemType,
-        partno: formData.partNo,
-        partDesc: formData.partDesc,
-        custPartno: formData.custPartNo,
-        groupName: formData.groupName,
-        styleCode: formData.styleCode,
-        baseSku: formData.baseSku,
-        // addDesc: formData.addDesc, //no
-        purchaseUnit: formData.purchaseUnit,
-        storageUnit: formData.storageUnit,
-        // fixedCapAcrossLocn: formData.fixedCapAcrossLocn, //no
-        fsn: formData.fsn,
-        saleUnit: formData.saleUnit,
-        type: formData.type,
-        // serialNoFlag: formData.serialNoFlag, //no
-        sku: formData.sku,
-        skuQty: formData.skuQty,
-        ssku: formData.ssku,
-        sskuQty: formData.sskuQty,
-        // zoneType: formData.zoneType, //no
-        weightofSkuAndUom: formData.weightSkuUom,
-        hsnCode: formData.hsnCode,
-        parentChildKey: formData.parentChildKey,
-        cbranch: formData.controlBranch,
-        criticalStockLevel: formData.criticalStockLevel,
-        // criticalStock: formData.criticalStock, //no
-        // bchk: formData.bchk, //no
-        status: formData.status,
-        barcode: formData.barcode,
-        // itemVo: itemVo, //no
+        boDate: formData.boDate,
+        boNo: formData.boNo,
+        branch: loginBranch,
+        branchCode: loginBranchCode,
+        briefDescOfGoods: formData.goodsDesc,
+        buyerName: formData.buyerName,
+        buyerType: formData.buyerType,
+        carrier: formData.carrier,
+        client: loginClient,
+        contact: formData.contact,
+        createdBy: loginUserName,
+        customer: loginCustomer,
+        driverName: formData.driver,
+        entryDate: formData.entryDate,
+        entryNo: formData.entryNo,
+        finYear: loginFinYear,
+        // freeze:formData.--------,
+        // id:formData.--------,
+        modeOfShipment: formData.modeOfShipment,
         orgId: orgId,
-        // createdBy: loginUserName,
-        breadth: 0
-        // client: loginClient,
-        // customer: loginCustomer,
-        // height: 0,
-        // length: 0,
-        // binQty: '',
-        // warehouse: loginWarehouse,
-        // weight: 0,
-        // branch: loginBranch,
-        // branchCode: loginBranchCode
+        prDate: formData.prDate,
+        prNo: formData.prNo,
+        // qcFlag:formData.------,
+        salesReturnDetailsDTO: salesReturnVo,
+        securityPersonName: formData.securityPerson,
+        supplier: formData.supplier,
+        timeIn: formData.timeIn,
+        timeOut: formData.timeOut,
+        totalReturnQty: formData.totalReturnQty,
+        // transactionType:formData.----------,
+        vehicleNo: formData.vehicleNo,
+        vehicleType: formData.vehicleType,
+        warehouse: loginWarehouse
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const response = await apiCalls('put', `warehousemastercontroller/createUpdateMaterial`, saveFormData);
+        const response = await apiCalls('put', `salesReturn/createUpdateSalesReturn`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
           showToast('success', editId ? ' Sales Return Updated Successfully' : 'Sales Return created successfully');
           setIsLoading(false);
-          // getAllItems();
+          // getAllSalesReturn();
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Sales Return creation failed');
           setIsLoading(false);
@@ -892,7 +926,7 @@ export const SalesReturn = () => {
     setModalOpen(false);
   };
   const handleDateChange = (field, date) => {
-    const formattedDate = dayjs(date).format('DD-MM-YYYY');
+    const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
   return (
@@ -949,13 +983,16 @@ export const SalesReturn = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.prNo}>
-                  <InputLabel id="prNo-label">PR No</InputLabel>
-                  <Select labelId="prNo-label" id="prNo" name="prNo" label="PR No" value={formData.prNo} onChange={handleInputChange}>
+                  <InputLabel id="prNo-label">PR No *</InputLabel>
+                  <Select labelId="prNo-label" id="prNo *" name="prNo" label="PR No" value={formData.prNo} onChange={handleInputChange}>
                     <MenuItem value="">
                       <em>None</em>
                     </MenuItem>
-                    <MenuItem value="PR1">PR1</MenuItem>
-                    <MenuItem value="PR2">PR2</MenuItem>
+                    {prNoList?.map((row) => (
+                      <MenuItem key={row.id} value={row.docId}>
+                        {row.docId}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.prNo && <FormHelperText error>{fieldErrors.prNo}</FormHelperText>}
                 </FormControl>
@@ -965,7 +1002,7 @@ export const SalesReturn = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="PR Date"
-                      value={formData.prDate ? dayjs(formData.prDate, 'DD-MM-YYYY') : null}
+                      value={formData.prDate ? dayjs(formData.prDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('prDate', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -995,8 +1032,8 @@ export const SalesReturn = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="BO Date"
-                      value={formData.boDate ? dayjs(formData.boDate, 'DD-MM-YYYY') : null}
-                      onChange={(date) => handleDateChange('prDate', date)}
+                      value={formData.boDate ? dayjs(formData.boDate, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('boDate', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
@@ -1009,7 +1046,7 @@ export const SalesReturn = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Entry No"
+                  label="Entry No *"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1024,9 +1061,9 @@ export const SalesReturn = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Entry Date"
+                      label="Entry Date *"
                       value={formData.entryDate ? dayjs(formData.entryDate, 'YYYY-MM-DD') : null}
-                      onChange={(date) => handleDateChange('prDate', date)}
+                      onChange={(date) => handleDateChange('entryDate', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
@@ -1052,7 +1089,7 @@ export const SalesReturn = () => {
                   disabled
                 />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label="Buyer Type"
                   variant="outlined"
@@ -1065,15 +1102,15 @@ export const SalesReturn = () => {
                   helperText={fieldErrors.buyerType}
                   disabled
                 />
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.supplierShortName}>
-                  <InputLabel id="supplierShortName-label">Supplier Short Name</InputLabel>
+                  <InputLabel id="supplierShortName-label">Supplier Short Name *</InputLabel>
                   <Select
                     labelId="supplierShortName-label"
                     id="supplierShortName"
                     name="supplierShortName"
-                    label="Supplier Short Name"
+                    label="Supplier Short Name *"
                     value={formData.supplierShortName}
                     onChange={handleInputChange}
                   >
@@ -1105,12 +1142,10 @@ export const SalesReturn = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.modeOfShipment}>
-                  <InputLabel id="modeOfShipment-label">
-                    Mode of Shipment <span>&nbsp;*</span>
-                  </InputLabel>
+                  <InputLabel id="modeOfShipment-label">Mode of Shipment *</InputLabel>
                   <Select
                     labelId="modeOfShipment-label"
-                    label="Mode of Shipment"
+                    label="Mode of Shipment *"
                     value={formData.modeOfShipment}
                     onChange={handleInputChange}
                     name="modeOfShipment"
@@ -1127,12 +1162,10 @@ export const SalesReturn = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.carrier}>
-                  <InputLabel id="carrier-label">
-                    Carrier <span>&nbsp;*</span>
-                  </InputLabel>
+                  <InputLabel id="carrier-label">Carrier *</InputLabel>
                   <Select
                     labelId="carrier-label"
-                    label="Carrier"
+                    label="Carrier *"
                     value={formData.carrier}
                     onChange={handleInputChange}
                     name="carrier"
@@ -1184,28 +1217,25 @@ export const SalesReturn = () => {
                                     S.No
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    LR.No/HAWB NO/HBL No.
+                                    LR.No/HAWB NO/HBL No *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Invoice No
+                                    Invoice No *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Part No
+                                    Part No *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    part Description
+                                    Part Desc
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     SKU
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Unit
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     Pick Qty
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Return Qty
+                                    Return Qty *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     Damage Qty
@@ -1220,13 +1250,10 @@ export const SalesReturn = () => {
                                     Exp Date
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Pallet Qty
+                                    Bin Qty *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    No Of Pallet
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Weight
+                                    No Of Bins *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     Remarks
@@ -1316,15 +1343,6 @@ export const SalesReturn = () => {
                                           type="text"
                                           value={row.sku}
                                           className={detailTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
-                                          disabled
-                                        />
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          style={{ width: '150px' }}
-                                          type="text"
-                                          value={row.unit}
-                                          className={detailTableErrors[index]?.unit ? 'error form-control' : 'form-control'}
                                           disabled
                                         />
                                       </td>
@@ -1520,15 +1538,6 @@ export const SalesReturn = () => {
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.noOfBin}
-                                          className={detailTableErrors[index]?.noOfBin ? 'error form-control' : 'form-control'}
-                                          disabled
-                                        />
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          style={{ width: '150px' }}
-                                          type="text"
-                                          value={row.weight}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             setDetailTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, weight: value } : r)));
@@ -1538,13 +1547,8 @@ export const SalesReturn = () => {
                                               return newErrors;
                                             });
                                           }}
-                                          className={detailTableErrors[index]?.weight ? 'error form-control' : 'form-control'}
+                                          className={detailTableErrors[index]?.noOfBin ? 'error form-control' : 'form-control'}
                                         />
-                                        {detailTableErrors[index]?.weight && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailTableErrors[index].weight}
-                                          </div>
-                                        )}
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
