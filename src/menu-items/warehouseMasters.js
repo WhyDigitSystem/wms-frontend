@@ -28,6 +28,27 @@ const warehouseMasters = {
           url: '/warehousemasters/customermaster'
         },
         {
+          id: 'fullfeaturedcurdgrid',
+          title: 'Stepper',
+          type: 'item',
+          url: '/basicmasters/fullfeaturedcurdgrid',
+          breadcrumbs: false
+        },
+        {
+          id: 'fullfeaturedcurdgrid1',
+          title: 'Tabs',
+          type: 'item',
+          url: '/basicmasters/stepperTest',
+          breadcrumbs: false
+        },
+        {
+          id: 'fullfeaturedcurdgrid2',
+          title: 'Accordion',
+          type: 'item',
+          url: '/basicmasters/accorditionTest',
+          breadcrumbs: false
+        },
+        {
           id: 'warehouseMaster',
           title: 'Warehouse',
           type: 'item',

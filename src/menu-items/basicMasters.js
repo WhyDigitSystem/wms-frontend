@@ -173,12 +173,6 @@ const basicMasters = {
         //   url: '/basicmasters/finyearmaster'
         // },
         //GRID TABLE
-        // {
-        //   id: 'fullfeaturedcurdgrid',
-        //   title: 'Grid table',
-        //   type: 'item',
-        //   url: '/basicmasters/fullfeaturedcurdgrid'
-        // }
       ]
     }
   ]
