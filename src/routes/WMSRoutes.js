@@ -15,7 +15,7 @@ const CountryMaster = Loadable(lazy(() => import('views/pages/basic-masters/Coun
 const StateMaster = Loadable(lazy(() => import('views/pages/basic-masters/StateMaster')));
 const CityMaster = Loadable(lazy(() => import('views/pages/basic-masters/CityMaster')));
 const CustomerMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/CustomerMaster')));
-const WarehouseMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/WarehouseLocationMaster')));
+const WarehouseMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/WarehouseMaster')));
 const LocationTypeMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/LocationTypeMaster')));
 const WarehouseLocationMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/WarehouseLocationMaster')));
 const LocationMappingMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/LocationMappingMaster')));
