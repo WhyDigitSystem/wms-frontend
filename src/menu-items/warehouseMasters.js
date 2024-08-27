@@ -28,27 +28,6 @@ const warehouseMasters = {
           url: '/warehousemasters/customermaster'
         },
         {
-          id: 'fullfeaturedcurdgrid',
-          title: 'Stepper',
-          type: 'item',
-          url: '/basicmasters/fullfeaturedcurdgrid',
-          breadcrumbs: false
-        },
-        {
-          id: 'fullfeaturedcurdgrid1',
-          title: 'Tabs',
-          type: 'item',
-          url: '/basicmasters/stepperTest',
-          breadcrumbs: false
-        },
-        {
-          id: 'fullfeaturedcurdgrid2',
-          title: 'Accordion',
-          type: 'item',
-          url: '/basicmasters/accorditionTest',
-          breadcrumbs: false
-        },
-        {
           id: 'warehouseMaster',
           title: 'Warehouse',
           type: 'item',
@@ -138,12 +117,18 @@ const warehouseMasters = {
           type: 'item',
           url: '/warehousemasters/designationmaster'
         },
-        // {
-        //   id: 'groupMaster',
-        //   title: 'Group',
-        //   type: 'item',
-        //   url: '/warehousemasters/groupmaster'
-        // },
+        {
+          id: 'unitMaster',
+          title: 'Unit',
+          type: 'item',
+          url: '/warehousemasters/unitmaster'
+        },
+        {
+          id: 'groupMaster',
+          title: 'Group',
+          type: 'item',
+          url: '/warehousemasters/groupmaster'
+        },
         {
           id: 'documentTypeMaster',
           title: 'Document Type',

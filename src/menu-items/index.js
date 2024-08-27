@@ -10,6 +10,7 @@ import inbound from './inbound';
 import outbound from './outbound';
 import vas from './vas';
 import stockProcess from './stockProcess';
+import UiChangeSamples from './UiChangeSamples';
 
 const loginUserRole = localStorage.getItem('ROLE');
 
@@ -18,7 +19,18 @@ const loginUserRole = localStorage.getItem('ROLE');
 const menuItems = {
   // items: [dashboard, pages, utilities, other, company, basicMasters]
   // items: [dashboard, ...(loginUserRole === 'PRODUCT_ADMIN' ? [company] : [basicMasters])]
-  items: [dashboard, company, basicMasters, warehouseMasters, RolesAndResponsibilities, inbound, outbound, vas, stockProcess]
+  items: [
+    dashboard,
+    company,
+    basicMasters,
+    warehouseMasters,
+    RolesAndResponsibilities,
+    inbound,
+    outbound,
+    vas,
+    stockProcess,
+    UiChangeSamples
+  ]
 };
 
 export default menuItems;

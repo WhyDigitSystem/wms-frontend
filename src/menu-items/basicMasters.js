@@ -136,12 +136,6 @@ const basicMasters = {
         //   url: '/basicmasters/designationmaster'
         // },
 
-        // {
-        //   id: 'unitMaster',
-        //   title: 'Unit',
-        //   type: 'item',
-        //   url: '/basicmasters/unitmaster'
-        // },
         {
           id: 'currencyMaster',
           title: 'Currency',

@@ -30,7 +30,7 @@ const MaterialLabelMappingMaster = Loadable(lazy(() => import('views/pages/wareh
 const DepartmentMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/DepartmentMaster')));
 const DesignationMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/DesignationMaster')));
 const GroupMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/GroupMaster')));
-const UnitMaster = Loadable(lazy(() => import('views/pages/basic-masters/UnitMaster')));
+const UnitMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/UnitMaster')));
 const CurrencyMaster = Loadable(lazy(() => import('views/pages/basic-masters/CurrencyMaster')));
 const RegionMaster = Loadable(lazy(() => import('views/pages/basic-masters/RegionMaster')));
 const DocumentTypeMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/DocumentTypeMaster')));
@@ -150,7 +150,7 @@ const WMSRoutes = {
       element: <GroupMaster />
     },
     {
-      path: '/basicmasters/unitmaster',
+      path: '/warehousemasters/unitmaster',
       element: <UnitMaster />
     },
     {
