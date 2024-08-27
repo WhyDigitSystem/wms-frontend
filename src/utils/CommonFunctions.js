@@ -288,3 +288,11 @@ export const getAllActiveCpartNo = async (cBranch, client, orgId) => {
     return error;
   }
 };
+
+export const initCaps = (str) => {
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};

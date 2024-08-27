@@ -33,7 +33,7 @@ import { useEffect, useRef, useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import { getAllActiveCarrier, getAllActiveGroups, getAllActiveSupplier, getAllShipmentModes } from 'utils/CommonFunctions';
+import { getAllActiveCarrier, getAllActiveGroups, getAllActiveSupplier, getAllShipmentModes, initCaps } from 'utils/CommonFunctions';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import GridOnIcon from '@mui/icons-material/GridOn';
@@ -193,11 +193,10 @@ export const SalesReturn = () => {
     totalReturnQty: ''
   });
   const listViewColumns = [
-    { accessorKey: 'partno', header: 'Part No', size: 140 },
-    { accessorKey: 'partDesc', header: 'Part Desc', size: 140 },
-    { accessorKey: 'sku', header: 'SKU', size: 140 },
-    { accessorKey: 'status', header: 'Status', size: 140 },
-    { accessorKey: 'active', header: 'Active', size: 140 }
+    { accessorKey: 'docId', header: 'Doc Id', size: 140 },
+    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'prNo', header: 'Pr. No', size: 140 },
+    { accessorKey: 'entryNo', header: 'entryNo', size: 140 }
   ];
 
   const [listViewData, setListViewData] = useState([
@@ -263,40 +262,25 @@ export const SalesReturn = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockRestate/getFillGridDetailsForStockRestate?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&tranferFromFlag=${formData.transferFromFlag}&tranferToFlag=${formData.transferToFlag}&warehouse=CHENNAI WAREHOUSE`
+        `salesReturn/getSalesReturnFillGridDetails?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&docId=${formData.prNo}`
       );
       console.log('THE VAS PICK GRID DETAILS IS:', response);
       if (response.status === true) {
-        const gridDetails = response.paramObjectsMap.fillGridDetails;
+        const gridDetails = response.paramObjectsMap.salesReturnDetailsVO;
         console.log('THE MODAL TABLE DATA FROM API ARE:', gridDetails);
 
         setModalTableData(
           gridDetails.map((row) => ({
             id: row.id,
-            fromBin: row.fromBin,
-            fromBinClass: row.fromBinClass,
-            fromBinType: row.fromBinType,
-            fromCellType: row.fromCellType,
+
             partNo: row.partNo,
             partDesc: row.partDesc,
             sku: row.sku,
-            grnNo: row.grnNo,
-            grnDate: row.grnDate,
-            batchNo: row.batchNo,
-            batchDate: row.batchDate,
-            expDate: row.expDate,
-            toBin: row.toBin,
-            toBinType: row.ToBinType,
-            toBinClass: row.ToBinClass,
-            toCellType: row.ToCellType,
-            fromQty: row.fromQty,
-            toQty: row.toQty,
-            fromCore: row.fromCore,
-            toCore: row.ToCore,
-            qcFlag: row.qcFlag
+            pickQty: row.pickQty
           }))
         );
-        setDetailTableData([]);
+        setModalOpen(true);
+        // setDetailTableData([]);
       }
     } catch (error) {
       console.error('Error fetching employee data:', error);
@@ -485,8 +469,8 @@ export const SalesReturn = () => {
       });
     }
   };
-  const handleDeleteRow = (id, table, setTable) => {
-    setTable(table.filter((row) => row.id !== id));
+  const handleDeleteRow = (id) => {
+    setDetailTableData(detailTableData.filter((row) => row.id !== id));
   };
 
   const getAllGroups = async () => {
@@ -503,9 +487,9 @@ export const SalesReturn = () => {
     try {
       const response = await apiCalls(
         'get',
-        `warehousemastercontroller/material?cbranch=${loginBranchCode}&client=${loginClient}&orgid=${orgId}`
+        `salesReturn/getAllSalesReturnByOrgId?branchCode=${loginBranchCode}&branch=${loginBranch}&client=${loginClient}&orgId=${orgId}&warehouse=${loginWarehouse}&finYear=${loginFinYear}`
       );
-      setListViewData(response.paramObjectsMap.materialVO);
+      setListViewData(response.paramObjectsMap.salesReturnVO);
       console.log('TEST LISTVIEW DATA', response);
     } catch (err) {
       console.log('error', err);
@@ -515,60 +499,58 @@ export const SalesReturn = () => {
     console.log('THE SELECTED ITEM ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `warehousemastercontroller/material/${row.original.id}`);
+      const response = await apiCalls('get', `salesReturn/getSalesReturnById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
         setListView(false);
-        const particularItem = response.paramObjectsMap.materialVO;
+        const particularItem = response.paramObjectsMap.salesReturnVO;
         // const selectedBranch = branchList.find((br) => br.branch === particularItem.branch);
         console.log('THE SELECTED ITEM IS:', particularItem);
 
         setFormData({
-          itemType: particularItem.itemType,
-          partNo: particularItem.partno,
-          partDesc: particularItem.partDesc,
-          custPartNo: particularItem.custPartno,
-          groupName: particularItem.groupName,
-          styleCode: particularItem.styleCode,
-          baseSku: particularItem.baseSku,
-          // addDesc: particularItem.addDesc, //no
-          purchaseUnit: particularItem.purchaseUnit,
-          storageUnit: particularItem.storageUnit,
-          // fixedCapAcrossLocn: particularItem.fixedCapAcrossLocn, //no
-          fsn: particularItem.fsn,
-          saleUnit: particularItem.saleUnit,
-          type: particularItem.type,
-          // serialNoFlag: particularItem.serialNoFlag, //no
-          sku: particularItem.sku,
-          skuQty: particularItem.skuQty,
-          ssku: particularItem.ssku,
-          sskuQty: particularItem.sskuQty,
-          // zoneType: particularItem.zoneType, //no
-          weightSkuUom: particularItem.weightofSkuAndUom,
-          hsnCode: particularItem.hsnCode,
-          parentChildKey: particularItem.parentChildKey,
-          controlBranch: particularItem.cbranch,
-          criticalStockLevel: particularItem.criticalStockLevel,
-          // criticalStock: particularItem.criticalStock, //no
-          // bchk: particularItem.bchk, //no
-          status: particularItem.status,
-          barcode: particularItem.barcode,
-          // itemVo: itemVo, //no
-          // orgId: orgId,
-          // createdby: loginUserName,
-          // breadth: 0,
-          // client: loginClient,
-          // customer: loginCustomer,
-          // height: 0,
-          // length: 0,
-          // binQty: '',
-          // warehouse: loginWarehouse,
-          // weight: 0,
-          // branch: loginBranch,
-          // branchCode: loginBranchCode,
-          active: particularItem.active === 'Active' ? true : false
+          docId: particularItem.docId,
+          docDate: particularItem.docId,
+          prNo: particularItem.prNo,
+          prDate: particularItem.prDate,
+          boNo: particularItem.boNo,
+          boDate: particularItem.boDate,
+          entryNo: particularItem.entryNo,
+          entryDate: particularItem.entryDate,
+          buyerName: particularItem.buyerName,
+          buyerType: particularItem.buyerType,
+          supplierShotName: particularItem.supplierShortName,
+          supplier: particularItem.supplier,
+          modeOfShipment: particularItem.modeOfShipment,
+          carrier: particularItem.carrier,
+          driver: particularItem.driver,
+          vehicleType: particularItem.vehicleType,
+          vehicleNo: particularItem.vehicleNo,
+          contact: particularItem.contact,
+          securityPerson: particularItem.securityPerson,
+          timeIn: particularItem.timeIn,
+          timeOut: particularItem.timeOut,
+          goodsDesc: particularItem.goodsDesc,
+          totalReturnQty: particularItem.totalReturnQty
         });
+
+        setDetailTableData(
+          particularItem.salesReturnDetailsVO.map((detail) => ({
+            lrNo: detail.lrNo,
+            invNo: detail.invNo,
+            partNo: detail.partNo,
+            partDesc: detail.partDesc,
+            pickQty: detail.pickQty,
+            returnQty: detail.returnQty,
+            damageQty: detail.damageQty,
+            batchNo: detail.batchNo,
+            batchDate: detail.batchDate,
+            expDate: detail.expDate,
+            noOfBin: detail.noOfBin,
+            binQty: detail.binQty,
+            remarks: detail.remarks
+          }))
+        );
       } else {
         console.error('API Error:', response);
       }
@@ -634,14 +616,7 @@ export const SalesReturn = () => {
         }
       } else if (name === 'modeOfShipment') {
         setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
-        String.prototype.initCaps = function () {
-          return this.toLowerCase()
-            .split(' ')
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-        };
-        const formattedValue = value.initCaps();
-
+        const formattedValue = initCaps(value);
         getAllCarriers(formattedValue);
       } else if (name === 'vas') {
         setFormData((prevData) => ({ ...prevData, [name]: checked }));
@@ -743,13 +718,9 @@ export const SalesReturn = () => {
   const handleSave = async () => {
     const errors = {};
 
-    if (!formData.buyerOrderRefNo) {
-      errors.buyerOrderRefNo = 'buyerOrderRefNo is required';
-    }
-
-    if (!formData.status) {
-      errors.status = 'Status is required';
-    }
+    // if (!formData.buyerOrderRefNo) {
+    //   errors.buyerOrderRefNo = 'buyerOrderRefNo is required';
+    // }
 
     setFieldErrors(errors);
 
@@ -942,12 +913,7 @@ export const SalesReturn = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable
-              data={listViewData}
-              columns={listViewColumns}
-              blockEdit={true}
-              // toEdit={getSalesReturnById}
-            />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getSalesReturnById} />
           </div>
         ) : (
           <>
@@ -1271,7 +1237,7 @@ export const SalesReturn = () => {
                                   detailTableData.map((row, index) => (
                                     <tr key={row.id}>
                                       <td className="border px-2 py-2 text-center">
-                                        <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+                                        <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(index)} />
                                       </td>
                                       <td className="text-center">
                                         <div className="pt-2">{index + 1}</div>
@@ -1737,12 +1703,12 @@ export const SalesReturn = () => {
                               <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                 S.No
                               </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                              {/* <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
                                 From Bin
                               </th>
                               <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
                                 From Bin Type
-                              </th>
+                              </th> */}
                               <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
                                 Part No
                               </th>
@@ -1752,7 +1718,7 @@ export const SalesReturn = () => {
                               <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
                                 SKU
                               </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                              {/* <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
                                 GRN No
                               </th>
                               <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
@@ -1766,9 +1732,9 @@ export const SalesReturn = () => {
                               </th>
                               <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
                                 From QTY
-                              </th>
+                              </th> */}
                               <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                To QTY
+                                Pick QTY
                               </th>
                             </tr>
                           </thead>
@@ -1787,12 +1753,12 @@ export const SalesReturn = () => {
                                 <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
                                   {index + 1}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                {/* <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
                                   {row.fromBin}
                                 </td>
                                 <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
                                   {row.fromBinType}
-                                </td>
+                                </td> */}
                                 <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
                                   {row.partNo}
                                 </td>
@@ -1802,7 +1768,7 @@ export const SalesReturn = () => {
                                 <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
                                   {row.sku}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                {/* <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
                                   {row.grnNo}
                                 </td>
                                 <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
@@ -1816,9 +1782,9 @@ export const SalesReturn = () => {
                                 </td>
                                 <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
                                   {row.fromQty}
-                                </td>
+                                </td> */}
                                 <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
-                                  {row.toQty}
+                                  {row.pickQty}
                                 </td>
                               </tr>
                             ))}

@@ -303,6 +303,8 @@ export const VasPick = () => {
           stockState: value,
           stockStateFlag: (value === 'READY TO DISPATCH' && 'R') || (value === 'HOLD' && 'H') || ''
         }));
+      } else if (name === 'status') {
+        setFormData((prevData) => ({ ...prevData, [name]: value }));
       } else {
         setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
       }
@@ -551,8 +553,8 @@ export const VasPick = () => {
                     Status <span>&nbsp;*</span>
                   </InputLabel>
                   <Select labelId="status-label" label="Status" value={formData.status} onChange={handleInputChange} name="status" required>
-                    <MenuItem value="EDIT">EDIT</MenuItem>
-                    <MenuItem value="CONFIRM">CONFIRM</MenuItem>
+                    <MenuItem value="Edit">EDIT</MenuItem>
+                    <MenuItem value="Confirm">CONFIRM</MenuItem>
                   </Select>
                   {fieldErrors.status && <FormHelperText>{fieldErrors.status}</FormHelperText>}
                 </FormControl>
@@ -776,7 +778,14 @@ export const VasPick = () => {
                           {modalTableData.map((row, index) => (
                             <tr key={row.id}>
                               <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                <Checkbox checked={selectAll} onChange={handleSelectAll} />
+                                {/* <Checkbox checked={selectAll} onChange={handleSelectAll} /> */}
+                                <Checkbox
+                                  checked={selectedRows.includes(index)}
+                                  onChange={(e) => {
+                                    const isChecked = e.target.checked;
+                                    setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
+                                  }}
+                                />
                               </th>
                               <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
                                 {index + 1}
