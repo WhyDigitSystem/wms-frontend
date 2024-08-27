@@ -15,13 +15,12 @@ import Select from '@mui/material/Select';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
 import Draggable from 'react-draggable';
 import 'react-toastify/dist/ReactToastify.css';
@@ -756,9 +755,11 @@ export const PickRequest = () => {
                     onChange={handleInputChange}
                   >
                     {/* Default option */}
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
+                    {buyerOrderNoList.length === 0 && (
+                      <MenuItem value="">
+                        <em>No Data Found</em>
+                      </MenuItem>
+                    )}
 
                     {/* Dynamically mapping buyerOrderNoList to MenuItem components */}
                     {buyerOrderNoList.map((order, index) => (
@@ -782,7 +783,7 @@ export const PickRequest = () => {
                         textField: { size: 'small', clearable: true }
                       }}
                       disabled
-                      format="YYYY-MM-DD"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.buyerRefDate}
                       helperText={fieldErrors.buyerRefDate && 'Required'}
                     />
@@ -814,7 +815,7 @@ export const PickRequest = () => {
                         textField: { size: 'small', clearable: true }
                       }}
                       disabled
-                      format="YYYY-MM-DD"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.buyerOrderDate}
                       helperText={fieldErrors.buyerOrderDate && 'Required'}
                     />

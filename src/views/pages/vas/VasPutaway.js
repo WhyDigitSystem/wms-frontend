@@ -1,35 +1,29 @@
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, FormHelperText, Tooltip, FormControlLabel, Checkbox } from '@mui/material';
-import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import axios from 'axios';
-import { useRef, useState, useMemo, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
+import { FormHelperText } from '@mui/material';
+import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import BrowserUpdatedIcon from '@mui/icons-material/BrowserUpdated';
-import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
-import apiCalls from 'apicall';
+import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
+import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { DatePicker } from '@mui/x-date-pickers';
-import { getAllActiveCarrier, getAllActiveSupplier } from 'utils/CommonFunctions';
+import { useEffect, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/ActionButton';
+import { showToast } from 'utils/toast-component';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 export const VasPutaway = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -41,7 +35,7 @@ export const VasPutaway = () => {
   const [tableBinList, setTableBinList] = useState([]);
   const [modeOfShipmentList, setModeOfShipmentList] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const [cbranch, setCbranch] = useState(localStorage.getItem('branchCode'));
+  const [cbranch, setCbranch] = useState(localStorage.getItem('branchcode'));
   const [client, setClient] = useState(localStorage.getItem('client'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [customer, setCustomer] = useState(localStorage.getItem('customer'));
@@ -166,7 +160,7 @@ export const VasPutaway = () => {
     try {
       const response = await apiCalls(
         'get',
-        `vasputaway/getDocIdFromVasPickForVasPutaway?branch=${branch}&client=${client}&orgId=${orgId}`
+        `vasputaway/getDocIdFromVasPickForVasPutaway?branch=${branch}&client=${client}&orgId=${orgId}&finYear=${finYear}`
       );
 
       console.log('API Response:', response);
@@ -203,8 +197,8 @@ export const VasPutaway = () => {
         const binList = binResponse.status ? binResponse.paramObjectsMap.ToBin : [];
 
         const data = response.paramObjectsMap.vasPutawayVO.map((item, index) => {
-          const invQty = parseFloat(item.picqty) || 0;
-          const putAwayQty = parseFloat(item.picqty) || 0;
+          const invQty = parseFloat(item.pickQty) || 0;
+          const putAwayQty = parseFloat(item.putawayQty) || 0;
 
           totalGrnQty += invQty;
           totalPutawayQty += putAwayQty;
@@ -214,6 +208,16 @@ export const VasPutaway = () => {
             partNo: item.partNo,
             partDescription: item.partDesc,
             grnNo: item.grnNo,
+            grnDate: item.grnDate,
+            batchNo: item.batchNo,
+            batchDate: item.batchDate,
+            expDate: item.expDate,
+            fromBinClass: item.binClass,
+            fromBinType: item.binType,
+            fromCellType: item.cellType,
+            fromCore: item.core,
+            stockDate: item.stockDate,
+            qcFlag: item.qcFlag,
             invQty: invQty,
             putAwayQty: putAwayQty,
             fromBin: item.bin,
@@ -321,11 +325,11 @@ export const VasPutaway = () => {
 
       // Call the function to get the fill grid data for the selected vasPickNo
       await getFillGridVasPutaway(value);
+    }
+    if (name === 'status') {
+      setFormData((prevData) => ({ ...prevData, [name]: value }));
     } else {
-      setFormData({
-        ...formData,
-        [name]: value
-      });
+      setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
     }
   };
 
@@ -393,10 +397,6 @@ export const VasPutaway = () => {
         rowErrors.bin = 'Bin is required';
         lrNoDetailsTableValid = false;
       }
-      if (!row.remarks) {
-        rowErrors.remarks = 'Remarks is required';
-        lrNoDetailsTableValid = false;
-      }
 
       return rowErrors;
     });
@@ -412,6 +412,7 @@ export const VasPutaway = () => {
         partDescription: row.partDescription,
         grnNo: row.grnNo,
         invQty: row.invQty,
+        batchNo: row.batchNo,
         putAwayQty: row.putAwayQty,
         fromBin: row.fromBin,
         bin: row.bin,
@@ -427,7 +428,7 @@ export const VasPutaway = () => {
         createdBy: loginUserName,
         customer: customer,
         finYear: finYear,
-        orgId: orgId,
+        orgId: parseInt(orgId),
         vasPickNo: formData.vasPickNo,
         status: formData.status,
         totalGrnQty: parseInt(formData.totalGrnQty),
@@ -537,8 +538,8 @@ export const VasPutaway = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
                   <InputLabel id="status">Status</InputLabel>
                   <Select labelId="status" label="Status" value={formData.status} onChange={handleInputChange} name="status">
-                    <MenuItem value="Edit">Edit</MenuItem>
-                    <MenuItem value="Submit">Submit</MenuItem>
+                    <MenuItem value="Edit">EDIT</MenuItem>
+                    <MenuItem value="Confirm">CONFIRM</MenuItem>
                   </Select>
                   {fieldErrors.status && <FormHelperText>{fieldErrors.status}</FormHelperText>}
                 </FormControl>
@@ -587,6 +588,7 @@ export const VasPutaway = () => {
                                   <th className="px-2 py-2 text-white text-center">Part No</th>
                                   <th className="px-2 py-2 text-white text-center">Part Description</th>
                                   <th className="px-2 py-2 text-white text-center">GRN No</th>
+                                  <th className="px-2 py-2 text-white text-center">Batch No</th>
                                   <th className="px-2 py-2 text-white text-center">Inv Qty</th>
                                   <th className="px-2 py-2 text-white text-center">Putaway Qty</th>
                                   <th className="px-2 py-2 text-white text-center">From Bin</th>
@@ -632,6 +634,16 @@ export const VasPutaway = () => {
                                         disabled
                                         className="form-control"
                                         title={row.grnNo}
+                                      />
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        style={{ width: '100px' }}
+                                        value={row.batchNo}
+                                        disabled
+                                        className="form-control"
+                                        title={row.batchNo}
                                       />
                                     </td>
                                     <td className="border px-2 py-2">
