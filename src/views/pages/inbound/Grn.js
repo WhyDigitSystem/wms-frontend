@@ -223,6 +223,14 @@ export const Grn = () => {
     // getAllVehicleTypes();
     // getAllGrns();
   }, []);
+  useEffect(() => {
+    const totalQty = lrTableData.reduce((sum, row) => sum + (parseInt(row.grnQty, 10) || 0), 0);
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      totGrnQty: totalQty
+    }));
+  }, [lrTableData]);
 
   const getNewGrnDocId = async () => {
     try {
@@ -487,8 +495,8 @@ export const Grn = () => {
             gatePassId: selectedId.docId,
             entrySlNo: selectedId.entryNo,
             gatePassDate: dayjs(selectedId.docDate).format('YYYY-MM-DD'),
-            supplierShortName: selectedId.supplierShortName,
-            supplier: selectedId.supplier,
+            supplierShortName: selectedId.supplier,
+            supplier: selectedId.supplierShortName,
             modeOfShipment: selectedId.modeOfShipment.toUpperCase(),
             vehicleType: selectedId.vehicleType.toUpperCase(),
             contact: selectedId.contact,
@@ -655,8 +663,7 @@ export const Grn = () => {
   };
 
   const handleDateChange = (field, date) => {
-    // const formattedDate = dayjs(date).format('DD-MM-YYYY');
-    const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null; // Updated format for consistency
+    const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
 
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
@@ -863,14 +870,6 @@ export const Grn = () => {
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
-        // docDate: formData.docDate ? dayjs(formData.docDate).format('YYYY-MM-DD') : null,
-        // docDate: editId
-        //   ? formData.docDate
-        //     ? dayjs(formData.docDate).format('YYYY-MM-DD')
-        //     : null
-        //   : editDocDate
-        //     ? dayjs(editDocDate).format('YYYY-MM-DD')
-        //     : null,
         entryNo: formData.entrySlNo,
         entryDate: formData.date ? dayjs(formData.date).format('YYYY-MM-DD') : null,
         gatePassId: editId ? gatePassIdEdit : formData.gatePassId,
@@ -1292,21 +1291,12 @@ export const Grn = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Invoice No <span>&nbsp;*</span>
                                   </th>
-                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    DN No
-                                  </th> */}
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Shipment No
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
                                     Invoice Date
                                   </th>
-                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    GL Date
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Bin Type
-                                  </th> */}
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Part No <span>&nbsp;*</span>
                                   </th>
@@ -1331,9 +1321,6 @@ export const Grn = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
                                     GRN QTY<span>&nbsp;*</span>
                                   </th>
-                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Sub Stock QTY
-                                  </th> */}
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Batch No
                                   </th>
@@ -1349,21 +1336,6 @@ export const Grn = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
                                     No of Bins<span>&nbsp;*</span>
                                   </th>
-                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Pkgs
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Weight
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    MRP
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Amount
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Ins Amount
-                                  </th> */}
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Remarks
                                   </th>
@@ -1594,10 +1566,9 @@ export const Grn = () => {
                                         value={row.recQty}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          const intPattern = /^\d*$/; // Pattern to match only whole numbers
+                                          const intPattern = /^\d*$/;
 
                                           if (intPattern.test(value) || value === '') {
-                                            // Allow empty values for clearing
                                             const numericValue = parseInt(value, 10);
                                             const numericInvQty = parseInt(row.invQty, 10) || 0;
 
@@ -1666,10 +1637,9 @@ export const Grn = () => {
                                         value={row.damageQty}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          const intPattern = /^\d*$/; // Pattern to match only whole numbers
+                                          const intPattern = /^\d*$/;
 
                                           if (intPattern.test(value) || value === '') {
-                                            // Allow empty values for clearing
                                             const numericValue = parseInt(value, 10);
                                             const numericRecQty = parseInt(row.recQty, 10) || 0;
 
@@ -1753,8 +1723,6 @@ export const Grn = () => {
                                               });
                                               return updatedData;
                                             });
-
-                                            // Clear the error if input is valid
                                             setLrTableErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
@@ -1764,7 +1732,6 @@ export const Grn = () => {
                                               return newErrors;
                                             });
                                           } else {
-                                            // Set error if input is invalid
                                             setLrTableErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
@@ -1835,7 +1802,6 @@ export const Grn = () => {
                                           const intPattern = /^\d*$/;
 
                                           if (intPattern.test(value) || value === '') {
-                                            // Allow empty values for clearing
                                             setLrTableData((prev) => {
                                               const updatedData = prev.map((r) => {
                                                 return r.id === row.id
@@ -1857,7 +1823,6 @@ export const Grn = () => {
                                               return newErrors;
                                             });
                                           } else {
-                                            // Set error if input is invalid
                                             setLrTableErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
@@ -1886,7 +1851,6 @@ export const Grn = () => {
                                           const intPattern = /^\d*$/;
 
                                           if (intPattern.test(value) || value === '') {
-                                            // Allow empty values for clearing
                                             setLrTableData((prev) => {
                                               const updatedData = prev.map((r) => {
                                                 return r.id === row.id
@@ -1908,7 +1872,6 @@ export const Grn = () => {
                                               return newErrors;
                                             });
                                           } else {
-                                            // Set error if input is invalid
                                             setLrTableErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
@@ -1972,9 +1935,7 @@ export const Grn = () => {
                           fullWidth
                           name="totGrnQty"
                           value={formData.totGrnQty}
-                          onChange={handleInputChange}
-                          error={!!fieldErrors.totGrnQty}
-                          helperText={fieldErrors.totGrnQty}
+                          disabled
                         />
                       </div>
                     </div>
