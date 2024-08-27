@@ -38,7 +38,7 @@ export const Grn = () => {
   const [editId, setEditId] = useState('');
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [loginUserId, setLoginUserId] = useState(localStorage.getItem('userId'));
-  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
@@ -228,7 +228,7 @@ export const Grn = () => {
     try {
       const response = await apiCalls(
         'get',
-        `inward/getGRNDocid?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
+        `grn/getGRNDocid?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
       );
       setFormData((prevData) => ({
         ...prevData,
@@ -242,7 +242,7 @@ export const Grn = () => {
     try {
       const response = await apiCalls(
         'get',
-        `inward/getGatePassInNoForPedningGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
+        `grn/getGatePassInNoForPedningGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
       );
       setGatePassIdList(response.paramObjectsMap.gatePassInVO);
     } catch (error) {
@@ -261,7 +261,8 @@ export const Grn = () => {
     try {
       const response = await apiCalls(
         'get',
-        `inward/getGatePassInDetailsForPendingGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&gatePassDocId=${selectedGatePassId}&orgId=${orgId}`
+        // `grn/getGatePassInDetailsForPendingGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&gatePassDocId=${selectedGatePassId}&orgId=${orgId}`
+        `grn/getGatePassInDetailsForPendingGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&gatePassDocId=${formData.gatePassId}&orgId=${orgId}`
       );
       console.log('THE GATE PASS IDS GRID DETAILS IS:', response);
       if (response.status === true) {
@@ -341,7 +342,7 @@ export const Grn = () => {
     try {
       const response = await apiCalls(
         'get',
-        `inward/getAllGrn?branch=CHENNAI&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
+        `grn/getAllGrn?branch=CHENNAI&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
       );
       setListViewData(response.paramObjectsMap.grnVO);
     } catch (error) {
@@ -353,7 +354,7 @@ export const Grn = () => {
     console.log('THE SELECTED GRN ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `inward/getGrnById?id=${row.original.id}`);
+      const response = await apiCalls('get', `grn/getGrnById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -503,6 +504,8 @@ export const Grn = () => {
             ...prevData,
             carrier: selectedId.carrier.toUpperCase()
           }));
+          console.log('THE SELECTED GATEPASS ID IS:', selectedGatePassId);
+
           getGatePassGridDetailsByGatePassId(selectedGatePassId);
         }
       } else if (name === 'supplierShortName') {
@@ -916,12 +919,12 @@ export const Grn = () => {
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const response = await apiCalls('put', `inward/createUpdateGRN`, saveFormData);
+        const response = await apiCalls('put', `grn/createUpdateGRN`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           showToast('success', editId ? 'GRN Updated Successfully' : 'GRN created successfully');
           // handleClear();
-          // getAllGrns();
+          getAllGrns();
           setIsLoading(false);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'GRN creation failed');
@@ -1071,10 +1074,10 @@ export const Grn = () => {
                   {/* Gate Pass ID */}
                   <div className="col-md-3 mb-3">
                     <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gatePassId}>
-                      <InputLabel id="gatePassId-label">Gate Pass ID</InputLabel>
+                      <InputLabel id="gatePassId-label">Gate Pass No</InputLabel>
                       <Select
                         labelId="gatePassId-label"
-                        label="Gate Pass ID"
+                        label="Gate Pass No"
                         value={formData.gatePassId}
                         onChange={handleInputChange}
                         name="gatePassId"
@@ -1187,7 +1190,7 @@ export const Grn = () => {
               {/* Bill of Entry */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Bill of Entry"
+                  label="E-Way Bill"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1243,13 +1246,6 @@ export const Grn = () => {
                   </Select>
                   {fieldErrors.carrier && <FormHelperText>{fieldErrors.carrier}</FormHelperText>}
                 </FormControl>
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControlLabel
-                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="vas" color="primary" />}
-                  label="VAS"
-                />
               </div>
             </div>
 
@@ -1348,10 +1344,10 @@ export const Grn = () => {
                                     Exp Date
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Pallet QTY<span>&nbsp;*</span>
+                                    Bin QTY<span>&nbsp;*</span>
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    No of Pallets<span>&nbsp;*</span>
+                                    No of Bins<span>&nbsp;*</span>
                                   </th>
                                   {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Pkgs
@@ -1457,29 +1453,6 @@ export const Grn = () => {
                                         </div>
                                       )}
                                     </td>
-                                    {/* DN NO FIELD */}
-                                    {/* <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.dnNo}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, dnNo: value } : r)));
-                                          setLrTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], dnNo: !value ? 'DN No is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrTableErrors[index]?.dnNo ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.dnNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].dnNo}
-                                        </div>
-                                      )}
-                                    </td> */}
                                     <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '150px' }}
@@ -1523,48 +1496,6 @@ export const Grn = () => {
                                         </div>
                                       )}
                                     </td>
-                                    {/* GL DATE FIELD */}
-                                    {/* <td className="border px-2 py-2" style={{ width: '150px' }}>
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="date"
-                                        value={row.glDate}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, glDate: value } : r)));
-                                          setLrTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], glDate: !value ? 'GRN Date is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrTableErrors[index]?.glDate ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.glDate && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].glDate}
-                                        </div>
-                                      )}
-                                    </td> */}
-                                    {/* <td className="border px-2 py-2">
-                                      <select
-                                        value={row.binType}
-                                        style={{ width: '200px' }}
-                                        className={lrTableErrors[index]?.binType ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">-- Select --</option>
-                                        {binTypeList?.map((binType, index) => (
-                                          <option key={index} value={binType.ltype}>
-                                            {binType.ltype}
-                                          </option>
-                                        ))}
-                                      </select>
-                                      {lrTableErrors[index]?.binType && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].binType}
-                                        </div>
-                                      )}
-                                    </td> */}
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.partNo}
@@ -1800,57 +1731,7 @@ export const Grn = () => {
                                         disabled
                                       />
                                     </td>
-                                    {/* SUBSTOCKQTY FIELD */}
-                                    {/* <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.subStockQty}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const intPattern = /^\d*$/;
 
-                                          if (intPattern.test(value) || value === '') {
-                                            setLrTableData((prev) => {
-                                              const updatedData = prev.map((r) => {
-                                                return r.id === row.id
-                                                  ? {
-                                                      ...r,
-                                                      subStockQty: value
-                                                    }
-                                                  : r;
-                                              });
-                                              return updatedData;
-                                            });
-
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                subStockQty: ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            // Set error if input is invalid
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                subStockQty: 'only numbers are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={lrTableErrors[index]?.subStockQty ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.subStockQty && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].subStockQty}
-                                        </div>
-                                      )}
-                                    </td> */}
                                     <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '150px' }}
@@ -2046,211 +1927,7 @@ export const Grn = () => {
                                         </div>
                                       )}
                                     </td>
-                                    {/* <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.pkgs}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const intPattern = /^\d*$/;
 
-                                          if (intPattern.test(value) || value === '') {
-                                            setLrTableData((prev) => {
-                                              const updatedData = prev.map((r) => {
-                                                return r.id === row.id
-                                                  ? {
-                                                      ...r,
-                                                      pkgs: value
-                                                    }
-                                                  : r;
-                                              });
-                                              return updatedData;
-                                            });
-
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                pkgs: ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                pkgs: 'only numbers are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={lrTableErrors[index]?.pkgs ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.pkgs && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].pkgs}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.weight}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const floatPattern = /^[0-9]*\.?[0-9]*$/;
-
-                                          if (floatPattern.test(value) || value === '') {
-                                            setLrTableData((prev) => {
-                                              const updatedData = prev.map((r) => (r.id === row.id ? { ...r, weight: value } : r));
-                                              return updatedData;
-                                            });
-
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], weight: '' };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                weight: 'Only valid floating-point numbers are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={lrTableErrors[index]?.weight ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.weight && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].weight}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.mrp}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const floatPattern = /^[0-9]*\.?[0-9]*$/;
-
-                                          if (floatPattern.test(value) || value === '') {
-                                            setLrTableData((prev) => {
-                                              const updatedData = prev.map((r) => (r.id === row.id ? { ...r, mrp: value } : r));
-                                              return updatedData;
-                                            });
-
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], mrp: '' };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                mrp: 'Only valid floating-point numbers are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={lrTableErrors[index]?.mrp ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.mrp && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].mrp}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.amt}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const floatPattern = /^[0-9]*\.?[0-9]*$/;
-
-                                          if (floatPattern.test(value) || value === '') {
-                                            setLrTableData((prev) => {
-                                              const updatedData = prev.map((r) => (r.id === row.id ? { ...r, amt: value } : r));
-                                              return updatedData;
-                                            });
-
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], amt: '' };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                amt: 'Only valid floating-point numbers are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={lrTableErrors[index]?.amt ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.amt && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].amt}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.insAmt}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const floatPattern = /^[0-9]*\.?[0-9]*$/;
-
-                                          if (floatPattern.test(value) || value === '') {
-                                            setLrTableData((prev) => {
-                                              const updatedData = prev.map((r) => (r.id === row.id ? { ...r, insAmt: value } : r));
-                                              return updatedData;
-                                            });
-
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], insAmt: '' };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                insAmt: 'Only valid floating-point numbers are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={lrTableErrors[index]?.insAmt ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.insAmt && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].insAmt}
-                                        </div>
-                                      )}
-                                    </td> */}
                                     <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '400px' }}
@@ -2584,6 +2261,12 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.invoiceNo}
                           helperText={fieldErrors.invoiceNo}
+                        />
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <FormControlLabel
+                          control={<Checkbox checked={formData.active} onChange={handleInputChange} name="vas" color="primary" />}
+                          label="VAS"
                         />
                       </div>
                     </div>

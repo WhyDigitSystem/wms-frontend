@@ -4,14 +4,10 @@ import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { Avatar, ButtonBase, FormHelperText, Tooltip, FormControlLabel, Checkbox } from '@mui/material';
 import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import axios from 'axios';
 import { useRef, useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -37,7 +33,7 @@ export const BuyerMaster = () => {
   const [customer, setCustomer] = useState(localStorage.getItem('customer'));
   const [warehouse, setWarehouse] = useState(localStorage.getItem('warehouse'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
-  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
   const [client, setClient] = useState(localStorage.getItem('client'));
 
   const [formData, setFormData] = useState({
@@ -52,7 +48,7 @@ export const BuyerMaster = () => {
     country: '',
     state: '',
     city: '',
-    controlBranch: '',
+    controlBranch: branchCode,
     pincode: '',
     email: '',
     gst: 'YES',
@@ -60,7 +56,6 @@ export const BuyerMaster = () => {
     eccNo: '',
     active: true
   });
-  const [value, setValue] = useState(0);
 
   const [fieldErrors, setFieldErrors] = useState({
     buyerName: '',
@@ -144,8 +139,7 @@ export const BuyerMaster = () => {
 
   const getAllBuyer = async () => {
     try {
-      const response = await apiCalls('get', `warehousemastercontroller/buyer?cbranch=ALL&client=${client}&orgid=${orgId}`);
-      // const result = await apiCalls('get', `warehousemastercontroller/buyer?cbranch=${cbranch}&client=${client}&orgid=${orgId}`);
+      const response = await apiCalls('get', `warehousemastercontroller/buyer?cbranch=${branchCode}&client=${client}&orgid=${orgId}`);
       setListViewData(response.paramObjectsMap.buyerVO);
       console.log('TEST LISTVIEW DATA', response.paramObjectsMap.buyerVO);
     } catch (err) {
@@ -154,7 +148,6 @@ export const BuyerMaster = () => {
   };
 
   const getBuyerById = async (row) => {
-    console.log('THE SELECTED DESIGNATION ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
       const response = await apiCalls('get', `warehousemastercontroller/buyer/${row.original.id}`);
@@ -189,10 +182,6 @@ export const BuyerMaster = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
     }
-  };
-
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
   };
 
   const handleInputChange = (e) => {
@@ -280,7 +269,7 @@ export const BuyerMaster = () => {
       country: '',
       state: '',
       city: '',
-      controlBranch: '',
+      controlBranch: branchCode,
       pincode: '',
       email: '',
       gst: 'YES',
@@ -474,36 +463,6 @@ export const BuyerMaster = () => {
                   {fieldErrors.buyerType && <FormHelperText error>{fieldErrors.buyerType}</FormHelperText>}
                 </FormControl>
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <TextField
-                  label="Group Of"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="groupOf"
-                  value={formData.groupOf}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.groupOf}
-                  helperText={fieldErrors.groupOf}
-                />
-              </div> */}
-              {/* <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.category}>
-                  <InputLabel id="category-label">Category</InputLabel>
-                  <Select
-                    labelId="category-label"
-                    id="category"
-                    name="category"
-                    label="Category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="CATEGORY 1">CATEGORY 1</MenuItem>
-                    <MenuItem value="CATEGORY 2">CATEGORY 2</MenuItem>
-                  </Select>
-                  {fieldErrors.category && <FormHelperText error>{fieldErrors.category}</FormHelperText>}
-                </FormControl>
-              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="PAN"
@@ -661,7 +620,7 @@ export const BuyerMaster = () => {
                 </div>
               )}
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.city}>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.controlBranch}>
                   <InputLabel id="controlBranch-label">Control Branch</InputLabel>
                   <Select
                     labelId="controlBranch-label"
@@ -671,7 +630,7 @@ export const BuyerMaster = () => {
                     value={formData.controlBranch}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="CONTROL BRANCH 1">CONTROL BRANCH 1</MenuItem>
+                    <MenuItem value={branchCode}>{branchCode}</MenuItem>
                     <MenuItem value="ALL">ALL</MenuItem>
                   </Select>
                   {fieldErrors.controlBranch && <FormHelperText error>{fieldErrors.controlBranch}</FormHelperText>}
@@ -697,74 +656,6 @@ export const BuyerMaster = () => {
                 />
               </div>
             </div>
-            {/* <p className="mt-2 fw-bold">Range Details</p> */}
-            {/* <div className="row mt-2">
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Range"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="range"
-                  value={formData.range}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.range}
-                  helperText={fieldErrors.range}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Range Address"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="rangeAddress"
-                  value={formData.rangeAddress}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.rangeAddress}
-                  helperText={fieldErrors.rangeAddress}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Pincode 1"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="pincode1"
-                  value={formData.pincode1}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.pincode1}
-                  helperText={fieldErrors.pincode1}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Division"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="division"
-                  value={formData.division}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.division}
-                  helperText={fieldErrors.division}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Commissionerate"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="commissionerate"
-                  value={formData.commissionerate}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.commissionerate}
-                  helperText={fieldErrors.commissionerate}
-                />
-              </div>
-            </div> */}
           </>
         )}
       </div>

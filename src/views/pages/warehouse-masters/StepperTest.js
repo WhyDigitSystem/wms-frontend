@@ -4,14 +4,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Checkbox, FormControlLabel, FormHelperText } from '@mui/material';
+import { Button, Checkbox, FormControlLabel, FormHelperText, Step, StepLabel, Stepper } from '@mui/material';
 import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
 import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
@@ -22,7 +20,7 @@ import { getAllActiveBranches, getAllActiveCitiesByState, getAllActiveCountries,
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
-export const FullFeaturedCrudGrid = () => {
+export const FullFeaturedCrudGrid1 = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
@@ -31,6 +29,7 @@ export const FullFeaturedCrudGrid = () => {
   const [stateList, setStateList] = useState([]);
   const [cityList, setCityList] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const steps = ['Detail', 'Client', 'Branch'];
 
   const [formData, setFormData] = useState({
     customer: '',
@@ -551,17 +550,13 @@ export const FullFeaturedCrudGrid = () => {
           <>
             <div className="row mt-2">
               <Box sx={{ width: '100%' }}>
-                <Tabs
-                  value={value}
-                  onChange={handleChange}
-                  textColor="secondary"
-                  indicatorColor="secondary"
-                  aria-label="secondary tabs example"
-                >
-                  <Tab value={0} label="Detail" />
-                  <Tab value={1} label="Client" />
-                  <Tab value={2} label="Branch" />
-                </Tabs>
+                <Stepper activeStep={value} alternativeLabel>
+                  {steps.map((label) => (
+                    <Step key={label}>
+                      <StepLabel>{label}</StepLabel>
+                    </Step>
+                  ))}
+                </Stepper>
               </Box>
               <Box sx={{ padding: 2 }}>
                 {value === 0 && (
@@ -940,7 +935,6 @@ export const FullFeaturedCrudGrid = () => {
                     </div>
                   </>
                 )}
-
                 {value === 2 && (
                   <>
                     <div className="row d-flex ml">
@@ -1027,12 +1021,501 @@ export const FullFeaturedCrudGrid = () => {
                   </>
                 )}
               </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+                <Button disabled={value === 0} onClick={() => setValue((prev) => prev - 1)}>
+                  Back
+                </Button>
+                <Button variant="contained" onClick={() => setValue((prev) => prev + 1)}>
+                  {value === steps.length - 1 ? 'Finish' : 'Next'}
+                </Button>
+              </Box>
             </div>
           </>
+          //   <>
+          //     <div className="row mt-2">
+          //       <Box sx={{ width: '100%' }}>
+          //         <Tabs
+          //           value={value}
+          //           onChange={handleChange}
+          //           textColor="secondary"
+          //           indicatorColor="secondary"
+          //           aria-label="secondary tabs example"
+          //         >
+          //           <Tab value={0} label="Detail" />
+          //           <Tab value={1} label="Client" />
+          //           <Tab value={2} label="Branch" />
+          //         </Tabs>
+          //       </Box>
+          //       <Box sx={{ padding: 2 }}>
+          //         {value === 0 && (
+          //           <>
+          //             <div className="row">
+          //               <div className="col-md-3 mb-3">
+          //                 <TextField
+          //                   label="Customer"
+          //                   variant="outlined"
+          //                   size="small"
+          //                   fullWidth
+          //                   name="customer"
+          //                   value={formData.customer}
+          //                   onChange={handleInputChange}
+          //                   error={!!fieldErrors.customer}
+          //                   helperText={fieldErrors.customer}
+          //                 />
+          //               </div>
+          //               <div className="col-md-3 mb-3">
+          //                 <TextField
+          //                   label="Short Name"
+          //                   variant="outlined"
+          //                   size="small"
+          //                   fullWidth
+          //                   name="shortName"
+          //                   value={formData.shortName}
+          //                   onChange={handleInputChange}
+          //                   error={!!fieldErrors.shortName}
+          //                   helperText={fieldErrors.shortName}
+          //                 />
+          //               </div>
+
+          //               <div className="col-md-3 mb-3">
+          //                 <TextField
+          //                   label="Contact Person"
+          //                   variant="outlined"
+          //                   size="small"
+          //                   fullWidth
+          //                   name="contactPerson"
+          //                   value={formData.contactPerson}
+          //                   onChange={handleInputChange}
+          //                   error={!!fieldErrors.contactPerson}
+          //                   helperText={fieldErrors.contactPerson}
+          //                 />
+          //               </div>
+          //               <div className="col-md-3 mb-3">
+          //                 <TextField
+          //                   label="Mobile"
+          //                   variant="outlined"
+          //                   size="small"
+          //                   fullWidth
+          //                   name="mobile"
+          //                   value={formData.mobile}
+          //                   onChange={handleInputChange}
+          //                   error={!!fieldErrors.mobile}
+          //                   helperText={fieldErrors.mobile}
+          //                 />
+          //               </div>
+
+          //               <div className="col-md-3 mb-3">
+          //                 <TextField
+          //                   label="Email"
+          //                   variant="outlined"
+          //                   size="small"
+          //                   fullWidth
+          //                   name="email"
+          //                   value={formData.email}
+          //                   onChange={handleInputChange}
+          //                   error={!!fieldErrors.email}
+          //                   helperText={fieldErrors.email}
+          //                 />
+          //               </div>
+          //               <div className="col-md-3 mb-3">
+          //                 <TextField
+          //                   label="Group Of"
+          //                   variant="outlined"
+          //                   size="small"
+          //                   fullWidth
+          //                   name="groupOf"
+          //                   value={formData.groupOf}
+          //                   onChange={handleInputChange}
+          //                   error={!!fieldErrors.groupOf}
+          //                   helperText={fieldErrors.groupOf}
+          //                 />
+          //               </div>
+          //               <div className="col-md-3 mb-3">
+          //                 <TextField
+          //                   label="PAN"
+          //                   variant="outlined"
+          //                   size="small"
+          //                   fullWidth
+          //                   name="pan"
+          //                   value={formData.pan}
+          //                   onChange={handleInputChange}
+          //                   error={!!fieldErrors.pan}
+          //                   helperText={fieldErrors.pan}
+          //                 />
+          //               </div>
+          //               {/* <div className="col-md-3 mb-3">
+          //         <TextField
+          //           label="GST Registration"
+          //           variant="outlined"
+          //           size="small"
+          //           fullWidth
+          //           name="gstReg"
+          //           value={formData.gstReg}
+          //           onChange={handleInputChange}
+          //           error={!!fieldErrors.gstReg}
+          //           helperText={fieldErrors.gstReg}
+          //         />
+          //       </div> */}
+          //               <div className="col-md-3 mb-3">
+          //                 <TextField
+          //                   label="TAN"
+          //                   variant="outlined"
+          //                   size="small"
+          //                   fullWidth
+          //                   name="tanNo"
+          //                   value={formData.tanNo}
+          //                   onChange={handleInputChange}
+          //                   error={!!fieldErrors.tanNo}
+          //                   helperText={fieldErrors.tanNo}
+          //                 />
+          //               </div>
+          //               <div className="col-md-3 mb-3">
+          //                 <TextField
+          //                   label="Address"
+          //                   variant="outlined"
+          //                   size="small"
+          //                   fullWidth
+          //                   name="address"
+          //                   value={formData.address}
+          //                   onChange={handleInputChange}
+          //                   error={!!fieldErrors.address}
+          //                   helperText={fieldErrors.address}
+          //                 />
+          //               </div>
+          //               <div className="col-md-3 mb-3">
+          //                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.country}>
+          //                   <InputLabel id="country-label">Country</InputLabel>
+          //                   <Select
+          //                     labelId="country-label"
+          //                     label="Country"
+          //                     value={formData.country}
+          //                     onChange={handleInputChange}
+          //                     name="country"
+          //                   >
+          //                     {countryList?.map((row) => (
+          //                       <MenuItem key={row.id} value={row.countryName}>
+          //                         {row.countryName}
+          //                       </MenuItem>
+          //                     ))}
+          //                   </Select>
+          //                   {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
+          //                 </FormControl>
+          //               </div>
+          //               <div className="col-md-3 mb-3">
+          //                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
+          //                   <InputLabel id="state-label">State</InputLabel>
+          //                   <Select labelId="state-label" label="State" value={formData.state} onChange={handleInputChange} name="state">
+          //                     {stateList?.map((row) => (
+          //                       <MenuItem key={row.id} value={row.stateName}>
+          //                         {row.stateName}
+          //                       </MenuItem>
+          //                     ))}
+          //                   </Select>
+          //                   {fieldErrors.state && <FormHelperText>{fieldErrors.state}</FormHelperText>}
+          //                 </FormControl>
+          //               </div>
+          //               <div className="col-md-3 mb-3">
+          //                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
+          //                   <InputLabel id="city-label">City</InputLabel>
+          //                   <Select labelId="city-label" label="City" value={formData.city} onChange={handleInputChange} name="city">
+          //                     {cityList?.map((row) => (
+          //                       <MenuItem key={row.id} value={row.cityName}>
+          //                         {row.cityName}
+          //                       </MenuItem>
+          //                     ))}
+          //                   </Select>
+          //                   {fieldErrors.city && <FormHelperText>{fieldErrors.city}</FormHelperText>}
+          //                 </FormControl>
+          //               </div>
+          //               <div className="col-md-3 mb-3">
+          //                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gstReg}>
+          //                   <InputLabel id="gstReg">GST Registration</InputLabel>
+          //                   <Select
+          //                     labelId="gstReg"
+          //                     id="gstReg"
+          //                     name="gstReg"
+          //                     label="GST Registration"
+          //                     value={formData.gstReg}
+          //                     onChange={handleInputChange}
+          //                   >
+          //                     <MenuItem value="YES">YES</MenuItem>
+          //                     <MenuItem value="NO">NO</MenuItem>
+          //                   </Select>
+          //                   {fieldErrors.gstReg && <FormHelperText error>{fieldErrors.gstReg}</FormHelperText>}
+          //                 </FormControl>
+          //               </div>
+          //               {formData.gstReg === 'YES' && (
+          //                 <div className="col-md-3 mb-3">
+          //                   <TextField
+          //                     label="GST"
+          //                     variant="outlined"
+          //                     size="small"
+          //                     fullWidth
+          //                     name="gst"
+          //                     value={formData.gst}
+          //                     onChange={handleInputChange}
+          //                     error={!!fieldErrors.gst}
+          //                     helperText={fieldErrors.gst}
+          //                   />
+          //                 </div>
+          //               )}
+          //               <div className="col-md-3 mb-3">
+          //                 <FormControlLabel
+          //                   control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" color="primary" />}
+          //                   label="Active"
+          //                 />
+          //               </div>
+          //             </div>
+          //           </>
+          //         )}
+          //         {value === 1 && (
+          //           <>
+          //             <div className="row d-flex ml">
+          //               <div className="mb-1">
+          //                 <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+          //               </div>
+          //               {/* Table */}
+          //               <div className="row mt-2">
+          //                 <div className="col-lg-12">
+          //                   <div className="table-responsive">
+          //                     <table className="table table-bordered">
+          //                       <thead>
+          //                         <tr style={{ backgroundColor: '#673AB7' }}>
+          //                           <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+          //                             Action
+          //                           </th>
+          //                           <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+          //                             S.No
+          //                           </th>
+          //                           <th className="px-2 py-2 text-white text-center">Client</th>
+          //                           <th className="px-2 py-2 text-white text-center">Client Code</th>
+          //                           <th className="px-2 py-2 text-white text-center">Client Type</th>
+          //                           <th className="px-2 py-2 text-white text-center">FEFO / FIFE / LILO</th>
+          //                         </tr>
+          //                       </thead>
+          //                       <tbody>
+          //                         {clientTableData.map((row, index) => (
+          //                           <tr key={row.id}>
+          //                             <td className="border px-2 py-2 text-center">
+          //                               <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+          //                             </td>
+          //                             <td className="text-center">
+          //                               <div className="pt-2">{index + 1}</div>
+          //                             </td>
+
+          //                             <td className="border px-2 py-2">
+          //                               <input
+          //                                 type="text"
+          //                                 value={row.client}
+          //                                 onChange={(e) => {
+          //                                   const value = e.target.value;
+          //                                   setClientTableData((prev) =>
+          //                                     prev.map((r) => (r.id === row.id ? { ...r, client: value.toUpperCase() } : r))
+          //                                   );
+          //                                   setClientTableErrors((prev) => {
+          //                                     const newErrors = [...prev];
+          //                                     newErrors[index] = { ...newErrors[index], client: !value ? 'Gst In is required' : '' };
+          //                                     return newErrors;
+          //                                   });
+          //                                 }}
+          //                                 className={clientTableErrors[index]?.client ? 'error form-control' : 'form-control'}
+          //                                 // //style={{ marginBottom: '10px' }}
+          //                               />
+          //                               {clientTableErrors[index]?.client && (
+          //                                 <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+          //                                   {clientTableErrors[index].client}
+          //                                 </div>
+          //                               )}
+          //                             </td>
+
+          //                             <td className="border px-2 py-2">
+          //                               <input
+          //                                 type="text"
+          //                                 value={row.clientCode}
+          //                                 onChange={(e) => {
+          //                                   const value = e.target.value;
+          //                                   setClientTableData((prev) =>
+          //                                     prev.map((r) => (r.id === row.id ? { ...r, clientCode: value.toUpperCase() } : r))
+          //                                   );
+          //                                   setClientTableErrors((prev) => {
+          //                                     const newErrors = [...prev];
+          //                                     newErrors[index] = { ...newErrors[index], clientCode: !value ? 'clientCode is required' : '' };
+          //                                     return newErrors;
+          //                                   });
+          //                                 }}
+          //                                 className={clientTableErrors[index]?.clientCode ? 'error form-control' : 'form-control'}
+          //                               />
+          //                               {clientTableErrors[index]?.clientCode && (
+          //                                 <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+          //                                   {clientTableErrors[index].clientCode}
+          //                                 </div>
+          //                               )}
+          //                             </td>
+
+          //                             <td className="border px-2 py-2">
+          //                               <select
+          //                                 value={row.clientType}
+          //                                 onChange={(e) => {
+          //                                   const value = e.target.value;
+          //                                   setClientTableData((prev) =>
+          //                                     prev.map((r) => (r.id === row.id ? { ...r, clientType: value.toUpperCase() } : r))
+          //                                   );
+          //                                   setClientTableErrors((prev) => {
+          //                                     const newErrors = [...prev];
+          //                                     newErrors[index] = {
+          //                                       ...newErrors[index],
+          //                                       clientType: !value ? 'State Code is required' : ''
+          //                                     };
+          //                                     return newErrors;
+          //                                   });
+          //                                 }}
+          //                                 className={clientTableErrors[index]?.clientType ? 'error form-control' : 'form-control'}
+          //                               >
+          //                                 <option value="">Select Option</option>
+          //                                 <option value="FIXED">FIXED</option>
+          //                                 <option value="OPEN">OPEN</option>
+          //                               </select>
+          //                               {clientTableErrors[index]?.clientType && (
+          //                                 <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+          //                                   {clientTableErrors[index].clientType}
+          //                                 </div>
+          //                               )}
+          //                             </td>
+
+          //                             <td className="border px-2 py-2">
+          //                               <select
+          //                                 value={row.fifoFife}
+          //                                 onChange={(e) => {
+          //                                   const value = e.target.value;
+          //                                   setClientTableData((prev) =>
+          //                                     prev.map((r) => (r.id === row.id ? { ...r, fifoFife: value.toUpperCase() } : r))
+          //                                   );
+          //                                   setClientTableErrors((prev) => {
+          //                                     const newErrors = [...prev];
+          //                                     newErrors[index] = {
+          //                                       ...newErrors[index],
+          //                                       fifoFife: !value ? 'FEFO FIFE LILO is required' : ''
+          //                                     };
+          //                                     return newErrors;
+          //                                   });
+          //                                 }}
+          //                                 onKeyDown={(e) => handleKeyDown(e, row)}
+          //                                 className={clientTableErrors[index]?.fifoFife ? 'error form-control' : 'form-control'}
+          //                               >
+          //                                 <option value="">Select Option</option>
+          //                                 <option value="FEFO">FEFO</option>
+          //                                 <option value="FIFE">FIFE</option>
+          //                                 <option value="LILO">LILO</option>
+          //                               </select>
+          //                               {clientTableErrors[index]?.fifoFife && (
+          //                                 <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+          //                                   {clientTableErrors[index].fifoFife}
+          //                                 </div>
+          //                               )}
+          //                             </td>
+          //                           </tr>
+          //                         ))}
+          //                       </tbody>
+          //                     </table>
+          //                   </div>
+          //                 </div>
+          //               </div>
+          //             </div>
+          //           </>
+          //         )}
+
+          //         {value === 2 && (
+          //           <>
+          //             <div className="row d-flex ml">
+          //               <div className="mb-1">
+          //                 <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow1} />
+          //               </div>
+          //               <div className="row mt-2">
+          //                 <div className="col-lg-6">
+          //                   <div className="table-responsive">
+          //                     <table className="table table-bordered table-responsive">
+          //                       <thead>
+          //                         <tr style={{ backgroundColor: '#673AB7' }}>
+          //                           <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+          //                             Action
+          //                           </th>
+          //                           <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+          //                             S.No
+          //                           </th>
+          //                           <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+          //                             Branch Code
+          //                           </th>
+          //                           <th className="px-2 py-2 text-white text-center">Branch</th>
+          //                         </tr>
+          //                       </thead>
+          //                       <tbody>
+          //                         {branchTableData.map((row, index) => (
+          //                           <tr key={row.id}>
+          //                             <td className="border px-2 py-2 text-center">
+          //                               <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow1(row.id)} />
+          //                             </td>
+          //                             <td className="text-center">
+          //                               {/* <input type="text" value={`${index + 1}`} readOnly style={{ width: '100%' }} /> */}
+          //                               <div className="pt-2">{index + 1}</div>
+          //                             </td>
+
+          //                             <td className="border px-2 py-2">
+          //                               <select
+          //                                 value={row.branchCode}
+          //                                 onChange={(e) => {
+          //                                   const value = e.target.value;
+          //                                   const selectedBranch = branchList.find((branch) => branch.branchCode === value);
+          //                                   setBranchTableData((prev) =>
+          //                                     prev.map((r) =>
+          //                                       r.id === row.id
+          //                                         ? { ...r, branchCode: value, branch: selectedBranch ? selectedBranch.branch : '' }
+          //                                         : r
+          //                                     )
+          //                                   );
+
+          //                                   setBranchTableErrors((prev) => {
+          //                                     const newErrors = [...prev];
+          //                                     newErrors[index] = {
+          //                                       ...newErrors[index],
+          //                                       branchCode: !value ? 'Branch Code is required' : ''
+          //                                     };
+          //                                     return newErrors;
+          //                                   });
+          //                                 }}
+          //                                 onKeyDown={(e) => handleKeyDown1(e, row)}
+          //                                 className={branchTableErrors[index]?.branchCode ? 'error form-control' : 'form-control'}
+          //                               >
+          //                                 <option value="">Select Option</option>
+          //                                 {branchList?.map((branch) => (
+          //                                   <option key={branch.id} value={branch.branchCode}>
+          //                                     {branch.branchCode}
+          //                                   </option>
+          //                                 ))}
+          //                               </select>
+          //                               {branchTableErrors[index]?.branchCode && (
+          //                                 <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+          //                                   {branchTableErrors[index].branchCode}
+          //                                 </div>
+          //                               )}
+          //                             </td>
+          //                             <td className="border px-2 py-2 text-center pt-3">{row.branch}</td>
+          //                           </tr>
+          //                         ))}
+          //                       </tbody>
+          //                     </table>
+          //                   </div>
+          //                 </div>
+          //               </div>
+          //             </div>
+          //           </>
+          //         )}
+          //       </Box>
+          //     </div>
+          //   </>
         )}
       </div>
       <ToastContainer />
     </>
   );
 };
-export default FullFeaturedCrudGrid;
+export default FullFeaturedCrudGrid1;

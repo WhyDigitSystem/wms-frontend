@@ -40,7 +40,7 @@ export const GatePassIn = () => {
   const [partNoList, setPartNoList] = useState([]);
   const [modeOfShipmentList, setModeOfShipmentList] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const [cbranch, setCbranch] = useState(localStorage.getItem('branchCode'));
+  const [cbranch, setCbranch] = useState(localStorage.getItem('branchcode'));
   const [client, setClient] = useState(localStorage.getItem('client'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [customer, setCustomer] = useState(localStorage.getItem('customer'));
@@ -216,7 +216,7 @@ export const GatePassIn = () => {
 
   const getAllModeOfShipment = async () => {
     try {
-      const response = await apiCalls('get', `inward/getAllModeOfShipment?orgId=${orgId}`);
+      const response = await apiCalls('get', `gatePassIn/getAllModeOfShipment?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -252,7 +252,7 @@ export const GatePassIn = () => {
     try {
       const response = await apiCalls(
         'get',
-        `inward/getGatePassInDocId?branch=${branch}&branchCode=${cbranch}&client=${client}&finYear=${finYear}&orgId=${orgId}`
+        `gatePassIn/getGatePassInDocId?branch=${branch}&branchCode=${cbranch}&client=${client}&finYear=${finYear}&orgId=${orgId}`
       );
 
       console.log('API Response:', response);
@@ -269,7 +269,10 @@ export const GatePassIn = () => {
 
   const getAllGatePass = async () => {
     try {
-      const response = await apiCalls('get', `inward/gatePassIn?branchCode=${cbranch}&client=${client}&finYear=${finYear}&orgId=${orgId}`);
+      const response = await apiCalls(
+        'get',
+        `gatePassIn/gatePassIn?branchCode=${cbranch}&client=${client}&finYear=${finYear}&orgId=${orgId}`
+      );
 
       console.log('API Response:', response);
 
@@ -287,7 +290,7 @@ export const GatePassIn = () => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `inward/gatePassIn/${row.original.id}`);
+      const response = await apiCalls('get', `gatePassIn/gatePassIn/${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -345,14 +348,6 @@ export const GatePassIn = () => {
     }
   };
 
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     [name]: value
-  //   }));
-  // };
-
   const handleInputChange = (event) => {
     const { name, value } = event.target;
 
@@ -373,68 +368,6 @@ export const GatePassIn = () => {
       getAllCarrier(value); // Pass the selected modeOfShipment value to the function
     }
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value, checked } = e.target;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-  //   const alphaNumericRegex = /^[A-Za-z0-9]*$/;
-  //   const numericRegex = /^[0-9]*$/;
-  //   const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
-  //   const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-
-  //   let errorMessage = '';
-
-  //   switch (name) {
-  //     case 'customer':
-  //     case 'shortName':
-  //       if (!nameRegex.test(value)) {
-  //         errorMessage = 'Only alphabetic characters are allowed';
-  //       }
-  //       break;
-  //     case 'pan':
-  //       if (!alphaNumericRegex.test(value)) {
-  //         errorMessage = 'Only alphanumeric characters are allowed';
-  //       } else if (value.length > 10) {
-  //         errorMessage = 'Invalid Format';
-  //       }
-  //       break;
-  //     case 'branchName':
-  //       if (!branchNameRegex.test(value)) {
-  //         errorMessage = 'Only alphanumeric characters and @, _, -, * are allowed';
-  //       }
-  //       break;
-  //     case 'mobile':
-  //       if (!numericRegex.test(value)) {
-  //         errorMessage = 'Only numeric characters are allowed';
-  //       } else if (value.length > 10) {
-  //         errorMessage = 'Invalid Format';
-  //       }
-  //       break;
-  //     case 'gst':
-  //       if (!alphaNumericRegex.test(value)) {
-  //         errorMessage = 'Only alphanumeric characters are allowed';
-  //       } else if (value.length > 15) {
-  //         errorMessage = 'Invalid Format';
-  //       }
-  //       break;
-  //     default:
-  //       break;
-  //   }
-
-  //   if (errorMessage) {
-  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-  //   } else {
-  //     if (name === 'active') {
-  //       setFormData({ ...formData, [name]: checked });
-  //     } else if (name === 'email') {
-  //       setFormData({ ...formData, [name]: value });
-  //     } else {
-  //       setFormData({ ...formData, [name]: value.toUpperCase() });
-  //     }
-
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-  // };
 
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date).format('YYYY-MM-DD');
@@ -609,32 +542,30 @@ export const GatePassIn = () => {
 
     setFieldErrors(errors);
 
-    if (Object.keys(errors).length === 0) {
+    if (Object.keys(errors).length === 0 && lrNoDetailsTableValid) {
       setIsLoading(true);
       const lrNoDetailsVO = lrNoDetailsTable.map((row) => ({
-        amount: row.amount,
+        amount: parseInt(row.amount),
         batchNo: row.batchNo,
-        damageQty: row.damageQty,
-        grnPiecesQty: row.grnPiecesQty,
-        invQty: row.invQty,
+        damageQty: parseInt(row.damageQty),
+        grnPiecesQty: parseInt(row.grnPiecesQty),
+        invQty: parseInt(row.invQty),
         invoiceDate: dayjs().format('YYYY-MM-DD'),
         invoiceNo: row.invoiceNo,
         irNoHaw: row.irNoHaw,
         partCode: '',
         partDescription: row.partDesc,
         partNo: row.partNo,
-        rate: row.rate,
-        recQty: row.recQty,
+        rate: parseInt(row.rate),
+        recQty: parseInt(row.recQty),
         remarks: row.remarks,
         rowNo: '',
         sku: row.sku,
         sno: '',
-        subStockShortQty: row.subStockShortQty,
+        subStockShortQty: parseInt(row.subStockShortQty),
         subUnit: row.subUnit,
         unit: '',
-        // shortQty: row.shortQty,
-        // grnQty: row.grnQty,
-        weight: row.weight
+        weight: parseInt(row.weight)
       }));
 
       const saveFormData = {
@@ -665,7 +596,7 @@ export const GatePassIn = () => {
 
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `inward/createUpdateGatePassIn`, saveFormData);
+        const response = await apiCalls('put', `gatePassIn/createUpdateGatePassIn`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
@@ -855,11 +786,6 @@ export const GatePassIn = () => {
                     onChange={handleInputChange}
                     name="vehicleType"
                   >
-                    {/* {countryList?.map((row) => (
-                      <MenuItem key={row.id} value={row.countryName}>
-                        {row.countryName}
-                      </MenuItem>
-                    ))} */}
                     <MenuItem value="45 Feet">45 Feet</MenuItem>
                     <MenuItem value="Canter">Canter</MenuItem>
                     <MenuItem value="CONTAINER">CONTAINER</MenuItem>

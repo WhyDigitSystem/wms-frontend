@@ -1,37 +1,34 @@
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import { useState, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
-import { DatePicker } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import dayjs from 'dayjs';
-import { FormHelperText, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormHelperText } from '@mui/material';
+import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import GridOnIcon from '@mui/icons-material/GridOn';
-import ActionButton from 'utils/ActionButton';
-import Checkbox from '@mui/material/Checkbox';
-import { showToast } from 'utils/toast-component';
-import apiCalls from 'apicall';
-import { getAllActiveBranches, getAllActiveBuyer } from 'utils/CommonFunctions';
 import Paper from '@mui/material/Paper';
+import Select from '@mui/material/Select';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
+import { DatePicker } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import apiCalls from 'apicall';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
 import Draggable from 'react-draggable';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/ActionButton';
+import { getAllActiveBranches, getAllActiveBuyer, getAllActivePartDetails } from 'utils/CommonFunctions';
+import { showToast } from 'utils/toast-component';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -53,11 +50,13 @@ export const BuyerOrder = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [loginUserId, setLoginUserId] = useState(localStorage.getItem('userId'));
-  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
+  const [loginFinYear, setLoginFinYear] = useState(2024);
+  const [partNoList, setPartNoList] = useState([]);
 
   const [formData, setFormData] = useState({
     avilQty: 10,
@@ -76,7 +75,6 @@ export const BuyerOrder = () => {
     docId: '',
     docDate: dayjs(),
     exRate: 1,
-    finYear: '2024',
     freeze: true,
     invoiceDate: null,
     invoiceNo: '',
@@ -110,11 +108,12 @@ export const BuyerOrder = () => {
   ]);
 
   useEffect(() => {
-    getBuyerOrderDocId();
+    getNewBuyerOrderDocId();
     getAllCurrencies();
     getAllBranches();
-    getAllBuyerOrderByOrgId();
+    getAllBuyerOrders();
     getAllBuyerList();
+    getAllPartNo();
   }, []);
 
   useEffect(() => {
@@ -137,6 +136,7 @@ export const BuyerOrder = () => {
     const newRow = {
       id: Date.now(),
       availQty: '',
+      rowBatchNoList: [],
       batchNo: '',
       partDesc: '',
       partNo: '',
@@ -173,7 +173,7 @@ export const BuyerOrder = () => {
     try {
       const response = await apiCalls(
         'get',
-        `outward/getBoSkuDetails?batch=TEST01&branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&warehouse=${loginWarehouse}`
+        `buyerOrder/getBoSkuDetails?batch=TEST01&branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&warehouse=${loginWarehouse}`
       );
       console.log('THE WAREHOUSE IS:', response);
       if (response.status === true) {
@@ -239,20 +239,14 @@ export const BuyerOrder = () => {
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'id', header: 'Doc Id', size: 140 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'docId', header: 'Buyer Order ID', size: 140 },
+    { accessorKey: 'docDate', header: 'Buyer Order Date', size: 140 },
     { accessorKey: 'orderNo', header: 'Order No', size: 140 },
     { accessorKey: 'orderDate', header: 'Order Date', size: 140 },
     { accessorKey: 'invoiceNo', header: 'Invoice No', size: 140 },
     { accessorKey: 'invoiceDate', header: 'Invoice Date', size: 140 },
     { accessorKey: 'buyerShortName', header: 'Buyer Short Name', size: 140 },
-    { accessorKey: 'currency', header: 'Currency', size: 140 },
-    { accessorKey: 'exRate', header: 'Ex Rate', size: 140 },
-    { accessorKey: 'billto', header: 'Bill To', size: 140 },
-    { accessorKey: 'refNo', header: 'Ref No', size: 140 },
-    { accessorKey: 'refDate', header: 'Ref Date', size: 140 },
-    { accessorKey: 'refDate', header: 'Ship To', size: 140 },
-    { accessorKey: 'reMarks', header: 'Remarks', size: 140 }
+    { accessorKey: 'billToShortName', header: 'Bill To', size: 140 }
   ];
 
   const [listViewData, setListViewData] = useState([]);
@@ -261,20 +255,17 @@ export const BuyerOrder = () => {
     setValue(newValue);
   };
 
-  const getBuyerOrderDocId = async () => {
+  const getNewBuyerOrderDocId = async () => {
     try {
       const response = await apiCalls(
         'get',
-        `outward/getBuyerOrderDocId?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=2024&orgId=${orgId}`
+        `buyerOrder/getBuyerOrderDocId?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=2024&orgId=${orgId}`
       );
       console.log('API Response:', response);
-
-      if (response.status === true) {
-        const buyerOrderDocId = response.paramObjectsMap.BuyerOrderDocId;
-        setFormData({ ...formData, docId: buyerOrderDocId });
-      } else {
-        console.error('API Error:', response);
-      }
+      setFormData((prevData) => ({
+        ...prevData,
+        docId: response.paramObjectsMap.BuyerOrderDocId
+      }));
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -314,9 +305,12 @@ export const BuyerOrder = () => {
     }
   };
 
-  const getAllBuyerOrderByOrgId = async () => {
+  const getAllBuyerOrders = async () => {
     try {
-      const response = await apiCalls('get', `outward/getAllBuyerOrderByOrgId?orgId=${orgId}`);
+      const response = await apiCalls(
+        'get',
+        `buyerOrder/getAllBuyerOrderByOrgId?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
+      );
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -329,18 +323,19 @@ export const BuyerOrder = () => {
     }
   };
 
-  const getAllBuyerOrderById = async (row) => {
+  const getBuyerOrderById = async (row) => {
     console.log('THE SELECTED BUYER ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `outward/getAllBuyerOrderById?id=${row.original.id}`);
+      const response = await apiCalls('get', `buyerOrder/getAllBuyerOrderById?id=${row.original.id}`);
       console.log('API Response:', response);
 
-      if (response.status === true) {
-        setListView(false);
-        const particularBuyerOrder = response.paramObjectsMap.buyerOrderVO[0];
+      if (response.status === true && response.paramObjectsMap && response.paramObjectsMap.buyerOrderVO) {
+        const particularBuyerOrder = response.paramObjectsMap.buyerOrderVO;
         console.log('THE PARTICULAR BUYER ORDER IS:', particularBuyerOrder);
         getAllCurrencies();
+
+        // Populate form data
         setFormData({
           ...formData,
           docId: particularBuyerOrder.docId,
@@ -350,29 +345,120 @@ export const BuyerOrder = () => {
           invoiceNo: particularBuyerOrder.invoiceNo,
           invoiceDate: particularBuyerOrder.invoiceDate,
           buyerShortName: particularBuyerOrder.buyerShortName,
+          buyer: particularBuyerOrder.buyer,
           currency: particularBuyerOrder.currency,
           exRate: particularBuyerOrder.exRate,
-          billto: particularBuyerOrder.billto,
-          shipTo: particularBuyerOrder.shipTo,
+          billto: particularBuyerOrder.billToShortName,
+          billtoFullName: particularBuyerOrder.billToName,
+          shipTo: particularBuyerOrder.shipToName,
+          shipToFullName: particularBuyerOrder.shipToShortName,
           refNo: particularBuyerOrder.refNo,
           refDate: particularBuyerOrder.refDate,
-          reMarks: particularBuyerOrder.reMarks
+          reMarks: particularBuyerOrder.remarks
         });
+        particularBuyerOrder.buyerOrderDetailsVO.forEach((bo) => {
+          getBatchNo(bo.partNo, bo); // Fetch batch numbers for each part
+        });
+        // Populate SKU details
         setSkuDetailsTableData(
           particularBuyerOrder.buyerOrderDetailsVO.map((bo) => ({
             id: bo.id,
             partNo: bo.partNo,
             partDesc: bo.partDesc,
-            batchNo: bo.batchNo,
+            batchNo: bo.batchNo, // This may be empty initially
             qty: bo.qty,
-            availQty: bo.availQty
+            availQty: bo.availQty,
+            rowBatchNoList: [] // Initialize as empty
           }))
         );
+        setListView(false);
+        // Fetch batch numbers for each part number
       } else {
-        console.error('API Error:', response);
+        console.error('API Error or Unexpected Response:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+
+  const getAllPartNo = async () => {
+    try {
+      const partNoData = await getAllActivePartDetails(loginBranchCode, loginClient, orgId);
+      console.log('THE ACTIVE PART DETAILS ARE:', partNoData);
+
+      setPartNoList(partNoData);
+    } catch (error) {
+      console.error('Error fetching vehicle types:', error);
+    }
+  };
+  const getBatchNo = async (selectedPartNo, row) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `buyerOrder/getBatchByBuyerOrder?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&partNo=${selectedPartNo}&warehouse=${loginWarehouse}`
+      );
+      console.log('THE FROM BIN LIST IS:', response);
+      if (response.status === true) {
+        setSkuDetailsTableData((prev) =>
+          prev.map((r) =>
+            r.id === row.id
+              ? {
+                  ...r,
+                  rowBatchNoList: response.paramObjectsMap.skuDetails
+                }
+              : r
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+
+  const handleBatchNoChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedBatchNo = row.rowBatchNoList.find((row) => row.batch === value);
+    setSkuDetailsTableData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              batchNo: selectedBatchNo.batch
+            }
+          : r
+      )
+    );
+    setSkuDetailsTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        grnNo: !value ? 'GRN No is required' : ''
+      };
+      return newErrors;
+    });
+    getAvailQty(value, row.partNo, row);
+  };
+  const getAvailQty = async (selectedBatchNo, selectedPartNo, row) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `buyerOrder/getAvlQty?batch=${selectedBatchNo}&branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&partNo=${selectedPartNo}&warehouse=${loginWarehouse}`
+      );
+      console.log('THE FROM BIN LIST IS:', response);
+      if (response.status === true) {
+        setSkuDetailsTableData((prev) =>
+          prev.map((r) =>
+            r.id === row.id
+              ? {
+                  ...r,
+                  availQty: response.paramObjectsMap.avalQty
+                }
+              : r
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
     }
   };
 
@@ -456,8 +542,8 @@ export const BuyerOrder = () => {
     }
   };
 
-  const handleDeleteRow = (id) => {
-    setSkuDetailsTableData(skuDetailsTableData.filter((row) => row.id !== id));
+  const handleDeleteRow = (id, table, setTable) => {
+    setTable(table.filter((row) => row.id !== id));
   };
 
   const isLastRowEmpty = (table) => {
@@ -485,9 +571,16 @@ export const BuyerOrder = () => {
       });
     }
   };
-  const handleKeyDown = (e, row) => {
-    if (e.key === 'Tab' && row.id === skuDetailsTableData[skuDetailsTableData.length - 1].id) {
-      handleAddRow();
+
+  const handleKeyDown = (e, row, table) => {
+    if (e.key === 'Tab' && row.id === table[table.length - 1].id) {
+      e.preventDefault();
+      if (isLastRowEmpty(table)) {
+        displayRowError(table);
+      } else {
+        // if (table === roleTableData) handleAddRow();
+        handleAddRow();
+      }
     }
   };
 
@@ -507,7 +600,7 @@ export const BuyerOrder = () => {
 
   const handleSaveSelectedRows = () => {
     const selectedData = selectedRows.map((index) => skuDetails[index]);
-    setSkuDetailsTableData([...skuDetailsTableData, ...selectedData]);
+    setSkuDetailsTableData([...selectedData]);
     console.log('data', selectedData);
     setSelectedRows([]);
     setSelectAll(false);
@@ -517,9 +610,11 @@ export const BuyerOrder = () => {
   const handleClear = () => {
     setFormData({
       billto: '',
+      billtoFullName: '',
       branch: '',
       branchCode: '',
       buyerShortName: '',
+      buyer: '',
       client: '',
       company: '',
       createdBy: '',
@@ -538,9 +633,10 @@ export const BuyerOrder = () => {
       reMarks: '',
       refDate: null,
       refNo: '',
-      shipTo: ''
+      shipTo: '',
+      shipToFullName: ''
     });
-    setSkuDetailsTableData([{ id: 1, availQty: '', batchNo: '', partDesc: '', partNo: '', qcflag: '', qty: '', remarks: '', sku: '' }]);
+    setSkuDetailsTableData([]);
     setFieldErrors({
       billto: '',
       branch: '',
@@ -566,6 +662,8 @@ export const BuyerOrder = () => {
       refNo: '',
       shipTo: ''
     });
+    setEditId('');
+    getNewBuyerOrderDocId();
   };
 
   const handleSave = async () => {
@@ -582,12 +680,6 @@ export const BuyerOrder = () => {
     if (!formData.invoiceDate) {
       errors.invoiceDate = 'Invoice Date is required';
     }
-    if (!formData.currency) {
-      errors.currency = 'Currency is required';
-    }
-    if (!formData.exRate) {
-      errors.exRate = 'Ex Rate is required';
-    }
 
     let skuDetailsTableDataValid = true;
     const newTableErrors = skuDetailsTableData.map((row) => {
@@ -596,14 +688,10 @@ export const BuyerOrder = () => {
         rowErrors.partNo = 'Part No is required';
         skuDetailsTableDataValid = false;
       }
-      if (!row.partDesc) {
-        rowErrors.partDesc = 'Part Desc is required';
+      if (!row.batchNo) {
+        rowErrors.batchNo = 'Batch No is required';
         skuDetailsTableDataValid = false;
       }
-      // if (!row.batchNo) {
-      //   rowErrors.batchNo = 'Batch No is required';
-      //   skuDetailsTableDataValid = false;
-      // }
       if (!row.qty) {
         rowErrors.qty = 'Qty is required';
         skuDetailsTableDataValid = false;
@@ -618,55 +706,49 @@ export const BuyerOrder = () => {
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       const buyerOrderDetailsDTO = skuDetailsTableData.map((row) => ({
-        availQty: row.availQty,
-        batchNo: row.batchNo,
-        partDesc: row.partDesc,
+        ...(editId && { id: row.id }),
         partNo: row.partNo,
-        qcflag: row.qcflag,
+        partDesc: row.partDesc,
+        sku: row.sku,
+        batchNo: row.batchNo,
+        availQty: row.availQty,
         qty: row.qty,
-        remarks: row.remarks,
-        sku: row.sku
+        // EXTRA FIELDS
+        remarks: '',
+        expDate: null
       }));
 
       const saveFormData = {
         ...(editId && { id: editId }),
-        avilQty: formData.avilQty,
-        billto: formData.billto,
-        bin: formData.bin,
-        branch: formData.branch,
-        branchCode: formData.branchCode,
+        billToName: formData.billtoFullName,
+        billToShortName: formData.billto,
+        branch: loginBranch,
+        branchCode: loginBranchCode,
         buyer: formData.buyer,
-        buyerOrderDetailsDTO,
+        buyerOrderDetailsDTO: buyerOrderDetailsDTO,
         buyerShortName: formData.buyerShortName,
-        client: formData.client,
-        company: formData.company,
-        createdBy: formData.createdBy,
-        currency: formData.currency,
-        customer: formData.customer,
-        // docDate: formData.docDate,
-        exRate: formData.exRate,
-        finYear: formData.finYear,
-        freeze: formData.freeze,
+        client: loginClient,
+        createdBy: loginUserName,
+        customer: loginCustomer,
+        finYear: loginFinYear,
         invoiceDate: formData.invoiceDate,
         invoiceNo: formData.invoiceNo,
-        // location: formData.location,
         orderDate: formData.orderDate,
         orderNo: formData.orderNo,
-        orderQty: formData.orderQty,
-        orgId: orgId,
-        reMarks: formData.reMarks,
+        orgId: parseInt(orgId),
         refDate: formData.refDate,
         refNo: formData.refNo,
-        shipTo: formData.shipTo,
-        tax: formData.tax
+        shipToName: formData.shipTo,
+        shipToShortName: formData.shipToFullName,
+        warehouse: loginWarehouse
       };
-
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `outward/createUpdateBuyerOrder`, saveFormData);
+        const response = await apiCalls('put', `buyerOrder/createUpdateBuyerOrder`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
+          getAllBuyerOrders();
           showToast('success', editId ? ' Buyer Order Updated Successfully' : 'Buyer Order created successfully');
           setIsLoading(false);
         } else {
@@ -721,7 +803,7 @@ export const BuyerOrder = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getAllBuyerOrderById} />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getBuyerOrderById} />
           </div>
         ) : (
           <>
@@ -848,39 +930,6 @@ export const BuyerOrder = () => {
                   error={!!fieldErrors.buyer}
                   helperText={fieldErrors.buyer}
                   disabled
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
-                  <InputLabel id="currency">Currency</InputLabel>
-                  <Select
-                    labelId="currency"
-                    id="currency"
-                    name="currency"
-                    label="Currency"
-                    value={formData.currency}
-                    onChange={handleInputChange}
-                  >
-                    {currencyList?.map((row) => (
-                      <MenuItem key={row.id} value={row.currency}>
-                        {row.currency}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.currency && <FormHelperText error>{fieldErrors.currency}</FormHelperText>}
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Ex. Rate"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="exRate"
-                  value={formData.exRate}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.exRate}
-                  // helperText={fieldErrors.exRate}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -1016,15 +1065,19 @@ export const BuyerOrder = () => {
                                   <th className="px-2 py-2 text-white text-center">Part No *</th>
                                   <th className="px-2 py-2 text-white text-center">Part Desc</th>
                                   <th className="px-2 py-2 text-white text-center">Batch No</th>
-                                  <th className="px-2 py-2 text-white text-center">Qty *</th>
-                                  <th className="px-2 py-2 text-white text-center">Avl. Qty</th>
+                                  <th className="px-2 py-2 text-white text-center">Avl QTY</th>
+                                  <th className="px-2 py-2 text-white text-center">QTY *</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {skuDetailsTableData.map((row, index) => (
                                   <tr key={index}>
                                     <td className="border px-2 py-2 text-center">
-                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(index)} />
+                                      <ActionButton
+                                        title="Delete"
+                                        icon={DeleteIcon}
+                                        onClick={() => handleDeleteRow(row.id, skuDetailsTableData, setSkuDetailsTableData)}
+                                      />
                                     </td>
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
@@ -1034,8 +1087,19 @@ export const BuyerOrder = () => {
                                         value={row.partNo}
                                         onChange={(e) => {
                                           const value = e.target.value;
+                                          const selectedPartNo = partNoList.find((p) => p.partno === value);
+
                                           setSkuDetailsTableData((prev) =>
-                                            prev.map((r, i) => (i === index ? { ...r, partNo: value.toUpperCase() } : r))
+                                            prev.map((r, i) =>
+                                              i === index
+                                                ? {
+                                                    ...r,
+                                                    partNo: value,
+                                                    partDesc: selectedPartNo ? selectedPartNo.partDesc : '',
+                                                    sku: selectedPartNo ? selectedPartNo.sku : ''
+                                                  }
+                                                : r
+                                            )
                                           );
                                           setSkuDetailsTableErrors((prev) => {
                                             const newErrors = [...prev];
@@ -1045,12 +1109,16 @@ export const BuyerOrder = () => {
                                             };
                                             return newErrors;
                                           });
+                                          getBatchNo(value, row);
                                         }}
                                         className={skuDetailsTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        <option value={row.partNo}>{row.partNo}</option>
-                                        <option value="KM19">KM19</option>
+                                        {partNoList?.map((part) => (
+                                          <option key={part.id} value={part.partno}>
+                                            {part.partno}
+                                          </option>
+                                        ))}
                                       </select>
                                       {skuDetailsTableErrors[index]?.partNo && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1062,17 +1130,7 @@ export const BuyerOrder = () => {
                                       <input
                                         type="text"
                                         value={row.partDesc}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setSkuDetailsTableData((prev) =>
-                                            prev.map((r, i) => (i === index ? { ...r, partDesc: value.toUpperCase() } : r))
-                                          );
-                                          setSkuDetailsTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], partDesc: !value ? 'Part Desc is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
+                                        disabled
                                         className={skuDetailsTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
                                       />
                                       {skuDetailsTableErrors[index]?.partDesc && (
@@ -1084,29 +1142,52 @@ export const BuyerOrder = () => {
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.batchNo}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setSkuDetailsTableData((prev) =>
-                                            prev.map((r, i) => (i === index ? { ...r, batchNo: value.toUpperCase() } : r))
-                                          );
-                                          setSkuDetailsTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              batchNo: !value ? 'Batch No is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
+                                        // onChange={(e) => {
+                                        //   const value = e.target.value;
+                                        //   setSkuDetailsTableData((prev) =>
+                                        //     prev.map((r, i) => (i === index ? { ...r, batchNo: value.toUpperCase() } : r))
+                                        //   );
+                                        //   setSkuDetailsTableErrors((prev) => {
+                                        //     const newErrors = [...prev];
+                                        //     newErrors[index] = {
+                                        //       ...newErrors[index],
+                                        //       batchNo: !value ? 'Batch No is required' : ''
+                                        //     };
+                                        //     return newErrors;
+                                        //   });
+                                        // }}
+                                        onChange={(e) => handleBatchNoChange(row, index, e)}
                                         className={skuDetailsTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        <option value={row.batchNo}>{row.batchNo}</option>
-                                        <option value="TWO">TWO</option>
+                                        {Array.isArray(row.rowBatchNoList) &&
+                                          row.rowBatchNoList.map(
+                                            (g, idx) =>
+                                              g &&
+                                              g.batch && (
+                                                <option key={g.batch} value={g.batch}>
+                                                  {g.batch}
+                                                </option>
+                                              )
+                                          )}
                                       </select>
                                       {skuDetailsTableErrors[index]?.batchNo && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                           {skuDetailsTableErrors[index].batchNo}
+                                        </div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.availQty}
+                                        className={skuDetailsTableErrors[index]?.availQty ? 'error form-control' : 'form-control'}
+                                        disabled
+                                      />
+                                      {skuDetailsTableErrors[index]?.availQty && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {skuDetailsTableErrors[index].availQty}
                                         </div>
                                       )}
                                     </td>
@@ -1175,35 +1256,11 @@ export const BuyerOrder = () => {
                                           });
                                         }}
                                         className={skuDetailsTableErrors[index]?.qty ? 'error form-control' : 'form-control'}
+                                        onKeyDown={(e) => handleKeyDown(e, row, skuDetailsTableData)}
                                       />
                                       {skuDetailsTableErrors[index]?.qty && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                           {skuDetailsTableErrors[index].qty}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.availQty}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setSkuDetailsTableData((prev) =>
-                                            prev.map((r, i) => (i === index ? { ...r, availQty: value.toUpperCase() } : r))
-                                          );
-                                          setSkuDetailsTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], availQty: !value ? 'Avail Qty is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={skuDetailsTableErrors[index]?.availQty ? 'error form-control' : 'form-control'}
-                                        disabled
-                                      />
-                                      {skuDetailsTableErrors[index]?.availQty && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {skuDetailsTableErrors[index].availQty}
                                         </div>
                                       )}
                                     </td>

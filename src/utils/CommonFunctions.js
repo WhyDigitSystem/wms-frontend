@@ -211,7 +211,7 @@ export const getAllActiveCarrier = async (cbranch, client, orgId, shipmentMode) 
 };
 export const getAllShipmentModes = async (orgId) => {
   try {
-    const response = await apiCalls('get', `inward/getAllModeOfShipment?orgId=${orgId}`);
+    const response = await apiCalls('get', `gatePassIn/getAllModeOfShipment?orgId=${orgId}`);
     if (response.status === true) {
       const modeOfShipmentData = response.paramObjectsMap.modOfShipments;
 
@@ -266,4 +266,33 @@ export const getAllActiveBuyer = async (cBranch, client, orgId) => {
     console.error('Error fetching data:', error);
     return error;
   }
+};
+
+export const getAllActiveCpartNo = async (cBranch, client, orgId) => {
+  try {
+    const response = await apiCalls('get', `warehousemastercontroller/material?cbranch=${cBranch}&client=${client}&orgid=${orgId}`);
+    console.log('API Response:', response);
+
+    if (response.status === true) {
+      const cPartNoData = response.paramObjectsMap.materialVO
+        .filter((row) => row.active === 'Active')
+        .map(({ id, partno, partDesc, sku }) => ({ id, partno, partDesc, sku }));
+
+      return cPartNoData;
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
+
+export const initCaps = (str) => {
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 };

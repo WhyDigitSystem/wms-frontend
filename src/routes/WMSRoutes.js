@@ -1,9 +1,8 @@
 import { lazy } from 'react';
 
 // project imports
-import Loadable from 'ui-component/Loadable';
-import MinimalLayout from 'layout/MinimalLayout';
 import MainLayout from 'layout/MainLayout';
+import Loadable from 'ui-component/Loadable';
 import RolesandResponsibilitySetup from 'views/pages/rolesandResponsibility/RolesandResponsibilitySetup';
 
 // login option 3 routing
@@ -15,7 +14,7 @@ const CountryMaster = Loadable(lazy(() => import('views/pages/basic-masters/Coun
 const StateMaster = Loadable(lazy(() => import('views/pages/basic-masters/StateMaster')));
 const CityMaster = Loadable(lazy(() => import('views/pages/basic-masters/CityMaster')));
 const CustomerMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/CustomerMaster')));
-const WarehouseMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/WarehouseLocationMaster')));
+const WarehouseMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/WarehouseMaster')));
 const LocationTypeMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/LocationTypeMaster')));
 const WarehouseLocationMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/WarehouseLocationMaster')));
 const LocationMappingMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/LocationMappingMaster')));
@@ -39,7 +38,10 @@ const DocumentTypeMappingMaster = Loadable(lazy(() => import('views/pages/wareho
 const FinYearMaster = Loadable(lazy(() => import('views/pages/warehouse-masters/FinYearMaster')));
 const Roles = Loadable(lazy(() => import('views/pages/rolesandResponsibility/Roles')));
 const ScreenNames = Loadable(lazy(() => import('views/pages/rolesandResponsibility/ScreenNames')));
-const FullFeaturedCrudGrid = Loadable(lazy(() => import('views/pages/warehouse-masters/FullFeaturedCrudGrid')));
+
+const StepperTest = Loadable(lazy(() => import('views/pages/warehouse-masters/FullFeaturedCrudGrid')));
+const FullFeaturedCrudGrid = Loadable(lazy(() => import('views/pages/warehouse-masters/StepperTest')));
+const AccorditionTest = Loadable(lazy(() => import('views/pages/warehouse-masters/AccorditionTest')));
 const InboundMain = Loadable(lazy(() => import('views/pages/inbound/InboundMain')));
 const OutboundMain = Loadable(lazy(() => import('views/pages/outbound/OutboundMain')));
 const VasMain = Loadable(lazy(() => import('views/pages/vas/VasMain')));
@@ -175,6 +177,15 @@ const WMSRoutes = {
       path: '/basicmasters/fullfeaturedcurdgrid',
       element: <FullFeaturedCrudGrid />
     },
+    {
+      path: '/basicmasters/AccorditionTest',
+      element: <AccorditionTest />
+    },
+    {
+      path: '/basicmasters/StepperTest',
+      element: <StepperTest />
+    },
+
     {
       path: '/inbound/inboundmain',
       element: <InboundMain />

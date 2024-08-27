@@ -58,64 +58,98 @@ export const Putaway = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState('');
   const [locationTypeList, setLocationTypeList] = useState([]);
+  const [grnList, setGrnList] = useState([]);
   const [branchList, setBranchList] = useState([]);
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [loginFinYear, setLoginFinYear] = useState('2024');
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [loginUserId, setLoginUserId] = useState(localStorage.getItem('userId'));
-  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
+  const [checkedState, setCheckedState] = useState({});
+  const [checkAll, setCheckAll] = useState(false);
 
   const [formData, setFormData] = useState({
-    binClass: '',
-    binPick: '',
+    binClass: 'Fixed',
+    binPick: 'Empty',
     binType: '',
     branch: loginBranch,
     branchCode: loginBranchCode,
+    briefDesc: '',
     carrier: '',
     client: loginClient,
+    contact: '',
     core: 'MULTI',
     createdBy: loginUserName,
     customer: loginCustomer,
+    docId: '',
     docDate: dayjs(),
     enteredPerson: '',
+    driverName: '',
     entryNo: '',
     entryDate: null,
-    finYear: '',
+    finYear: '2024',
     grnDate: null,
     grnNo: '',
     lotNo: '',
     modeOfShipment: '',
     orgId: orgId,
     status: '',
+    securityName: '',
     supplier: '',
     supplierShortName: '',
+    totalGrnQty: '',
     vehicleType: '',
     vehicleNo: '',
     warehouse: loginWarehouse
   });
 
   const [putAwayDetailsTableData, setPutAwayDetailsTableData] = useState([
-    {
-      batch: '',
-      bin: '',
-      binType: '',
-      cellType: '',
-      grnQty: 0,
-      invNo: '',
-      invQty: 0,
-      partDesc: '',
-      partNo: '',
-      putAwayQty: 0,
-      recQty: 0,
-      remarks: '',
-      sku: '',
-      ssku: ''
-    }
+    // {
+    //   batchNo: '',
+    //   recQty: '',
+    //   binType: '',
+    //   cellType: 'ACTIVE',
+    //   noOfBins: '',
+    //   bin: '',
+    //   batchDate: '',
+    //   expDate: '',
+    //   partDesc: '',
+    //   shortQty: '',
+    //   grnQty: '',
+    //   damageQty: '',
+    //   pQty: '',
+    //   invQty: '',
+    //   sku: '',
+    //   ssku: '',
+    //   partNo: ''
+    // }
+  ]);
+  const [gridDetailsTableData, setGridDetailsTableData] = useState([
+    // {
+    //   batchNo: '',
+    //   recQty: '',
+    //   binType: '',
+    //   cellType: 'ACTIVE',
+    //   noOfBins: '',
+    //   bin: '',
+    //   batchDate: '',
+    //   expDate: '',
+    //   partDesc: '',
+    //   shortQty: '',
+    //   grnQty: '',
+    //   damageQty: '',
+    //   pQty: '',
+    //   invQty: '',
+    //   sku: '',
+    //   ssku: '',
+    //   partNo: ''
+    // }
   ]);
   const [putAwayTableErrors, setPutAwayTableErrors] = useState([
     {
@@ -123,13 +157,13 @@ export const Putaway = () => {
       bin: '',
       binType: '',
       cellType: '',
-      grnQty: 0,
+      grnQty: '',
       invNo: '',
-      invQty: 0,
+      invQty: '',
       partDesc: '',
       partNo: '',
-      putAwayQty: 0,
-      recQty: 0,
+      putAwayQty: '',
+      recQty: '',
       remarks: '',
       sku: '',
       ssku: ''
@@ -162,26 +196,129 @@ export const Putaway = () => {
     warehouse: loginWarehouse
   });
   const listViewColumns = [
-    { accessorKey: 'id', header: 'Doc Id', size: 140 },
+    { accessorKey: 'status', header: 'Status', size: 140 },
+    { accessorKey: 'docId', header: 'Doc Id', size: 140 },
     { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
-    { accessorKey: 'orderNo', header: 'Order No', size: 140 },
-    { accessorKey: 'orderDate', header: 'Order Date', size: 140 },
-    { accessorKey: 'invoiceNo', header: 'Invoice No', size: 140 },
-    { accessorKey: 'invoiceDate', header: 'Invoice Date', size: 140 },
-    { accessorKey: 'buyerShortName', header: 'Buyer Short Name', size: 140 },
-    { accessorKey: 'currency', header: 'Currency', size: 140 },
-    { accessorKey: 'exRate', header: 'Ex Rate', size: 140 },
-    { accessorKey: 'billto', header: 'Bill To', size: 140 },
-    { accessorKey: 'refNo', header: 'Ref No', size: 140 },
-    { accessorKey: 'refDate', header: 'Ref Date', size: 140 },
-    { accessorKey: 'refDate', header: 'Ship To', size: 140 },
-    { accessorKey: 'reMarks', header: 'Remarks', size: 140 }
+    { accessorKey: 'grnNo', header: 'GRN No', size: 140 },
+    { accessorKey: 'grnDate', header: 'GRN Date', size: 140 },
+    { accessorKey: 'entryNo', header: 'Entry No', size: 140 },
+    { accessorKey: 'entryDate', header: 'Entry Date', size: 140 },
+    { accessorKey: 'totalGrnQty', header: 'Total Grn Qty', size: 140 },
+    { accessorKey: 'totalPutawayQty', header: 'Total Putaway Qty', size: 140 }
+    // { accessorKey: 'customer', header: 'Customer', size: 140 },
+    // { accessorKey: 'refNo', header: 'Ref No', size: 140 },
+    // { accessorKey: 'refDate', header: 'Ref Date', size: 140 },
+    // { accessorKey: 'refDate', header: 'Ship To', size: 140 },
+    // { accessorKey: 'reMarks', header: 'Remarks', size: 140 }
   ];
 
   useEffect(() => {
+    getPutAwayDocId();
     getAllPutAway();
+    getGrnForPutaway();
     getAllLocationTypes();
   }, []);
+
+  useEffect(() => {
+    // const totalGrnQty = putAwayDetailsTableData.reduce((sum, row) => sum + (parseInt(row.grnQty, 10) || 0), 0);
+    const totalPutawayQty = putAwayDetailsTableData.reduce((sum, row) => sum + (parseInt(row.pQty, 10) || 0), 0);
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      // totalGrnQty: totalGrnQty,
+      totalPutawayQty: totalPutawayQty
+    }));
+    // console.log('oq', formData.totalPutawayQty);
+  }, [putAwayDetailsTableData]);
+
+  useEffect(() => {
+    const initialCheckedState = {};
+    gridDetailsTableData.forEach((row) => {
+      initialCheckedState[row.id] = false;
+    });
+    setCheckedState(initialCheckedState);
+  }, [gridDetailsTableData]);
+
+  const handleCheckboxChange = (id) => {
+    setCheckedState((prevCheckedState) => ({
+      ...prevCheckedState,
+      [id]: !prevCheckedState[id]
+    }));
+
+    const allChecked = gridDetailsTableData.every((row) => checkedState[row.id] || row.id === id);
+    setCheckAll(allChecked);
+  };
+
+  const handleCheckAllChange = () => {
+    const updatedCheckAll = !checkAll;
+    const newCheckedState = {};
+    gridDetailsTableData.forEach((row) => {
+      newCheckedState[row.id] = updatedCheckAll;
+    });
+    setCheckedState(newCheckedState);
+    setCheckAll(updatedCheckAll);
+  };
+
+  const handlePutawayGrid = async () => {
+    try {
+      const response = await apiCalls(
+        `get`,
+        `warehousemastercontroller/getAllBinDetails?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&warehouse=${loginWarehouse}`
+      );
+
+      if (response.statusFlag === 'Ok' && response.status) {
+        const bins = response.paramObjectsMap.Bins;
+
+        const selectedRows = gridDetailsTableData.filter((row) => checkedState[row.id]);
+
+        const updatedRows = selectedRows.map((row) => ({
+          ...row,
+          binOptions: bins.map((bin) => bin.bin)
+        }));
+        console.log('updatedRows', updatedRows);
+
+        setPutAwayDetailsTableData(updatedRows);
+      } else {
+        console.error('Failed to fetch bin details:', response.paramObjectsMap.message);
+      }
+    } catch (error) {
+      console.error('Error fetching bin details:', error);
+    }
+
+    handleCloseModal();
+  };
+
+  const getPutAwayDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `putaway/getPutAwayDocId?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
+      );
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        const PutAwayDocId = response.paramObjectsMap.PutAwayDocId;
+        setFormData({ ...formData, docId: PutAwayDocId });
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getGrnForPutaway = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `putaway/getGrnForPutaway?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
+      );
+      setGrnList(response.paramObjectsMap.grnVO);
+      console.log('grnVo', response.paramObjectsMap.grnVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
 
   const handleAddRow = () => {
     if (isLastRowEmpty(putAwayDetailsTableData)) {
@@ -190,17 +327,17 @@ export const Putaway = () => {
     }
     const newRow = {
       id: Date.now(),
-      batch: '',
+      batchNo: '',
       bin: '',
       binType: '',
       cellType: '',
-      grnQty: 0,
+      grnQty: '',
       invNo: '',
-      invQty: 0,
+      invQty: '',
       partDesc: '',
       partNo: '',
-      putAwayQty: 0,
-      recQty: 0,
+      pQty: '',
+      recQty: '',
       remarks: '',
       sku: '',
       ssku: ''
@@ -227,9 +364,9 @@ export const Putaway = () => {
     ]);
   };
 
-  const handleFullGrid = () => {
-    setModalOpen(true);
-  };
+  // const handleFullGrid = () => {
+  //   getPutawayGridDetails();
+  // };
   const handleCloseModal = () => {
     setModalOpen(false);
   };
@@ -248,51 +385,65 @@ export const Putaway = () => {
     }
   };
 
-  // const handleFullGridFunction = async () => {
-  //   try {
-  //     const response = await apiCalls(
-  //       'get',
-  //       `warehousemastercontroller/bins/levelno/rowno/locationtype/warehouse?level=${formData.levelNo}&locationtype=${formData.locationType}&orgid=${orgId}&rowno=${formData.rowNo}&warehouse=${loginWarehouse}`
-  //     );
-  //     console.log('THE WAREHOUSE IS:', response);
-  //     if (response.status === true) {
-  //       const bins = response.paramObjectsMap.Bins;
-  //       console.log('THE BIN DETAILS ARE:', bins);
+  const getPutawayGridDetails = async () => {
+    const errors = {};
+    if (!formData.grnNo) {
+      errors.grnNo = 'Grn No is required';
+    }
+    if (!formData.binType) {
+      errors.binType = 'Bin Type is required';
+    }
+    if (Object.keys(errors).length === 0) {
+      setModalOpen(true);
+      try {
+        const response = await apiCalls(
+          'get',
+          `putaway/getPutawayGridDetails?binClass=${formData.binClass}&binPick=${formData.binPick}&binType=${formData.binType}&branchCode=${loginBranchCode}&client=${loginClient}&grnNo=${formData.grnNo}&orgId=${orgId}&warehouse=${loginWarehouse}`
+        );
+        console.log('THE GRN IDS GRID DETAILS IS:', response);
+        if (response.status === true) {
+          const gridDetails = response.paramObjectsMap.gridDetails;
+          console.log('THE BIN DETAILS ARE:', gridDetails);
 
-  //       setLocationMappingTableData(
-  //         bins.map((bin) => ({
-  //           id: bin.id,
-  //           rowNo: bin.rowno,
-  //           levelNo: bin.level,
-  //           palletNo: bin.bin,
-  //           multiCore: bin.core,
-  //           LocationStatus: bin.status === 'True' ? 'True' : 'False',
-  //           vasBinSeq: ''
-  //         }))
-  //       );
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching employee data:', error);
-  //   }
-  // };
+          setGridDetailsTableData(
+            gridDetails.map((row) => ({
+              id: row.id,
+              batchNo: row.batchNo,
+              recQty: row.recQty,
+              binType: row.binType,
+              noOfBins: row.noOfBins,
+              bin: row.bin,
+              batchDate: row.batchDate,
+              expDate: row.expDate,
+              partDesc: row.partDesc,
+              shortQty: row.shortQty,
+              grnQty: row.grnQty,
+              damageQty: row.damageQty,
+              pQty: row.pQty,
+              invQty: row.invQty,
+              sku: row.sku,
+              ssku: row.ssku,
+              partNo: row.partNo
+            }))
+          );
+        }
+      } catch (error) {
+        console.error('Error fetching employee data:', error);
+      }
+    } else {
+      setFieldErrors(errors);
+    }
+  };
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
-  const getAllBranches = async () => {
-    try {
-      const branchData = await getAllActiveBranches(orgId);
-      setBranchList(branchData);
-    } catch (error) {
-      console.error('Error fetching country data:', error);
-    }
-  };
   const getAllPutAway = async () => {
     try {
       const response = await apiCalls(
         'get',
-        `inward/getAllPutAway?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=2024&orgId=${orgId}`
+        `putaway/getAllPutAway?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
       );
       console.log('API Response:', response);
 
@@ -306,43 +457,95 @@ export const Putaway = () => {
     }
   };
 
-  const getAllBuyerOrderById = async (row) => {
-    console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
+  const getPutAwayById = async (row) => {
+    console.log('THE SELECTED PUTAWAY ID IS:', row.original.id);
     setEditId(row.original.id);
+
     try {
-      const response = await apiCalls('get', `outward/getAllBuyerOrderById?id=${row.original.id}`);
+      const response = await apiCalls('get', `putaway/getPutAwayById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
         setListView(false);
-        const particularBuyerOrder = response.paramObjectsMap.buyerOrderVO;
-        console.log('THE PARTICULAR BUYER ORDER IS:', particularBuyerOrder);
+        const particularPutaway = response.paramObjectsMap.putAwayVO;
+        console.log('THE PARTICULAR PUTAWAY IS:', particularPutaway);
 
+        // Set the form data
         setFormData({
-          docId: particularBuyerOrder.id,
-          docDate: particularBuyerOrder.docDate,
-          orderNo: particularBuyerOrder.orderNo,
-          orderDate: particularBuyerOrder.orderDate,
-          invoiceNo: particularBuyerOrder.invoiceNo,
-          invoiceDate: particularBuyerOrder.invoiceDate,
-          buyerShortName: particularBuyerOrder.buyerShortName,
-          currency: particularBuyerOrder.currency,
-          exRate: particularBuyerOrder.exRate,
-          billto: particularBuyerOrder.billto,
-          refNo: particularBuyerOrder.refNo,
-          refDate: particularBuyerOrder.refDate,
-          refDate: particularBuyerOrder.refDate,
-          reMarks: particularBuyerOrder.reMarks
+          docDate: particularPutaway.docDate ? dayjs(particularPutaway.docDate) : dayjs(),
+          grnNo: particularPutaway.grnNo,
+          docId: particularPutaway.docId,
+          grnDate: particularPutaway.grnDate,
+          entryNo: particularPutaway.entryNo,
+          entryDate: particularPutaway.entryDate,
+          core: particularPutaway.core,
+          supplierShortName: particularPutaway.supplierShortName,
+          supplier: particularPutaway.supplier,
+          modeOfShipment: particularPutaway.modeOfShipment,
+          carrier: particularPutaway.carrier,
+          binType: particularPutaway.binType,
+          contact: particularPutaway.contact,
+          status: particularPutaway.status,
+          lotNo: particularPutaway.lotNo,
+          enteredPerson: particularPutaway.enteredPerson,
+          binClass: particularPutaway.binClass,
+          binPick: particularPutaway.binPick,
+          totalGrnQty: particularPutaway.totalGrnQty,
+          totalPutawayQty: particularPutaway.totalPutawayQty,
+          screenName: particularPutaway.screenName,
+          screenCode: particularPutaway.screenCode,
+          orgId: particularPutaway.orgId,
+          customer: particularPutaway.customer,
+          client: particularPutaway.client,
+          finYear: particularPutaway.finYear,
+          vehicleType: particularPutaway.vehicleType,
+          vehicleNo: particularPutaway.vehicleNo,
+          driverName: particularPutaway.driverName,
+          branch: particularPutaway.branch,
+          branchCode: particularPutaway.branchCode,
+          warehouse: particularPutaway.warehouse,
+          freeze: particularPutaway.freeze
         });
-        setPutAwayDetailsTableData(
-          particularBuyerOrder.buyerOrderDetailsDTO.map((bo) => ({
-            id: bo.id,
-            partNo: bo.partNo,
-            partDesc: bo.partDesc,
-            batchNo: bo.batchNo,
-            qty: bo.qty
-          }))
+
+        // Fetch bin details
+        const binResponse = await apiCalls(
+          'get',
+          `warehousemastercontroller/getAllBinDetails?branchCode=${particularPutaway.branchCode}&client=${particularPutaway.client}&orgId=${particularPutaway.orgId}&warehouse=${particularPutaway.warehouse}`
         );
+
+        if (binResponse.status === true) {
+          const bins = binResponse.paramObjectsMap.Bins.map((bin) => bin.bin);
+
+          // Update putaway details with bin options
+          setPutAwayDetailsTableData(
+            particularPutaway.putAwayDetailsVO.map((pa) => ({
+              partNo: pa.partNo,
+              batchNo: pa.batch,
+              partDesc: pa.partDesc,
+              sku: pa.sku,
+              invoiceNo: pa.invoiceNo,
+              invQty: pa.invQty,
+              recQty: pa.recQty,
+              pQty: pa.putAwayQty,
+              bin: pa.bin,
+              binOptions: bins, // Set bin options here
+              remarks: pa.remarks,
+              binType: pa.binType,
+              shortQty: pa.shortQty,
+              grnQty: pa.grnQty,
+              binClass: pa.binClass,
+              cellType: pa.cellType,
+              batchDate: pa.batchDate,
+              status: pa.status,
+              expdate: pa.expdate,
+              qcFlag: pa.qcFlag,
+              ssku: pa.ssku,
+              ssqty: pa.ssqty
+            }))
+          );
+        } else {
+          console.error('Error fetching bin details:', binResponse);
+        }
       } else {
         console.error('API Error:', response);
       }
@@ -353,50 +556,50 @@ export const Putaway = () => {
 
   const handleInputChange = (e) => {
     const { name, value, checked } = e.target;
-    const nameRegex = /^[A-Za-z ]*$/;
-    const alphaNumericRegex = /^[A-Za-z0-9]*$/;
-    const numericRegex = /^[0-9]*$/;
-    const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
-    const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
 
     let errorMessage = '';
-
-    switch (name) {
-      case 'id':
-      case 'shortName':
-        if (!nameRegex.test(value)) {
-          errorMessage = 'Only alphabetic characters are allowed';
-        }
-        break;
-      case 'pan':
-        if (!alphaNumericRegex.test(value)) {
-          errorMessage = 'Only alphanumeric characters are allowed';
-        } else if (value.length > 10) {
-          errorMessage = 'Invalid Format';
-        }
-        break;
-      case 'branchName':
-        if (!branchNameRegex.test(value)) {
-          errorMessage = 'Only alphanumeric characters and @, _, -, * are allowed';
-        }
-        break;
-      case 'mobile':
-        if (!numericRegex.test(value)) {
-          errorMessage = 'Only numeric characters are allowed';
-        } else if (value.length > 10) {
-          errorMessage = 'Invalid Format';
-        }
-        break;
-      default:
-        break;
-    }
 
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
-      if (name === 'active') {
-        setFormData({ ...formData, [name]: checked });
-      } else if (name === 'email') {
+      if (name === 'grnNo') {
+        const selectedId = grnList.find((id) => id.docId === value);
+        const selectedPutawayId = selectedId.docId;
+        if (selectedId) {
+          setFormData((prevData) => ({
+            ...prevData,
+            grnNo: selectedId.docId,
+            grnDate: dayjs(selectedId.grnDate).format('YYYY-MM-DD'),
+            entryNo: selectedId.entryNo,
+            entryDate: dayjs(selectedId.entryDate).format('YYYY-MM-DD'),
+            gatePassDate: dayjs(selectedId.docDate).format('YYYY-MM-DD'),
+            supplierShortName: selectedId.supplierShortName,
+            supplier: selectedId.supplier,
+            carrier: selectedId.carrier,
+            modeOfShipment: selectedId.modeOfShipment.toUpperCase(),
+            vehicleType: selectedId.vehicleType.toUpperCase(),
+            contact: selectedId.contact,
+            driverName: selectedId.driverName.toUpperCase(),
+            securityName: selectedId.securityName.toUpperCase(),
+            lrDate: dayjs(selectedId.lrDate).format('YYYY-MM-DD'),
+            briefDesc: selectedId.goodsDescripition.toUpperCase(),
+            vehicleNo: selectedId.vehicleNo,
+            lotNo: selectedId.lotNo,
+            totalGrnQty: selectedId.totalGrnQty
+          }));
+          // getPutawayGridDetails(selectedPutawayId);
+        }
+      } else if (name === 'binClass') {
+        setFormData((prevData) => ({
+          ...prevData,
+          [name]: value
+        }));
+      } else if (name === 'binPick') {
+        setFormData((prevData) => ({
+          ...prevData,
+          [name]: value
+        }));
+      } else if (name === 'status') {
         setFormData({ ...formData, [name]: value });
       } else {
         setFormData({ ...formData, [name]: value.toUpperCase() });
@@ -520,64 +723,62 @@ export const Putaway = () => {
 
   const handleSave = async () => {
     const errors = {};
-    if (!formData.orderNo) {
-      errors.orderNo = 'Order No is required';
+    if (!formData.grnNo) {
+      errors.grnNo = 'Grn No is required';
     }
-    if (!formData.orderDate) {
-      errors.orderDate = 'Order Date is required';
+    if (!formData.binType) {
+      errors.binType = 'Bin Type is required';
     }
-    if (!formData.invoiceNo) {
-      errors.invoiceNo = 'Invoice No is required';
+    if (!formData.status) {
+      errors.status = 'Status is required';
     }
-    if (!formData.invoiceDate) {
-      errors.invoiceDate = 'Invoice Date is required';
+    if (!formData.binClass) {
+      errors.binClass = 'Bin Class is required';
     }
-    if (!formData.currency) {
-      errors.currency = 'Currency is required';
-    }
-    if (!formData.exRate) {
-      errors.exRate = 'Ex Rate is required';
+    if (!formData.binPick) {
+      errors.binPick = 'Bin Pick is required';
     }
 
     let putAwayDetailsTableDataValid = true;
     const newTableErrors = putAwayDetailsTableData.map((row) => {
       const rowErrors = {};
-      if (!row.partNo) {
-        rowErrors.partNo = 'Part No is required';
+      if (!row.batchNo) {
+        rowErrors.batchNo = 'Batch No is required';
         putAwayDetailsTableDataValid = false;
       }
-      if (!row.partDesc) {
-        rowErrors.partDesc = 'Part Desc is required';
+      if (!row.sku) {
+        rowErrors.sku = 'Sku is required';
         putAwayDetailsTableDataValid = false;
       }
-      // if (!row.batchNo) {
-      //   rowErrors.batchNo = 'Batch No is required';
-      //   putAwayDetailsTableDataValid = false;
-      // }
-      if (!row.qty) {
-        rowErrors.qty = 'Qty is required';
+      if (!row.putAwayQty) {
+        rowErrors.putAwayQty = 'Batch No is required';
+        putAwayDetailsTableDataValid = false;
+      }
+      if (!row.bin) {
+        rowErrors.bin = 'Bin is required';
         putAwayDetailsTableDataValid = false;
       }
 
       return rowErrors;
     });
-    // setFieldErrors(errors);
 
     setPutAwayTableErrors(newTableErrors);
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       const putAwayDetailsDTO = putAwayDetailsTableData.map((row) => ({
-        batch: row.batch,
-        // bin: row.bin,
+        batch: row.batchNo,
+        batchDate: row.batchDate,
+        bin: row.bin,
         binType: row.binType,
         cellType: row.cellType,
+        expdate: row.expDate,
         grnQty: row.grnQty,
-        invNo: row.invNo,
+        invoiceNo: row.invoiceNo,
         invQty: row.invQty,
         partDesc: row.partDesc,
         partNo: row.partNo,
-        putAwayQty: row.putAwayQty,
+        putAwayQty: row.pQty,
         recQty: row.recQty,
         remarks: row.remarks,
         sku: row.sku,
@@ -592,22 +793,24 @@ export const Putaway = () => {
         branch: loginBranch,
         branchCode: loginBranchCode,
         carrier: formData.carrier,
+        contact: formData.contact,
         client: loginClient,
-        core: 'MULTI',
+        core: 'Multi',
         createdBy: loginUserName,
         customer: loginCustomer,
-        docDate: dayjs(),
+        // docDate: dayjs(),
+        driverName: formData.driverName,
         enteredPerson: formData.enteredPerson,
-        entryNo: formData.entryNo,
         entryDate: formData.entryDate,
+        entryNo: formData.entryNo,
         finYear: formData.finYear,
         grnDate: formData.grnDate,
-        grnNo: formData.binClass,
+        grnNo: formData.grnNo,
         lotNo: formData.lotNo,
         modeOfShipment: formData.modeOfShipment,
         orgId: orgId,
         putAwayDetailsDTO,
-        status: formData.status,
+        status: formData.status === 'EDIT' ? 'Edit' : 'Confirm',
         supplier: formData.supplier,
         supplierShortName: formData.supplierShortName,
         vehicleType: formData.vehicleType,
@@ -617,7 +820,7 @@ export const Putaway = () => {
 
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `inward/createUpdatePutAway`, saveFormData);
+        const response = await apiCalls('put', `putaway/createUpdatePutAway`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
@@ -683,24 +886,13 @@ export const Putaway = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getAllBuyerOrderById} />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getPutAwayById} />
           </div>
         ) : (
           <>
             <div className="row">
               <div className="col-md-3 mb-3">
-                <TextField
-                  label="Doc Id"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="docId"
-                  value={formData.docId}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.docId}
-                  helperText={fieldErrors.docId}
-                  disabled
-                />
+                <TextField label="Doc Id" variant="outlined" size="small" fullWidth name="docId" value={formData.docId} disabled />
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled" size="small">
@@ -724,9 +916,12 @@ export const Putaway = () => {
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.grnNo}>
                   <InputLabel id="grnNo">Grn No</InputLabel>
-                  <Select labelId="grnNo" id="grnNo" name="grnNo" label="Grn No" value={formData.grnNo} onChange={handleInputChange}>
-                    <MenuItem value="GRN1213">GRN1213</MenuItem>
-                    <MenuItem value="GRN5469">GRN5469</MenuItem>
+                  <Select labelId="grnNo" name="grnNo" label="Grn No" value={formData.grnNo} onChange={handleInputChange}>
+                    {grnList?.map((row) => (
+                      <MenuItem key={row.id} value={row.docId}>
+                        {row.docId}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.grnNo && <FormHelperText error>{fieldErrors.grnNo}</FormHelperText>}
                 </FormControl>
@@ -736,7 +931,7 @@ export const Putaway = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Grn Date"
-                      value={formData.grnDate ? dayjs(formData.grnDate, 'DD-MM-YYYY') : null}
+                      value={formData.grnDate ? dayjs(formData.grnDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('grnDate', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -768,8 +963,8 @@ export const Putaway = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Date"
-                      value={formData.entryDate ? dayjs(formData.entryDate, 'DD-MM-YYYY') : null}
+                      label="Entry Date"
+                      value={formData.entryDate ? dayjs(formData.entryDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('entryDate', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -880,11 +1075,11 @@ export const Putaway = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="SecurityPersonName"
-                  value={formData.SecurityPersonName}
+                  name="securityName"
+                  value={formData.securityName}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.SecurityPersonName}
-                  helperText={fieldErrors.SecurityPersonName}
+                  error={!!fieldErrors.securityName}
+                  helperText={fieldErrors.securityName}
                   disabled
                 />
               </div>
@@ -922,11 +1117,11 @@ export const Putaway = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="enteredBy"
-                  value={formData.enteredBy}
+                  name="enteredPerson"
+                  value={formData.enteredPerson}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.enteredBy}
-                  helperText={fieldErrors.enteredBy}
+                  error={!!fieldErrors.enteredPerson}
+                  helperText={fieldErrors.enteredPerson}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -975,20 +1170,32 @@ export const Putaway = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl className="ps-2">
-                  <FormLabel id="demo-radio-buttons-group-label">Location Class</FormLabel>
-                  <RadioGroup aria-labelledby="demo-radio-buttons-group-label" defaultValue="fixed" name="radio-buttons-group">
-                    <FormControlLabel value="fixed" control={<Radio size="small" />} label="Fixed" />
-                    <FormControlLabel value="open" control={<Radio size="small" />} label="Open" />
+                  <FormLabel id="demo-radio-buttons-group-label">Bin Class</FormLabel>
+                  <RadioGroup
+                    aria-labelledby="demo-radio-buttons-group-label"
+                    defaultValue="fixed"
+                    name="binClass"
+                    value={formData.binClass}
+                    onChange={handleInputChange}
+                  >
+                    <FormControlLabel value="Fixed" control={<Radio size="small" />} label="Fixed" />
+                    <FormControlLabel value="Open" control={<Radio size="small" />} label="Open" />
                   </RadioGroup>
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl className="ps-2">
-                  <FormLabel id="demo-radio-buttons-group-label">Pallet Pick</FormLabel>
-                  <RadioGroup aria-labelledby="demo-radio-buttons-group-label" defaultValue="empty" name="radio-buttons-group">
-                    <FormControlLabel value="empty" control={<Radio size="small" />} label="Empty" />
-                    <FormControlLabel value="occupied" control={<Radio size="small" />} label="Occupied" />
-                    <FormControlLabel value="both" control={<Radio size="small" />} label="Both" />
+                  <FormLabel id="demo-radio-buttons-group-label">Bin Pick</FormLabel>
+                  <RadioGroup
+                    aria-labelledby="demo-radio-buttons-group-label"
+                    defaultValue="Empty"
+                    name="binPick"
+                    value={formData.binPick}
+                    onChange={handleInputChange}
+                  >
+                    <FormControlLabel value="Empty" control={<Radio size="small" />} label="Empty" />
+                    <FormControlLabel value="Occupied" control={<Radio size="small" />} label="Occupied" />
+                    <FormControlLabel value="Both" control={<Radio size="small" />} label="Both" />
                   </RadioGroup>
                 </FormControl>
               </div>
@@ -1012,8 +1219,7 @@ export const Putaway = () => {
                     <div className="row d-flex ml">
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                        {/* <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} /> */}
-                        <ActionButton title="Fill Grid" icon={GridOnIcon} />
+                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={getPutawayGridDetails} />
                       </div>
                       {/* Table */}
                       <div className="row mt-2">
@@ -1028,16 +1234,16 @@ export const Putaway = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">INVOICE No *</th>
+                                  <th className="px-2 py-2 text-white text-center">INVOICE No</th>
                                   <th className="px-2 py-2 text-white text-center">Part No</th>
                                   <th className="px-2 py-2 text-white text-center">Batch</th>
                                   <th className="px-2 py-2 text-white text-center">Part Description</th>
-                                  <th className="px-2 py-2 text-white text-center">SKU *</th>
+                                  <th className="px-2 py-2 text-white text-center">SKU</th>
                                   <th className="px-2 py-2 text-white text-center">Inv Qty</th>
                                   <th className="px-2 py-2 text-white text-center">Rec Qty</th>
                                   <th className="px-2 py-2 text-white text-center">GRN Qty</th>
                                   <th className="px-2 py-2 text-white text-center">Putaway Qty</th>
-                                  <th className="px-2 py-2 text-white text-center">Location *</th>
+                                  <th className="px-2 py-2 text-white text-center">Bin</th>
                                   <th className="px-2 py-2 text-white text-center">Remarks</th>
                                 </tr>
                               </thead>
@@ -1054,24 +1260,25 @@ export const Putaway = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.availQty}
+                                        value={row.invNo}
+                                        style={{ width: '130px' }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setPutAwayDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, availQty: value.toUpperCase() } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, invNo: value.toUpperCase() } : r))
                                           );
                                           setPutAwayTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], availQty: !value ? 'Avail Qty is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], invNo: !value ? 'Avail Qty is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={putAwayTableErrors[index]?.availQty ? 'error form-control' : 'form-control'}
+                                        className={putAwayTableErrors[index]?.invNo ? 'error form-control' : 'form-control'}
                                         disabled
                                       />
-                                      {putAwayTableErrors[index]?.availQty && (
+                                      {putAwayTableErrors[index]?.invNo && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {putAwayTableErrors[index].availQty}
+                                          {putAwayTableErrors[index].invNo}
                                         </div>
                                       )}
                                     </td>
@@ -1079,72 +1286,74 @@ export const Putaway = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.availQty}
+                                        value={row.partNo}
+                                        style={{ width: '130px' }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setPutAwayDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, availQty: value.toUpperCase() } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, partNo: value.toUpperCase() } : r))
                                           );
                                           setPutAwayTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], availQty: !value ? 'Avail Qty is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], partNo: !value ? 'Avail Qty is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={putAwayTableErrors[index]?.availQty ? 'error form-control' : 'form-control'}
+                                        className={putAwayTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
                                         disabled
                                       />
-                                      {putAwayTableErrors[index]?.availQty && (
+                                      {putAwayTableErrors[index]?.partNo && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {putAwayTableErrors[index].availQty}
+                                          {putAwayTableErrors[index].partNo}
                                         </div>
                                       )}
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.qty}
-                                        onKeyDown={(e) => handleKeyDown(e, row)}
+                                        value={row.batchNo}
+                                        style={{ width: '130px' }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setPutAwayDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, qty: value.toUpperCase() } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, batchNo: value.toUpperCase() } : r))
                                           );
                                           setPutAwayTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], qty: !value ? 'Qty is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], batchNo: !value ? 'batchNo is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={putAwayTableErrors[index]?.qty ? 'error form-control' : 'form-control'}
+                                        className={putAwayTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
                                       />
-                                      {putAwayTableErrors[index]?.qty && (
+                                      {putAwayTableErrors[index]?.batch && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {putAwayTableErrors[index].qty}
+                                          {putAwayTableErrors[index].batch}
                                         </div>
                                       )}
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.availQty}
+                                        value={row.partDesc}
+                                        style={{ width: '300px' }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setPutAwayDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, availQty: value.toUpperCase() } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, partDesc: value.toUpperCase() } : r))
                                           );
                                           setPutAwayTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], availQty: !value ? 'Avail Qty is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], partDesc: !value ? 'Avail Qty is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={putAwayTableErrors[index]?.availQty ? 'error form-control' : 'form-control'}
+                                        className={putAwayTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
                                         disabled
                                       />
-                                      {putAwayTableErrors[index]?.availQty && (
+                                      {putAwayTableErrors[index]?.partDesc && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {putAwayTableErrors[index].availQty}
+                                          {putAwayTableErrors[index].partDesc}
                                         </div>
                                       )}
                                     </td>
@@ -1181,179 +1390,190 @@ export const Putaway = () => {
 
                                     <td className="border px-2 py-2">
                                       <select
-                                        value={row.partNo}
+                                        value={row.sku}
+                                        style={{ width: '130px' }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setPutAwayDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, partNo: value.toUpperCase() } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, sku: value.toUpperCase() } : r))
                                           );
                                           setPutAwayTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              partNo: !value ? 'Part No is required' : ''
+                                              sku: !value ? 'Part No is required' : ''
                                             };
                                             return newErrors;
                                           });
                                         }}
-                                        className={putAwayTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
+                                        className={putAwayTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        <option value="KM18">KM18</option>
-                                        <option value="KM19">KM19</option>
+                                        <option value={row.sku}>{row.sku}</option>
+                                        {/* <option value="KM19">KM19</option> */}
                                       </select>
-                                      {putAwayTableErrors[index]?.partNo && (
+                                      {putAwayTableErrors[index]?.sku && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {putAwayTableErrors[index].partNo}
+                                          {putAwayTableErrors[index].sku}
                                         </div>
                                       )}
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.availQty}
+                                        value={row.invQty}
+                                        style={{ width: '110px' }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setPutAwayDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, availQty: value.toUpperCase() } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, invQty: value.toUpperCase() } : r))
                                           );
                                           setPutAwayTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], availQty: !value ? 'Avail Qty is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], invQty: !value ? 'Avail Qty is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={putAwayTableErrors[index]?.availQty ? 'error form-control' : 'form-control'}
+                                        className={putAwayTableErrors[index]?.invQty ? 'error form-control' : 'form-control'}
                                         disabled
                                       />
-                                      {putAwayTableErrors[index]?.availQty && (
+                                      {putAwayTableErrors[index]?.invQty && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {putAwayTableErrors[index].availQty}
+                                          {putAwayTableErrors[index].invQty}
                                         </div>
                                       )}
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.availQty}
+                                        value={row.recQty}
+                                        style={{ width: '110px' }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setPutAwayDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, availQty: value.toUpperCase() } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, recQty: value.toUpperCase() } : r))
                                           );
                                           setPutAwayTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], availQty: !value ? 'Avail Qty is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], recQty: !value ? 'Avail Qty is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={putAwayTableErrors[index]?.availQty ? 'error form-control' : 'form-control'}
+                                        className={putAwayTableErrors[index]?.recQty ? 'error form-control' : 'form-control'}
                                         disabled
                                       />
-                                      {putAwayTableErrors[index]?.availQty && (
+                                      {putAwayTableErrors[index]?.recQty && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {putAwayTableErrors[index].availQty}
+                                          {putAwayTableErrors[index].recQty}
                                         </div>
                                       )}
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.availQty}
+                                        value={row.grnQty}
+                                        style={{ width: '110px' }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setPutAwayDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, availQty: value.toUpperCase() } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, grnQty: value.toUpperCase() } : r))
                                           );
                                           setPutAwayTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], availQty: !value ? 'Avail Qty is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], grnQty: !value ? 'Avail Qty is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={putAwayTableErrors[index]?.availQty ? 'error form-control' : 'form-control'}
+                                        className={putAwayTableErrors[index]?.grnQty ? 'error form-control' : 'form-control'}
                                         disabled
                                       />
-                                      {putAwayTableErrors[index]?.availQty && (
+                                      {putAwayTableErrors[index]?.grnQty && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {putAwayTableErrors[index].availQty}
+                                          {putAwayTableErrors[index].grnQty}
                                         </div>
                                       )}
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.qty}
-                                        onKeyDown={(e) => handleKeyDown(e, row)}
+                                        value={row.pQty}
+                                        style={{ width: '110px' }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setPutAwayDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, qty: value.toUpperCase() } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, pQty: value.toUpperCase() } : r))
                                           );
                                           setPutAwayTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], qty: !value ? 'Qty is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], pQty: !value ? 'pQty is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={putAwayTableErrors[index]?.qty ? 'error form-control' : 'form-control'}
+                                        className={putAwayTableErrors[index]?.pQty ? 'error form-control' : 'form-control'}
                                       />
-                                      {putAwayTableErrors[index]?.qty && (
+                                      {putAwayTableErrors[index]?.pQty && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {putAwayTableErrors[index].qty}
+                                          {putAwayTableErrors[index].pQty}
                                         </div>
                                       )}
                                     </td>
                                     <td className="border px-2 py-2">
                                       <select
-                                        value={row.batchNo}
+                                        value={row.bin}
+                                        style={{ width: '130px' }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setPutAwayDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, batchNo: value.toUpperCase() } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, bin: value.toUpperCase() } : r))
                                           );
                                           setPutAwayTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              batchNo: !value ? 'Batch No is required' : ''
+                                              bin: !value ? 'Bin is required' : ''
                                             };
                                             return newErrors;
                                           });
                                         }}
-                                        className={putAwayTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
+                                        className={putAwayTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
-                                        <option value="ONE">ONE</option>
-                                        <option value="TWO">TWO</option>
+                                        {row.binOptions &&
+                                          row.binOptions.map((bin) => (
+                                            <option key={bin} value={bin}>
+                                              {bin}
+                                            </option>
+                                          ))}
                                       </select>
-                                      {putAwayTableErrors[index]?.batchNo && (
+                                      {putAwayTableErrors[index]?.bin && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {putAwayTableErrors[index].batchNo}
+                                          {putAwayTableErrors[index].bin}
                                         </div>
                                       )}
                                     </td>
+
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.qty}
+                                        value={row.remarks}
+                                        style={{ width: '110px' }}
                                         onKeyDown={(e) => handleKeyDown(e, row)}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setPutAwayDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, qty: value.toUpperCase() } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, remarks: value.toUpperCase() } : r))
                                           );
                                           setPutAwayTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], qty: !value ? 'Qty is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], remarks: !value ? 'remarks is required' : '' };
                                             return newErrors;
                                           });
                                         }}
-                                        className={putAwayTableErrors[index]?.qty ? 'error form-control' : 'form-control'}
+                                        className={putAwayTableErrors[index]?.remarks ? 'error form-control' : 'form-control'}
                                       />
-                                      {putAwayTableErrors[index]?.qty && (
+                                      {putAwayTableErrors[index]?.remarks && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {putAwayTableErrors[index].qty}
+                                          {putAwayTableErrors[index].remarks}
                                         </div>
                                       )}
                                     </td>
@@ -1377,10 +1597,7 @@ export const Putaway = () => {
                           size="small"
                           fullWidth
                           name="totalGrnQty"
-                          // value={formData.orderQty}
-                          // onChange={handleInputChange}
-                          // error={!!fieldErrors.orderQty}
-                          // helperText={fieldErrors.orderQty}
+                          value={formData.totalGrnQty}
                           disabled
                         />
                       </div>
@@ -1391,10 +1608,7 @@ export const Putaway = () => {
                           size="small"
                           fullWidth
                           name="totalPutawayQty"
-                          // value={formData.avlQty}
-                          // onChange={handleInputChange}
-                          // error={!!fieldErrors.avlQty}
-                          // helperText={fieldErrors.avlQty}
+                          value={formData.totalPutawayQty}
                           disabled
                         />
                       </div>
@@ -1404,7 +1618,7 @@ export const Putaway = () => {
               </Box>
               <Dialog
                 open={modalOpen}
-                maxWidth={'md'}
+                maxWidth={'lg'}
                 fullWidth={true}
                 onClose={handleCloseModal}
                 PaperComponent={PaperComponent}
@@ -1421,32 +1635,42 @@ export const Putaway = () => {
                           <thead>
                             <tr style={{ backgroundColor: '#673AB7' }}>
                               <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                Action
+                                <Checkbox checked={checkAll} onChange={handleCheckAllChange} />
                               </th>
                               <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                 S.No
                               </th>
-                              <th className="px-2 py-2 text-white text-center">Part No *</th>
+                              <th className="px-2 py-2 text-white text-center">Batch</th>
+                              <th className="px-2 py-2 text-white text-center">Batch Date</th>
+                              <th className="px-2 py-2 text-white text-center">Bin</th>
+                              <th className="px-2 py-2 text-white text-center">Exp Date</th>
+                              <th className="px-2 py-2 text-white text-center">Part No.</th>
                               <th className="px-2 py-2 text-white text-center">Part Desc</th>
-                              <th className="px-2 py-2 text-white text-center">Batch No</th>
-                              <th className="px-2 py-2 text-white text-center">Qty *</th>
-                              <th className="px-2 py-2 text-white text-center">Avl. Qty</th>
+                              <th className="px-2 py-2 text-white text-center">Invoice Qty</th>
+                              <th className="px-2 py-2 text-white text-center">Received Qty</th>
+                              <th className="px-2 py-2 text-white text-center">Grn Qty</th>
+                              <th className="px-2 py-2 text-white text-center">Put Away Qty</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {putAwayDetailsTableData.map((row, index) => (
+                            {gridDetailsTableData.map((row, index) => (
                               <tr key={row.id}>
                                 <td className="border p-0 text-center">
-                                  <Checkbox {...label} />
+                                  <Checkbox checked={checkedState[row.id] || false} onChange={() => handleCheckboxChange(row.id)} />
                                 </td>
                                 <td className="text-center">
                                   <div className="pt-1">{index + 1}</div>
                                 </td>
+                                <td className="border p-0">{row.batchNo}</td>
+                                <td className="border p-0">{row.batchDate}</td>
+                                <td className="border p-0">{row.bin}</td>
+                                <td className="border p-0">{row.expDate}</td>
                                 <td className="border p-0">{row.partNo}</td>
                                 <td className="border p-0">{row.partDesc}</td>
-                                <td className="border p-0">{row.batchNo}</td>
-                                <td className="border p-0">{row.qty}</td>
-                                <td className="border p-0">{row.availQty}</td>
+                                <td className="border p-0">{row.invQty}</td>
+                                <td className="border p-0">{row.recQty}</td>
+                                <td className="border p-0">{row.grnQty}</td>
+                                <td className="border p-0">{row.pQty}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -1457,8 +1681,8 @@ export const Putaway = () => {
                 </DialogContent>
                 <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
                   <Button onClick={handleCloseModal}>Cancel</Button>
-                  <Button color="secondary" onClick={handleCloseModal} variant="contained">
-                    Save
+                  <Button color="secondary" onClick={handlePutawayGrid} variant="contained">
+                    Proceed
                   </Button>
                 </DialogActions>
               </Dialog>

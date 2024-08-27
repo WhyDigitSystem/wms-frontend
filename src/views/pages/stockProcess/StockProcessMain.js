@@ -10,7 +10,7 @@ import StockConsolidation from './StockConsolidation';
 import StockRestate from './StockRestate';
 
 const StockProcessMain = () => {
-  const [value, setValue] = React.useState(1);
+  const [value, setValue] = React.useState(0);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -24,8 +24,8 @@ const StockProcessMain = () => {
             <Tab value={1} label="Stock Restate" />
             <Tab value={2} label="Code Conversion" />
             <Tab value={3} label="Cycle Count" />
-            <Tab value={5} label="De-Kitting" />
-            <Tab value={6} label="Stock Consolidtion" />
+            <Tab value={4} label="De-Kitting" />
+            <Tab value={5} label="Stock Consolidation" />
           </Tabs>
         </Box>
         <Box sx={{ padding: 2 }}>
@@ -33,8 +33,8 @@ const StockProcessMain = () => {
           {value === 1 && <StockRestate />}
           {value === 2 && <CodeConversion />}
           {value === 3 && <CycleCount />}
-          {value === 5 && <DeKitting />}
-          {value === 6 && <StockConsolidation />}
+          {value === 4 && <DeKitting />}
+          {value === 5 && <StockConsolidation />}
         </Box>
       </div>
     </>

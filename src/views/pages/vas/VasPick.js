@@ -3,7 +3,6 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-// import { FormHelperText, Tooltip, FormControlLabel, Checkbox, Dialog } from '@mui/material';
 import {
   FormHelperText,
   Dialog,
@@ -37,8 +36,6 @@ import apiCalls from 'apicall';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers';
-// import 'react-datepicker/dist/react-datepicker.css';
-// import { DatePicker } from 'react-datepicker';
 import dayjs, { Dayjs } from 'dayjs';
 import { width } from '@mui/system';
 import { getAllActiveLocationTypes } from 'utils/CommonFunctions';
@@ -57,9 +54,11 @@ export const VasPick = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
+  const [selectAll, setSelectAll] = useState(false);
+  const [selectedRows, setSelectedRows] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [loginUserId, setLoginUserId] = useState(localStorage.getItem('userId'));
-  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
@@ -74,6 +73,7 @@ export const VasPick = () => {
     docDate: dayjs(),
     pickBinType: '',
     stockState: '',
+    stockStateFlag: '',
     status: '',
     totalOrderQty: '',
     totalPickedQty: ''
@@ -82,27 +82,13 @@ export const VasPick = () => {
     docId: '',
     docDate: dayjs(),
     pickBinType: '',
+    stockStateFlag: '',
     stockState: '',
     status: '',
     totalOrderQty: '',
     totalPickedQty: ''
   });
-  const [vasPickGridTableData, setVasPickGridTableData] = useState([
-    {
-      id: 1,
-      partNo: '',
-      partDesc: '',
-      sku: '',
-      bin: '',
-      batchNo: '',
-      batchDate: null,
-      grnNo: '',
-      grnDate: null,
-      avlQty: '',
-      pickQty: '',
-      remainingQty: ''
-    }
-  ]);
+  const [vasPickGridTableData, setVasPickGridTableData] = useState([]);
   const [vasPickGridTableErrors, setVasPickGridTableErrors] = useState([
     {
       id: 1,
@@ -124,115 +110,96 @@ export const VasPick = () => {
       id: 1,
       partNo: '',
       partDesc: '',
-      batchNo: '',
-      batchDate: null,
-      palletNo: '',
-      sQty: '',
-      cellType: '',
-      core: '',
       sku: '',
-      expDate: null,
-      pickQty: '',
-      avlQty: '',
-      runQty: '',
-      qcFlag: '',
-      stockDate: null,
       grnNo: '',
       grnDate: null,
-      lotNo: ''
-    }
-  ]);
-  const [modalTableErrors, setModalTableErrors] = useState([
-    {
-      id: 1,
-      partNo: '',
-      partDesc: '',
       batchNo: '',
       batchDate: null,
-      palletNo: '',
-      sQty: '',
-      cellType: '',
+      bin: '',
+      binType: '',
+      binClass: '',
       core: '',
-      sku: '',
+      cellType: '',
       expDate: null,
-      pickQty: '',
       avlQty: '',
-      runQty: '',
+      pickQty: '',
       qcFlag: '',
-      stockDate: null,
-      grnNo: '',
-      grnDate: null,
-      lotNo: ''
+      status: ''
     }
   ]);
   const [value, setValue] = useState(0);
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
   const listViewColumns = [
-    { accessorKey: 'grndDate', header: 'GRN Date', size: 140 },
-    { accessorKey: 'docId', header: 'GRN No', size: 140 },
-    { accessorKey: 'gatePassId', header: 'Gate Pass Id', size: 140 },
-    { accessorKey: 'supplier', header: 'Supplier', size: 140 },
-    { accessorKey: 'totalGrnQty', header: 'GRN QTY', size: 140 }
+    { accessorKey: 'docId', header: 'VAS Pick ID', size: 140 },
+    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'picBin', header: 'Picked Bin', size: 140 },
+    { accessorKey: 'status', header: 'Status', size: 140 },
+    { accessorKey: 'pickedQty', header: 'Picked QTY', size: 140 },
+    { accessorKey: 'freeze', header: 'freeze', size: 140 }
   ];
 
   useEffect(() => {
-    // getNewVasPickDocId();
+    getNewVasPickDocId();
     getAllPickBinType();
+    getAllVasPick();
   }, []);
+
+  useEffect(() => {
+    const totalQty = vasPickGridTableData.reduce((sum, row) => sum + (parseInt(row.pickQty, 10) || 0), 0);
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      totalPickedQty: totalQty
+    }));
+  }, [vasPickGridTableData]);
 
   const getNewVasPickDocId = async () => {
     try {
       const response = await apiCalls(
         'get',
-        `vascontroller/getVasPickDocId?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
+        `vasPick/getVasPickDocId?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
       );
       setFormData((prevData) => ({
         ...prevData,
-        docId: response.paramObjectsMap.vasPickDocId
+        docId: response.paramObjectsMap.VasPickDocId
       }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
   };
-  // const getFillGridData = async () => {
-  //   try {
-  //     const response = await apiCalls(
-  //       'get',
-  //       `inward/getGatePassInNoForPedningGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}`
-  //     );
-  //     setGatePassIdList(response.paramObjectsMap.gatePassInVO);
-  //   } catch (error) {
-  //     console.error('Error fetching gate passes:', error);
-  //   }
-  // };
-  // const getAllBinLocationByWarehouse = async () => {
-  //   try {
-  //     const response = await apiCalls('get', `warehousemastercontroller/locationtype/warehouse?orgid=${orgId}&warehouse=${loginWarehouse}`);
-  //     setBinTypeList(response.paramObjectsMap.Locationtype);
-  //   } catch (error) {
-  //     console.error('Error fetching gate passes:', error);
-  //   }
-  // };
 
-  const getFillGridDetails = async (selectedGatePassId) => {
+  const getFillGridDetails = async () => {
     try {
       const response = await apiCalls(
         'get',
-        `inward/getGatePassInDetailsForPendingGRN?branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&gatePassDocId=${selectedGatePassId}&orgId=${orgId}`
+        `vasPick/getVasPicGridDetails?bintype=${formData.pickBinType}&branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&stateStatus=${formData.stockStateFlag}&warehouse=${loginWarehouse}`
       );
-      console.log('THE GATE PASS IDS GRID DETAILS IS:', response);
+      console.log('THE VAS PICK GRID DETAILS IS:', response);
       if (response.status === true) {
-        const gridDetails = response.paramObjectsMap.gatePassInVO;
-        console.log('THE PALLET DETAILS ARE:', gridDetails);
+        const gridDetails = response.paramObjectsMap.vaspickGrid;
+        console.log('THE MODAL TABLE DATA FROM API ARE:', gridDetails);
 
-        setVasPickGridTableData(
+        setModalTableData(
           gridDetails.map((row) => ({
-            // id: row.id,
-            invDate: row.invoiceDate ? dayjs(row.invoiceDate).format('YYYY-MM-DD') : null,
+            id: row.id,
             partNo: row.partNo,
             partDesc: row.partDesc,
-            sku: row.sku
+            sku: row.sku,
+            grnNo: row.grnNo,
+            grnDate: row.grnDate,
+            batchNo: row.batch,
+            batchDate: row.batchDate,
+            bin: row.bin,
+            binType: row.binType,
+            binClass: row.binClass,
+            core: row.core,
+            expDate: row.expDate,
+            avlQty: row.avalQty,
+            pickQty: row.pickQty,
+            qcFlag: row.qcFlag,
+            cellType: row.cellType,
+            status: row.status
           }))
         );
       }
@@ -250,59 +217,63 @@ export const VasPick = () => {
     }
   };
 
-  // const getAllVasPick = async () => {
-  //   try {
-  //     const response = await apiCalls(
-  //       'get',
-  //       `inward/getAllGrn?branch=CHENNAI&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
-  //     );
-  //     setListViewData(response.paramObjectsMap.grnVO);
-  //   } catch (error) {
-  //     console.error('Error fetching GRN data:', error);
-  //   }
-  // };
+  const getAllVasPick = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `vasPick/getAllVaspick?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
+      );
+      setListViewData(response.paramObjectsMap.vasPickVO);
+    } catch (error) {
+      console.error('Error fetching GRN data:', error);
+    }
+  };
 
-  // const getVasPickById = async (row) => {
-  //   console.log('THE SELECTED GRN ID IS:', row.original.id);
-  //   setEditId(row.original.id);
-  //   try {
-  //     const response = await apiCalls('get', `inward/getGrnById?id=${row.original.id}`);
-  //     console.log('API Response:', response);
+  const getVasPickById = async (row) => {
+    console.log('THE SELECTED GRN ID IS:', row.original.id);
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `vasPick/getVaspickById?id=${row.original.id}`);
+      console.log('API Response:', response);
 
-  //     if (response.status === true) {
-  //       setListView(false);
-  //       const particularGrn = response.paramObjectsMap.Grn;
-  //       setGatePassIdEdit(particularGrn.docId);
-
-  //       setFormData({
-  //         docId: particularGrn.docId,
-  //         editDocDate: particularGrn.docdate,
-  //         docDate: particularGrn.docdate,
-  //         entrySlNo: particularGrn.entryNo,
-  //         date: particularGrn.entryDate
-  //       });
-  //       getAllCarriers(particularGrn.modeOfShipment);
-  //       setFormData((prevData) => ({
-  //         ...prevData,
-  //         carrier: particularGrn.carrier.toUpperCase()
-  //       }));
-  //       setVasPickGridTableData(
-  //         particularGrn.grnDetailsVO.map((row) => ({
-  //           id: row.id,
-  //           qrCode: row.qrCode,
-  //           lr_Hawb_Hbl_No: row.lrNoHawbNo,
-  //           invNo: row.invoiceNo,
-  //           shipmentNo: row.shipmentNo
-  //           // invDate: row.invoiceDate ? dayjs(row.invoiceDate).format('YYYY-MM-DD') : null,
-  //         }))
-  //       );
-  //     } else {
-  //       console.error('API Error:', response);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
+      if (response.status === true) {
+        setListView(false);
+        const particularVasPick = response.paramObjectsMap.vasPickVO;
+        setFormData({
+          docId: particularVasPick.docId,
+          docDate: particularVasPick.docDate,
+          pickBinType: particularVasPick.picBin,
+          stockState: particularVasPick.stockState,
+          status: particularVasPick.status
+        });
+        setVasPickGridTableData(
+          particularVasPick.vasPickDetailsVO.map((row) => ({
+            id: row.id,
+            partNo: row.partNo,
+            partDesc: row.partDescription,
+            sku: row.sku,
+            avlQty: row.avlQty,
+            batchNo: row.batchNo,
+            batchDate: row.batchDate,
+            grnNo: row.grnNo,
+            grnDate: row.grnDate,
+            bin: row.bin,
+            binType: row.binType,
+            binClass: row.binClass,
+            core: row.core,
+            expDate: row.expDate,
+            qcFlag: row.qcflag,
+            pickQty: row.picQty,
+            cellType: row.cell
+          }))
+        );
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value, checked } = e.target;
@@ -326,21 +297,14 @@ export const VasPick = () => {
     if (errorMessage) {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
-      // if (name === 'gatePassId') {
-      //   const selectedId = gatePassIdList.find((id) => id.docId === value);
-      //   const selectedGatePassId = selectedId.docId;
-      //   if (selectedId) {
-      //     setFormData((prevData) => ({
-      //       ...prevData,
-      //       gatePassId: selectedId.docId,
-      //       entrySlNo: selectedId.entryNo,
-      //       gatePassDate: dayjs(selectedId.docDate).format('YYYY-MM-DD')
-      //     }));
-      //     getAllCarriers(selectedId.modeOfShipment);
-      //   }
-      // } else if (name === 'vas') {
-      if (name === 'vas') {
-        setFormData((prevData) => ({ ...prevData, [name]: checked }));
+      if (name === 'stockState') {
+        setFormData((prevData) => ({
+          ...prevData,
+          stockState: value,
+          stockStateFlag: (value === 'READY TO DISPATCH' && 'R') || (value === 'HOLD' && 'H') || ''
+        }));
+      } else if (name === 'status') {
+        setFormData((prevData) => ({ ...prevData, [name]: value }));
       } else {
         setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
       }
@@ -352,11 +316,6 @@ export const VasPick = () => {
   const handleDeleteRow = (id, table, setTable) => {
     setTable(table.filter((row) => row.id !== id));
   };
-
-  // const handleDateChange = (field, date) => {
-  //   const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null; // Updated format for consistency
-  //   setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
-  // };
 
   const handleView = () => {
     setListView(!listView);
@@ -381,7 +340,7 @@ export const VasPick = () => {
       totalOrderQty: '',
       totalPickedQty: ''
     });
-    // getNewVasPickDocId();
+    getNewVasPickDocId();
     setEditId('');
     setVasPickGridTableData([
       {
@@ -404,41 +363,19 @@ export const VasPick = () => {
 
   const handleSave = async () => {
     const errors = {};
-    if (!formData.grnDate) errors.grnDate = 'GRN Date is required';
-    if (!formData.supplierShortName) errors.supplierShortName = 'Supplier Short Name is required';
-
-    if (!formData.modeOfShipment) errors.modeOfShipment = 'Mode of Shipment is required';
-    if (!formData.carrier) errors.carrier = 'Carrier is required';
+    if (!formData.pickBinType) errors.pickBinType = 'Pick Bin Type is required';
+    if (!formData.stockState) errors.stockState = 'Stock State is required';
+    if (!formData.status) errors.status = 'Status is required';
 
     let vasPickGridTableDataValid = true;
     const newTableErrors = vasPickGridTableData.map((row) => {
       const rowErrors = {};
-      if (!row.lr_Hawb_Hbl_No) {
-        rowErrors.lr_Hawb_Hbl_No = 'Lr_Hawb_Hbl_No is required';
-        vasPickGridTableDataValid = false;
-      }
-      if (!row.invNo) {
-        rowErrors.invNo = 'Invoice No is required';
-        vasPickGridTableDataValid = false;
-      }
       if (!row.partNo) {
         rowErrors.partNo = 'Part No is required';
         vasPickGridTableDataValid = false;
       }
-      if (!row.invQty) {
-        rowErrors.invQty = 'Invoice QTY is required';
-        vasPickGridTableDataValid = false;
-      }
-      if (!row.grnQty) {
-        rowErrors.grnQty = 'GRN QTY is required';
-        vasPickGridTableDataValid = false;
-      }
-      if (!row.palletQty) {
-        rowErrors.palletQty = 'Pallet Qty is required';
-        vasPickGridTableDataValid = false;
-      }
-      if (!row.noOfPallets) {
-        rowErrors.noOfPallets = 'No of Pallets is required';
+      if (!row.pickQty) {
+        rowErrors.pickQty = 'Pick QTY is required';
         vasPickGridTableDataValid = false;
       }
       return rowErrors;
@@ -446,40 +383,53 @@ export const VasPick = () => {
     setFieldErrors(errors);
 
     setVasPickGridTableErrors(newTableErrors);
-
     if (Object.keys(errors).length === 0 && vasPickGridTableDataValid) {
       setIsLoading(true);
-
       const gridVo = vasPickGridTableData.map((row) => ({
-        invoiceDate: row.invDate ? dayjs(row.invDate).format('YYYY-MM-DD') : null,
+        ...(editId && { id: row.id }),
         partNo: row.partNo,
-        partDesc: row.partDesc,
-        sku: row.sku
+        partDescription: row.partDesc,
+        sku: row.sku,
+        avlQty: row.avlQty,
+        batchNo: row.batchNo,
+        batchDate: row.batchDate,
+        grnNo: row.grnNo,
+        grnDate: row.grnDate,
+        bin: row.bin,
+        binType: row.binType,
+        binClass: row.binClass,
+        core: row.core,
+        expDate: row.expDate,
+        qcflag: row.qcFlag,
+        picQty: row.pickQty,
+        cellType: row.cellType,
+        remainingQty: 0
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
-        pickBinType: formData.pickBinType,
+        picBin: formData.pickBinType,
         stockState: formData.stockState,
+        stateStatus: formData.stockStateFlag,
         status: formData.status,
         orgId: orgId,
-        createdBy: loginUserName,
-        grnDetailsDTO: gridVo,
         branch: loginBranch,
         branchCode: loginBranchCode,
         client: loginClient,
         customer: loginCustomer,
         finYear: '2024',
-        warehouse: loginWarehouse
+        warehouse: loginWarehouse,
+        vasPickDetailsDTO: gridVo,
+        createdBy: loginUserName
       };
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const response = await apiCalls('put', `inward/createUpdateGRN`, saveFormData);
+        const response = await apiCalls('put', `vasPick/createUpdateVasPic`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           showToast('success', editId ? 'VAS Pick Updated Successfully' : 'VAS Pick created successfully');
-          // handleClear();
-          // getAllGrns();
+          handleClear();
+          getAllVasPick();
           setIsLoading(false);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'VAS Pick creation failed');
@@ -498,7 +448,25 @@ export const VasPick = () => {
   const handleTabChange = (event, newValue) => {
     setValue(newValue);
   };
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(modalTableData.map((_, index) => index));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  const handleSubmitSelectedRows = () => {
+    const selectedData = selectedRows.map((index) => modalTableData[index]);
+    setVasPickGridTableData([...vasPickGridTableData, ...selectedData]);
+    console.log('data', selectedData);
+    setSelectedRows([]);
+    setSelectAll(false);
+    handleCloseModal();
+  };
   const handleFullGrid = () => {
+    getFillGridDetails();
     setModalOpen(true);
   };
   const handleCloseModal = () => {
@@ -518,12 +486,7 @@ export const VasPick = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable
-              data={listViewData}
-              columns={listViewColumns}
-              blockEdit={true}
-              //  toEdit={getGrnById}
-            />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getVasPickById} />
           </div>
         ) : (
           <>
@@ -579,7 +542,7 @@ export const VasPick = () => {
                     required
                   >
                     <MenuItem value="HOLD">HOLD</MenuItem>
-                    <MenuItem value="HOLD">READY TO DISPATCH</MenuItem>
+                    <MenuItem value="READY TO DISPATCH">READY TO DISPATCH</MenuItem>
                   </Select>
                   {fieldErrors.stockState && <FormHelperText>{fieldErrors.stockState}</FormHelperText>}
                 </FormControl>
@@ -590,8 +553,8 @@ export const VasPick = () => {
                     Status <span>&nbsp;*</span>
                   </InputLabel>
                   <Select labelId="status-label" label="Status" value={formData.status} onChange={handleInputChange} name="status" required>
-                    <MenuItem value="EDIT">EDIT</MenuItem>
-                    <MenuItem value="CONFIRM">CONFIRM</MenuItem>
+                    <MenuItem value="Edit">EDIT</MenuItem>
+                    <MenuItem value="Confirm">CONFIRM</MenuItem>
                   </Select>
                   {fieldErrors.status && <FormHelperText>{fieldErrors.status}</FormHelperText>}
                 </FormControl>
@@ -616,11 +579,6 @@ export const VasPick = () => {
                   <>
                     <div className="row d-flex ml">
                       <div className="mb-1">
-                        <ActionButton
-                          title="Add"
-                          icon={AddIcon}
-                          // onClick={handleAddRow}
-                        />
                         <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
                       </div>
                       <div className="row mt-2">
@@ -650,14 +608,8 @@ export const VasPick = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Batch No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Batch Date
-                                  </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
                                     GRN No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    GRN Date
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Avl QTY
@@ -683,43 +635,78 @@ export const VasPick = () => {
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
+                                    <td>{row.partNo}</td>
+                                    <td>{row.partDesc}</td>
+                                    <td>{row.sku}</td>
+                                    <td>{row.grnNo}</td>
+                                    <td>{row.batchNo}</td>
+                                    <td>{row.bin}</td>
+                                    <td>{row.avlQty}</td>
                                     <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '150px' }}
                                         type="text"
-                                        value={row.qrCode}
-                                        className={vasPickGridTableErrors[index]?.qrCode ? 'error form-control' : 'form-control'}
-                                      />
-                                      {/* {vasPickGridTableErrors[index]?.qrCode && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {vasPickGridTableErrors[index].qrCode}
-                                        </div>
-                                      )} */}
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="date"
-                                        value={row.invDate}
+                                        value={row.pickQty}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setVasPickGridTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, invDate: value } : r))
-                                          );
-                                          setVasPickGridTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], invDate: !value ? 'Invoice Date is required' : '' };
-                                            return newErrors;
-                                          });
+                                          const intPattern = /^\d*$/;
+
+                                          if (intPattern.test(value) || value === '') {
+                                            // Allow empty values for clearing
+                                            const numericValue = parseInt(value, 10);
+                                            const numericAvlQty = parseInt(row.avlQty, 10) || 0;
+
+                                            if (value === '' || numericValue <= numericAvlQty) {
+                                              setVasPickGridTableData((prev) => {
+                                                const updatedData = prev.map((r) => {
+                                                  const updatedPickQty = numericValue || 0;
+                                                  return r.id === row.id
+                                                    ? {
+                                                        ...r,
+                                                        pickQty: value,
+                                                        remainingQty: !value ? '' : numericAvlQty - updatedPickQty
+                                                      }
+                                                    : r;
+                                                });
+                                                return updatedData;
+                                              });
+                                              setVasPickGridTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  pickQty: !value ? 'Pick QTY is required' : ''
+                                                  // pickQty: !value ? '' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else {
+                                              setVasPickGridTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  pickQty: 'Pick QTY cannot be greater than Inv QTY'
+                                                };
+                                                return newErrors;
+                                              });
+                                            }
+                                          } else {
+                                            setVasPickGridTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], pickQty: 'Invalid value' };
+                                              return newErrors;
+                                            });
+                                          }
                                         }}
-                                        className={vasPickGridTableErrors[index]?.invDate ? 'error form-control' : 'form-control'}
+                                        className={vasPickGridTableErrors[index]?.pickQty ? 'error form-control' : 'form-control'}
+                                        disabled={!row.avlQty}
                                       />
-                                      {vasPickGridTableErrors[index]?.invDate && (
+                                      {row.avlQty && vasPickGridTableErrors[index]?.pickQty && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {vasPickGridTableErrors[index].invDate}
+                                          {vasPickGridTableErrors[index].pickQty}
                                         </div>
                                       )}
                                     </td>
+                                    <td>{row.remainingQty}</td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -735,19 +722,6 @@ export const VasPick = () => {
                     <div className="row mt-3">
                       <div className="col-md-3 mb-3">
                         <TextField
-                          label="Total Order QTY"
-                          variant="outlined"
-                          size="small"
-                          fullWidth
-                          name="totalOrderQty"
-                          value={formData.totalOrderQty}
-                          onChange={handleInputChange}
-                          error={!!fieldErrors.totalOrderQty}
-                          helperText={fieldErrors.totalOrderQty}
-                        />
-                      </div>
-                      <div className="col-md-3 mb-3">
-                        <TextField
                           label="Total Picked QTY"
                           variant="outlined"
                           size="small"
@@ -757,6 +731,7 @@ export const VasPick = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.totalPickedQty}
                           helperText={fieldErrors.totalPickedQty}
+                          disabled
                         />
                       </div>
                     </div>
@@ -766,7 +741,7 @@ export const VasPick = () => {
             </div>
             <Dialog
               open={modalOpen}
-              maxWidth={'md'}
+              maxWidth={'lg'}
               fullWidth={true}
               onClose={handleCloseModal}
               PaperComponent={PaperComponent}
@@ -779,62 +754,73 @@ export const VasPick = () => {
                 <div className="row">
                   <div className="col-lg-12">
                     <div className="table-responsive">
-                      <table className="table table-bordered">
+                      <table className="table table-bordered ">
                         <thead>
                           <tr style={{ backgroundColor: '#673AB7' }}>
                             <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                              Action
+                              <Checkbox checked={selectAll} onChange={handleSelectAll} />
                             </th>
-                            <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                              S.No
-                            </th>
-                            <th className="px-2 py-2 text-white text-center">Part No *</th>
-                            <th className="px-2 py-2 text-white text-center">Part Desc</th>
-                            <th className="px-2 py-2 text-white text-center">Batch No</th>
-                            <th className="px-2 py-2 text-white text-center">Batch Date</th>
-                            <th className="px-2 py-2 text-white text-center">Pallet No</th>
-                            <th className="px-2 py-2 text-white text-center">SQTY</th>
-                            <th className="px-2 py-2 text-white text-center">Cell Type</th>
-                            <th className="px-2 py-2 text-white text-center">Core</th>
+                            <th className="px-2 py-2 text-white text-center">S.No</th>
+                            <th className="px-2 py-2 text-white text-center">Part No</th>
+                            <th className="px-2 py-2 text-white text-center ">Part Desc</th>
                             <th className="px-2 py-2 text-white text-center">SKU</th>
-                            <th className="px-2 py-2 text-white text-center">Exp Date</th>
-                            <th className="px-2 py-2 text-white text-center">Pick QTY</th>
-                            <th className="px-2 py-2 text-white text-center">Avl QTY</th>
-                            <th className="px-2 py-2 text-white text-center">Run QTY</th>
-                            <th className="px-2 py-2 text-white text-center">Qc Flag</th>
-                            <th className="px-2 py-2 text-white text-center">Stock Date</th>
                             <th className="px-2 py-2 text-white text-center">GRN No</th>
                             <th className="px-2 py-2 text-white text-center">GRN Date</th>
-                            <th className="px-2 py-2 text-white text-center">Lot No</th>
+                            <th className="px-2 py-2 text-white text-center">Batch No</th>
+                            <th className="px-2 py-2 text-white text-center">Batch Date</th>
+                            <th className="px-2 py-2 text-white text-center">Bin</th>
+                            <th className="px-2 py-2 text-white text-center">Bin Type</th>
+                            <th className="px-2 py-2 text-white text-center">Avl QTY</th>
+                            <th className="px-2 py-2 text-white text-center">Pick QTY</th>
                           </tr>
                         </thead>
                         <tbody>
                           {modalTableData.map((row, index) => (
                             <tr key={row.id}>
-                              <td className="border p-0 text-center">
-                                <Checkbox {...label} />
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                {/* <Checkbox checked={selectAll} onChange={handleSelectAll} /> */}
+                                <Checkbox
+                                  checked={selectedRows.includes(index)}
+                                  onChange={(e) => {
+                                    const isChecked = e.target.checked;
+                                    setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
+                                  }}
+                                />
+                              </th>
+                              <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                {index + 1}
                               </td>
-                              <td className="text-center">
-                                <div className="pt-1">{index + 1}</div>
+                              <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                {row.partNo}
                               </td>
-                              <td className="border p-0"> {row.partNo}</td>
-                              <td className="border p-0"> {row.partDesc}</td>
-                              <td className="border p-0"> {row.batchNo}</td>
-                              <td className="border p-0"> {row.batchDate}</td>
-                              <td className="border p-0"> {row.palletNo}</td>
-                              <td className="border p-0"> {row.sQty}</td>
-                              <td className="border p-0"> {row.cellType}</td>
-                              <td className="border p-0"> {row.core}</td>
-                              <td className="border p-0"> {row.sku}</td>
-                              <td className="border p-0"> {row.expDate}</td>
-                              <td className="border p-0"> {row.pickQty}</td>
-                              <td className="border p-0"> {row.avlQty}</td>
-                              <td className="border p-0"> {row.runQty}</td>
-                              <td className="border p-0"> {row.qcFlag}</td>
-                              <td className="border p-0"> {row.stockDate}</td>
-                              <td className="border p-0"> {row.grnNo}</td>
-                              <td className="border p-0"> {row.grnDate}</td>
-                              <td className="border p-0"> {row.lotNo}</td>
+                              <td className="border p-2 text-center mt-2">{row.partDesc}</td>
+                              <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                {row.sku}
+                              </td>
+                              <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                {row.grnNo}
+                              </td>
+                              <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                {row.grnDate}
+                              </td>
+                              <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                {row.batchNo}
+                              </td>
+                              <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                {row.batchDate}
+                              </td>
+                              <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                {row.bin}
+                              </td>
+                              <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                {row.binType}
+                              </td>
+                              <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                {row.avlQty}
+                              </td>
+                              <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                {row.pickQty}
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -845,8 +831,8 @@ export const VasPick = () => {
               </DialogContent>
               <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
                 <Button onClick={handleCloseModal}>Cancel</Button>
-                <Button color="secondary" onClick={handleCloseModal} variant="contained">
-                  Save
+                <Button color="secondary" onClick={handleSubmitSelectedRows} variant="contained">
+                  Proceed
                 </Button>
               </DialogActions>
             </Dialog>
