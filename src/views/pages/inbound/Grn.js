@@ -1,4 +1,5 @@
 import ClearIcon from '@mui/icons-material/Clear';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
@@ -53,6 +54,7 @@ export const Grn = () => {
   const [partNoList, setPartNoList] = useState([]);
   const [gatePassIdEdit, setGatePassIdEdit] = useState('');
   const [editDocDate, setEditDocDate] = useState(dayjs());
+  const [enableGatePassFields, setEnableGatePassFields] = useState(false);
 
   const [formData, setFormData] = useState({
     docId: '',
@@ -64,7 +66,7 @@ export const Grn = () => {
     tax: '',
     gatePassId: '',
     gatePassDate: null,
-    grnDate: null,
+    grnDate: dayjs(),
     customerPo: '',
     vas: false,
     supplierShortName: '',
@@ -486,7 +488,13 @@ export const Grn = () => {
     if (errorMessage) {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
-      if (name === 'gatePassId') {
+      if (name === 'grnType') {
+        setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+        // if (value === 'GATE PASS') setEnableGatePassFields(true);
+        {
+          value === 'GATE PASS' ? setEnableGatePassFields(true) : setEnableGatePassFields(false);
+        }
+      } else if (name === 'gatePassId') {
         const selectedId = gatePassIdList.find((id) => id.docId === value);
         const selectedGatePassId = selectedId.docId;
         if (selectedId) {
@@ -682,7 +690,7 @@ export const Grn = () => {
       tax: '',
       vehicleDetails: '',
       gatePassDate: null,
-      grnDate: null,
+      grnDate: dayjs(),
       customerPo: '',
       vas: false,
       supplierShortName: '',
@@ -977,7 +985,8 @@ export const Grn = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />
+            <ActionButton title="Upload" icon={CloudUploadIcon} />
           </div>
         </div>
         {listView ? (
@@ -1011,7 +1020,7 @@ export const Grn = () => {
                     <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.grnType}>
                       <InputLabel id="grnType-label">GRN Type</InputLabel>
                       <Select labelId="grnType-label" label="GRN Type" value={formData.grnType} onChange={handleInputChange} name="grnType">
-                        <MenuItem value="GET PASS">Gate Pass</MenuItem>
+                        <MenuItem value="GET PASS">GATE PASS</MenuItem>
                         <MenuItem value="GRN">GRN</MenuItem>
                       </Select>
                       {fieldErrors.grnType && <FormHelperText>{fieldErrors.grnType}</FormHelperText>}
@@ -1039,7 +1048,7 @@ export const Grn = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Date"
+                      label="Entry Date"
                       value={formData.date ? dayjs(formData.date, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('date', date)}
                       slotProps={{
@@ -1173,17 +1182,7 @@ export const Grn = () => {
 
               {/* Supplier */}
               <div className="col-md-3 mb-3">
-                <TextField
-                  label="Supplier"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="supplier"
-                  value={formData.supplier}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.supplier}
-                  helperText={fieldErrors.supplier}
-                />
+                <TextField label="Supplier" variant="outlined" size="small" fullWidth name="supplier" value={formData.supplier} disabled />
               </div>
 
               {/* Bill of Entry */}
