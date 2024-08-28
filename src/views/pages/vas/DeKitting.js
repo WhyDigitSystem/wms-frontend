@@ -22,8 +22,7 @@ import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 export const DeKitting = () => {
-  // const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId')));
-  const [orgId, setOrgId] = useState(1);
+  const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId')));
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
   const [partNoList, setPartNoList] = useState([]);
