@@ -297,8 +297,7 @@ export const Putaway = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        const PutAwayDocId = response.paramObjectsMap.PutAwayDocId;
-        setFormData({ ...formData, docId: PutAwayDocId });
+        setFormData({ ...formData, docId: response.paramObjectsMap.PutAwayDocId });
       } else {
         console.error('API Error:', response);
       }
@@ -485,7 +484,7 @@ export const Putaway = () => {
           carrier: particularPutaway.carrier,
           binType: particularPutaway.binType,
           contact: particularPutaway.contact,
-          status: particularPutaway.status,
+          status: particularPutaway.status === 'Edit' ? 'EDIT' : 'CONFIRM',
           lotNo: particularPutaway.lotNo,
           enteredPerson: particularPutaway.enteredPerson,
           binClass: particularPutaway.binClass,
@@ -569,7 +568,7 @@ export const Putaway = () => {
           setFormData((prevData) => ({
             ...prevData,
             grnNo: selectedId.docId,
-            grnDate: dayjs(selectedId.grnDate).format('YYYY-MM-DD'),
+            grnDate: dayjs(selectedId.docDate).format('YYYY-MM-DD'),
             entryNo: selectedId.entryNo,
             entryDate: dayjs(selectedId.entryDate).format('YYYY-MM-DD'),
             gatePassDate: dayjs(selectedId.docDate).format('YYYY-MM-DD'),
@@ -651,28 +650,36 @@ export const Putaway = () => {
 
   const handleClear = () => {
     setFormData({
-      binClass: '',
-      binPick: '',
+      binClass: 'Fixed',
+      binPick: 'Empty',
       binType: '',
       branch: loginBranch,
       branchCode: loginBranchCode,
+      briefDesc: '',
       carrier: '',
       client: loginClient,
-      core: '',
+      contact: '',
+      core: 'MULTI',
       createdBy: loginUserName,
       customer: loginCustomer,
+      docDate: dayjs(),
       enteredPerson: '',
+      driverName: '',
       entryNo: '',
       entryDate: null,
-      finYear: '',
+      finYear: '2024',
       grnDate: null,
       grnNo: '',
       lotNo: '',
       modeOfShipment: '',
       orgId: orgId,
       status: '',
+      securityName: '',
       supplier: '',
       supplierShortName: '',
+      totalGrnQty: '',
+      vehicleType: '',
+      vehicleNo: '',
       warehouse: loginWarehouse
     });
     setPutAwayDetailsTableData([
@@ -719,6 +726,7 @@ export const Putaway = () => {
       supplierShortName: '',
       warehouse: loginWarehouse
     });
+    getPutAwayDocId();
   };
 
   const handleSave = async () => {
@@ -892,7 +900,17 @@ export const Putaway = () => {
           <>
             <div className="row">
               <div className="col-md-3 mb-3">
-                <TextField label="Doc Id" variant="outlined" size="small" fullWidth name="docId" value={formData.docId} disabled />
+                <TextField
+                  label="Doc Id"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="docId"
+                  value={formData.docId}
+                  error={!!fieldErrors.docId}
+                  helperText={fieldErrors.docId}
+                  disabled
+                />
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled" size="small">
@@ -913,19 +931,35 @@ export const Putaway = () => {
                 </FormControl>
               </div>
 
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.grnNo}>
-                  <InputLabel id="grnNo">Grn No</InputLabel>
-                  <Select labelId="grnNo" name="grnNo" label="Grn No" value={formData.grnNo} onChange={handleInputChange}>
-                    {grnList?.map((row) => (
-                      <MenuItem key={row.id} value={row.docId}>
-                        {row.docId}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.grnNo && <FormHelperText error>{fieldErrors.grnNo}</FormHelperText>}
-                </FormControl>
-              </div>
+              {editId ? (
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    label="Grn No"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="grnNo"
+                    value={formData.grnNo}
+                    error={!!fieldErrors.grnNo}
+                    helperText={fieldErrors.grnNo}
+                    disabled
+                  />
+                </div>
+              ) : (
+                <div className="col-md-3 mb-3">
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.grnNo}>
+                    <InputLabel id="grnNo">Grn No *</InputLabel>
+                    <Select labelId="grnNo" name="grnNo" label="Grn No" value={formData.grnNo} onChange={handleInputChange}>
+                      {grnList?.map((row) => (
+                        <MenuItem key={row.id} value={row.docId}>
+                          {row.docId}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {fieldErrors.grnNo && <FormHelperText error>{fieldErrors.grnNo}</FormHelperText>}
+                  </FormControl>
+                </div>
+              )}
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -977,17 +1011,33 @@ export const Putaway = () => {
                   </LocalizationProvider>
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.core}>
-                  <InputLabel id="core">Core</InputLabel>
-                  <Select labelId="core" id="core" name="core" label="Core" value={formData.core} onChange={handleInputChange} disabled>
-                    <MenuItem value="">Select Option</MenuItem>
-                    <MenuItem value="MULTI">MULTI</MenuItem>
-                    <MenuItem value="SINGLE">SINGLE</MenuItem>
-                  </Select>
-                  {fieldErrors.core && <FormHelperText error>{fieldErrors.core}</FormHelperText>}
-                </FormControl>
-              </div>
+              {editId ? (
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    label="Core"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="core"
+                    value={formData.core}
+                    error={!!fieldErrors.core}
+                    helperText={fieldErrors.core}
+                    disabled
+                  />
+                </div>
+              ) : (
+                <div className="col-md-3 mb-3">
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.core}>
+                    <InputLabel id="core">Core</InputLabel>
+                    <Select labelId="core" id="core" name="core" label="Core" value={formData.core} onChange={handleInputChange} disabled>
+                      <MenuItem value="">Select Option</MenuItem>
+                      <MenuItem value="MULTI">MULTI</MenuItem>
+                      <MenuItem value="SINGLE">SINGLE</MenuItem>
+                    </Select>
+                    {fieldErrors.core && <FormHelperText error>{fieldErrors.core}</FormHelperText>}
+                  </FormControl>
+                </div>
+              )}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="Supplier Short Name"
@@ -1140,7 +1190,7 @@ export const Putaway = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.binType}>
-                  <InputLabel id="binType-label">Bin Type</InputLabel>
+                  <InputLabel id="binType-label">Bin Type *</InputLabel>
                   <Select
                     labelId="binType-label"
                     id="binType"
@@ -1160,7 +1210,7 @@ export const Putaway = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                  <InputLabel id="status">Status</InputLabel>
+                  <InputLabel id="status">Status *</InputLabel>
                   <Select labelId="status" id="status" name="status" label="Status" value={formData.status} onChange={handleInputChange}>
                     <MenuItem value="EDIT">Edit</MenuItem>
                     <MenuItem value="CONFIRM">Confirm</MenuItem>
@@ -1172,6 +1222,7 @@ export const Putaway = () => {
                 <FormControl className="ps-2">
                   <FormLabel id="demo-radio-buttons-group-label">Bin Class</FormLabel>
                   <RadioGroup
+                    row
                     aria-labelledby="demo-radio-buttons-group-label"
                     defaultValue="fixed"
                     name="binClass"
@@ -1183,10 +1234,11 @@ export const Putaway = () => {
                   </RadioGroup>
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              <div className="col-md-6 mb-3">
                 <FormControl className="ps-2">
                   <FormLabel id="demo-radio-buttons-group-label">Bin Pick</FormLabel>
                   <RadioGroup
+                    row
                     aria-labelledby="demo-radio-buttons-group-label"
                     defaultValue="Empty"
                     name="binPick"
@@ -1238,12 +1290,12 @@ export const Putaway = () => {
                                   <th className="px-2 py-2 text-white text-center">Part No</th>
                                   <th className="px-2 py-2 text-white text-center">Batch</th>
                                   <th className="px-2 py-2 text-white text-center">Part Description</th>
-                                  <th className="px-2 py-2 text-white text-center">SKU</th>
+                                  <th className="px-2 py-2 text-white text-center">SKU *</th>
                                   <th className="px-2 py-2 text-white text-center">Inv Qty</th>
                                   <th className="px-2 py-2 text-white text-center">Rec Qty</th>
                                   <th className="px-2 py-2 text-white text-center">GRN Qty</th>
                                   <th className="px-2 py-2 text-white text-center">Putaway Qty</th>
-                                  <th className="px-2 py-2 text-white text-center">Bin</th>
+                                  <th className="px-2 py-2 text-white text-center">Bin *</th>
                                   <th className="px-2 py-2 text-white text-center">Remarks</th>
                                 </tr>
                               </thead>
