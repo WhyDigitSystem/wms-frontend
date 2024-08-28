@@ -70,7 +70,7 @@ const TotalIncomeLightCard = ({ isLoading }) => {
                     mt: 0.45,
                     mb: 0.45
                   }}
-                  primary={<Typography variant="h4">₹203k</Typography>}
+                  primary={<Typography variant="h4">1200</Typography>}
                   secondary={
                     <Typography
                       variant="subtitle2"
@@ -79,7 +79,7 @@ const TotalIncomeLightCard = ({ isLoading }) => {
                         mt: 0.5
                       }}
                     >
-                      Total Income
+                      Total Racks
                     </Typography>
                   }
                 />

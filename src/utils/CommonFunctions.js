@@ -1,6 +1,4 @@
-import { TroubleshootRounded } from '@mui/icons-material';
 import apiCalls from 'apicall';
-import axios from 'axios';
 
 export const getAllActiveCountries = async (orgId) => {
   try {
@@ -295,4 +293,29 @@ export const initCaps = (str) => {
     .split(' ')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+};
+
+export const generateGridData = (rows, levels, columns) => {
+  const gridData = [];
+  for (let r = 1; r <= rows; r++) {
+    const rowPrefix = `R${String(r).padStart(2, '0')}`;
+    const row = [];
+    for (let l = 0; l < levels.length; l++) {
+      for (let c = 1; c <= columns; c++) {
+        const level = levels[l];
+        const column = String(c).padStart(2, '0');
+        const id = `${rowPrefix}-${level}${column}`;
+        const partno = `P102-${Math.floor(Math.random() * 1000)}`;
+        const partQty = Math.floor(Math.random() * 100) + 1; // Random quantity between 1 and 100
+        row.push({
+          id,
+          percentage: Math.random() * 100,
+          partno,
+          partQty
+        });
+      }
+    }
+    gridData.push(row);
+  }
+  return gridData;
 };

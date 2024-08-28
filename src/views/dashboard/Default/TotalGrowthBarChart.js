@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 // material-ui
-import { Grid, MenuItem, TextField, Typography } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 // third-party
@@ -97,7 +97,8 @@ const TotalGrowthBarChart = ({ isLoading }) => {
           <Grid container spacing={gridSpacing}>
             <Grid item xs={12}>
               <Grid container alignItems="center" justifyContent="space-between">
-                <Grid item>
+                <Typography variant="h4">Inventory Stock</Typography>
+                {/* <Grid item>
                   <Grid container direction="column" spacing={1}>
                     <Grid item>
                       <Typography variant="subtitle2">Total Growth</Typography>
@@ -106,8 +107,8 @@ const TotalGrowthBarChart = ({ isLoading }) => {
                       <Typography variant="h3">₹2,324.00</Typography>
                     </Grid>
                   </Grid>
-                </Grid>
-                <Grid item>
+                </Grid> */}
+                {/* <Grid item>
                   <TextField id="standard-select-currency" select value={value} onChange={(e) => setValue(e.target.value)}>
                     {status.map((option) => (
                       <MenuItem key={option.value} value={option.value}>
@@ -115,7 +116,7 @@ const TotalGrowthBarChart = ({ isLoading }) => {
                       </MenuItem>
                     ))}
                   </TextField>
-                </Grid>
+                </Grid> */}
               </Grid>
             </Grid>
             <Grid item xs={12}>
