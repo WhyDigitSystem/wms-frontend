@@ -51,6 +51,7 @@ export const LocationMovement = () => {
   const [selectedBin, setSelectedBin] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [fromBinList, setFromBinList] = useState([]);
 
   const [formData, setFormData] = useState({
     docId: docId,
@@ -58,46 +59,48 @@ export const LocationMovement = () => {
     movedQty: ''
   });
   const [value, setValue] = useState(0);
-  const [partNoOptions, setPartNoOptions] = useState([]);
+  const [toBinList, setToBinList] = useState([]);
   const [partNoOptionsNew, setPartNoOptionsNew] = useState([]);
   const [partNoOptionsBin, setPartNoOptionsBin] = useState([]);
   const [fillGridData, setFillGridData] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [childTableData, setChildTableData] = useState([
-    {
-      batchDate: '',
-      batchNo: '',
-      bin: '',
-      binClass: '',
-      binType: '',
-      cellType: '',
-      clientCode: '',
-      core: '',
-      expDate: '',
-      fromQty: '',
-      grnDate: '',
-      grnNo: '',
-      lotNo: '',
-      partDesc: '',
-      partNo: '',
-      pcKey: '',
-      qcFlag: '',
-      remainingQty: '',
-      sku: '',
-      ssku: '',
-      status: '',
-      stockDate: '',
-      toBin: '',
-      toQty: '',
-      toBinClass: '',
-      toCellType: '',
-      toBinType: ''
-    }
+    // {
+    //   batchDate: '',
+    //   batchNo: '',
+    //   bin: '',
+    //   binClass: '',
+    //   binType: '',
+    //   cellType: '',
+    //   clientCode: '',
+    //   core: '',
+    //   expDate: '',
+    //   fromQty: '',
+    //   grnDate: '',
+    //   grnNo: '',
+    //   lotNo: '',
+    //   partDesc: '',
+    //   rowPartNoList: [],
+    //   partNo: '',
+    //   pcKey: '',
+    //   qcFlag: '',
+    //   remainingQty: '',
+    //   sku: '',
+    //   ssku: '',
+    //   status: '',
+    //   stockDate: '',
+    //   toBin: '',
+    //   toQty: '',
+    //   toBinClass: '',
+    //   toCellType: '',
+    //   toBinType: ''
+    // }
   ]);
 
   const [modalTableData, setModalTableData] = useState([
     {
       id: 1,
+      fromBin: '',
       partNo: '',
       partDesc: '',
       batchNo: '',
@@ -121,6 +124,7 @@ export const LocationMovement = () => {
   const [modalTableErrors, setModalTableErrors] = useState([
     {
       id: 1,
+      fromBin: '',
       partNo: '',
       partDesc: '',
       batchNo: '',
@@ -146,23 +150,26 @@ export const LocationMovement = () => {
     const newRow = {
       id: Date.now(),
       batchDate: '',
+      rowBatchNoList: [],
       batchNo: '',
-      bin: '',
+      fromBin: '',
       binClass: '',
       binType: '',
       cellType: '',
       clientCode: '',
       core: '',
       expDate: '',
-      fromQty: '',
+      avlQty: '',
       grnDate: '',
+      rowGrnNoList: [],
       grnNo: '',
       lotNo: '',
       partDesc: '',
+      rowPartNoList: [],
       partNo: '',
       pcKey: '',
       qcFlag: '',
-      remainingQty: '',
+      remainQty: '',
       sku: '',
       ssku: '',
       status: '',
@@ -176,14 +183,14 @@ export const LocationMovement = () => {
       {
         batchDate: '',
         batchNo: '',
-        bin: '',
+        fromBin: '',
         fromQty: '',
         grnDate: '',
         grnNo: '',
         lotNo: '',
         partDesc: '',
         partNo: '',
-        remainingQty: '',
+        remainQty: '',
         sku: '',
         toBin: '',
         toQty: ''
@@ -196,13 +203,13 @@ export const LocationMovement = () => {
       batchDate: '',
       batchNo: '',
       bin: '',
-      fromQty: '',
+      avlQty: '',
       grnDate: '',
       grnNo: '',
       lotNo: '',
       partDesc: '',
       partNo: '',
-      remainingQty: '',
+      remainQty: '',
       sku: '',
       toBin: '',
       toQty: ''
@@ -233,12 +240,9 @@ export const LocationMovement = () => {
   useEffect(() => {
     getAllLocationMovement();
     getDocId();
-    getAllBin();
-    getAllPartNo();
-    getAllToBin();
+    getAllFromBin();
+    getToBinDetails();
   }, []);
-
-  // Example usage:
 
   const getDocId = async () => {
     try {
@@ -289,7 +293,36 @@ export const LocationMovement = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setFillGridData(response.paramObjectsMap.locationMovementDetailsVO);
+        // setFillGridData(response.paramObjectsMap.locationMovementDetailsVO);
+        const gridDetails = response.paramObjectsMap.locationMovementDetailsVO;
+        console.log('THE MODAL TABLE DATA FROM API ARE:', gridDetails);
+        setModalTableData(
+          gridDetails.map((row) => ({
+            id: row.id,
+            fromBin: row.bin,
+            fromBinClass: row.binClass,
+            fromBinType: row.fromBinType,
+            fromCellType: row.cellType,
+            partNo: row.partNo,
+            partDesc: row.partDesc,
+            sku: row.sku,
+            grnNo: row.grnNo,
+            grnDate: row.grnDate,
+            batchNo: row.batchNo,
+            batchDate: row.batchDate,
+            expDate: row.expDate,
+            // toBin: row.toBin,
+            // toBinType: row.ToBinType,
+            // toBinClass: row.ToBinClass,
+            // toCellType: row.ToCellType,
+            avlQty: row.avlQty,
+            toQty: row.toQty,
+            // fromCore: row.fromCore,
+            // toCore: row.ToCore,
+            qcFlag: row.qcFlag
+          }))
+        );
+        setChildTableData([]);
       } else {
         console.error('API Error:', response);
       }
@@ -298,7 +331,7 @@ export const LocationMovement = () => {
     }
   };
 
-  const getAllBin = async () => {
+  const getAllFromBin = async () => {
     try {
       const response = await apiCalls(
         'get',
@@ -307,14 +340,8 @@ export const LocationMovement = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        const options = response.paramObjectsMap.locationMovementDetailsVO.map((item) => ({
-          value: item.bin,
-          avlQty: item.avlQty, // Ensure these fields exist in the response
-          binClass: item.binClass, // Ensure these fields exist in the response
-          binType: item.binType
-        }));
-        setPartNoOptions(options);
-        console.log('Mapped Part No Options:', options);
+        console.log('CHILD BIN LIST ARE:', response.paramObjectsMap.locationMovementDetailsVO);
+        setFromBinList(response.paramObjectsMap.locationMovementDetailsVO);
       } else {
         console.error('API Error:', response);
       }
@@ -323,122 +350,374 @@ export const LocationMovement = () => {
     }
   };
 
-  const getAllPartNo = async (bin) => {
-    setSelectedBin(bin);
-
-    try {
-      const response = await apiCalls(
-        'get',
-        `locationMovement/getPartNoAndPartDescFromStockForLocationMovement?&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&bin=${bin}`
-      );
-      console.log('API Response:', response);
-
-      if (response.status === true) {
-        const options = response.paramObjectsMap.locationMovementDetailsVO.map((item) => ({
-          value: item.partNo,
-          avlQty: item.avlQty, // Ensure these fields exist in the response
-          partDesc: item.partDesc, // Ensure these fields exist in the response
-          sku: item.sku
-        }));
-        setPartNoOptionsNew(options);
-        console.log('Mapped toBin No Options:', options);
-      } else {
-        console.error('API Error:', response);
+  const resetFields = (row, resetFields) => {
+    const resetData = { ...row };
+    Object.keys(resetData).forEach((key) => {
+      if (resetFields.includes(key)) {
+        resetData[key] = '';
       }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
+    });
+    return resetData;
   };
 
-  // const getAllAvlQty = async (grnNo, selectedPart, partNo) => {
-  //   try {
-  //     const response = await apiCalls(
-  //       'get',
-  //       `vascontroller/getSqtyByKitting?orgId=${orgId}&branchCode=${branchCode}&client=${client}&partNo=${partNo}&warehouse=${warehouse}&grnno=${grnNo.grnNo}`
-  //     );
-  //     console.log('API Responseqq:', grnNo);
-
-  //     if (response.status === true) {
-  //       const avlQty = response.paramObjectsMap.kittingVO[0].sQTY;
-  //       setChildTableData((prevData) =>
-  //         prevData.map((row) =>
-  //           row.partNo === partNo
-  //             ? {
-  //                 ...row,
-  //                 avlQty: avlQty
-  //               }
-  //             : row
-  //         )
-  //       );
-  //     } else {
-  //       console.error('API Error:', response);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
-
-  const getAllToBin = async () => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `locationMovement/getToBinFromLocationStatusForLocationMovement?orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&warehouse=${warehouse}`
-      );
-
-      if (response.status === true) {
-        const options = response.paramObjectsMap.locationMovementDetailsVO.map((item) => ({
-          value: item.toBin,
-          // Ensure these fields exist in the response
-          toBinClass: item.toBinClass,
-          toCellType: item.toCellType,
-          toBinType: item.toBinType // Ensure these fields exist in the response
-        }));
-        setPartNoOptionsBin(options);
-        console.log('Mapped To bin No Options:', options);
-      } else {
-        console.error('API Error:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
+  const handleFromBinChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedFromBin = fromBinList.find((b) => b.fromBin === value);
+    console.log('THE SELECTED ROW IS:', row);
+    setChildTableData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              fromBin: selectedFromBin.fromBin,
+              fromBinType: selectedFromBin ? selectedFromBin.fromBinType : '',
+              fromBinClass: selectedFromBin ? selectedFromBin.fromBinClass : '',
+              fromCellType: selectedFromBin ? selectedFromBin.fromCellType : '',
+              fromCore: selectedFromBin ? selectedFromBin.fromCore : '',
+              fromBin: selectedFromBin.fromBin,
+              rowPartNoList: [],
+              partNo: '',
+              partDesc: '',
+              sku: '',
+              grnNo: '',
+              rowGrnNoList: [],
+              batchNo: '',
+              rowBatchNoList: [],
+              avlQty: '',
+              remainQty: '',
+              toBin: '',
+              toBinType: ''
+            }
+          : r
+      )
+    );
+    setChildTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        fromBin: !value ? 'From Bin is required' : ''
+      };
+      return newErrors;
+    });
+    getPartNo(value, row);
   };
-
-  // Function to append "GN" to the document ID
-
-  const getAllChildGRnNo = async (selectedPart, partNo) => {
+  const getPartNo = async (selectedFromBin, row) => {
     try {
       const response = await apiCalls(
         'get',
-        `locationMovement/getGrnNoAndBatchAndBatchDateAndLotNoFromStockForLocationMovement?bin=${selectedBin}&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&partDesc=${selectedPart.partDesc}&partNo=${partNo}&sku=${selectedPart.sku}`
+        `locationMovement/getPartNoAndPartDescFromStockForLocationMovement?&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&bin=${selectedFromBin}`
       );
-      console.log('API Response:', response);
+      console.log('THE FROM BIN LIST IS:', response);
+      console.log('THE ROW IS:', row);
 
       if (response.status === true) {
-        // Extract data from response
-        const grnData = response.paramObjectsMap.locationMovementDetailsVO[0];
-        const { grnNo, grnDate, batchNo, batchDate, lotNo } = grnData;
-
-        // Update the childTableData
-        setChildTableData((prevData) =>
-          prevData.map((row) =>
-            row.partNo === partNo
+        setChildTableData((prev) =>
+          prev.map((r) =>
+            r.id === row.id
               ? {
-                  ...row,
-                  grnNo: grnNo,
-                  grnDate: grnDate,
-                  batchNo: batchNo,
-                  batchDate: batchDate,
-                  lotNo: lotNo
+                  ...r,
+                  rowPartNoList: response.paramObjectsMap.locationMovementDetailsVO
                 }
-              : row
+              : r
           )
         );
-        // getAllAvlQty(grnData, selectedPart, partNo);
-      } else {
-        console.error('API Error:', response);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error fetching employee data:', error);
+    }
+  };
+  const handlePartNoChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedFromPartNo = row.rowPartNoList.find((b) => b.partNo === value);
+    setChildTableData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              partNo: selectedFromPartNo ? selectedFromPartNo.partNo : '',
+              partDesc: selectedFromPartNo ? selectedFromPartNo.partDesc : '',
+              sku: selectedFromPartNo ? selectedFromPartNo.sku : '',
+              grnNo: '',
+              rowGrnNoList: [],
+              batchNo: '',
+              rowBatchNoList: [],
+              avlQty: '',
+              remainQty: '',
+              toBin: '',
+              toBinType: ''
+            }
+          : r
+      )
+    );
+    setChildTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        partNo: !value ? 'Part number is required' : ''
+      };
+      return newErrors;
+    });
+
+    if (value) {
+      getGrnNo(row.fromBin, value, row);
+    }
+  };
+  const getGrnNo = async (selectedFromBin, selectedPartNo, row) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `locationMovement/getGrnNoDetailsForLocationMovement?bin=${selectedFromBin}&branch=${branch}&branchCode=${branchCode}&client=${client}&orgId=${orgId}&partNo=${selectedPartNo}`
+      );
+      console.log('THE FROM BIN LIST IS:', response);
+
+      if (response.status === true) {
+        setChildTableData((prev) =>
+          prev.map((r) =>
+            r.id === row.id
+              ? {
+                  ...r,
+                  rowGrnNoList: response.paramObjectsMap.grnDetails
+                }
+              : r
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+
+  const handleGrnNoChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedGrnNo = row.rowGrnNoList.find((row) => row.grnNo === value);
+    setChildTableData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              grnNo: selectedGrnNo.grnNo,
+              grnDate: selectedGrnNo ? selectedGrnNo.grnDate : '',
+              batchNo: '',
+              rowBatchNoList: [],
+              toBin: '',
+              toBinType: '',
+              avlQty: '',
+              remainQty: ''
+            }
+          : r
+      )
+    );
+    setChildTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        grnNo: !value ? 'GRN No is required' : ''
+      };
+      return newErrors;
+    });
+    getBatchNo(row.fromBin, row.partNo, value, row);
+  };
+  const getBatchNo = async (selectedFromBin, selectedPartNo, selectedGrnNo, row) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `locationMovement/getBatchNoDetailsForLocationMovement?bin=${selectedFromBin}&branch=${branch}&branchCode=${branchCode}&client=${client}&grnNo=${selectedGrnNo}&orgId=${orgId}&partNo=${selectedPartNo}`
+      );
+      console.log('THE FROM BIN LIST IS:', response);
+      if (response.status === true) {
+        setChildTableData((prev) =>
+          prev.map((r) =>
+            r.id === row.id
+              ? {
+                  ...r,
+                  rowBatchNoList: response.paramObjectsMap.batchDetails
+                }
+              : r
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+  const handleBatchNoChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedBatchNo = row.rowBatchNoList.find((row) => row.batchNo === value);
+    setChildTableData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              batchNo: selectedBatchNo.batchNo,
+              batchDate: selectedBatchNo ? selectedBatchNo.batchDate : '',
+              expDate: selectedBatchNo ? selectedBatchNo.expDate : '',
+              toBin: '',
+              toBinType: '',
+              avlQty: '',
+              remainQty: ''
+            }
+          : r
+      )
+    );
+
+    setChildTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        grnNo: !value ? 'GRN No is required' : ''
+      };
+      return newErrors;
+    });
+    getAvlQty(value, row.fromBin, row.grnNo, row.partNo, row);
+  };
+
+  const getAvlQty = async (selectedBatchNo, selectedFromBin, selectedGrnNo, selectedPartNo, row) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `locationMovement/getFromQtyForLocationMovement?batchNo=${selectedBatchNo}&bin=${selectedFromBin}&branch=${branch}&branchCode=${branchCode}&client=${client}&grnNo=${selectedGrnNo}&orgId=${orgId}&partNo=${selectedPartNo}`
+      );
+      console.log('THE ROW. TO BIN IS IS:', selectedPartNo);
+
+      setChildTableData((prevData) =>
+        prevData.map((r) =>
+          r.id === row.id
+            ? {
+                ...r,
+                avlQty: response.paramObjectsMap?.fromQty || r.avlQty
+              }
+            : r
+        )
+      );
+    } catch (error) {
+      console.error('Error fetching locationType data:', error);
+    }
+  };
+  const getToBinDetails = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `locationMovement/getToBinFromLocationStatusForLocationMovement?branch=${branch}&branchCode=${branchCode}&client=${client}&orgId=${orgId}&warehouse=${warehouse}`
+      );
+      console.log('THE TO BIN LIST ARE:', response);
+      if (response.status === true) {
+        setToBinList(response.paramObjectsMap.locationMovementDetailsVO);
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+  const handleToBinChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedToBin = toBinList.find((row) => row.toBin === value);
+    setChildTableData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              toBin: selectedToBin.toBin,
+              toBinType: selectedToBin ? selectedToBin.toBinType : '',
+              toBinClass: selectedToBin ? selectedToBin.toBinClass : '',
+              toCellType: selectedToBin ? selectedToBin.toCellType : ''
+              // toCore: selectedToBin ? selectedToBin.toCore : ''
+            }
+          : r
+      )
+    );
+    setChildTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        toBin: !value ? 'To Bin is required' : ''
+      };
+      return newErrors;
+    });
+    // getFromQty(row.batchNo, row.fromBin, row.grnNo, row.partNo, row);
+  };
+
+  const handleToQtyChange = (e, row, index) => {
+    const value = e.target.value;
+    const numericValue = isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10);
+    const numericAvlQty = isNaN(parseInt(row.avlQty, 10)) ? 0 : parseInt(row.avlQty, 10);
+    const intPattern = /^\d*$/;
+
+    if (value === '') {
+      setChildTableData((prev) => {
+        return prev.map((r) => {
+          if (r.id === row.id) {
+            return {
+              ...r,
+              toQty: '',
+              remainQty: ''
+            };
+          }
+          return r;
+        });
+      });
+
+      // Clear the error if input is cleared
+      // setChildTableErrors((prev) => {
+      //   const newErrors = [...prev];
+      //   newErrors[index] = {
+      //     ...newErrors[index],
+      //     toQty: ''
+      //   };
+      //   return newErrors;
+      // });
+    } else if (intPattern.test(value) && numericValue <= numericAvlQty) {
+      setChildTableData((prev) => {
+        return prev.map((r) => {
+          if (r.id === row.id) {
+            const cumulativeToQty = prev.reduce((total, item) => {
+              if (
+                item.fromBin === r.fromBin &&
+                item.partNo === r.partNo &&
+                item.grnNo === r.grnNo &&
+                item.batchNo === r.batchNo &&
+                item.id !== r.id
+              ) {
+                return total + (isNaN(parseInt(item.toQty, 10)) ? 0 : parseInt(item.toQty, 10));
+              }
+              return total;
+            }, numericValue);
+
+            const newRemainQty = Math.max(numericAvlQty - cumulativeToQty, 0);
+
+            console.log(`Updated remainQty for row ${r.id}: ${newRemainQty}`);
+
+            return {
+              ...r,
+              toQty: value,
+              remainQty: newRemainQty
+            };
+          }
+          return r;
+        });
+      });
+
+      setChildTableErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = {
+          ...newErrors[index],
+          toQty: ''
+        };
+        return newErrors;
+      });
+    } else {
+      // Handle invalid input
+      setChildTableErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = {
+          ...newErrors[index],
+          toQty: numericValue > numericAvlQty ? 'Not greater than AvlQty' : 'Only numbers are allowed'
+        };
+        return newErrors;
+      });
+
+      // Optionally, clear the invalid input value if it's greater than avlQty
+      if (numericValue > numericAvlQty) {
+        e.target.value = '';
+      }
     }
   };
 
@@ -569,8 +848,7 @@ export const LocationMovement = () => {
 
   const handleClear = () => {
     setFormData({
-      // docId: '',
-      docDate: null,
+      docDate: dayjs(),
       refNo: '',
       refDate: '',
       active: true
@@ -598,6 +876,7 @@ export const LocationMovement = () => {
       docId: '',
       docDate: ''
     });
+    getDocId();
   };
 
   const handleSave = async () => {
@@ -713,92 +992,48 @@ export const LocationMovement = () => {
     if (selectAll) {
       setSelectedRows([]);
     } else {
-      setSelectedRows(fillGridData.map((_, index) => index));
+      setSelectedRows(modalTableData.map((_, index) => index));
     }
     setSelectAll(!selectAll);
   };
 
-  const handleSaveSelectedRows = () => {
-    const selectedData = selectedRows.map((index) => fillGridData[index]);
+  const handleSubmitSelectedRows = async () => {
+    const selectedData = selectedRows.map((index) => modalTableData[index]);
 
-    // Extract the bin values from the selected data
-    const binValues = selectedData.map((row) => row.bin);
-
-    // Pass the bin values to the getAllPartNo function
-    getAllPartNo(binValues);
-
-    // Add the selected data to childTableData
     setChildTableData([...childTableData, ...selectedData]);
 
-    console.log('Selected Data:', selectedData);
+    console.log('Data selected:', selectedData);
 
-    // Clear selections and close the modal
     setSelectedRows([]);
     setSelectAll(false);
     handleCloseModal();
-  };
 
-  const handleToQtyChange = (e, row, index) => {
-    const value = e.target.value;
-    const numericValue = isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10); // Ensure value is a number
-    const numericFromQty = isNaN(parseInt(row.avlQty, 10)) ? 0 : parseInt(row.avlQty, 10); // Ensure fromQty is a number
-    const intPattern = /^\d*$/;
+    // try {
+    //   await Promise.all(
+    //     selectedData.map(async (data, idx) => {
+    //       // Simulate the event object for handleToQtyChange
+    //       const simulatedEvent = {
+    //         target: {
+    //           value: data.toQty // Assuming you have a toQty field in your data
+    //         }
+    //       };
 
-    if (intPattern.test(value) || value === '') {
-      setChildTableData((prev) => {
-        const updatedData = prev.map((r) => {
-          if (r.id === row.id) {
-            let newRemainQty = numericFromQty - numericValue; // Initial remainQty calculation
+    //       await getPartNo(data.fromBin, formData.transferFromFlag, data);
+    //       await getGrnNo(data.partNo, data);
+    //       await getBatchNo(data.partNo, data.grnNo, data);
+    //       await getBinDetails(data.batchNo, data.grnNo, data.partNo, data);
 
-            // Check if selected partNo is already in another row
-            const existingRow = prev.find((item) => item.partNo === r.partNo && item.id !== r.id);
-
-            if (existingRow) {
-              // If partNo exists in another row, update remainQty based on that row's remainQty
-              const existingRemainQty = isNaN(existingRow.remainingQty) ? 0 : existingRow.remainingQty;
-              newRemainQty = existingRemainQty - numericValue;
-            }
-
-            // Ensure remainQty is non-negative
-            newRemainQty = Math.max(newRemainQty, 0);
-
-            return {
-              ...r,
-              toQty: value,
-              remainingQty: newRemainQty
-            };
-          }
-          return r;
-        });
-
-        return updatedData;
-      });
-
-      // Clear the error if input is valid
-      setChildTableErrors((prev) => {
-        const newErrors = [...prev];
-        newErrors[index] = {
-          ...newErrors[index],
-          toQty: ''
-        };
-        return newErrors;
-      });
-    } else {
-      // Set error if input is invalid
-      setChildTableErrors((prev) => {
-        const newErrors = [...prev];
-        newErrors[index] = {
-          ...newErrors[index],
-          toQty: 'Only numbers are allowed'
-        };
-        return newErrors;
-      });
-    }
+    //       // Call handleToQtyChange with simulated event, row data, and index
+    //       handleToQtyChange(simulatedEvent, data, detailTableData.length + idx);
+    //     })
+    //   );
+    // } catch (error) {
+    //   console.error('Error processing selected data:', error);
+    // }
   };
 
   return (
     <>
-      <div>{/* <ToastContainer /> */}</div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
@@ -901,12 +1136,10 @@ export const LocationMovement = () => {
                                   <th className="px-2 py-2 text-white text-center">Part Description</th>
                                   <th className="px-2 py-2 text-white text-center">SKU</th>
                                   <th className="px-2 py-2 text-white text-center">GRN No</th>
-                                  <th className="px-2 py-2 text-white text-center">GRN Date</th>
                                   <th className="px-2 py-2 text-white text-center">Batch No</th>
-                                  <th className="px-2 py-2 text-white text-center">Batch Date</th>
-                                  <th className="px-2 py-2 text-white text-center">Lot No</th>
+                                  <th className="px-2 py-2 text-white text-center">Avl Qty</th>
                                   <th className="px-2 py-2 text-white text-center">To Bin</th>
-                                  <th className="px-2 py-2 text-white text-center">From Qty</th>
+                                  <th className="px-2 py-2 text-white text-center">To Bin Type</th>
                                   <th className="px-2 py-2 text-white text-center">To Qty</th>
                                   <th className="px-2 py-2 text-white text-center">Remaining Qty</th>
                                   {/* <th className="px-2 py-2 text-white text-center">Unit Rate</th>
@@ -929,111 +1162,46 @@ export const LocationMovement = () => {
                                       <td className="text-center">
                                         <div className="pt-2">{index + 1}</div>
                                       </td>
-
                                       <td className="border px-2 py-2">
                                         <select
-                                          value={row.bin}
+                                          value={row.fromBin}
                                           style={{ width: '130px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            console.log('Selected Part No:', value);
-
-                                            const selectedPart = partNoOptions.find((option) => String(option.value) === String(value));
-                                            console.log('Selected Part Details:', selectedPart);
-
-                                            if (selectedPart) {
-                                              setChildTableData((prev) => {
-                                                return prev.map((r) =>
-                                                  r.id === row.id
-                                                    ? {
-                                                        ...r,
-                                                        bin: value,
-                                                        binClass: selectedPart.binClass,
-                                                        binType: selectedPart.binType,
-                                                        avlQty: selectedPart.avlQty
-                                                      }
-                                                    : r
-                                                );
-                                              });
-                                              getAllPartNo(value);
-                                            }
-
-                                            setChildTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                partNo: !value ? 'Part No is required' : '',
-                                                partDesc: !selectedPart ? 'Part Description is required' : '',
-                                                sku: !selectedPart ? 'SKU is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={childTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
+                                          onChange={(e) => handleFromBinChange(row, index, e)}
+                                          className={childTableErrors[index]?.fromBin ? 'error form-control' : 'form-control'}
                                         >
-                                          <option value="">Select Part No</option>
-                                          {partNoOptions &&
-                                            partNoOptions.map((option) => (
-                                              <option key={option.value} value={option.value}>
-                                                {option.value}
+                                          <option value="">--Select--</option>
+                                          {fromBinList &&
+                                            fromBinList.map((option) => (
+                                              <option key={option.fromBin} value={option.fromBin}>
+                                                {option.fromBin}
                                               </option>
                                             ))}
                                         </select>
 
-                                        {childTableErrors[index]?.partNo && (
+                                        {childTableErrors[index]?.fromBin && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {childTableErrors[index].partNo}
+                                            {childTableErrors[index].fromBin}
                                           </div>
                                         )}
                                       </td>
-
                                       <td className="border px-2 py-2">
                                         <select
                                           value={row.partNo}
                                           style={{ width: '130px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            console.log('Selected Part No:', value);
-
-                                            const selectedPart = partNoOptionsNew.find((option) => String(option.value) === String(value));
-                                            console.log('Selected Part Details:', selectedPart);
-
-                                            if (selectedPart) {
-                                              setChildTableData((prev) => {
-                                                return prev.map((r) =>
-                                                  r.id === row.id
-                                                    ? {
-                                                        ...r,
-                                                        partNo: value,
-                                                        partDesc: selectedPart.partDesc,
-                                                        sku: selectedPart.sku
-                                                      }
-                                                    : r
-                                                );
-                                              });
-                                              getAllChildGRnNo(selectedPart, value);
-                                            }
-
-                                            setChildTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                partNo: !value ? 'Part No is required' : '',
-                                                partDesc: !selectedPart ? 'Part Description is required' : '',
-                                                sku: !selectedPart ? 'SKU is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
+                                          onChange={(e) => handlePartNoChange(row, index, e)}
                                           className={childTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
                                         >
-                                          <option value="">Select Part No</option>
-                                          {partNoOptionsNew &&
-                                            partNoOptionsNew.map((option) => (
-                                              <option key={option.value} value={option.value}>
-                                                {option.value}
-                                              </option>
-                                            ))}
+                                          <option value="">-- Select --</option>
+                                          {Array.isArray(row.rowPartNoList) &&
+                                            row.rowPartNoList.map(
+                                              (part, idx) =>
+                                                part &&
+                                                part.partNo && (
+                                                  <option key={part.partNo} value={part.partNo}>
+                                                    {part.partNo}
+                                                  </option>
+                                                )
+                                            )}
                                         </select>
 
                                         {childTableErrors[index]?.partNo && (
@@ -1042,228 +1210,98 @@ export const LocationMovement = () => {
                                           </div>
                                         )}
                                       </td>
-
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
                                           value={row.partDesc}
                                           disabled
                                           style={{ width: '200px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setChildTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, partDesc: value } : r)));
-                                            setChildTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                partDesc: !value ? 'Part Description is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
                                           className={childTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
                                         />
-                                        {childTableErrors[index]?.partDesc && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {childTableErrors[index].partDesc}
-                                          </div>
-                                        )}
                                       </td>
-
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
                                           value={row.sku}
                                           disabled
                                           style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setChildTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, sku: value } : r)));
-                                            setChildTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], sku: !value ? 'SKU is required' : '' };
-                                              return newErrors;
-                                            });
-                                          }}
                                           className={childTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
                                         />
-                                        {childTableErrors[index]?.sku && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {childTableErrors[index].sku}
-                                          </div>
-                                        )}
                                       </td>
-
                                       <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
+                                        <select
                                           value={row.grnNo}
-                                          disabled
-                                          style={{ width: '120px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setChildTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, grnNo: value } : r)));
-                                            setChildTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], grnNo: !value ? 'GRN No is required' : '' };
-                                              return newErrors;
-                                            });
-                                          }}
+                                          style={{ width: '225px' }}
+                                          onChange={(e) => handleGrnNoChange(row, index, e)}
                                           className={childTableErrors[index]?.grnNo ? 'error form-control' : 'form-control'}
-                                        />
+                                        >
+                                          <option value="">-- Select --</option>
+                                          {Array.isArray(row.rowGrnNoList) &&
+                                            row.rowGrnNoList.map(
+                                              (grn, idx) =>
+                                                grn &&
+                                                grn.grnNo && (
+                                                  <option key={grn.grnNo} value={grn.grnNo}>
+                                                    {grn.grnNo}
+                                                  </option>
+                                                )
+                                            )}
+                                        </select>
                                         {childTableErrors[index]?.grnNo && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                             {childTableErrors[index].grnNo}
                                           </div>
                                         )}
                                       </td>
-
                                       <td className="border px-2 py-2">
-                                        <input
-                                          type="date"
-                                          value={row.grnDate}
-                                          // style={{ width: '100px' }}
-                                          disabled
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setChildTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, grnDate: value } : r)));
-                                            setChildTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], grnDate: !value ? 'GRN Date is required' : '' };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={childTableErrors[index]?.grnDate ? 'error form-control' : 'form-control'}
-                                        />
-                                        {childTableErrors[index]?.grnDate && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {childTableErrors[index].grnDate}
-                                          </div>
-                                        )}
-                                      </td>
-
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
+                                        <select
                                           value={row.batchNo}
-                                          disabled
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setChildTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, batchNo: value } : r)));
-                                            setChildTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], batchNo: !value ? 'Batch No is required' : '' };
-                                              return newErrors;
-                                            });
-                                          }}
+                                          style={{ width: '200px' }}
+                                          onChange={(e) => handleBatchNoChange(row, index, e)}
                                           className={childTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
-                                        />
+                                        >
+                                          <option value="">-- Select --</option>
+                                          {Array.isArray(row.rowBatchNoList) &&
+                                            row.rowBatchNoList.map(
+                                              (batch, idx) =>
+                                                batch &&
+                                                batch.batchNo && (
+                                                  <option key={batch.batchNo} value={batch.batchNo}>
+                                                    {batch.batchNo}
+                                                  </option>
+                                                )
+                                            )}
+                                        </select>
                                         {childTableErrors[index]?.batchNo && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                             {childTableErrors[index].batchNo}
                                           </div>
                                         )}
                                       </td>
-
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="date"
-                                          value={row.batchDate}
-                                          // style={{ width: '100px' }}
-                                          disabled
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setChildTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, batchDate: value } : r))
-                                            );
-                                            setChildTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], batchDate: !value ? 'Batch Date is required' : '' };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={childTableErrors[index]?.batchDate ? 'error form-control' : 'form-control'}
-                                        />
-                                        {childTableErrors[index]?.batchDate && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {childTableErrors[index].batchDate}
-                                          </div>
-                                        )}
-                                      </td>
-
-                                      <td className="border px-2 py-2">
-                                        <input
+                                          style={{ width: '150px' }}
                                           type="text"
-                                          value={row.lotNo}
+                                          value={row.avlQty}
+                                          className={childTableErrors[index]?.avlQty ? 'error form-control' : 'form-control'}
                                           disabled
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setChildTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, lotNo: value } : r)));
-                                            setChildTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], lotNo: !value ? 'Lot No is required' : '' };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={childTableErrors[index]?.lotNo ? 'error form-control' : 'form-control'}
                                         />
-                                        {childTableErrors[index]?.lotNo && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {childTableErrors[index].lotNo}
-                                          </div>
-                                        )}
                                       </td>
-
                                       <td className="border px-2 py-2">
                                         <select
                                           value={row.toBin}
-                                          style={{ width: '130px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            console.log('Selected ToBin No:', value);
-
-                                            const selectedPart = partNoOptionsBin.find((option) => String(option.value) === String(value));
-                                            console.log('Selected To Bin Details:', selectedPart);
-
-                                            if (selectedPart) {
-                                              setChildTableData((prev) => {
-                                                return prev.map((r) =>
-                                                  r.id === row.id
-                                                    ? {
-                                                        ...r,
-                                                        toBin: value,
-                                                        toBinClass: selectedPart.toBinClass,
-                                                        toCellType: selectedPart.toCellType,
-                                                        toBinType: selectedPart.toBinType
-                                                      }
-                                                    : r
-                                                );
-                                              });
-                                              // getAllChildGRnNo(selectedPart, value);
-                                            }
-
-                                            setChildTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                toBin: !value ? 'To Bin is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
+                                          style={{ width: '200px' }}
+                                          onChange={(e) => handleToBinChange(row, index, e)}
                                           className={childTableErrors[index]?.toBin ? 'error form-control' : 'form-control'}
                                         >
-                                          <option value="">Select To Bin</option>
-                                          {partNoOptionsBin &&
-                                            partNoOptionsBin.map((option) => (
-                                              <option key={option.value} value={option.value}>
-                                                {option.value}
+                                          <option value="">--Select--</option>
+                                          {toBinList &&
+                                            toBinList.map((option) => (
+                                              <option key={option.toBin} value={option.toBin}>
+                                                {option.toBin}
                                               </option>
                                             ))}
                                         </select>
-
                                         {childTableErrors[index]?.toBin && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                             {childTableErrors[index].toBin}
@@ -1272,32 +1310,13 @@ export const LocationMovement = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
+                                          style={{ width: '200px' }}
                                           type="text"
-                                          value={row.avlQty}
+                                          value={row.toBinType}
+                                          className={childTableErrors[index]?.toBinType ? 'error form-control' : 'form-control'}
                                           disabled
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setChildTableData((prev) =>
-                                              prev.map((r) =>
-                                                r.id === row.id ? { ...r, avlQty: value, remainingQty: value - r.toQty } : r
-                                              )
-                                            );
-                                            setChildTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], avlQty: !value ? 'avlQty is required' : '' };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={childTableErrors[index]?.avlQty ? 'error form-control' : 'form-control'}
                                         />
-                                        {childTableErrors[index]?.avlQty && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {childTableErrors[index].avlQty}
-                                          </div>
-                                        )}
                                       </td>
-
                                       <td className="border px-2 py-2">
                                         <input
                                           style={{ width: '150px' }}
@@ -1313,34 +1332,14 @@ export const LocationMovement = () => {
                                           </div>
                                         )}
                                       </td>
-
                                       <td className="border px-2 py-2">
                                         <input
+                                          style={{ width: '150px' }}
                                           type="text"
-                                          value={row.remainingQty}
+                                          value={row.remainQty}
+                                          className={childTableErrors[index]?.remainQty ? 'error form-control' : 'form-control'}
                                           disabled
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setChildTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, remainingQty: value } : r))
-                                            );
-                                            setChildTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                remainingQty: !value ? ' remaining qty is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={childTableErrors[index]?.remainingQty ? 'error form-control' : 'form-control'}
                                         />
-                                        {childTableErrors[index]?.remainingQty && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {childTableErrors[index].remainingQty}
-                                          </div>
-                                        )}
                                       </td>
                                     </tr>
                                   ))
@@ -1383,14 +1382,13 @@ export const LocationMovement = () => {
                                     <th className="px-2 py-2 text-white text-center">GRN No</th>
                                     <th className="px-2 py-2 text-white text-center">GRN Date</th>
                                     <th className="px-2 py-2 text-white text-center">Batch No</th>
-                                    <th className="px-2 py-2 text-white text-center">Batch Date</th>
                                     <th className="px-2 py-2 text-white text-center">Lot No</th>
                                     <th className="px-2 py-2 text-white text-center">From Qty</th>
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {fillGridData?.map((row, index) => (
-                                    <tr key={row.index}>
+                                  {modalTableData?.map((row, index) => (
+                                    <tr key={row.id}>
                                       <td className="border p-0 text-center">
                                         <Checkbox
                                           checked={selectedRows.includes(index)}
@@ -1404,7 +1402,9 @@ export const LocationMovement = () => {
                                         <div className="pt-1">{index + 1}</div>
                                       </td>
                                       <td className="border p-0">
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.bin || ''}</div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>
+                                          {row.fromBin || ''}
+                                        </div>
                                       </td>
                                       <td className="border p-0">
                                         <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>
@@ -1436,16 +1436,6 @@ export const LocationMovement = () => {
                                       </td>
                                       <td className="border p-0">
                                         <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>
-                                          {row.batchDate || ''}
-                                        </div>
-                                      </td>
-                                      <td className="border p-0">
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>
-                                          {row.lotNo || ''}
-                                        </div>
-                                      </td>
-                                      <td className="border p-0">
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>
                                           {row.avlQty || ''}
                                         </div>
                                       </td>
@@ -1459,8 +1449,8 @@ export const LocationMovement = () => {
                       </DialogContent>
                       <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
                         <Button onClick={handleCloseModal}>Cancel</Button>
-                        <Button color="secondary" onClick={handleSaveSelectedRows} variant="contained">
-                          Save
+                        <Button color="secondary" onClick={handleSubmitSelectedRows} variant="contained">
+                          Proceed
                         </Button>
                       </DialogActions>
                     </Dialog>
