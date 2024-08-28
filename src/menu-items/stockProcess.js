@@ -1,8 +1,9 @@
 // assets
-import { IconDashboard } from '@tabler/icons-react';
+
+import { IconForklift } from '@tabler/icons-react';
 
 // constant
-const icons = { IconDashboard };
+const icons = { IconForklift };
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -16,7 +17,7 @@ const stockProcess = {
       title: 'Stock Process',
       type: 'item',
       url: '/stock-process/stockprocessmain',
-      icon: icons.IconDashboard
+      icon: icons.IconForklift
     }
   ]
 };

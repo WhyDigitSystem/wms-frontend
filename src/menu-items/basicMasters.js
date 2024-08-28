@@ -1,9 +1,9 @@
 // assets
-import { IconKey } from '@tabler/icons-react';
+import { IconDatabaseStar } from '@tabler/icons-react';
 
 // constant
 const icons = {
-  IconKey
+  IconDatabaseStar
 };
 
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
@@ -18,7 +18,7 @@ const basicMasters = {
       id: 'basicMasters',
       title: 'Basic Masters',
       type: 'collapse',
-      icon: icons.IconKey,
+      icon: icons.IconDatabaseStar,
 
       children: [
         {
