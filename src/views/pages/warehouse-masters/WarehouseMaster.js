@@ -29,7 +29,7 @@ import { getAllActiveBranches, getAllActiveEmployees } from 'utils/CommonFunctio
 
 export const WarehouseMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
