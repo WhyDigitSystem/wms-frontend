@@ -916,65 +916,6 @@ export const StockRestate = () => {
     });
     // getBatchNo(row.fromBin, row.partNo, value);
   };
-  // const handleToQtyChange = (e, row, index) => {
-  //   const value = e.target.value;
-  //   const numericValue = isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10); // Ensure value is a number
-  //   const numericFromQty = isNaN(parseInt(row.fromQty, 10)) ? 0 : parseInt(row.fromQty, 10); // Ensure fromQty is a number
-  //   const intPattern = /^\d*$/;
-
-  //   if (intPattern.test(value) || value === '') {
-  //     setDetailTableData((prev) => {
-  //       const updatedData = prev.map((r) => {
-  //         if (r.id === row.id) {
-  //           let newRemainQty = numericFromQty - numericValue; // Initial remainQty calculation
-
-  //           // Check if selected partNo is already in another row
-  //           const existingRow = prev.find((item) => item.partNo === r.partNo && item.id !== r.id);
-
-  //           if (existingRow) {
-  //             // If partNo exists in another row, update remainQty based on that row's remainQty
-  //             const existingRemainQty = isNaN(existingRow.remainQty) ? 0 : existingRow.remainQty;
-  //             newRemainQty = existingRemainQty - numericValue;
-  //           }
-
-  //           // Ensure remainQty is non-negative
-  //           newRemainQty = Math.max(newRemainQty, 0);
-
-  //           console.log(`Updated remainQty for row ${r.id}: ${newRemainQty}`); // Debugging line
-
-  //           return {
-  //             ...r,
-  //             toQty: value,
-  //             remainQty: newRemainQty
-  //           };
-  //         }
-  //         return r;
-  //       });
-
-  //       return updatedData;
-  //     });
-
-  //     // Clear the error if input is valid
-  //     setDetailTableErrors((prev) => {
-  //       const newErrors = [...prev];
-  //       newErrors[index] = {
-  //         ...newErrors[index],
-  //         toQty: ''
-  //       };
-  //       return newErrors;
-  //     });
-  //   } else {
-  //     // Set error if input is invalid
-  //     setDetailTableErrors((prev) => {
-  //       const newErrors = [...prev];
-  //       newErrors[index] = {
-  //         ...newErrors[index],
-  //         toQty: 'Only numbers are allowed'
-  //       };
-  //       return newErrors;
-  //     });
-  //   }
-  // };
 
   const handleToQtyChange = (e, row, index) => {
     const value = e.target.value;
@@ -988,7 +929,6 @@ export const StockRestate = () => {
           if (r.id === row.id) {
             let newRemainQty = numericFromQty - numericValue; // Initial remainQty calculation
 
-            // Calculate the cumulative toQty for all rows with the same partNo
             const cumulativeToQty = prev.reduce((total, item) => {
               if (
                 item.fromBin === r.fromBin &&

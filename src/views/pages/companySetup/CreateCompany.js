@@ -192,7 +192,7 @@ const CreateCompany = () => {
         employeeName: formData.companyAdminName,
         mainCurrency: '',
         note: '',
-        password: encryptPassword('Wds@20232'),
+        password: encryptPassword('Wds@2022'),
         phone: '',
         state: '',
         gst: '',

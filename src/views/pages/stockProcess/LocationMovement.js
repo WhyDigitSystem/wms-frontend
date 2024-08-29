@@ -350,16 +350,6 @@ export const LocationMovement = () => {
     }
   };
 
-  const resetFields = (row, resetFields) => {
-    const resetData = { ...row };
-    Object.keys(resetData).forEach((key) => {
-      if (resetFields.includes(key)) {
-        resetData[key] = '';
-      }
-    });
-    return resetData;
-  };
-
   const handleFromBinChange = (row, index, event) => {
     const value = event.target.value;
     const selectedFromBin = fromBinList.find((b) => b.fromBin === value);
@@ -634,7 +624,94 @@ export const LocationMovement = () => {
     });
     // getFromQty(row.batchNo, row.fromBin, row.grnNo, row.partNo, row);
   };
+  //OLD WORKING TOQTYCHANGE FUNCTION
+  // const handleToQtyChange = (e, row, index) => {
+  //   const value = e.target.value;
+  //   const numericValue = isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10);
+  //   const numericAvlQty = isNaN(parseInt(row.avlQty, 10)) ? 0 : parseInt(row.avlQty, 10);
+  //   const intPattern = /^\d*$/;
 
+  //   if (value === '') {
+  //     setChildTableData((prev) => {
+  //       return prev.map((r) => {
+  //         if (r.id === row.id) {
+  //           return {
+  //             ...r,
+  //             toQty: '',
+  //             remainQty: ''
+  //           };
+  //         }
+  //         return r;
+  //       });
+  //     });
+
+  //     // Clear the error if input is cleared
+  //     // setChildTableErrors((prev) => {
+  //     //   const newErrors = [...prev];
+  //     //   newErrors[index] = {
+  //     //     ...newErrors[index],
+  //     //     toQty: ''
+  //     //   };
+  //     //   return newErrors;
+  //     // });
+  //   } else if (intPattern.test(value) && numericValue <= numericAvlQty) {
+  //     setChildTableData((prev) => {
+  //       return prev.map((r) => {
+  //         if (r.id === row.id) {
+  //           const cumulativeToQty = prev.reduce((total, item) => {
+  //             if (
+  //               item.fromBin === r.fromBin &&
+  //               item.partNo === r.partNo &&
+  //               item.grnNo === r.grnNo &&
+  //               item.batchNo === r.batchNo &&
+  //               item.id !== r.id
+  //             ) {
+  //               return total + (isNaN(parseInt(item.toQty, 10)) ? 0 : parseInt(item.toQty, 10));
+  //             }
+  //             return total;
+  //           }, numericValue);
+
+  //           const newRemainQty = Math.max(numericAvlQty - cumulativeToQty, 0);
+
+  //           console.log(`Updated remainQty for row ${r.id}: ${newRemainQty}`);
+
+  //           return {
+  //             ...r,
+  //             toQty: value,
+  //             remainQty: newRemainQty
+  //           };
+  //         }
+  //         return r;
+  //       });
+  //     });
+
+  //     setChildTableErrors((prev) => {
+  //       const newErrors = [...prev];
+  //       newErrors[index] = {
+  //         ...newErrors[index],
+  //         toQty: ''
+  //       };
+  //       return newErrors;
+  //     });
+  //   } else {
+  //     // Handle invalid input
+  //     setChildTableErrors((prev) => {
+  //       const newErrors = [...prev];
+  //       newErrors[index] = {
+  //         ...newErrors[index],
+  //         toQty: numericValue > numericAvlQty ? 'Not greater than AvlQty' : 'Only numbers are allowed'
+  //       };
+  //       return newErrors;
+  //     });
+
+  //     // Optionally, clear the invalid input value if it's greater than avlQty
+  //     if (numericValue > numericAvlQty) {
+  //       e.target.value = '';
+  //     }
+  //   }
+  // };
+
+  //CURRENT WORKING TOQTYCHANGE FUNCTION
   const handleToQtyChange = (e, row, index) => {
     const value = e.target.value;
     const numericValue = isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10);
@@ -654,72 +731,152 @@ export const LocationMovement = () => {
           return r;
         });
       });
-
-      // Clear the error if input is cleared
-      // setChildTableErrors((prev) => {
-      //   const newErrors = [...prev];
-      //   newErrors[index] = {
-      //     ...newErrors[index],
-      //     toQty: ''
-      //   };
-      //   return newErrors;
-      // });
-    } else if (intPattern.test(value) && numericValue <= numericAvlQty) {
+    } else if (intPattern.test(value)) {
       setChildTableData((prev) => {
-        return prev.map((r) => {
-          if (r.id === row.id) {
-            const cumulativeToQty = prev.reduce((total, item) => {
-              if (
-                item.fromBin === r.fromBin &&
-                item.partNo === r.partNo &&
-                item.grnNo === r.grnNo &&
-                item.batchNo === r.batchNo &&
-                item.id !== r.id
-              ) {
-                return total + (isNaN(parseInt(item.toQty, 10)) ? 0 : parseInt(item.toQty, 10));
-              }
-              return total;
-            }, numericValue);
+        let cumulativeToQty = numericValue;
+        let isValid = true;
 
-            const newRemainQty = Math.max(numericAvlQty - cumulativeToQty, 0);
+        prev.forEach((item, i) => {
+          if (item.bin === row.bin && item.partNo === row.partNo && item.batchNo === row.batchNo && item.grnNo === row.grnNo && i < index) {
+            const previousRemainQty = isNaN(parseInt(item.remainQty, 10)) ? 0 : parseInt(item.remainQty, 10);
 
-            console.log(`Updated remainQty for row ${r.id}: ${newRemainQty}`);
+            if (numericValue > previousRemainQty) {
+              isValid = false;
+              setChildTableErrors((prevErrors) => {
+                const newErrors = [...prevErrors];
+                newErrors[index] = {
+                  ...newErrors[index],
+                  toQty: `Cannot be greater than previous row's remainQty (${previousRemainQty})`
+                };
+                return newErrors;
+              });
+            }
 
-            return {
-              ...r,
-              toQty: value,
-              remainQty: newRemainQty
-            };
+            cumulativeToQty += isNaN(parseInt(item.toQty, 10)) ? 0 : parseInt(item.toQty, 10);
           }
-          return r;
         });
+
+        if (isValid && numericValue <= numericAvlQty) {
+          return prev.map((r) => {
+            if (r.id === row.id) {
+              const newRemainQty = Math.max(numericAvlQty - cumulativeToQty, 0);
+
+              return {
+                ...r,
+                toQty: value,
+                remainQty: newRemainQty
+              };
+            }
+            return r;
+          });
+        } else {
+          return prev;
+        }
       });
 
-      setChildTableErrors((prev) => {
-        const newErrors = [...prev];
-        newErrors[index] = {
-          ...newErrors[index],
-          toQty: ''
-        };
-        return newErrors;
-      });
+      if (numericValue <= numericAvlQty) {
+        setChildTableErrors((prev) => {
+          const newErrors = [...prev];
+          newErrors[index] = {
+            ...newErrors[index],
+            toQty: ''
+          };
+          return newErrors;
+        });
+      }
     } else {
       // Handle invalid input
       setChildTableErrors((prev) => {
         const newErrors = [...prev];
         newErrors[index] = {
           ...newErrors[index],
-          toQty: numericValue > numericAvlQty ? 'Not greater than AvlQty' : 'Only numbers are allowed'
+          toQty: 'Only numbers are allowed'
         };
         return newErrors;
       });
 
-      // Optionally, clear the invalid input value if it's greater than avlQty
-      if (numericValue > numericAvlQty) {
-        e.target.value = '';
-      }
+      e.target.value = '';
     }
   };
+
+  // const handleToQtyChange = (e, row, index) => {
+  //   const value = e.target.value;
+  //   const numericValue = isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10);
+  //   const numericAvlQty = isNaN(parseInt(row.avlQty, 10)) ? 0 : parseInt(row.avlQty, 10);
+  //   const intPattern = /^\d*$/;
+
+  //   setChildTableData((prev) => {
+  //     let cumulativeToQty = 0;
+
+  //     return prev.map((r, i) => {
+  //       // Check if rows match by `bin`, `partNo`, `batchNo`, and `grnNo`
+  //       const isSameRowData = r.bin === row.bin && r.partNo === row.partNo && r.batchNo === row.batchNo && r.grnNo === row.grnNo;
+
+  //       if (isSameRowData) {
+  //         if (i === index) {
+  //           if (value === '') {
+  //             // Case 1: Clear only the current row if `toQty` is cleared
+  //             return {
+  //               ...r,
+  //               toQty: '',
+  //               remainQty: ''
+  //             };
+  //           } else if (intPattern.test(value)) {
+  //             cumulativeToQty += numericValue;
+  //             const newRemainQty = Math.max(numericAvlQty - cumulativeToQty, 0);
+
+  //             return {
+  //               ...r,
+  //               toQty: value,
+  //               remainQty: newRemainQty
+  //             };
+  //           }
+  //         } else if (i > index && value === '') {
+  //           // Case 2: If a previous row's `toQty` is cleared, clear all subsequent matching rows
+  //           return {
+  //             ...r,
+  //             toQty: '',
+  //             remainQty: ''
+  //           };
+  //         } else if (i > index && intPattern.test(value)) {
+  //           cumulativeToQty += isNaN(parseInt(r.toQty, 10)) ? 0 : parseInt(r.toQty, 10);
+  //           const newRemainQty = Math.max(numericAvlQty - cumulativeToQty, 0);
+
+  //           return {
+  //             ...r,
+  //             toQty: '',
+  //             remainQty: newRemainQty
+  //           };
+  //         }
+  //       }
+  //       return r;
+  //     });
+  //   });
+
+  //   // Error handling: Clear any existing errors if input is valid
+  //   if (intPattern.test(value)) {
+  //     setChildTableErrors((prev) => {
+  //       const newErrors = [...prev];
+  //       newErrors[index] = {
+  //         ...newErrors[index],
+  //         toQty: ''
+  //       };
+  //       return newErrors;
+  //     });
+  //   } else {
+  //     // Handle invalid input
+  //     setChildTableErrors((prev) => {
+  //       const newErrors = [...prev];
+  //       newErrors[index] = {
+  //         ...newErrors[index],
+  //         toQty: 'Only numbers are allowed'
+  //       };
+  //       return newErrors;
+  //     });
+
+  //     e.target.value = '';
+  //   }
+  // };
 
   const getLocationMovementById = async (row) => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
@@ -997,10 +1154,44 @@ export const LocationMovement = () => {
     setSelectAll(!selectAll);
   };
 
+  // const handleSubmitSelectedRows = async () => {
+  //   const selectedData = selectedRows.map((index) => modalTableData[index]);
+
+  //   setChildTableData([...childTableData, ...selectedData]);
+
+  //   console.log('Data selected:', selectedData);
+
+  //   setSelectedRows([]);
+  //   setSelectAll(false);
+  //   handleCloseModal();
+
+  //   try {
+  //     await Promise.all(
+  //       selectedData.map(async (data, idx) => {
+  //         // Simulate the event object for handleToQtyChange
+  //         const simulatedEvent = {
+  //           target: {
+  //             value: data.partNo // Assuming you have a toQty field in your data
+  //           }
+  //         };
+
+  //         await getPartNo(data.fromBin, data);
+  //         await getGrnNo(data.fromBin, data.partNo, data);
+  //         await getBatchNo(data.fromBin, data.partNo, data.grnNo, data);
+  //         await getAvlQty(data.batchNo, data.fromBin, data.grnNo, data.partNo, data);
+
+  //         handlePartNoChange(data, childTableData.length + idx, simulatedEvent);
+  //       })
+  //     );
+  //   } catch (error) {
+  //     console.error('Error processing selected data:', error);
+  //   }
+  // };
+
   const handleSubmitSelectedRows = async () => {
     const selectedData = selectedRows.map((index) => modalTableData[index]);
 
-    setChildTableData([...childTableData, ...selectedData]);
+    setChildTableData((prev) => [...prev, ...selectedData]);
 
     console.log('Data selected:', selectedData);
 
@@ -1008,28 +1199,26 @@ export const LocationMovement = () => {
     setSelectAll(false);
     handleCloseModal();
 
-    // try {
-    //   await Promise.all(
-    //     selectedData.map(async (data, idx) => {
-    //       // Simulate the event object for handleToQtyChange
-    //       const simulatedEvent = {
-    //         target: {
-    //           value: data.toQty // Assuming you have a toQty field in your data
-    //         }
-    //       };
+    try {
+      await Promise.all(
+        selectedData.map(async (data, idx) => {
+          const simulatedEvent = {
+            target: {
+              value: data.partNo
+            }
+          };
 
-    //       await getPartNo(data.fromBin, formData.transferFromFlag, data);
-    //       await getGrnNo(data.partNo, data);
-    //       await getBatchNo(data.partNo, data.grnNo, data);
-    //       await getBinDetails(data.batchNo, data.grnNo, data.partNo, data);
+          await getPartNo(data.fromBin, data);
+          await getGrnNo(data.fromBin, data.partNo, data);
+          await getBatchNo(data.fromBin, data.partNo, data.grnNo, data);
+          await getAvlQty(data.batchNo, data.fromBin, data.grnNo, data.partNo, data);
 
-    //       // Call handleToQtyChange with simulated event, row data, and index
-    //       handleToQtyChange(simulatedEvent, data, detailTableData.length + idx);
-    //     })
-    //   );
-    // } catch (error) {
-    //   console.error('Error processing selected data:', error);
-    // }
+          // handlePartNoChange(data, childTableData.length + idx, simulatedEvent);
+        })
+      );
+    } catch (error) {
+      console.error('Error processing selected data:', error);
+    }
   };
 
   return (
@@ -1131,9 +1320,9 @@ export const LocationMovement = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">Bin</th>
+                                  <th className="px-2 py-2 text-white text-center">From Bin</th>
                                   <th className="px-2 py-2 text-white text-center">Part No</th>
-                                  <th className="px-2 py-2 text-white text-center">Part Description</th>
+                                  <th className="px-2 py-2 text-white text-center">Part Desc</th>
                                   <th className="px-2 py-2 text-white text-center">SKU</th>
                                   <th className="px-2 py-2 text-white text-center">GRN No</th>
                                   <th className="px-2 py-2 text-white text-center">Batch No</th>
@@ -1142,8 +1331,6 @@ export const LocationMovement = () => {
                                   <th className="px-2 py-2 text-white text-center">To Bin Type</th>
                                   <th className="px-2 py-2 text-white text-center">To Qty</th>
                                   <th className="px-2 py-2 text-white text-center">Remaining Qty</th>
-                                  {/* <th className="px-2 py-2 text-white text-center">Unit Rate</th>
-                                  <th className="px-2 py-2 text-white text-center">Amount</th> */}
                                 </tr>
                               </thead>
                               <tbody>
