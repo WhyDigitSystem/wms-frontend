@@ -29,6 +29,7 @@ const FinYearMaster = () => {
   const [formData, setFormData] = useState({
     finYear: '',
     finYearIdentifier: '',
+    finYearId: '',
     startDate: null,
     endDate: null,
     currentFinYear: false,
@@ -41,6 +42,7 @@ const FinYearMaster = () => {
   const [fieldErrors, setFieldErrors] = useState({
     finYear: false,
     finYearIdentifier: false,
+    finYearId: false,
     startDate: false,
     endDate: false,
     currentFinYear: false
@@ -50,7 +52,7 @@ const FinYearMaster = () => {
   const handleClear = () => {
     setFormData({
       finYear: '',
-      finYrId: '',
+      finYearId: '',
       finYearIdentifier: '',
       startDate: '',
       endDate: '',
@@ -61,6 +63,7 @@ const FinYearMaster = () => {
     setFieldErrors({
       finYear: false,
       finYearIdentifier: false,
+      finYearId: false,
       startDate: false,
       endDate: false,
       currentFinYear: false
@@ -170,6 +173,7 @@ const FinYearMaster = () => {
         endDate: formData.endDate ? dayjs(formData.endDate).format('YYYY-MM-DD') : null,
         finYear: formData.finYear ? parseInt(formData.finYear, 10) : null,
         finYearIdentifier: formData.finYearIdentifier,
+        finYearId: formData.finYearId,
         currentFinYear: false,
         active: formData.active,
         createdBy: localStorage.getItem('userName'),
@@ -258,15 +262,15 @@ const FinYearMaster = () => {
             <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
-                  id="finYrId"
+                  id="finYearId"
                   label="FinYear ID"
                   size="small"
                   required
-                  value={formData.finYrId}
-                  name="finYrId"
+                  value={formData.finYearId}
+                  name="finYearId"
                   onChange={handleInputChange}
                   inputProps={{ maxLength: 30 }}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYrId ? 'This field is required' : ''}</span>}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYearId ? 'Fin Year Id required' : ''}</span>}
                 />
               </FormControl>
             </div>

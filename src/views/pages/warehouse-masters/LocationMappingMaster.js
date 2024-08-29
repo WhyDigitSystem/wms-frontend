@@ -130,30 +130,45 @@ export const LocationMappingMaster = () => {
   };
 
   const getAllbinsByCompanyAndWarehouseAndLocationTypeAndRownoAndLevel = async () => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `warehousemastercontroller/bins/levelno/rowno/locationtype/warehouse?level=${formData.levelNo}&locationtype=${formData.locationType}&orgid=${orgId}&rowno=${formData.rowNo}&warehouse=${loginWarehouse}`
-      );
-      console.log('THE WAREHOUSE IS:', response);
-      if (response.status === true) {
-        const bins = response.paramObjectsMap.Bins;
-        console.log('THE BIN DETAILS ARE:', bins);
-
-        setLocationMappingTableData(
-          bins.map((bin) => ({
-            id: bin.id,
-            rowNo: bin.rowno,
-            levelNo: bin.level,
-            palletNo: bin.bin,
-            multiCore: bin.core,
-            LocationStatus: bin.status === 'True' ? 'True' : 'False',
-            vasBinSeq: ''
-          }))
+    const errors = {};
+    if (!formData.levelNo) {
+      errors.levelNo = 'Level No is required';
+    }
+    if (!formData.locationType) {
+      errors.locationType = 'Location Type is required';
+    }
+    if (!formData.rowNo) {
+      errors.rowNo = 'Row is required';
+    }
+    if (Object.keys(errors).length === 0) {
+      // setModalOpen(true);
+      try {
+        const response = await apiCalls(
+          'get',
+          `warehousemastercontroller/bins/levelno/rowno/locationtype/warehouse?level=${formData.levelNo}&locationtype=${formData.locationType}&orgid=${orgId}&rowno=${formData.rowNo}&warehouse=${loginWarehouse}`
         );
+        console.log('THE WAREHOUSE IS:', response);
+        if (response.status === true) {
+          const bins = response.paramObjectsMap.Bins;
+          console.log('THE BIN DETAILS ARE:', bins);
+
+          setLocationMappingTableData(
+            bins.map((bin) => ({
+              id: bin.id,
+              rowNo: bin.rowno,
+              levelNo: bin.level,
+              palletNo: bin.bin,
+              multiCore: bin.core,
+              LocationStatus: bin.status === 'True' ? 'True' : 'False',
+              vasBinSeq: ''
+            }))
+          );
+        }
+      } catch (error) {
+        console.error('Error fetching employee data:', error);
       }
-    } catch (error) {
-      console.error('Error fetching employee data:', error);
+    } else {
+      setFieldErrors(errors);
     }
   };
 
