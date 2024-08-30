@@ -116,7 +116,7 @@ export const CarrierMaster = () => {
       carrier: '',
       carrierShortName: '',
       shipmentMode: '',
-      cbranch: '',
+      cbranch: localStorage.getItem('branchcode'),
       active: true
     });
 
@@ -126,6 +126,7 @@ export const CarrierMaster = () => {
       shipmentMode: '',
       cbranch: ''
     });
+    setEditId('');
   };
 
   const handleSave = async () => {

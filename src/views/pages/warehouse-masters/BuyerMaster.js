@@ -250,13 +250,19 @@ export const BuyerMaster = () => {
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
-      const updatedValue = name === 'email' ? value : value.toUpperCase();
-      setFormData({ ...formData, [name]: updatedValue });
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+      if (name === 'gst' && value === 'NO') {
+        setFormData({ ...formData, [name]: value, gstNo: '' });
+      } else {
+        // setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '', gst: '' }));
+        const updatedValue = name === 'email' ? value : value.toUpperCase();
+        setFormData({ ...formData, [name]: updatedValue });
+        setFieldErrors({ ...fieldErrors, [name]: '' });
+      }
     }
   };
 
   const handleClear = () => {
+    setEditId('');
     setFormData({
       buyerName: '',
       shortName: '',
@@ -302,20 +308,35 @@ export const BuyerMaster = () => {
 
   const handleSave = async () => {
     const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!formData.buyerName) {
       errors.buyerName = 'Buyer Name is required';
     }
     if (!formData.shortName) {
       errors.shortName = 'Short Name is required';
     }
-    if (formData.gst === 'YES' && formData.gstNo.length < 15) {
-      errors.gstNo = 'Invalid GST Format';
-    }
+    // if (formData.gst === 'YES' && formData.gstNo.length < 15) {
+    //   errors.gstNo = 'Invalid GST Format';
+    // }
     if (formData.pan.length < 10) {
       errors.pan = 'Invalid PAN Format';
     }
     if (formData.mobile.length < 10) {
       errors.mobile = 'Invalid Mobile Format';
+    }
+    if (!formData.email) {
+      errors.email = 'Email ID is Required';
+    } else if (!emailRegex.test(formData.email)) {
+      errors.email = 'Invalid MailID Format';
+    }
+    if (formData.pincode.length > 0 && formData.pincode.length < 6) {
+      errors.pincode = 'Invalid Pincode';
+    }
+    if (formData.gst === 'YES' && !formData.gstNo) {
+      errors.gstNo = 'GST No is Required';
+    } else if (formData.gst === 'YES' && formData.gstNo.length < 15) {
+      errors.gstNo = 'Invalid GST Format';
     }
 
     setFieldErrors(errors);

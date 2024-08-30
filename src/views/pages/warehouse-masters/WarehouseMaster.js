@@ -310,6 +310,7 @@ export const WarehouseMaster = () => {
     setFieldErrors({
       warehouse: ''
     });
+    setEditId('');
     setClientTableErrors(clientTableErrors.map(() => ({ client: '', clientCode: '' })));
     // setBranchTableErrors(branchTableErrors.map(() => ({ customerBranchCode: '' })));
   };
@@ -536,7 +537,6 @@ export const WarehouseMaster = () => {
 
   return (
     <>
-      <div>{/* <ToastContainer /> */}</div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>

@@ -374,6 +374,7 @@ export const LocationMappingMaster = () => {
   };
 
   const handleClear = () => {
+    setEditId('');
     setFormData({
       warehouse: '',
       locationType: '',
@@ -403,6 +404,12 @@ export const LocationMappingMaster = () => {
       client: ''
     });
     setLocationMappingTableErrors('');
+  };
+  const handleTableClear = (table) => {
+    if (table === 'locationMappingTableData') {
+      setLocationMappingTableData([{ id: 1, rowNo: '', levelNo: '', palletNo: '', multiCore: '', LocationStatus: '', vasBinSeq: '' }]);
+      setLocationMappingTableErrors('');
+    }
   };
 
   const handleSave = async () => {
@@ -435,7 +442,7 @@ export const LocationMappingMaster = () => {
         locationMappingTableDataValid = false;
       }
       if (!row.palletNo) {
-        rowErrors.palletNo = 'Pallet No is required';
+        rowErrors.palletNo = 'Bin is required';
         locationMappingTableDataValid = false;
       }
       if (!row.multiCore) {
@@ -491,6 +498,7 @@ export const LocationMappingMaster = () => {
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
+          getAllLocationMapping();
           showToast('success', editId ? ' LocationMapping Updated Successfully' : 'LocationMapping created successfully');
           setIsLoading(false);
         } else {
@@ -701,7 +709,7 @@ export const LocationMappingMaster = () => {
                           icon={GridOnIcon}
                           onClick={getAllbinsByCompanyAndWarehouseAndLocationTypeAndRownoAndLevel}
                         />
-                        <ActionButton title="Clear" icon={ClearIcon} />
+                        <ActionButton title="Clear" icon={ClearIcon} onClick={() => handleTableClear('locationMappingTableData')} />
                       </div>
                       <div className="row mt-2">
                         <div className="col-lg-12">
@@ -820,14 +828,14 @@ export const LocationMappingMaster = () => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              multiCore: !value ? 'Cell Category is required' : ''
+                                              multiCore: !value ? 'Multi Core is required' : ''
                                             };
                                             return newErrors;
                                           });
                                         }}
                                         className={locationMappingTableErrors[index]?.multiCore ? 'error form-control' : 'form-control'}
                                       >
-                                        <option value="">Select Option</option>
+                                        <option value="">--Select--</option>
                                         <option value="Single">Single</option>
                                         <option value="Multi">Multi</option>
                                       </select>
@@ -860,7 +868,7 @@ export const LocationMappingMaster = () => {
                                           locationMappingTableErrors[index]?.LocationStatus ? 'error form-control' : 'form-control'
                                         }
                                       >
-                                        <option value="">Select Option</option>
+                                        <option value="">--Select--</option>
                                         <option value="Replace">Replace</option>
                                         <option value="Hold">Hold</option>
                                         <option value="Way">Way</option>
@@ -883,7 +891,7 @@ export const LocationMappingMaster = () => {
                                           );
                                           setLocationMappingTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], vasBinSeq: !value ? 'vasBinSeq is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], vasBinSeq: !value ? 'BinSeq is required' : '' };
                                             return newErrors;
                                           });
                                         }}
@@ -910,6 +918,7 @@ export const LocationMappingMaster = () => {
           </>
         )}
       </div>
+      <ToastContainer />
     </>
   );
 };

@@ -153,7 +153,7 @@ export const getAllActiveLocationTypes = async (orgId) => {
     const response = await apiCalls('get', `warehousemastercontroller/locationType?orgid=${orgId}`);
     if (response.status === true) {
       const locationTypeData = response.paramObjectsMap.locationTypeVO
-        .filter((row) => row.active === true)
+        .filter((row) => row.active === 'Active')
         .map(({ id, binType }) => ({ id, binType }));
       return locationTypeData;
     } else {

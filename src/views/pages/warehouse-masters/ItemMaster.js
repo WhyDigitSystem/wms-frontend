@@ -419,6 +419,13 @@ export const ItemMaster = () => {
     setEditId('');
   };
 
+  const handleTableClear = (table) => {
+    if (table === 'itemTableData') {
+      setItemTableData([{ id: 1, mrp: '', fDate: '', tDate: '' }]);
+      setItemTableErrors('');
+    }
+  };
+
   const handleSave = async () => {
     const errors = {};
     if (!formData.partNo) {
@@ -890,6 +897,7 @@ export const ItemMaster = () => {
                     <div className="row d-flex ml">
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                        <ActionButton title="Clear" icon={ClearIcon} onClick={() => handleTableClear('itemTableData')} />
                       </div>
                       <div className="row mt-2">
                         <div className="col-lg-8">

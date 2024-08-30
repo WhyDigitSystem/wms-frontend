@@ -1281,76 +1281,77 @@ export const Grn = () => {
                       <div className="row mt-2">
                         <div className="col-lg-12">
                           <div className="table-responsive">
-                            <table className="table table-bordered ">
-                              <thead>
-                                <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                    Action
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                    S.No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    QR Code
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    LR No./ HAWB No./HBL No <span>&nbsp;*</span>
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Invoice No <span>&nbsp;*</span>
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Shipment No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    Invoice Date
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Part No <span>&nbsp;*</span>
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Part Desc <span>&nbsp;*</span>
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    SKU <span>&nbsp;*</span>
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Inv QTY<span>&nbsp;*</span>
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Rec QTY
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Short QTY
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Damage QTY
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    GRN QTY<span>&nbsp;*</span>
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Batch No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Batch Date
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Exp Date
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Bin QTY<span>&nbsp;*</span>
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    No of Bins<span>&nbsp;*</span>
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Remarks
-                                  </th>
-                                </tr>
-                              </thead>
-                              {!editId ? (
-                                <>
+                            {!editId ? (
+                              <>
+                                <table className="table table-bordered ">
+                                  <thead>
+                                    <tr style={{ backgroundColor: '#673AB7' }}>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                        Action
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                        S.No
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                        QR Code
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        LR No./ HAWB No./HBL No <span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Invoice No <span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Shipment No
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                        Invoice Date
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Part No <span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Part Desc <span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                        SKU <span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Inv QTY<span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Rec QTY
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Short QTY
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Damage QTY
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                        GRN QTY<span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Batch No
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Batch Date
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Exp Date
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Bin QTY<span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                        No of Bins<span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Remarks
+                                      </th>
+                                    </tr>
+                                  </thead>
+
                                   <tbody>
                                     {lrTableData.map((row, index) => (
                                       <tr key={row.id}>
@@ -1941,48 +1942,107 @@ export const Grn = () => {
                                       </tr>
                                     ))}
                                   </tbody>
-                                </>
-                              ) : (
-                                <>
+                                </table>
+                              </>
+                            ) : (
+                              <>
+                                <table className="table table-bordered" style={{ tableLayout: 'auto', width: '100%' }}>
+                                  <thead>
+                                    <tr style={{ backgroundColor: '#673AB7' }}>
+                                      <th className="table-header">S.No</th>
+                                      <th className="table-header">QR Code</th>
+                                      <th className="table-header">
+                                        LR No./ HAWB <br />
+                                        No./HBL No
+                                      </th>
+                                      <th className="table-header">Inv No</th>
+                                      <th className="table-header">Shipment No</th>
+                                      <th className="table-header">Inv Date</th>
+                                      <th className="table-header">Part No</th>
+                                      <th className="table-header">Part Desc</th>
+                                      <th className="table-header">SKU</th>
+                                      <th className="table-header">Inv QTY</th>
+                                      <th className="table-header">Rec QTY</th>
+                                      <th className="table-header">Short QTY</th>
+                                      <th className="table-header">Damage QTY</th>
+                                      <th className="table-header">GRN QTY</th>
+                                      <th className="table-header">Batch No</th>
+                                      <th className="table-header">Batch Date</th>
+                                      <th className="table-header">Exp Date</th>
+                                      <th className="table-header">Bin QTY</th>
+                                      <th className="table-header">No of Bins</th>
+                                      <th className="table-header">Remarks</th>
+                                    </tr>
+                                  </thead>
                                   <tbody>
                                     {lrTableData.map((row, index) => (
                                       <tr key={row.id}>
-                                        <td className="border px-2 py-2 text-center">
-                                          <ActionButton
-                                            title="Delete"
-                                            icon={DeleteIcon}
-                                            onClick={() => handleDeleteRow(row.id, lrTableData, setLrTableData)}
-                                          />
+                                        <td className="text-center">{index + 1}</td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.qrCode}
                                         </td>
-                                        <td className="text-center">
-                                          <div className="pt-2">{index + 1}</div>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.lr_Hawb_Hbl_No}
                                         </td>
-                                        <td className="border px-2 py-2">{row.qrCode}</td>
-                                        <td className="border px-2 py-2">{row.lr_Hawb_Hbl_No}</td>
-                                        <td className="border px-2 py-2">{row.invNo}</td>
-                                        <td className="border px-2 py-2">{row.shipmentNo}</td>
-                                        <td className="border px-2 py-2">{row.invDate}</td>
-                                        <td className="border px-2 py-2">{row.partNo}</td>
-                                        <td className="border px-2 py-2">{row.partDesc}</td>
-                                        <td className="border px-2 py-2">{row.sku}</td>
-                                        <td className="border px-2 py-2">{row.invQty}</td>
-                                        <td className="border px-2 py-2">{row.recQty}</td>
-                                        <td className="border px-2 py-2">{row.shortQty}</td>
-                                        <td className="border px-2 py-2">{row.damageQty}</td>
-                                        <td className="border px-2 py-2">{row.grnQty}</td>
-                                        <td className="border px-2 py-2">{row.batch_PalletNo}</td>
-                                        <td className="border px-2 py-2">{row.batchDate}</td>
-                                        <td className="border px-2 py-2">{row.expDate}</td>
-                                        <td className="border px-2 py-2">{row.palletQty}</td>
-                                        <td className="border px-2 py-2">{row.noOfPallets}</td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.invNo}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.shipmentNo}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.invDate}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.partNo}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.partDesc}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.sku}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.invQty}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.recQty}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.shortQty}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.damageQty}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.grnQty}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.batch_PalletNo}
+                                        </td>
 
-                                        <td className="border px-2 py-2">{row.remarks} </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.batchDate}
+                                        </td>
+
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.expDate}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.palletQty}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.noOfPallets}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.remarks}
+                                        </td>
                                       </tr>
                                     ))}
                                   </tbody>
-                                </>
-                              )}
-                            </table>
+                                </table>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>

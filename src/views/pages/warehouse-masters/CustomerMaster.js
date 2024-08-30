@@ -331,6 +331,7 @@ export const CustomerMaster = () => {
       city: '',
       gst: ''
     });
+    setEditId('');
   };
   const handleTableClear = (table) => {
     if (table === 'clientTableData') {
@@ -376,7 +377,6 @@ export const CustomerMaster = () => {
     if (!formData.city) {
       errors.city = 'City is required';
     }
-
     if (!formData.mobile) {
       errors.mobile = 'Mobile is required';
     } else if (formData.mobile.length < 10) {

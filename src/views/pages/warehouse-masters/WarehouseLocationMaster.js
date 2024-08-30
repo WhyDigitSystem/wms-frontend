@@ -348,6 +348,7 @@ export const WarehouseLocationMaster = () => {
   };
 
   const handleClear = () => {
+    setViewId('');
     setFormData({
       branch: localStorage.getItem('branch'),
       warehouse: '',
@@ -376,6 +377,12 @@ export const WarehouseLocationMaster = () => {
       cellTo: ''
     });
     setBinTableErrors('');
+  };
+  const handleTableClear = (table) => {
+    if (table === 'binTableData') {
+      setBinTableData([{ id: 1, bin: '', binCategory: '', status: '', core: '' }]);
+      setBinTableErrors('');
+    }
   };
 
   const handleSave = async () => {
@@ -505,7 +512,15 @@ export const WarehouseLocationMaster = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            {/* <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" /> */}
+            <ActionButton
+              title="Save"
+              icon={SaveIcon}
+              isLoading={isLoading}
+              onClick={!viewId ? handleSave : undefined}
+              // onClick={handleSave}
+              margin="0 10px 0 10px"
+            />
           </div>
         </div>
         {listView ? (
@@ -514,7 +529,7 @@ export const WarehouseLocationMaster = () => {
               data={listViewData}
               columns={listViewColumns}
               blockEdit={true}
-              disableEditIcon={true}
+              // disableEditIcon={true} for hide the edit icon
               viewIcon={true}
               toEdit={getWarehouseById}
             />
@@ -659,9 +674,13 @@ export const WarehouseLocationMaster = () => {
                   <>
                     <div className="row d-flex ml">
                       <div className="mb-1">
-                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={getAllBinDetails} />
-                        <ActionButton title="Clear" icon={ClearIcon} />
+                        {!viewId && (
+                          <>
+                            <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                            <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={getAllBinDetails} />
+                            <ActionButton title="Clear" icon={ClearIcon} onClick={() => handleTableClear('binTableData')} />
+                          </>
+                        )}
                       </div>
                       <div className="row mt-2">
                         <div className="col-lg-10">
@@ -849,6 +868,7 @@ export const WarehouseLocationMaster = () => {
           </>
         )}
       </div>
+      <ToastContainer />
     </>
   );
 };
