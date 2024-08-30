@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import axios from 'axios';
-import { useRef, useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import IconButton from '@mui/material/IconButton';
@@ -34,6 +34,8 @@ import { getAllActiveCarrier, getAllActiveCpartNo } from 'utils/CommonFunctions'
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import Paper from '@mui/material/Paper';
 import Draggable from 'react-draggable';
+import React, { useRef } from 'react';
+
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -630,32 +632,103 @@ export const CodeConversion = () => {
     getCodeConversionDocId();
   };
 
+  const lrNoDetailsRefs = useRef([]);
+
+  useEffect(() => {
+    lrNoDetailsRefs.current = codeConversionDetailsTable.map((_, i) => ({
+      partNo: lrNoDetailsRefs.current[i]?.partNo || React.createRef(),
+      grnNo: lrNoDetailsRefs.current[i]?.grnNo || React.createRef(),
+      binType: lrNoDetailsRefs.current[i]?.binType || React.createRef(),
+      batchNo: lrNoDetailsRefs.current[i]?.batchNo || React.createRef(),
+      bin: lrNoDetailsRefs.current[i]?.bin || React.createRef(),
+      actualQty: lrNoDetailsRefs.current[i]?.actualQty || React.createRef(),
+      convertQty: lrNoDetailsRefs.current[i]?.convertQty || React.createRef(),
+      cpartNo: lrNoDetailsRefs.current[i]?.cpartNo || React.createRef(),
+      cbatchNo: lrNoDetailsRefs.current[i]?.cbatchNo || React.createRef(),
+      cbin: lrNoDetailsRefs.current[i]?.cbin || React.createRef()
+    }));
+  }, [codeConversionDetailsTable]);
+
   const handleSave = async () => {
     const errors = {};
+    let firstInvalidFieldRef = null;
+
+    // Check if the table is empty
+    if (codeConversionDetailsTable.length === 0) {
+      errors.table = 'Details Table is required';
+      setFieldErrors(errors);
+      showToast('error', 'Details Table is required');
+      return; // Exit the function if the table is empty
+    }
 
     let codeConversionDetailsTableValid = true;
-    const newTableErrors = codeConversionDetailsTable.map((row) => {
+    const newTableErrors = codeConversionDetailsTable.map((row, index) => {
       const rowErrors = {};
-      if (!row.partNo) rowErrors.partNo = 'Part No is required';
-      if (!row.grnNo) rowErrors.grnNo = 'Grn No is required';
-      if (!row.binType) rowErrors.binType = 'Bin Type is required';
-      if (!row.batchNo) rowErrors.batchNo = 'Batch No is required';
-      if (!row.bin) rowErrors.bin = 'Bin is required';
-      if (!row.actualQty) rowErrors.actualQty = 'Actual Qty is required';
-      if (!row.convertQty) rowErrors.convertQty = 'Convert Qty is required';
-      if (!row.cpartNo) rowErrors.cpartNo = 'CPartNo is required';
-      if (!row.csku) rowErrors.csku = 'CSku is required';
-      if (!row.cbatchNo) rowErrors.cbatchNo = 'CBatchNo is required';
-      if (!row.cbin) rowErrors.cbin = 'CBin is required';
-
-      if (Object.keys(rowErrors).length > 0) {
+      if (!row.partNo) {
+        rowErrors.partNo = 'Part No is required';
         codeConversionDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
+      }
+      if (!row.grnNo) {
+        rowErrors.grnNo = 'GRN No is required';
+        codeConversionDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].grnNo;
+      }
+      if (!row.binType) {
+        rowErrors.binType = 'Bin Type is required';
+        codeConversionDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].binType;
+      }
+      if (!row.batchNo) {
+        rowErrors.batchNo = 'Batch No is required';
+        codeConversionDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
+      }
+      if (!row.bin) {
+        rowErrors.bin = 'Bin is required';
+        codeConversionDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
+      }
+      if (!row.actualQty) {
+        rowErrors.actualQty = 'Actual Qty is required';
+        codeConversionDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].actualQty;
+      }
+      if (!row.convertQty) {
+        rowErrors.convertQty = 'Convert Qty is required';
+        codeConversionDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].convertQty;
+      }
+      if (!row.cpartNo) {
+        rowErrors.cpartNo = 'Cpart No is required';
+        codeConversionDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].cpartNo;
+      }
+      if (!row.cbatchNo) {
+        rowErrors.cbatchNo = 'C Batch No is required';
+        codeConversionDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].cbatchNo;
+      }
+      if (!row.cbin) {
+        rowErrors.cbin = 'C Bin is required';
+        codeConversionDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].cbin;
       }
 
       return rowErrors;
     });
 
     setCodeConversionDetailsError(newTableErrors);
+
+    if (!codeConversionDetailsTableValid || Object.keys(errors).length > 0) {
+      // Focus on the first invalid field
+      if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+        firstInvalidFieldRef.current.focus();
+      }
+    } else {
+      // Proceed with form submission
+    }
+
     setFieldErrors(errors);
 
     if (Object.keys(errors).length === 0 && codeConversionDetailsTableValid) {
@@ -899,7 +972,7 @@ export const CodeConversion = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="YYYY/MM/DD"
+                      format="DD/MM/YYYY"
                       disabled
                     />
                   </LocalizationProvider>
@@ -947,159 +1020,177 @@ export const CodeConversion = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">Part No</th>
+                                  <th className="px-2 py-2 text-white text-center">Part No *</th>
                                   <th className="px-2 py-2 text-white text-center">Part Description</th>
                                   <th className="px-2 py-2 text-white text-center">SKU</th>
-                                  <th className="px-2 py-2 text-white text-center">GRN No</th>
-                                  <th className="px-2 py-2 text-white text-center">Bin Type</th>
-                                  <th className="px-2 py-2 text-white text-center">Batch No</th>
+                                  <th className="px-2 py-2 text-white text-center">GRN No *</th>
+                                  <th className="px-2 py-2 text-white text-center">Bin Type *</th>
+                                  <th className="px-2 py-2 text-white text-center">Batch No *</th>
                                   {/* <th className="px-2 py-2 text-white text-center">Lot No</th> */}
-                                  <th className="px-2 py-2 text-white text-center">Bin</th>
+                                  <th className="px-2 py-2 text-white text-center">Bin *</th>
                                   <th className="px-2 py-2 text-white text-center">QTY</th>
-                                  <th className="px-2 py-2 text-white text-center">Actual QTY</th>
+                                  <th className="px-2 py-2 text-white text-center">Actual QTY *</th>
                                   {/* <th className="px-2 py-2 text-white text-center">Rate</th> */}
-                                  <th className="px-2 py-2 text-white text-center">Convert QTY</th>
+                                  <th className="px-2 py-2 text-white text-center">Convert QTY *</th>
                                   {/* <th className="px-2 py-2 text-white text-center">C Rate</th> */}
-                                  <th className="px-2 py-2 text-white text-center">C Part No</th>
+                                  <th className="px-2 py-2 text-white text-center">C Part No *</th>
                                   <th className="px-2 py-2 text-white text-center">C Part Desc</th>
                                   <th className="px-2 py-2 text-white text-center">C SKU</th>
-                                  <th className="px-2 py-2 text-white text-center">C Batchno</th>
+                                  <th className="px-2 py-2 text-white text-center">C Batch No *</th>
                                   {/* <th className="px-2 py-2 text-white text-center">C Lotno</th> */}
-                                  <th className="px-2 py-2 text-white text-center">C Bin</th>
+                                  <th className="px-2 py-2 text-white text-center">C Bin *</th>
                                   <th className="px-2 py-2 text-white text-center">Remarks</th>
                                 </tr>
                               </thead>
                               {!viewId ? (
                                 <>
                                   <tbody>
-                                    {codeConversionDetailsTable.map((row, index) => (
-                                      <tr key={row.id}>
-                                        <td className="border px-2 py-2 text-center">
-                                          <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
-                                        </td>
-                                        <td className="text-center">
-                                          <div className="pt-2">{index + 1}</div>
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <select
-                                            value={row.partNo}
-                                            style={{ width: '100px' }}
-                                            onChange={(e) => handlePartNoChange(row, index, e)}
-                                            className={codeConversionDetailsError[index]?.partNo ? 'error form-control' : 'form-control'}
-                                          >
-                                            <option value="">Select Option</option>
-                                            {partNoList.map((part) => (
-                                              <option key={part.id} value={part.partNo}>
-                                                {part.partNo}
-                                              </option>
-                                            ))}
-                                          </select>
-                                          {codeConversionDetailsError[index]?.partNo && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {codeConversionDetailsError[index].partNo}
-                                            </div>
-                                          )}
-                                        </td>
-
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            style={{ width: '300px' }}
-                                            value={row.partDescription}
-                                            disabled
-                                            className="form-control"
-                                            title={row.partDescription}
-                                          />
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            style={{ width: '100px' }}
-                                            value={row.sku}
-                                            disabled
-                                            className="form-control"
-                                            title={row.sku}
-                                          />
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <select
-                                            value={row.grnNo}
-                                            style={{ width: '200px' }}
-                                            onChange={(e) => handleGrnNoChange(row, index, e)}
-                                            className={codeConversionDetailsError[index]?.grnNo ? 'error form-control' : 'form-control'}
-                                          >
-                                            <option value="">Select GRN No</option>
-                                            {Array.isArray(row.rowGrnNoList) &&
-                                              row.rowGrnNoList.map(
-                                                (g, idx) =>
-                                                  g &&
-                                                  g.grnNo && (
-                                                    <option key={g.grnNo} value={g.grnNo}>
-                                                      {g.grnNo}
-                                                    </option>
-                                                  )
+                                    {codeConversionDetailsTable.length > 0 ? (
+                                      codeConversionDetailsTable.map((row, index) => (
+                                        <tr key={row.id}>
+                                          <td className="border px-2 py-2 text-center">
+                                            <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+                                          </td>
+                                          <td className="text-center">
+                                            <div className="pt-2">{index + 1}</div>
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <select
+                                              ref={lrNoDetailsRefs.current[index]?.partNo}
+                                              value={row.partNo}
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => handlePartNoChange(row, index, e)}
+                                              className={codeConversionDetailsError[index]?.partNo ? 'error form-control' : 'form-control'}
+                                            >
+                                              <option value="">--Select--</option>
+                                              {partNoList.length > 0 ? (
+                                                partNoList.map((part) => (
+                                                  <option key={part.id} value={part.partNo}>
+                                                    {part.partNo}
+                                                  </option>
+                                                ))
+                                              ) : (
+                                                <option disabled>No Data Found</option>
                                               )}
-                                          </select>
-                                          {codeConversionDetailsError[index]?.grnNo && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {codeConversionDetailsError[index].grnNo}
-                                            </div>
-                                          )}
-                                        </td>
+                                            </select>
+                                            {codeConversionDetailsError[index]?.partNo && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {codeConversionDetailsError[index].partNo}
+                                              </div>
+                                            )}
+                                          </td>
 
-                                        <td className="border px-2 py-2">
-                                          <select
-                                            value={row.binType}
-                                            style={{ width: '200px' }}
-                                            onChange={(e) => handleBinTypeChange(row, index, e)}
-                                            className={codeConversionDetailsError[index]?.binType ? 'error form-control' : 'form-control'}
-                                          >
-                                            <option value="">Select Option</option>
-                                            {Array.isArray(row.rowBinTypeList) &&
-                                              row.rowBinTypeList.map(
-                                                (bin, idx) =>
-                                                  bin &&
-                                                  bin.binType && (
-                                                    <option key={bin.binType} value={bin.binType}>
-                                                      {bin.binType}
-                                                    </option>
-                                                  )
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              style={{ width: '300px' }}
+                                              value={row.partDescription}
+                                              disabled
+                                              className="form-control"
+                                              title={row.partDescription}
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              style={{ width: '100px' }}
+                                              value={row.sku}
+                                              disabled
+                                              className="form-control"
+                                              title={row.sku}
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <select
+                                              ref={lrNoDetailsRefs.current[index]?.grnNo}
+                                              value={row.grnNo}
+                                              style={{ width: '200px' }}
+                                              onChange={(e) => handleGrnNoChange(row, index, e)}
+                                              className={codeConversionDetailsError[index]?.grnNo ? 'error form-control' : 'form-control'}
+                                            >
+                                              <option value="">--Select--</option>
+                                              {Array.isArray(row.rowGrnNoList) && row.rowGrnNoList.length > 0 ? (
+                                                row.rowGrnNoList.map(
+                                                  (g, idx) =>
+                                                    g &&
+                                                    g.grnNo && (
+                                                      <option key={g.grnNo} value={g.grnNo}>
+                                                        {g.grnNo}
+                                                      </option>
+                                                    )
+                                                )
+                                              ) : (
+                                                <option disabled>No data found</option>
                                               )}
-                                          </select>
-                                          {codeConversionDetailsError[index]?.binType && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {codeConversionDetailsError[index].binType}
-                                            </div>
-                                          )}
-                                        </td>
+                                            </select>
+                                            {codeConversionDetailsError[index]?.grnNo && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {codeConversionDetailsError[index].grnNo}
+                                              </div>
+                                            )}
+                                          </td>
 
-                                        <td className="border px-2 py-2">
-                                          <select
-                                            value={row.batchNo}
-                                            style={{ width: '100px' }}
-                                            onChange={(e) => handleBatchNoChange(row, index, e)}
-                                            className={codeConversionDetailsError[index]?.batchNo ? 'error form-control' : 'form-control'}
-                                          >
-                                            <option value="">Select Option</option>
-                                            {Array.isArray(row.rowBatchNoList) &&
-                                              row.rowBatchNoList.map(
-                                                (batch, idx) =>
-                                                  batch &&
-                                                  batch.batchNo && (
-                                                    <option key={batch.batchNo} value={batch.batchNo}>
-                                                      {batch.batchNo}
-                                                    </option>
-                                                  )
+                                          <td className="border px-2 py-2">
+                                            <select
+                                              ref={lrNoDetailsRefs.current[index]?.binType}
+                                              value={row.binType}
+                                              style={{ width: '200px' }}
+                                              onChange={(e) => handleBinTypeChange(row, index, e)}
+                                              className={codeConversionDetailsError[index]?.binType ? 'error form-control' : 'form-control'}
+                                            >
+                                              <option value="">--Select--</option>
+                                              {Array.isArray(row.rowBinTypeList) && row.rowBinTypeList.length > 0 ? (
+                                                row.rowBinTypeList.map(
+                                                  (bin, idx) =>
+                                                    bin &&
+                                                    bin.binType && (
+                                                      <option key={bin.binType} value={bin.binType}>
+                                                        {bin.binType}
+                                                      </option>
+                                                    )
+                                                )
+                                              ) : (
+                                                <option disabled>No Data Found</option>
                                               )}
-                                          </select>
-                                          {codeConversionDetailsError[index]?.batchNo && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {codeConversionDetailsError[index].batchNo}
-                                            </div>
-                                          )}
-                                        </td>
+                                            </select>
+                                            {codeConversionDetailsError[index]?.binType && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {codeConversionDetailsError[index].binType}
+                                              </div>
+                                            )}
+                                          </td>
 
-                                        {/* <td className="border px-2 py-2">
+                                          <td className="border px-2 py-2">
+                                            <select
+                                              ref={lrNoDetailsRefs.current[index]?.batchNo}
+                                              value={row.batchNo}
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => handleBatchNoChange(row, index, e)}
+                                              className={codeConversionDetailsError[index]?.batchNo ? 'error form-control' : 'form-control'}
+                                            >
+                                              <option value="">--Select--</option>
+                                              {Array.isArray(row.rowBatchNoList) && row.rowBatchNoList.length > 0 ? (
+                                                row.rowBatchNoList.map(
+                                                  (batch, idx) =>
+                                                    batch &&
+                                                    batch.batchNo && (
+                                                      <option key={batch.batchNo} value={batch.batchNo}>
+                                                        {batch.batchNo}
+                                                      </option>
+                                                    )
+                                                )
+                                              ) : (
+                                                <option disabled>No Data Found</option>
+                                              )}
+                                            </select>
+                                            {codeConversionDetailsError[index]?.batchNo && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {codeConversionDetailsError[index].batchNo}
+                                              </div>
+                                            )}
+                                          </td>
+
+                                          {/* <td className="border px-2 py-2">
                                       <input
                                         type="text"
                                         style={{ width: '100px' }}
@@ -1110,97 +1201,109 @@ export const CodeConversion = () => {
                                       />
                                     </td> */}
 
-                                        <td className="border px-2 py-2">
-                                          <select
-                                            value={row.bin}
-                                            style={{ width: '100px' }}
-                                            onChange={(e) => handleBinChange(row, index, e)}
-                                            className={codeConversionDetailsError[index]?.bin ? 'error form-control' : 'form-control'}
-                                          >
-                                            <option value="">Select Option</option>
-                                            {Array.isArray(row.rowBinList) &&
-                                              row.rowBinList.map(
-                                                (bin, idx) =>
-                                                  bin &&
-                                                  bin.bin && (
-                                                    <option key={bin.bin} value={bin.bin}>
-                                                      {bin.bin}
-                                                    </option>
-                                                  )
+                                          <td className="border px-2 py-2">
+                                            <select
+                                              ref={lrNoDetailsRefs.current[index]?.bin}
+                                              value={row.bin}
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => handleBinChange(row, index, e)}
+                                              className={codeConversionDetailsError[index]?.bin ? 'error form-control' : 'form-control'}
+                                            >
+                                              <option value="">--Select--</option>
+                                              {Array.isArray(row.rowBinList) && row.rowBinList.length > 0 ? (
+                                                row.rowBinList.map(
+                                                  (bin, idx) =>
+                                                    bin &&
+                                                    bin.bin && (
+                                                      <option key={bin.bin} value={bin.bin}>
+                                                        {bin.bin}
+                                                      </option>
+                                                    )
+                                                )
+                                              ) : (
+                                                <option disabled>No Data Found</option>
                                               )}
-                                          </select>
-                                          {codeConversionDetailsError[index]?.bin && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {codeConversionDetailsError[index].bin}
-                                            </div>
-                                          )}
-                                        </td>
+                                            </select>
+                                            {codeConversionDetailsError[index]?.bin && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {codeConversionDetailsError[index].bin}
+                                              </div>
+                                            )}
+                                          </td>
 
-                                        <td className="border px-2 py-2">
-                                          <input type="text" style={{ width: '100px' }} value={row.qty} disabled className="form-control" />
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            style={{ width: '100px' }}
-                                            value={row.actualQty}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              const intPattern = /^\d*$/; // Pattern to match only whole numbers
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              style={{ width: '100px' }}
+                                              value={row.qty}
+                                              disabled
+                                              className="form-control"
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              ref={lrNoDetailsRefs.current[index]?.actualQty}
+                                              type="text"
+                                              style={{ width: '100px' }}
+                                              value={row.actualQty}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const intPattern = /^\d*$/; // Pattern to match only whole numbers
 
-                                              if (intPattern.test(value) || value === '') {
-                                                // Allow empty values for clearing
-                                                const numericValue = parseInt(value, 10);
-                                                const numericQty = parseInt(row.qty, 10) || 0;
+                                                if (intPattern.test(value) || value === '') {
+                                                  // Allow empty values for clearing
+                                                  const numericValue = parseInt(value, 10);
+                                                  const numericQty = parseInt(row.qty, 10) || 0;
 
-                                                if (value === '' || numericValue <= numericQty) {
-                                                  setCodeConversionDetailsTable((prev) => {
-                                                    const updatedData = prev.map((r) => {
-                                                      return r.id === row.id
-                                                        ? {
-                                                            ...r,
-                                                            actualQty: value
-                                                          }
-                                                        : r;
+                                                  if (value === '' || numericValue <= numericQty) {
+                                                    setCodeConversionDetailsTable((prev) => {
+                                                      const updatedData = prev.map((r) => {
+                                                        return r.id === row.id
+                                                          ? {
+                                                              ...r,
+                                                              actualQty: value
+                                                            }
+                                                          : r;
+                                                      });
+                                                      return updatedData;
                                                     });
-                                                    return updatedData;
-                                                  });
-                                                  setCodeConversionDetailsError((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      actualQty: !value ? '' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
+                                                    setCodeConversionDetailsError((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = {
+                                                        ...newErrors[index],
+                                                        actualQty: !value ? '' : ''
+                                                      };
+                                                      return newErrors;
+                                                    });
+                                                  } else {
+                                                    setCodeConversionDetailsError((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = {
+                                                        ...newErrors[index],
+                                                        actualQty: 'Actual QTY cannot be greater than QTY'
+                                                      };
+                                                      return newErrors;
+                                                    });
+                                                  }
                                                 } else {
                                                   setCodeConversionDetailsError((prev) => {
                                                     const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      actualQty: 'Actual QTY cannot be greater than QTY'
-                                                    };
+                                                    newErrors[index] = { ...newErrors[index], qty: 'Invalid value' };
                                                     return newErrors;
                                                   });
                                                 }
-                                              } else {
-                                                setCodeConversionDetailsError((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = { ...newErrors[index], qty: 'Invalid value' };
-                                                  return newErrors;
-                                                });
+                                              }}
+                                              className={
+                                                codeConversionDetailsError[index]?.actualQty ? 'error form-control' : 'form-control'
                                               }
-                                            }}
-                                            onKeyDown={(e) => handleKeyDown(e, row)}
-                                            className={codeConversionDetailsError[index]?.actualQty ? 'error form-control' : 'form-control'}
-                                          />
-                                          {codeConversionDetailsError[index]?.actualQty && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {codeConversionDetailsError[index].actualQty}
-                                            </div>
-                                          )}
-                                        </td>
-                                        {/* <td className="border px-2 py-2">
+                                            />
+                                            {codeConversionDetailsError[index]?.actualQty && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {codeConversionDetailsError[index].actualQty}
+                                              </div>
+                                            )}
+                                          </td>
+                                          {/* <td className="border px-2 py-2">
                                       <input
                                         type="text"
                                         style={{ width: '100px' }}
@@ -1216,7 +1319,6 @@ export const CodeConversion = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        onKeyDown={(e) => handleKeyDown(e, row)}
                                         className={codeConversionDetailsError[index]?.rate ? 'error form-control' : 'form-control'}
                                       />
                                       {codeConversionDetailsError[index]?.rate && (
@@ -1225,50 +1327,50 @@ export const CodeConversion = () => {
                                         </div>
                                       )}
                                     </td> */}
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            style={{ width: '100px' }}
-                                            value={row.convertQty}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              if (/^\d*$/.test(value)) {
-                                                // This regex allows only numbers
-                                                setCodeConversionDetailsTable((prev) =>
-                                                  prev.map((r) => (r.id === row.id ? { ...r, convertQty: value } : r))
-                                                );
-                                                setCodeConversionDetailsError((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    convertQty: !value ? 'Convert Qty is required' : ''
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                // Invalid input (alphabet or special character)
-                                                setCodeConversionDetailsError((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    convertQty: 'Only numbers are allowed'
-                                                  };
-                                                  return newErrors;
-                                                });
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              ref={lrNoDetailsRefs.current[index]?.convertQty}
+                                              type="text"
+                                              style={{ width: '100px' }}
+                                              value={row.convertQty}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                if (/^\d*$/.test(value)) {
+                                                  // This regex allows only numbers
+                                                  setCodeConversionDetailsTable((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, convertQty: value } : r))
+                                                  );
+                                                  setCodeConversionDetailsError((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      convertQty: !value ? 'Convert Qty is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                } else {
+                                                  // Invalid input (alphabet or special character)
+                                                  setCodeConversionDetailsError((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      convertQty: 'Only numbers are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={
+                                                codeConversionDetailsError[index]?.convertQty ? 'error form-control' : 'form-control'
                                               }
-                                            }}
-                                            onKeyDown={(e) => handleKeyDown(e, row)}
-                                            className={
-                                              codeConversionDetailsError[index]?.convertQty ? 'error form-control' : 'form-control'
-                                            }
-                                          />
-                                          {codeConversionDetailsError[index]?.convertQty && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {codeConversionDetailsError[index].convertQty}
-                                            </div>
-                                          )}
-                                        </td>
-                                        {/* <td className="border px-2 py-2">
+                                            />
+                                            {codeConversionDetailsError[index]?.convertQty && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {codeConversionDetailsError[index].convertQty}
+                                              </div>
+                                            )}
+                                          </td>
+                                          {/* <td className="border px-2 py-2">
                                       <input
                                         type="text"
                                         style={{ width: '100px' }}
@@ -1284,7 +1386,6 @@ export const CodeConversion = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        onKeyDown={(e) => handleKeyDown(e, row)}
                                         className={codeConversionDetailsError[index]?.crate ? 'error form-control' : 'form-control'}
                                       />
                                       {codeConversionDetailsError[index]?.crate && (
@@ -1293,84 +1394,89 @@ export const CodeConversion = () => {
                                         </div>
                                       )}
                                     </td> */}
-                                        <td className="border px-2 py-2">
-                                          <select
-                                            value={row.cpartNo}
-                                            style={{ width: '100px' }}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
+                                          <td className="border px-2 py-2">
+                                            <select
+                                              ref={lrNoDetailsRefs.current[index]?.cpartNo}
+                                              value={row.cpartNo}
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
 
-                                              // Find the selected cPart in the list
-                                              const selectedCPart = cPartNoList.find((cpart) => cpart.partno === value);
+                                                // Find the selected cPart in the list
+                                                const selectedCPart = cPartNoList.find((cpart) => cpart.partno === value);
 
-                                              setCodeConversionDetailsTable((prev) =>
-                                                prev.map((r) =>
-                                                  r.id === row.id
-                                                    ? {
-                                                        ...r,
-                                                        cpartNo: value,
-                                                        cpartDesc: selectedCPart ? selectedCPart.partDesc : '',
-                                                        csku: selectedCPart ? selectedCPart.sku : ''
-                                                      }
-                                                    : r
-                                                )
-                                              );
-
-                                              setCodeConversionDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  cpartNo: !value ? 'C Part No is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            }}
-                                            className={codeConversionDetailsError[index]?.cpartNo ? 'error form-control' : 'form-control'}
-                                          >
-                                            <option value="">Select Option</option>
-                                            {cPartNoList.map((cpart) => (
-                                              <option key={cpart.id} value={cpart.partno}>
-                                                {cpart.partno}
-                                              </option>
-                                            ))}
-                                          </select>
-                                          {codeConversionDetailsError[index]?.cpartNo && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {codeConversionDetailsError[index].cpartNo}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            style={{ width: '300px' }}
-                                            value={row.cpartDesc}
-                                            disabled
-                                            className="form-control"
-                                            title={row.cpartDesc}
-                                          />
-                                        </td>
-
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            style={{ width: '100px' }}
-                                            value={row.csku}
-                                            disabled
-                                            className="form-control"
-                                            title={row.csku}
-                                          />
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            style={{ width: '100px' }}
-                                            value={row.cbatchNo}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              if (/^\d*$/.test(value)) {
                                                 setCodeConversionDetailsTable((prev) =>
-                                                  prev.map((r) => (r.id === row.id ? { ...r, cbatchNo: value.toUpperCase() } : r))
+                                                  prev.map((r) =>
+                                                    r.id === row.id
+                                                      ? {
+                                                          ...r,
+                                                          cpartNo: value,
+                                                          cpartDesc: selectedCPart ? selectedCPart.partDesc : '',
+                                                          csku: selectedCPart ? selectedCPart.sku : ''
+                                                        }
+                                                      : r
+                                                  )
+                                                );
+
+                                                setCodeConversionDetailsError((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    cpartNo: !value ? 'C Part No is required' : ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }}
+                                              className={codeConversionDetailsError[index]?.cpartNo ? 'error form-control' : 'form-control'}
+                                            >
+                                              <option value="">--Select--</option>
+                                              {cPartNoList.length > 0 ? (
+                                                cPartNoList.map((cpart) => (
+                                                  <option key={cpart.id} value={cpart.partno}>
+                                                    {cpart.partno}
+                                                  </option>
+                                                ))
+                                              ) : (
+                                                <option disabled>No Data Found</option>
+                                              )}
+                                            </select>
+                                            {codeConversionDetailsError[index]?.cpartNo && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {codeConversionDetailsError[index].cpartNo}
+                                              </div>
+                                            )}
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              style={{ width: '300px' }}
+                                              value={row.cpartDesc}
+                                              disabled
+                                              className="form-control"
+                                              title={row.cpartDesc}
+                                            />
+                                          </td>
+
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              style={{ width: '100px' }}
+                                              value={row.csku}
+                                              disabled
+                                              className="form-control"
+                                              title={row.csku}
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              ref={lrNoDetailsRefs.current[index]?.cbatchNo}
+                                              type="text"
+                                              style={{ width: '100px' }}
+                                              value={row.cbatchNo}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                setCodeConversionDetailsTable((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, cbatchNo: value } : r))
                                                 );
                                                 setCodeConversionDetailsError((prev) => {
                                                   const newErrors = [...prev];
@@ -1380,28 +1486,18 @@ export const CodeConversion = () => {
                                                   };
                                                   return newErrors;
                                                 });
-                                              } else {
-                                                // Invalid input (alphabet or special character)
-                                                setCodeConversionDetailsError((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    cbatchNo: 'Only numbers are allowed'
-                                                  };
-                                                  return newErrors;
-                                                });
+                                              }}
+                                              className={
+                                                codeConversionDetailsError[index]?.cbatchNo ? 'error form-control' : 'form-control'
                                               }
-                                            }}
-                                            onKeyDown={(e) => handleKeyDown(e, row)}
-                                            className={codeConversionDetailsError[index]?.cbatchNo ? 'error form-control' : 'form-control'}
-                                          />
-                                          {codeConversionDetailsError[index]?.cbatchNo && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {codeConversionDetailsError[index].cbatchNo}
-                                            </div>
-                                          )}
-                                        </td>
-                                        {/* <td className="border px-2 py-2">
+                                            />
+                                            {codeConversionDetailsError[index]?.cbatchNo && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {codeConversionDetailsError[index].cbatchNo}
+                                              </div>
+                                            )}
+                                          </td>
+                                          {/* <td className="border px-2 py-2">
                                       <input
                                         type="text"
                                         style={{ width: '100px' }}
@@ -1417,7 +1513,6 @@ export const CodeConversion = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        onKeyDown={(e) => handleKeyDown(e, row)}
                                         className={codeConversionDetailsError[index]?.clotNo ? 'error form-control' : 'form-control'}
                                       />
                                       {codeConversionDetailsError[index]?.clotNo && (
@@ -1426,58 +1521,70 @@ export const CodeConversion = () => {
                                         </div>
                                       )}
                                     </td> */}
-                                        <td className="border px-2 py-2">
-                                          <select
-                                            value={row.cbin}
-                                            style={{ width: '100px' }}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
+                                          <td className="border px-2 py-2">
+                                            <select
+                                              ref={lrNoDetailsRefs.current[index]?.cbin}
+                                              value={row.cbin}
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
 
-                                              setCodeConversionDetailsTable((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, cbin: value } : r))
-                                              );
+                                                setCodeConversionDetailsTable((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, cbin: value } : r))
+                                                );
 
-                                              setCodeConversionDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  cbin: !value ? 'C Bin is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            }}
-                                            className={codeConversionDetailsError[index]?.cbin ? 'error form-control' : 'form-control'}
-                                          >
-                                            <option value="">Select Option</option>
-                                            {cPalletList.map((cPallet) => (
-                                              <option key={cPallet.id} value={cPallet.bin}>
-                                                {cPallet.bin}
-                                              </option>
-                                            ))}
-                                          </select>
-                                          {codeConversionDetailsError[index]?.cbin && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {codeConversionDetailsError[index].cbin}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            style={{ width: '100px' }}
-                                            value={row.remarks}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              setCodeConversionDetailsTable((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, remarks: value } : r))
-                                              );
-                                            }}
-                                            onKeyDown={(e) => handleKeyDown(e, row)}
-                                            className={codeConversionDetailsError[index]?.remarks ? 'error form-control' : 'form-control'}
-                                          />
+                                                setCodeConversionDetailsError((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    cbin: !value ? 'C Bin is required' : ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }}
+                                              className={codeConversionDetailsError[index]?.cbin ? 'error form-control' : 'form-control'}
+                                            >
+                                              <option value="">--Select--</option>
+                                              {cPalletList.length > 0 ? (
+                                                cPalletList.map((cPallet) => (
+                                                  <option key={cPallet.id} value={cPallet.bin}>
+                                                    {cPallet.bin}
+                                                  </option>
+                                                ))
+                                              ) : (
+                                                <option disabled>No Data Found</option>
+                                              )}
+                                            </select>
+                                            {codeConversionDetailsError[index]?.cbin && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {codeConversionDetailsError[index].cbin}
+                                              </div>
+                                            )}
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              style={{ width: '100px' }}
+                                              value={row.remarks}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                setCodeConversionDetailsTable((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, remarks: value.toUpperCase() } : r))
+                                                );
+                                              }}
+                                              onKeyDown={(e) => handleKeyDown(e, row)}
+                                              className="form-control"
+                                            />
+                                          </td>
+                                        </tr>
+                                      ))
+                                    ) : (
+                                      <tr>
+                                        <td colSpan="18" className="text-center py-2">
+                                          No Data Found
                                         </td>
                                       </tr>
-                                    ))}
+                                    )}
                                   </tbody>
                                 </>
                               ) : (

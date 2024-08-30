@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import axios from 'axios';
-import { useRef, useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import IconButton from '@mui/material/IconButton';
@@ -31,6 +31,7 @@ import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
 import { getAllActiveCarrier, getAllActiveSupplier } from 'utils/CommonFunctions';
 import { Form } from 'react-router-dom';
+import React, { useRef } from 'react';
 
 export const DeliveryChallen = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -229,6 +230,23 @@ export const DeliveryChallen = () => {
       remarks: ''
     }
   ]);
+
+  const lrNoDetailsRefs = useRef(
+    lrNoDetailsTable.map(() => ({
+      outBoundBin: React.createRef(),
+      unitRate: React.createRef(),
+      skuValue: React.createRef(),
+      discount: React.createRef(),
+      tax: React.createRef(),
+      gstTax: React.createRef(),
+      amount: React.createRef(),
+      sgst: React.createRef(),
+      cgst: React.createRef(),
+      igst: React.createRef(),
+      totalGst: React.createRef(),
+      billAmount: React.createRef()
+    }))
+  );
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -489,10 +507,67 @@ export const DeliveryChallen = () => {
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+
+    // Define regex patterns
+    const patterns = {
+      vechileNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+      containerNO: /^[a-zA-Z]*$/, // Allow alphabets only
+      exciseInvoiceNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+      commercialInvoiceNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+      deliveryTerms: /^[a-zA-Z]*$/, // Allow alphabets only
+      payTerms: /^[a-zA-Z]*$/, // Allow alphabets only
+      grWaiverNo: /^[a-zA-Z]*$/, // Allow alphabets only
+      bankName: /^[a-zA-Z]*$/, // Allow alphabets only
+      gatePassNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+      insuranceNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+      automailerGroup: /^[a-zA-Z]*$/, // Allow alphabets only
+      docketNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+      noOfBoxes: /^[0-9]*$/, // Allow numbers only
+      pkgUom: /^[a-zA-Z]*$/, // Allow alphabets only
+      grossWeight: /^[0-9]*$/, // Allow numbers only
+      gwtUom: /^[a-zA-Z]*$/, // Allow alphabets only
+      transportName: /^[a-zA-Z]*$/, // Allow alphabets only
+      packingSlipNo: /^[0-9]*$/, // Allow numbers only
+      bin: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+      taxType: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+      remarks: /^[a-zA-Z0-9]*$/ // Allow alphabets and numbers only
+    };
+
+    // Determine the error message based on the field
+    const getErrorMessage = (fieldName) => {
+      if (patterns[fieldName]) {
+        if (fieldName === 'noOfBoxes' || fieldName === 'grossWeight' || fieldName === 'packingSlipNo') {
+          return 'Only numbers are allowed.';
+        } else if (
+          fieldName === 'containerNO' ||
+          fieldName === 'deliveryTerms' ||
+          fieldName === 'payTerms' ||
+          fieldName === 'grWaiverNo' ||
+          fieldName === 'bankName' ||
+          fieldName === 'automailerGroup' ||
+          fieldName === 'pkgUom' ||
+          fieldName === 'gwtUom' ||
+          fieldName === 'transportName'
+        ) {
+          return 'Only alphabets are allowed.';
+        } else {
+          return 'Only alphabets and numbers are allowed.';
+        }
+      }
+      return '';
+    };
+
+    // Validation and update logic
+    if (patterns[name] && !patterns[name].test(value)) {
+      setFieldErrors({
+        ...fieldErrors,
+        [name]: getErrorMessage(name)
+      });
+    } else {
+      // Clear errors and convert value to uppercase before updating form data
+      setFieldErrors({ ...fieldErrors, [name]: '' });
+      setFormData({ ...formData, [name]: value.toUpperCase() });
+    }
   };
 
   const handleDateChange = (field, date) => {
@@ -610,8 +685,33 @@ export const DeliveryChallen = () => {
     getDeliveryChallanDocId();
   };
 
+  useEffect(() => {
+    // If the length of the table changes, update the refs
+    if (lrNoDetailsRefs.current.length !== lrNoDetailsTable.length) {
+      lrNoDetailsRefs.current = lrNoDetailsTable.map(
+        (_, index) =>
+          lrNoDetailsRefs.current[index] || {
+            outBoundBin: React.createRef(),
+            unitRate: React.createRef(),
+            skuValue: React.createRef(),
+            discount: React.createRef(),
+            tax: React.createRef(),
+            gstTax: React.createRef(),
+            amount: React.createRef(),
+            sgst: React.createRef(),
+            cgst: React.createRef(),
+            igst: React.createRef(),
+            totalGst: React.createRef(),
+            billAmount: React.createRef()
+          }
+      );
+    }
+  }, [lrNoDetailsTable.length]);
+
   const handleSave = async () => {
     const errors = {};
+    let firstInvalidFieldRef = null;
+
     if (!formData.buyerOrderNo) {
       errors.buyerOrderNo = 'Buyer Order No is required';
     }
@@ -660,104 +760,120 @@ export const DeliveryChallen = () => {
     if (!formData.insuranceNo) {
       errors.insuranceNo = 'Insurance No is required';
     }
-    if (!formData.automailerGroup) {
-      errors.automailerGroup = 'Automailer Group is required';
-    }
-    if (!formData.docketNo) {
-      errors.docketNo = 'Docket No is required';
-    }
-    if (!formData.noOfBoxes) {
-      errors.noOfBoxes = 'No of Boxes is required';
-    }
-    if (!formData.pkgUom) {
-      errors.pkgUom = 'Pkg Uom is required';
-    }
-    if (!formData.grossWeight) {
-      errors.grossWeight = 'Gross Weight is required';
-    }
-    if (!formData.gwtUom) {
-      errors.gwtUom = 'Gwt Uom is required';
-    }
-    if (!formData.transportName) {
-      errors.transportName = 'Transport Name is required';
-    }
-    if (!formData.transporterDate) {
-      errors.transporterDate = 'Transport Date is required';
-    }
-    if (!formData.packingSlipNo) {
-      errors.packingSlipNo = 'Packing Slip No is required';
-    }
-    if (!formData.bin) {
-      errors.bin = 'Location is required';
-    }
-    if (!formData.taxType) {
-      errors.taxType = 'Tax Type is required';
-    }
-    if (!formData.remarks) {
-      errors.remarks = 'Remarks is required';
-    }
+    // if (!formData.automailerGroup) {
+    //   errors.automailerGroup = 'Automailer Group is required';
+    // }
+    // if (!formData.docketNo) {
+    //   errors.docketNo = 'Docket No is required';
+    // }
+    // if (!formData.noOfBoxes) {
+    //   errors.noOfBoxes = 'No of Boxes is required';
+    // }
+    // if (!formData.pkgUom) {
+    //   errors.pkgUom = 'Pkg Uom is required';
+    // }
+    // if (!formData.grossWeight) {
+    //   errors.grossWeight = 'Gross Weight is required';
+    // }
+    // if (!formData.gwtUom) {
+    //   errors.gwtUom = 'Gwt Uom is required';
+    // }
+    // if (!formData.transportName) {
+    //   errors.transportName = 'Transport Name is required';
+    // }
+    // if (!formData.transporterDate) {
+    //   errors.transporterDate = 'Transport Date is required';
+    // }
+    // if (!formData.packingSlipNo) {
+    //   errors.packingSlipNo = 'Packing Slip No is required';
+    // }
+    // if (!formData.bin) {
+    //   errors.bin = 'Location is required';
+    // }
+    // if (!formData.taxType) {
+    //   errors.taxType = 'Tax Type is required';
+    // }
+    // if (!formData.remarks) {
+    //   errors.remarks = 'Remarks is required';
+    // }
 
     let lrNoDetailsTableValid = true;
-    const newTableErrors = lrNoDetailsTable.map((row) => {
+    const newTableErrors = lrNoDetailsTable.map((row, index) => {
       const rowErrors = {};
       if (!row.outBoundBin) {
         rowErrors.outBoundBin = 'OutBound Bin is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].outBoundBin;
       }
       if (!row.unitRate) {
         rowErrors.unitRate = 'Unit Rate is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].unitRate;
       }
       if (!row.skuValue) {
         rowErrors.skuValue = 'Pack/SKU/Value is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].skuValue;
       }
       if (!row.discount) {
         rowErrors.discount = 'Discount is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].discount;
       }
       if (!row.tax) {
         rowErrors.tax = 'Tax is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].tax;
       }
       if (!row.gstTax) {
         rowErrors.gstTax = 'Gst Tax is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].gstTax;
       }
       if (!row.amount) {
         rowErrors.amount = 'Amount is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].amount;
       }
       if (!row.sgst) {
         rowErrors.sgst = 'SGST is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].sgst;
       }
       if (!row.cgst) {
         rowErrors.cgst = 'CGST is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].cgst;
       }
       if (!row.igst) {
         rowErrors.igst = 'IGST is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].igst;
       }
       if (!row.totalGst) {
         rowErrors.totalGst = 'Total Gst is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].totalGst;
       }
       if (!row.billAmount) {
         rowErrors.billAmount = 'Bill Amount is required';
         lrNoDetailsTableValid = false;
-      }
-
-      if (!row.remarks) {
-        rowErrors.remarks = 'Remarks is required';
-        lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].billAmount;
       }
 
       return rowErrors;
     });
 
     setLrNoDetailsError(newTableErrors);
+
+    if (!lrNoDetailsTableValid || Object.keys(errors).length > 0) {
+      // Focus on the first invalid field
+      if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+        firstInvalidFieldRef.current.focus();
+      }
+    } else {
+      // Proceed with form submission
+    }
 
     setFieldErrors(errors);
 
@@ -897,7 +1013,7 @@ export const DeliveryChallen = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="YYYY/MM/DD"
+                      format="DD/MM/YYYY"
                       disabled
                     />
                   </LocalizationProvider>
@@ -1006,7 +1122,6 @@ export const DeliveryChallen = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.exciseInvoiceNo}
                   helperText={fieldErrors.exciseInvoiceNo}
-                  // disabled
                 />
               </div>
 
@@ -1219,176 +1334,6 @@ export const DeliveryChallen = () => {
                 />
               </div>
 
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Automailer Group"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="automailerGroup"
-                  value={formData.automailerGroup}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.automailerGroup}
-                  helperText={fieldErrors.automailerGroup}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Docket No"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="docketNo"
-                  value={formData.docketNo}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.docketNo}
-                  helperText={fieldErrors.docketNo}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="No. Of Boxes"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="noOfBoxes"
-                  value={formData.noOfBoxes}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.noOfBoxes}
-                  helperText={fieldErrors.noOfBoxes}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="PKG UOM"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="pkgUom"
-                  value={formData.pkgUom}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.pkgUom}
-                  helperText={fieldErrors.pkgUom}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Gross Weight"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="grossWeight"
-                  value={formData.grossWeight}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.grossWeight}
-                  helperText={fieldErrors.grossWeight}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="GWT UOM"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="gwtUom"
-                  value={formData.gwtUom}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.gwtUom}
-                  helperText={fieldErrors.gwtUom}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Transporter Name"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="transportName"
-                  value={formData.transportName}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.transportName}
-                  helperText={fieldErrors.transportName}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled" size="small">
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="Date"
-                      value={formData.transporterDate ? dayjs(formData.transporterDate, 'YYYY-MM-DD') : null}
-                      onChange={(date) => handleDateChange('transporterDate', date)}
-                      slotProps={{
-                        textField: { size: 'small', clearable: true }
-                      }}
-                      format="YYYY/MM/DD"
-                      error={fieldErrors.transporterDate}
-                      helperText={fieldErrors.transporterDate && 'Required'}
-                    />
-                  </LocalizationProvider>
-                </FormControl>
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Packing Slip No"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="packingSlipNo"
-                  value={formData.packingSlipNo}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.packingSlipNo}
-                  helperText={fieldErrors.packingSlipNo}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Location"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="bin"
-                  value={formData.bin}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.bin}
-                  helperText={fieldErrors.bin}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Tax Type"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="taxType"
-                  value={formData.taxType}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.taxType}
-                  helperText={fieldErrors.taxType}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Remarks"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="remarks"
-                  value={formData.remarks}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.remarks}
-                  helperText={fieldErrors.remarks}
-                />
-              </div>
               {/* <div className="col-md-3 mb-3">
                 <FormControlLabel
                   control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" color="primary" />}
@@ -1462,7 +1407,7 @@ export const DeliveryChallen = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        style={{ width: '100px' }}
+                                        style={{ width: '200px' }}
                                         value={row.pickRequestNo}
                                         className="form-control"
                                         disabled // Disable the input field
@@ -1476,7 +1421,7 @@ export const DeliveryChallen = () => {
                                           slotProps={{
                                             textField: { size: 'small', clearable: true, style: { width: '200px' }, disabled: true } // Disable the DatePicker
                                           }}
-                                          format="YYYY/MM/DD"
+                                          format="DD/MM/YYYY"
                                         />
                                       </LocalizationProvider>
                                     </td>
@@ -1493,7 +1438,7 @@ export const DeliveryChallen = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        style={{ width: '100px' }}
+                                        style={{ width: '250px' }}
                                         value={row.partDescription}
                                         className="form-control"
                                         disabled // Disable the input field
@@ -1502,22 +1447,42 @@ export const DeliveryChallen = () => {
 
                                     <td className="border px-2 py-2">
                                       <input
+                                        ref={lrNoDetailsRefs.current[index].outBoundBin}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.outBoundBin}
                                         onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, outBoundBin: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              outBoundBin: !value ? 'OutBound Bin is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
+                                          const value = e.target.value.toUpperCase(); // Convert value to uppercase
+
+                                          // Regex to allow alphabets and numbers only
+                                          const regex = /^[a-zA-Z0-9]*$/;
+
+                                          if (regex.test(value)) {
+                                            // Update table data if the value is valid
+                                            setLrNoDetailsTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, outBoundBin: value } : r))
+                                            );
+
+                                            // Clear error for this field
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                outBoundBin: ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            // Set error if the value is invalid
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                outBoundBin: 'Only alphabets and numbers are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
                                         }}
                                         className={lrNoDetailsError[index]?.outBoundBin ? 'error form-control' : 'form-control'}
                                       />
@@ -1539,19 +1504,32 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
+                                        ref={lrNoDetailsRefs.current[index].unitRate}
+                                        type="text"
                                         style={{ width: '100px' }}
                                         value={row.unitRate}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, unitRate: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], unitRate: !value ? 'Unit Rate is required' : '' };
-                                            return newErrors;
-                                          });
+                                          if (/^\d*$/.test(value)) {
+                                            setLrNoDetailsTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, unitRate: value.toUpperCase() } : r))
+                                            );
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], unitRate: !value ? 'Unit Rate is required' : '' };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            // Invalid input (alphabet or special character)
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                unitRate: 'Only numbers are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
                                         }}
                                         className={lrNoDetailsError[index]?.unitRate ? 'error form-control' : 'form-control'}
                                       />
@@ -1563,22 +1541,34 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
+                                        ref={lrNoDetailsRefs.current[index].skuValue}
+                                        type="text"
                                         style={{ width: '100px' }}
                                         value={row.skuValue}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, skuValue: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              skuValue: !value ? 'Pack/SKU/Value is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
+                                          if (/^\d*$/.test(value)) {
+                                            setLrNoDetailsTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, skuValue: value.toUpperCase() } : r))
+                                            );
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                skuValue: !value ? 'Pack/SKU/Value is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                skuValue: 'Only numbers are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
                                         }}
                                         className={lrNoDetailsError[index]?.skuValue ? 'error form-control' : 'form-control'}
                                       />
@@ -1590,19 +1580,31 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
+                                        ref={lrNoDetailsRefs.current[index].discount}
+                                        type="text"
                                         style={{ width: '100px' }}
                                         value={row.discount}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, discount: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], discount: !value ? 'Discount is required' : '' };
-                                            return newErrors;
-                                          });
+                                          if (/^\d*$/.test(value)) {
+                                            setLrNoDetailsTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, discount: value.toUpperCase() } : r))
+                                            );
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], discount: !value ? 'Discount is required' : '' };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                discount: 'Only numbers are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
                                         }}
                                         className={lrNoDetailsError[index]?.discount ? 'error form-control' : 'form-control'}
                                       />
@@ -1614,19 +1616,31 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
+                                        ref={lrNoDetailsRefs.current[index].tax}
+                                        type="text"
                                         style={{ width: '100px' }}
                                         value={row.tax}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, tax: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], tax: !value ? 'Tax is required' : '' };
-                                            return newErrors;
-                                          });
+                                          if (/^\d*$/.test(value)) {
+                                            setLrNoDetailsTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, tax: value.toUpperCase() } : r))
+                                            );
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], tax: !value ? 'Tax is required' : '' };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                tax: 'Only numbers are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
                                         }}
                                         className={lrNoDetailsError[index]?.tax ? 'error form-control' : 'form-control'}
                                       />
@@ -1639,22 +1653,35 @@ export const DeliveryChallen = () => {
 
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
+                                        ref={lrNoDetailsRefs.current[index].gstTax}
+                                        type="text"
                                         style={{ width: '100px' }}
                                         value={row.gstTax}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, gstTax: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              gstTax: !value ? 'Gst Tax is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
+                                          if (/^\d*$/.test(value)) {
+                                            setLrNoDetailsTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, gstTax: value.toUpperCase() } : r))
+                                            );
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                gstTax: !value ? 'Gst Tax is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            // Invalid input (alphabet or special character)
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                gstTax: 'Only numbers are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
                                         }}
                                         className={lrNoDetailsError[index]?.gstTax ? 'error form-control' : 'form-control'}
                                       />
@@ -1667,22 +1694,34 @@ export const DeliveryChallen = () => {
 
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
+                                        ref={lrNoDetailsRefs.current[index].amount}
+                                        type="text"
                                         style={{ width: '100px' }}
                                         value={row.amount}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, amount: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              amount: !value ? 'Amount is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
+                                          if (/^\d*$/.test(value)) {
+                                            setLrNoDetailsTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, amount: value.toUpperCase() } : r))
+                                            );
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                amount: !value ? 'Amount is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                amount: 'Only numbers are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
                                         }}
                                         className={lrNoDetailsError[index]?.amount ? 'error form-control' : 'form-control'}
                                       />
@@ -1694,22 +1733,34 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
+                                        ref={lrNoDetailsRefs.current[index].sgst}
+                                        type="text"
                                         style={{ width: '100px' }}
                                         value={row.sgst}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, sgst: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              sgst: !value ? 'SGST is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
+                                          if (/^\d*$/.test(value)) {
+                                            setLrNoDetailsTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, sgst: value.toUpperCase() } : r))
+                                            );
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                sgst: !value ? 'SGST is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                sgst: 'Only numbers are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
                                         }}
                                         className={lrNoDetailsError[index]?.sgst ? 'error form-control' : 'form-control'}
                                       />
@@ -1722,22 +1773,34 @@ export const DeliveryChallen = () => {
 
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
+                                        ref={lrNoDetailsRefs.current[index].cgst}
+                                        type="text"
                                         style={{ width: '100px' }}
                                         value={row.cgst}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, cgst: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              cgst: !value ? 'CGST is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
+                                          if (/^\d*$/.test(value)) {
+                                            setLrNoDetailsTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, cgst: value.toUpperCase() } : r))
+                                            );
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                cgst: !value ? 'CGST is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                cgst: 'Only numbers are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
                                         }}
                                         className={lrNoDetailsError[index]?.cgst ? 'error form-control' : 'form-control'}
                                       />
@@ -1749,22 +1812,34 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
+                                        ref={lrNoDetailsRefs.current[index].igst}
+                                        type="text"
                                         style={{ width: '100px' }}
                                         value={row.igst}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, igst: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              igst: !value ? 'IGST is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
+                                          if (/^\d*$/.test(value)) {
+                                            setLrNoDetailsTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, igst: value.toUpperCase() } : r))
+                                            );
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                igst: !value ? 'IGST is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                igst: 'Only numbers are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
                                         }}
                                         className={lrNoDetailsError[index]?.igst ? 'error form-control' : 'form-control'}
                                       />
@@ -1776,19 +1851,31 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
+                                        ref={lrNoDetailsRefs.current[index].totalGst}
+                                        type="text"
                                         style={{ width: '100px' }}
                                         value={row.totalGst}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, totalGst: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], totalGst: !value ? 'Total Gst is required' : '' };
-                                            return newErrors;
-                                          });
+                                          if (/^\d*$/.test(value)) {
+                                            setLrNoDetailsTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, totalGst: value.toUpperCase() } : r))
+                                            );
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], totalGst: !value ? 'Total Gst is required' : '' };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                totalGst: 'Only numbers are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
                                         }}
                                         className={lrNoDetailsError[index]?.totalGst ? 'error form-control' : 'form-control'}
                                       />
@@ -1800,19 +1887,34 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
+                                        ref={lrNoDetailsRefs.current[index].billAmount}
+                                        type="text"
                                         style={{ width: '100px' }}
                                         value={row.billAmount}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, billAmount: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], billAmount: !value ? 'Bill Amount is required' : '' };
-                                            return newErrors;
-                                          });
+                                          if (/^\d*$/.test(value)) {
+                                            setLrNoDetailsTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, billAmount: value.toUpperCase() } : r))
+                                            );
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                billAmount: !value ? 'Bill Amount is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                billAmount: 'Only numbers are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
                                         }}
                                         className={lrNoDetailsError[index]?.billAmount ? 'error form-control' : 'form-control'}
                                       />
@@ -1833,20 +1935,10 @@ export const DeliveryChallen = () => {
                                           setLrNoDetailsTable((prev) =>
                                             prev.map((r) => (r.id === row.id ? { ...r, remarks: value.toUpperCase() } : r))
                                           );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], remarks: !value ? 'Remarks is required' : '' };
-                                            return newErrors;
-                                          });
                                         }}
                                         onKeyDown={(e) => handleKeyDown(e, row)}
-                                        className={lrNoDetailsError[index]?.remarks ? 'error form-control' : 'form-control'}
+                                        className="form-control"
                                       />
-                                      {lrNoDetailsError[index]?.remarks && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].remarks}
-                                        </div>
-                                      )}
                                     </td>
                                   </tr>
                                 ))}
@@ -1860,7 +1952,178 @@ export const DeliveryChallen = () => {
                 )}
                 {value === 1 && (
                   <>
-                    <div>other Info</div>
+                    <div className="row">
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Automailer Group"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="automailerGroup"
+                          value={formData.automailerGroup}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.automailerGroup}
+                          helperText={fieldErrors.automailerGroup}
+                        />
+                      </div>
+
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Docket No"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="docketNo"
+                          value={formData.docketNo}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.docketNo}
+                          helperText={fieldErrors.docketNo}
+                        />
+                      </div>
+
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="No Of Boxes"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="noOfBoxes"
+                          value={formData.noOfBoxes}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.noOfBoxes}
+                          helperText={fieldErrors.noOfBoxes}
+                        />
+                      </div>
+
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="PKG UOM"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="pkgUom"
+                          value={formData.pkgUom}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.pkgUom}
+                          helperText={fieldErrors.pkgUom}
+                        />
+                      </div>
+
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Gross Weight"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="grossWeight"
+                          value={formData.grossWeight}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.grossWeight}
+                          helperText={fieldErrors.grossWeight}
+                        />
+                      </div>
+
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="GWT UOM"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="gwtUom"
+                          value={formData.gwtUom}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.gwtUom}
+                          helperText={fieldErrors.gwtUom}
+                        />
+                      </div>
+
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Transporter Name"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="transportName"
+                          value={formData.transportName}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.transportName}
+                          helperText={fieldErrors.transportName}
+                        />
+                      </div>
+
+                      <div className="col-md-3 mb-3">
+                        <FormControl fullWidth variant="filled" size="small">
+                          <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DatePicker
+                              label="Date"
+                              value={formData.transporterDate ? dayjs(formData.transporterDate, 'YYYY-MM-DD') : null}
+                              onChange={(date) => handleDateChange('transporterDate', date)}
+                              slotProps={{
+                                textField: { size: 'small', clearable: true }
+                              }}
+                              format="YYYY/MM/DD"
+                              error={fieldErrors.transporterDate}
+                              helperText={fieldErrors.transporterDate && 'Required'}
+                            />
+                          </LocalizationProvider>
+                        </FormControl>
+                      </div>
+
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Packing Slip No"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="packingSlipNo"
+                          value={formData.packingSlipNo}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.packingSlipNo}
+                          helperText={fieldErrors.packingSlipNo}
+                        />
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Bin"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="bin"
+                          value={formData.bin}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.bin}
+                          helperText={fieldErrors.bin}
+                        />
+                      </div>
+
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Tax Type"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="taxType"
+                          value={formData.taxType}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.taxType}
+                          helperText={fieldErrors.taxType}
+                        />
+                      </div>
+
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Remarks"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="remarks"
+                          value={formData.remarks}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.remarks}
+                          helperText={fieldErrors.remarks}
+                        />
+                      </div>
+                    </div>
                   </>
                 )}
               </Box>

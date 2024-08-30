@@ -1,29 +1,36 @@
-import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
-import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { FormHelperText } from '@mui/material';
-import Box from '@mui/material/Box';
+import { Avatar, ButtonBase, FormHelperText, Tooltip, FormControlLabel, Checkbox } from '@mui/material';
+import TextField from '@mui/material/TextField';
+import { useTheme } from '@mui/material/styles';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import axios from 'axios';
+import { useState, useMemo, useEffect } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import IconButton from '@mui/material/IconButton';
+import EditIcon from '@mui/icons-material/Edit';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import TextField from '@mui/material/TextField';
-import { DatePicker } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import apiCalls from 'apicall';
-import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import BrowserUpdatedIcon from '@mui/icons-material/BrowserUpdated';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import apiCalls from 'apicall';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import dayjs from 'dayjs';
+import { DatePicker } from '@mui/x-date-pickers';
+import { getAllActiveCarrier, getAllActiveSupplier } from 'utils/CommonFunctions';
+import React, { useRef } from 'react';
 
 export const VasPutaway = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -35,7 +42,7 @@ export const VasPutaway = () => {
   const [tableBinList, setTableBinList] = useState([]);
   const [modeOfShipmentList, setModeOfShipmentList] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const [cbranch, setCbranch] = useState(localStorage.getItem('branchcode'));
+  const [cbranch, setCbranch] = useState(localStorage.getItem('branchCode'));
   const [client, setClient] = useState(localStorage.getItem('client'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [customer, setCustomer] = useState(localStorage.getItem('customer'));
@@ -82,19 +89,20 @@ export const VasPutaway = () => {
   ];
 
   const [listViewData, setListViewData] = useState([]);
+
   const [lrNoDetailsTable, setLrNoDetailsTable] = useState([
-    {
-      id: 1,
-      partNo: '',
-      partDescription: '',
-      grnNo: '',
-      invQty: '',
-      putAwayQty: '',
-      fromBin: '',
-      bin: '',
-      sku: '',
-      remarks: ''
-    }
+    // {
+    //   id: 1,
+    //   partNo: '',
+    //   partDescription: '',
+    //   grnNo: '',
+    //   invQty: '',
+    //   putAwayQty: '',
+    //   fromBin: '',
+    //   bin: '',
+    //   sku: '',
+    //   remarks: ''
+    // }
   ]);
 
   const handleAddRow = () => {
@@ -160,7 +168,7 @@ export const VasPutaway = () => {
     try {
       const response = await apiCalls(
         'get',
-        `vasputaway/getDocIdFromVasPickForVasPutaway?branch=${branch}&client=${client}&orgId=${orgId}&finYear=${finYear}`
+        `vasputaway/getDocIdFromVasPickForVasPutaway?branch=${branch}&client=${client}&finYear=${finYear}&orgId=${orgId}`
       );
 
       console.log('API Response:', response);
@@ -197,8 +205,8 @@ export const VasPutaway = () => {
         const binList = binResponse.status ? binResponse.paramObjectsMap.ToBin : [];
 
         const data = response.paramObjectsMap.vasPutawayVO.map((item, index) => {
-          const invQty = parseFloat(item.pickQty) || 0;
-          const putAwayQty = parseFloat(item.putawayQty) || 0;
+          const invQty = parseFloat(item.picqty) || 0;
+          const putAwayQty = parseFloat(item.picqty) || 0;
 
           totalGrnQty += invQty;
           totalPutawayQty += putAwayQty;
@@ -208,16 +216,6 @@ export const VasPutaway = () => {
             partNo: item.partNo,
             partDescription: item.partDesc,
             grnNo: item.grnNo,
-            grnDate: item.grnDate,
-            batchNo: item.batchNo,
-            batchDate: item.batchDate,
-            expDate: item.expDate,
-            fromBinClass: item.binClass,
-            fromBinType: item.binType,
-            fromCellType: item.cellType,
-            fromCore: item.core,
-            stockDate: item.stockDate,
-            qcFlag: item.qcFlag,
             invQty: invQty,
             putAwayQty: putAwayQty,
             fromBin: item.bin,
@@ -295,7 +293,7 @@ export const VasPutaway = () => {
           particularVasPutaway.vasPutawayDetailsVO.map((detail) => ({
             id: detail.id,
             partNo: detail.partNo,
-            partDescription: detail.partDescription,
+            partDescription: detail.partDesc,
             grnNo: detail.grnNo,
             invQty: detail.invQty,
             putAwayQty: detail.putAwayQty,
@@ -325,11 +323,11 @@ export const VasPutaway = () => {
 
       // Call the function to get the fill grid data for the selected vasPickNo
       await getFillGridVasPutaway(value);
-    }
-    if (name === 'status') {
-      setFormData((prevData) => ({ ...prevData, [name]: value }));
     } else {
-      setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+      setFormData({
+        ...formData,
+        [name]: value
+      });
     }
   };
 
@@ -381,8 +379,17 @@ export const VasPutaway = () => {
     getVasPutawayDocId();
   };
 
+  const lrNoDetailsRefs = useRef([]);
+
+  useEffect(() => {
+    lrNoDetailsRefs.current = lrNoDetailsTable.map((_, i) => ({
+      bin: lrNoDetailsRefs.current[i]?.bin || React.createRef()
+    }));
+  }, [lrNoDetailsTable]);
+
   const handleSave = async () => {
     const errors = {};
+    let firstInvalidFieldRef = null;
     if (!formData.vasPickNo) {
       errors.vasPickNo = 'Vas Pick No is required';
     }
@@ -390,18 +397,40 @@ export const VasPutaway = () => {
       errors.status = 'Status is required';
     }
 
+    // Table validation
+    if (lrNoDetailsTable.length === 0) {
+      errors.table = 'LR No Details Table is required';
+      setFieldErrors(errors);
+      showToast('error', 'LR No Details Table is required');
+      return; // Exit the function if the table is empty
+    }
+
     let lrNoDetailsTableValid = true;
-    const newTableErrors = lrNoDetailsTable.map((row) => {
+    const newTableErrors = lrNoDetailsTable.map((row, index) => {
       const rowErrors = {};
       if (!row.bin) {
         rowErrors.bin = 'Bin is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
       }
+      // if (!row.remarks) {
+      //   rowErrors.remarks = 'Remarks is required';
+      //   lrNoDetailsTableValid = false;
+      // }
 
       return rowErrors;
     });
 
     setLrNoDetailsError(newTableErrors);
+
+    if (!lrNoDetailsTableValid || Object.keys(errors).length > 0) {
+      // Focus on the first invalid field
+      if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+        firstInvalidFieldRef.current.focus();
+      }
+    } else {
+      // Proceed with form submission
+    }
 
     setFieldErrors(errors);
 
@@ -409,15 +438,24 @@ export const VasPutaway = () => {
       setIsLoading(true);
       const lrNoDetailsVO = lrNoDetailsTable.map((row) => ({
         partNo: row.partNo,
-        partDescription: row.partDescription,
+        partDesc: row.partDescription,
         grnNo: row.grnNo,
-        invQty: row.invQty,
-        batchNo: row.batchNo,
-        putAwayQty: row.putAwayQty,
+        invQty: parseInt(row.invQty),
+        putAwayQty: parseInt(row.putAwayQty),
         fromBin: row.fromBin,
         bin: row.bin,
         sku: row.sku,
-        remarks: row.remarks
+        remarks: row.remarks,
+        binClass: '',
+        binType: '',
+        cellType: '',
+        clientCode: '',
+        core: '',
+        expDate: null,
+        grnDate: null,
+        pckey: '',
+        ssku: '',
+        stockDate: null
       }));
 
       const saveFormData = {
@@ -428,7 +466,7 @@ export const VasPutaway = () => {
         createdBy: loginUserName,
         customer: customer,
         finYear: finYear,
-        orgId: parseInt(orgId),
+        orgId: orgId,
         vasPickNo: formData.vasPickNo,
         status: formData.status,
         totalGrnQty: parseInt(formData.totalGrnQty),
@@ -515,7 +553,7 @@ export const VasPutaway = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="YYYY/MM/DD"
+                      format="DD/MM/YYYY"
                       disabled
                     />
                   </LocalizationProvider>
@@ -523,23 +561,33 @@ export const VasPutaway = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.vasPickNo}>
-                  <InputLabel id="vasPickNo">VAS Pick No</InputLabel>
-                  <Select labelId="vasPickNo" label="VAS Pick No" value={formData.vasPickNo} onChange={handleInputChange} name="vasPickNo">
-                    {vasNoList.map((vas) => (
-                      <MenuItem key={vas.id} value={vas.vasPickNo}>
-                        {vas.vasPickNo}
-                      </MenuItem>
-                    ))}
+                  <InputLabel id="vasPickNo">VAS Pick No *</InputLabel>
+                  <Select
+                    labelId="vasPickNo"
+                    label="VAS Pick No *"
+                    value={formData.vasPickNo}
+                    onChange={handleInputChange}
+                    name="vasPickNo"
+                  >
+                    {vasNoList.length > 0 ? (
+                      vasNoList.map((vas) => (
+                        <MenuItem key={vas.id} value={vas.vasPickNo}>
+                          {vas.vasPickNo}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem disabled>No Data Found</MenuItem>
+                    )}
                   </Select>
                   {fieldErrors.vasPickNo && <FormHelperText>{fieldErrors.vasPickNo}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                  <InputLabel id="status">Status</InputLabel>
-                  <Select labelId="status" label="Status" value={formData.status} onChange={handleInputChange} name="status">
-                    <MenuItem value="Edit">EDIT</MenuItem>
-                    <MenuItem value="Confirm">CONFIRM</MenuItem>
+                  <InputLabel id="status">Status *</InputLabel>
+                  <Select labelId="status" label="Status *" value={formData.status} onChange={handleInputChange} name="status">
+                    <MenuItem value="EDIT">EDIT</MenuItem>
+                    <MenuItem value="SUBMIT">SUBMIT</MenuItem>
                   </Select>
                   {fieldErrors.status && <FormHelperText>{fieldErrors.status}</FormHelperText>}
                 </FormControl>
@@ -588,168 +636,158 @@ export const VasPutaway = () => {
                                   <th className="px-2 py-2 text-white text-center">Part No</th>
                                   <th className="px-2 py-2 text-white text-center">Part Description</th>
                                   <th className="px-2 py-2 text-white text-center">GRN No</th>
-                                  <th className="px-2 py-2 text-white text-center">Batch No</th>
                                   <th className="px-2 py-2 text-white text-center">Inv Qty</th>
                                   <th className="px-2 py-2 text-white text-center">Putaway Qty</th>
                                   <th className="px-2 py-2 text-white text-center">From Bin</th>
-                                  <th className="px-2 py-2 text-white text-center">Bin</th>
+                                  <th className="px-2 py-2 text-white text-center">Bin *</th>
                                   <th className="px-2 py-2 text-white text-center">SKU</th>
                                   <th className="px-2 py-2 text-white text-center">Remarks</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {lrNoDetailsTable.map((row, index) => (
-                                  <tr key={row.id}>
-                                    <td className="border px-2 py-2 text-center">
-                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
-                                    </td>
-                                    <td className="text-center">
-                                      <div className="pt-2">{index + 1}</div>
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.partNo}
-                                        disabled
-                                        className="form-control"
-                                        title={row.partNo}
-                                      />
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.partDescription}
-                                        disabled
-                                        className="form-control"
-                                        title={row.partDescription}
-                                      />
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.grnNo}
-                                        disabled
-                                        className="form-control"
-                                        title={row.grnNo}
-                                      />
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.batchNo}
-                                        disabled
-                                        className="form-control"
-                                        title={row.batchNo}
-                                      />
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.invQty}
-                                        disabled
-                                        className="form-control"
-                                        title={row.invQty}
-                                      />
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.putAwayQty}
-                                        disabled
-                                        className="form-control"
-                                        title={row.putAwayQty}
-                                      />
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.fromBin}
-                                        disabled
-                                        className="form-control"
-                                        title={row.fromBin}
-                                      />
-                                    </td>
+                                {lrNoDetailsTable.length > 0 ? (
+                                  lrNoDetailsTable.map((row, index) => (
+                                    <tr key={row.id}>
+                                      <td className="border px-2 py-2 text-center">
+                                        <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+                                      </td>
+                                      <td className="text-center">
+                                        <div className="pt-2">{index + 1}</div>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          style={{ width: '100px' }}
+                                          value={row.partNo}
+                                          disabled
+                                          className="form-control"
+                                          title={row.partNo}
+                                        />
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          style={{ width: '100px' }}
+                                          value={row.partDescription}
+                                          disabled
+                                          className="form-control"
+                                          title={row.partDescription}
+                                        />
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          style={{ width: '100px' }}
+                                          value={row.grnNo}
+                                          disabled
+                                          className="form-control"
+                                          title={row.grnNo}
+                                        />
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          style={{ width: '100px' }}
+                                          value={row.invQty}
+                                          disabled
+                                          className="form-control"
+                                          title={row.invQty}
+                                        />
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          style={{ width: '100px' }}
+                                          value={row.putAwayQty}
+                                          disabled
+                                          className="form-control"
+                                          title={row.putAwayQty}
+                                        />
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          style={{ width: '100px' }}
+                                          value={row.fromBin}
+                                          disabled
+                                          className="form-control"
+                                          title={row.fromBin}
+                                        />
+                                      </td>
 
-                                    <td className="border px-2 py-2">
-                                      <select
-                                        value={row.bin}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
+                                      <td className="border px-2 py-2">
+                                        <select
+                                          ref={lrNoDetailsRefs.current[index]?.bin}
+                                          value={row.bin}
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
 
-                                          setLrNoDetailsTable((prev) => prev.map((r) => (r.id === row.id ? { ...r, bin: value } : r)));
+                                            setLrNoDetailsTable((prev) => prev.map((r) => (r.id === row.id ? { ...r, bin: value } : r)));
 
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              bin: !value ? 'Bin is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrNoDetailsError[index]?.bin ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">Select Option</option>
-                                        {row.binList &&
-                                          row.binList.length > 0 &&
-                                          row.binList.map((list) => (
-                                            <option key={list.id} value={list.bin}>
-                                              {list.bin}
-                                            </option>
-                                          ))}
-                                      </select>
-                                      {lrNoDetailsError[index]?.bin && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].bin}
-                                        </div>
-                                      )}
-                                    </td>
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                bin: !value ? 'Bin is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={lrNoDetailsError[index]?.bin ? 'error form-control' : 'form-control'}
+                                        >
+                                          <option value="">--Select--</option>
+                                          {row.binList && row.binList.length > 0 ? (
+                                            row.binList.map((list) => (
+                                              <option key={list.id} value={list.bin}>
+                                                {list.bin}
+                                              </option>
+                                            ))
+                                          ) : (
+                                            <option disabled>No Data Found</option>
+                                          )}
+                                        </select>
+                                        {lrNoDetailsError[index]?.bin && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {lrNoDetailsError[index].bin}
+                                          </div>
+                                        )}
+                                      </td>
 
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.sku}
-                                        disabled
-                                        className="form-control"
-                                        title={row.sku}
-                                      />
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.remarks}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, remarks: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], remarks: !value ? 'Remarks is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        onKeyDown={(e) => handleKeyDown(e, row)}
-                                        className={lrNoDetailsError[index]?.remarks ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrNoDetailsError[index]?.remarks && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].remarks}
-                                        </div>
-                                      )}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          style={{ width: '100px' }}
+                                          value={row.sku}
+                                          disabled
+                                          className="form-control"
+                                          title={row.sku}
+                                        />
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          style={{ width: '100px' }}
+                                          value={row.remarks}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setLrNoDetailsTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, remarks: value } : r))
+                                            );
+                                          }}
+                                          onKeyDown={(e) => handleKeyDown(e, row)}
+                                          className="form-control"
+                                        />
+                                      </td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan="18" className="text-center py-2">
+                                      No Data Found
                                     </td>
                                   </tr>
-                                ))}
+                                )}
                               </tbody>
                             </table>
                           </div>

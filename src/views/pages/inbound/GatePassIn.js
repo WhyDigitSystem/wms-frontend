@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import axios from 'axios';
-import { useRef, useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import IconButton from '@mui/material/IconButton';
@@ -30,6 +30,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
 import { getAllActiveCarrier, getAllActiveSupplier } from 'utils/CommonFunctions';
+import React, { useRef } from 'react';
 
 export const GatePassIn = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -50,7 +51,7 @@ export const GatePassIn = () => {
   const [formData, setFormData] = useState({
     docdate: dayjs(),
     entryNo: '',
-    entryDate: null,
+    entryDate: dayjs(),
     supplier: '',
     supplierShortName: '',
     modeOfShipment: '',
@@ -90,9 +91,9 @@ export const GatePassIn = () => {
         subUnit: '',
         subStockShortQty: '',
         grnPiecesQty: '',
-        weight: '',
-        rate: '',
-        amount: '',
+        // weight: '',
+        // rate: '',
+        // amount: '',
         remarks: ''
       }
     ]);
@@ -114,9 +115,9 @@ export const GatePassIn = () => {
       subUnit: '',
       subStockShortQty: '',
       grnPiecesQty: '',
-      weight: '',
-      rate: '',
-      amount: '',
+      // weight: '',
+      // rate: '',
+      // amount: '',
       remarks: ''
     }
   ]);
@@ -124,7 +125,7 @@ export const GatePassIn = () => {
   const [fieldErrors, setFieldErrors] = useState({
     docdate: new Date(),
     entryNo: '',
-    entryDate: null,
+    entryDate: new Date(),
     supplier: '',
     supplierShortName: '',
     modeOfShipment: '',
@@ -172,6 +173,18 @@ export const GatePassIn = () => {
       remarks: ''
     }
   ]);
+
+  const lrNoDetailsRefs = useRef(
+    lrNoDetailsTable.map(() => ({
+      irNoHaw: React.createRef(),
+      invoiceNo: React.createRef(),
+      partNo: React.createRef(),
+      batchNo: React.createRef(),
+      invQty: React.createRef(),
+      recQty: React.createRef(),
+      damageQty: React.createRef()
+    }))
+  );
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -334,9 +347,9 @@ export const GatePassIn = () => {
             subUnit: detail.subUnit,
             subStockShortQty: detail.subStockShortQty,
             grnPiecesQty: detail.grnPiecesQty,
-            weight: detail.weight,
-            rate: detail.rate,
-            amount: detail.amount,
+            // weight: detail.weight,
+            // rate: detail.rate,
+            // amount: detail.amount,
             remarks: detail.remarks
           }))
         );
@@ -351,21 +364,80 @@ export const GatePassIn = () => {
   const handleInputChange = (event) => {
     const { name, value } = event.target;
 
-    if (name === 'supplier') {
+    if (name === 'vehicleNo') {
+      // Convert the vehicle number to uppercase
+      const upperCaseValue = value.toUpperCase();
+
+      setFormData({
+        ...formData,
+        vehicleNo: upperCaseValue
+      });
+    } else if (name === 'driverName') {
+      // Convert the vehicle number to uppercase
+      const upperCaseValue = value.toUpperCase();
+
+      setFormData({
+        ...formData,
+        driverName: upperCaseValue
+      });
+    } else if (name === 'goodsDescription') {
+      // Convert the vehicle number to uppercase
+      const upperCaseValue = value.toUpperCase();
+
+      setFormData({
+        ...formData,
+        goodsDescription: upperCaseValue
+      });
+    } else if (name === 'securityName') {
+      // Convert the vehicle number to uppercase
+      const upperCaseValue = value.toUpperCase();
+
+      setFormData({
+        ...formData,
+        securityName: upperCaseValue
+      });
+    } else if (name === 'contact') {
+      const numericValue = value.replace(/\D/g, '');
+      let errorMessage = '';
+
+      if (numericValue.length > 10) {
+        errorMessage = 'Invalid format';
+      }
+
+      if (value.length > numericValue.length) {
+        errorMessage = 'Alphabet not allowed';
+      }
+
+      const truncatedValue = numericValue.slice(0, 10);
+
+      setFormData({
+        ...formData,
+        contact: truncatedValue
+      });
+
+      setFieldErrors({
+        ...fieldErrors,
+        contact: errorMessage
+      });
+    } else if (name === 'supplier') {
       const selectedSupplier = supplierList.find((supplier) => supplier.supplierShortName === value);
       setFormData({
         ...formData,
         supplier: value,
         supplierShortName: selectedSupplier ? selectedSupplier.supplier : ''
       });
+    } else if (name === 'modeOfShipment') {
+      const upperCaseValue = value.toUpperCase();
+      setFormData({
+        ...formData,
+        modeOfShipment: upperCaseValue
+      });
+      getAllCarrier(value);
     } else {
       setFormData({
         ...formData,
         [name]: value
       });
-    }
-    if (name === 'modeOfShipment') {
-      getAllCarrier(value); // Pass the selected modeOfShipment value to the function
     }
   };
 
@@ -390,7 +462,7 @@ export const GatePassIn = () => {
       // gatePassDocId: '',
       docdate: dayjs(),
       entryNo: '',
-      entryDate: null,
+      entryDate: dayjs(),
       supplier: '',
       supplierShortName: '',
       modeOfShipment: '',
@@ -418,9 +490,9 @@ export const GatePassIn = () => {
         subUnit: '',
         subStockShortQty: '',
         grnPiecesQty: '',
-        weight: '',
-        rate: '',
-        amount: '',
+        // weight: '',
+        // rate: '',
+        // amount: '',
         remarks: ''
       }
     ]);
@@ -428,7 +500,7 @@ export const GatePassIn = () => {
     setFieldErrors({
       docdate: new Date(),
       entryNo: '',
-      entryDate: null,
+      entryDate: new Date(),
       supplier: '',
       supplierShortName: '',
       modeOfShipment: '',
@@ -443,11 +515,30 @@ export const GatePassIn = () => {
     getGatePassDocId();
   };
 
+  useEffect(() => {
+    // If the length of the table changes, update the refs
+    if (lrNoDetailsRefs.current.length !== lrNoDetailsTable.length) {
+      lrNoDetailsRefs.current = lrNoDetailsTable.map(
+        (_, index) =>
+          lrNoDetailsRefs.current[index] || {
+            irNoHaw: React.createRef(),
+            invoiceNo: React.createRef(),
+            partNo: React.createRef(),
+            batchNo: React.createRef(),
+            invQty: React.createRef(),
+            recQty: React.createRef(),
+            damageQty: React.createRef()
+          }
+      );
+    }
+  }, [lrNoDetailsTable.length]);
+
   const handleSave = async () => {
     const errors = {};
-    if (!formData.entryNo) {
-      errors.entryNo = 'Entry No is required';
-    }
+    let firstInvalidFieldRef = null;
+    // if (!formData.entryNo) {
+    //   errors.entryNo = 'Entry No is required';
+    // }
     if (!formData.entryDate) {
       errors.entryDate = 'Date is required';
     }
@@ -460,95 +551,120 @@ export const GatePassIn = () => {
     if (!formData.carrier) {
       errors.carrier = 'Carrier Transport is required';
     }
-    if (!formData.vehicleType) {
-      errors.vehicleType = 'Vehicle Type is required';
-    }
-    if (!formData.vehicleNo) {
-      errors.vehicleNo = 'Vehicle No is required';
-    }
-    if (!formData.driverName) {
-      errors.driverName = 'Driver Name is required';
-    }
-    if (!formData.contact) {
-      errors.contact = 'Contact is required';
-    }
-    if (!formData.goodsDescription) {
-      errors.goodsDescription = 'Goods Description is required';
-    }
-    if (!formData.securityName) {
-      errors.securityName = 'Security Name is required';
-    }
+    // if (!formData.vehicleType) {
+    //   errors.vehicleType = 'Vehicle Type is required';
+    // }
+    // if (!formData.vehicleNo) {
+    //   errors.vehicleNo = 'Vehicle No is required';
+    // }
+    // if (!formData.driverName) {
+    //   errors.driverName = 'Driver Name is required';
+    // }
+    // if (!formData.contact) {
+    //   errors.contact = 'Contact is required';
+    // }
+    // if (!formData.goodsDescription) {
+    //   errors.goodsDescription = 'Goods Description is required';
+    // }
+    // if (!formData.securityName) {
+    //   errors.securityName = 'Security Name is required';
+    // }
 
     let lrNoDetailsTableValid = true;
-    const newTableErrors = lrNoDetailsTable.map((row) => {
+    const newTableErrors = lrNoDetailsTable.map((row, index) => {
       const rowErrors = {};
+      // if (!row.irNoHaw) {
+      //   rowErrors.irNoHaw = 'Lr No is required';
+      //   lrNoDetailsTableValid = false;
+      // }
       if (!row.irNoHaw) {
         rowErrors.irNoHaw = 'Lr No is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].irNoHaw;
       }
+      // if (!row.invoiceNo) {
+      //   rowErrors.invoiceNo = 'Invoice No is required';
+      //   lrNoDetailsTableValid = false;
+      // }
       if (!row.invoiceNo) {
         rowErrors.invoiceNo = 'Invoice No is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].invoiceNo;
       }
       if (!row.partNo) {
         rowErrors.partNo = 'Part No is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
       }
       if (!row.batchNo) {
         rowErrors.batchNo = 'Batch No is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
       }
       if (!row.invQty) {
         rowErrors.invQty = 'Inv Qty is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].invQty;
       }
       if (!row.recQty) {
         rowErrors.recQty = 'Rec Qty is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].recQty;
       }
       if (!row.damageQty) {
         rowErrors.damageQty = 'Damage Qty is required';
         lrNoDetailsTableValid = false;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].damageQty;
       }
-      if (!row.subStockShortQty) {
-        rowErrors.subStockShortQty = 'Sub Stock Short Qty is required';
-        lrNoDetailsTableValid = false;
-      }
-      if (!row.grnPiecesQty) {
-        rowErrors.grnPiecesQty = 'Grn Pieces Qty is required';
-        lrNoDetailsTableValid = false;
-      }
-      if (!row.weight) {
-        rowErrors.weight = 'Weight is required';
-        lrNoDetailsTableValid = false;
-      }
-      if (!row.rate) {
-        rowErrors.rate = 'Rate is required';
-        lrNoDetailsTableValid = false;
-      }
-      if (!row.amount) {
-        rowErrors.amount = 'Amount is required';
-        lrNoDetailsTableValid = false;
-      }
-      if (!row.remarks) {
-        rowErrors.remarks = 'Remarks is required';
-        lrNoDetailsTableValid = false;
-      }
+      // if (!row.subStockShortQty) {
+      //   rowErrors.subStockShortQty = 'Sub Stock Short Qty is required';
+      //   lrNoDetailsTableValid = false;
+      // }
+      // if (!row.grnPiecesQty) {
+      //   rowErrors.grnPiecesQty = 'Grn Pieces Qty is required';
+      //   lrNoDetailsTableValid = false;
+      // }
+      // if (!row.weight) {
+      //   rowErrors.weight = 'Weight is required';
+      //   lrNoDetailsTableValid = false;
+      // }
+      // if (!row.rate) {
+      //   rowErrors.rate = 'Rate is required';
+      //   lrNoDetailsTableValid = false;
+      // }
+      // if (!row.amount) {
+      //   rowErrors.amount = 'Amount is required';
+      //   lrNoDetailsTableValid = false;
+      //   if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].amount;
+      // }
+      // if (!row.remarks) {
+      //   rowErrors.remarks = 'Remarks is required';
+      //   lrNoDetailsTableValid = false;
+      // }
 
       return rowErrors;
     });
 
     setLrNoDetailsError(newTableErrors);
 
+    if (!lrNoDetailsTableValid || Object.keys(errors).length > 0) {
+      // Focus on the first invalid field
+      if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+        firstInvalidFieldRef.current.focus();
+      }
+    } else {
+      // Proceed with form submission
+    }
+
     setFieldErrors(errors);
 
     if (Object.keys(errors).length === 0 && lrNoDetailsTableValid) {
       setIsLoading(true);
       const lrNoDetailsVO = lrNoDetailsTable.map((row) => ({
-        amount: parseInt(row.amount),
+        amount: 0,
         batchNo: row.batchNo,
         damageQty: parseInt(row.damageQty),
-        grnPiecesQty: parseInt(row.grnPiecesQty),
+        grnPiecesQty: 0,
         invQty: parseInt(row.invQty),
         invoiceDate: dayjs().format('YYYY-MM-DD'),
         invoiceNo: row.invoiceNo,
@@ -556,16 +672,16 @@ export const GatePassIn = () => {
         partCode: '',
         partDescription: row.partDesc,
         partNo: row.partNo,
-        rate: parseInt(row.rate),
+        rate: 0,
         recQty: parseInt(row.recQty),
         remarks: row.remarks,
         rowNo: '',
         sku: row.sku,
         sno: '',
-        subStockShortQty: parseInt(row.subStockShortQty),
+        subStockShortQty: 0,
         subUnit: row.subUnit,
         unit: '',
-        weight: parseInt(row.weight)
+        weight: 0
       }));
 
       const saveFormData = {
@@ -584,7 +700,7 @@ export const GatePassIn = () => {
         finYear: finYear,
         goodsDescription: formData.goodsDescription,
         lotNo: '',
-        modeOfShipment: formData.modeOfShipment,
+        modeOfShipment: formData.modeOfShipment.toUpperCase(),
         orgId: orgId,
         securityName: formData.securityName,
         supplier: formData.supplier,
@@ -681,7 +797,7 @@ export const GatePassIn = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="YYYY/MM/DD"
+                      format="DD/MM/YYYY"
                       disabled
                     />
                   </LocalizationProvider>
@@ -711,7 +827,7 @@ export const GatePassIn = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="YYYY/MM/DD"
+                      format="DD/MM/YYYY"
                       error={fieldErrors.entryDate}
                       helperText={fieldErrors.entryDate && 'Required'}
                     />
@@ -720,19 +836,30 @@ export const GatePassIn = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.supplier}>
-                  <InputLabel id="supplier">Supplier</InputLabel>
-                  <Select labelId="supplier" label="Supplier" value={formData.supplier} onChange={handleInputChange} name="supplier">
-                    {supplierList.map((supplier) => (
-                      <MenuItem key={supplier.id} value={supplier.supplierShortName}>
-                        {supplier.supplierShortName}
-                      </MenuItem>
-                    ))}
+                  <InputLabel id="supplier">Supplier Short Name *</InputLabel>
+                  <Select
+                    labelId="supplier"
+                    label="Supplier Short Name *"
+                    value={formData.supplier}
+                    onChange={handleInputChange}
+                    name="supplier"
+                  >
+                    {supplierList.length > 0 ? (
+                      supplierList.map((supplier) => (
+                        <MenuItem key={supplier.id} value={supplier.supplierShortName.toUpperCase()}>
+                          {supplier.supplierShortName.toUpperCase()}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem disabled>No Data Found</MenuItem>
+                    )}
                   </Select>
                   {fieldErrors.supplier && <FormHelperText>{fieldErrors.supplier}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
+                  label="Supplier *"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -746,118 +873,49 @@ export const GatePassIn = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.modeOfShipment}>
-                  <InputLabel id="modeOfShipment">Mode Of Shipment</InputLabel>
+                  <InputLabel id="modeOfShipment">Mode Of Shipment *</InputLabel>
                   <Select
                     labelId="modeOfShipment"
-                    label="Mode Of Shipment"
+                    label="Mode Of Shipment *"
                     value={formData.modeOfShipment}
                     onChange={handleInputChange}
                     name="modeOfShipment"
                   >
-                    {modeOfShipmentList?.map((mode) => (
-                      <MenuItem key={mode.id} value={mode.shipmentMode}>
-                        {mode.shipmentMode}
-                      </MenuItem>
-                    ))}
+                    {modeOfShipmentList.length > 0 ? (
+                      modeOfShipmentList?.map((mode) => (
+                        <MenuItem key={mode.id} value={mode.shipmentMode.toUpperCase()}>
+                          {mode.shipmentMode.toUpperCase()}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem disabled>No Data Found</MenuItem>
+                    )}
                   </Select>
                   {fieldErrors.modeOfShipment && <FormHelperText>{fieldErrors.modeOfShipment}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.carrier}>
-                  <InputLabel id="carrier">Carrier/Transport</InputLabel>
-                  <Select labelId="carrier" label="Carrier/Transport" value={formData.carrier} onChange={handleInputChange} name="carrier">
-                    {carrierList?.map((carrier) => (
-                      <MenuItem key={carrier.id} value={carrier.carrier}>
-                        {carrier.carrier}
-                      </MenuItem>
-                    ))}
+                  <InputLabel id="carrier">Carrier/Transport *</InputLabel>
+                  <Select
+                    labelId="carrier"
+                    label="Carrier/Transport *"
+                    value={formData.carrier}
+                    onChange={handleInputChange}
+                    name="carrier"
+                  >
+                    {carrierList.length > 0 ? (
+                      carrierList?.map((carrier) => (
+                        <MenuItem key={carrier.id} value={carrier.carrier.toUpperCase()}>
+                          {carrier.carrier.toUpperCase()}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem disabled>No Data Found</MenuItem>
+                    )}
                   </Select>
                   {fieldErrors.carrier && <FormHelperText>{fieldErrors.carrier}</FormHelperText>}
                 </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.vehicleType}>
-                  <InputLabel id="vehicleType">Vehicle Type</InputLabel>
-                  <Select
-                    labelId="vehicleType"
-                    label="vehicleType"
-                    value={formData.vehicleType}
-                    onChange={handleInputChange}
-                    name="vehicleType"
-                  >
-                    <MenuItem value="45 Feet">45 Feet</MenuItem>
-                    <MenuItem value="Canter">Canter</MenuItem>
-                    <MenuItem value="CONTAINER">CONTAINER</MenuItem>
-                    <MenuItem value="TEMPO">TEMPO</MenuItem>
-                  </Select>
-                  {fieldErrors.vehicleType && <FormHelperText>{fieldErrors.vehicleType}</FormHelperText>}
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Vehicle No"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="vehicleNo"
-                  value={formData.vehicleNo}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.vehicleNo}
-                  helperText={fieldErrors.vehicleNo}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Driver Name"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="driverName"
-                  value={formData.driverName}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.driverName}
-                  helperText={fieldErrors.driverName}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Contact"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="contact"
-                  value={formData.contact}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.contact}
-                  helperText={fieldErrors.contact}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Brief desc of the Goods"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="goodsDescription"
-                  value={formData.goodsDescription}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.goodsDescription}
-                  helperText={fieldErrors.goodsDescription}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Security Person Name"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="securityName"
-                  value={formData.securityName}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.securityName}
-                  helperText={fieldErrors.securityName}
-                />
               </div>
               {/* <div className="col-md-3 mb-3">
                 <FormControlLabel
@@ -899,23 +957,23 @@ export const GatePassIn = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">LR No./HAWB No./HBL No.</th>
-                                  <th className="px-2 py-2 text-white text-center">InvoiceNo</th>
-                                  <th className="px-2 py-2 text-white text-center">Part No</th>
-                                  <th className="px-2 py-2 text-white text-center">Part Description</th>
-                                  <th className="px-2 py-2 text-white text-center">Batch No</th>
+                                  <th className="px-2 py-2 text-white text-center">LR No./HAWB No./HBL No *</th>
+                                  <th className="px-2 py-2 text-white text-center">Inv No *</th>
+                                  <th className="px-2 py-2 text-white text-center">Part No *</th>
+                                  <th className="px-2 py-2 text-white text-center">Part Desc</th>
+                                  <th className="px-2 py-2 text-white text-center">Batch No *</th>
                                   <th className="px-2 py-2 text-white text-center">SKU</th>
-                                  <th className="px-2 py-2 text-white text-center">Inv Qty</th>
-                                  <th className="px-2 py-2 text-white text-center">Rec Qty</th>
-                                  <th className="px-2 py-2 text-white text-center">Short Qty</th>
-                                  <th className="px-2 py-2 text-white text-center">Damage Qty</th>
-                                  <th className="px-2 py-2 text-white text-center">GRN Qty</th>
+                                  <th className="px-2 py-2 text-white text-center">Inv QTY *</th>
+                                  <th className="px-2 py-2 text-white text-center">Rec QTY *</th>
+                                  <th className="px-2 py-2 text-white text-center">Short QTY</th>
+                                  <th className="px-2 py-2 text-white text-center">Damage QTY *</th>
+                                  <th className="px-2 py-2 text-white text-center">GRN QTY</th>
                                   <th className="px-2 py-2 text-white text-center">Sub SKU</th>
-                                  <th className="px-2 py-2 text-white text-center">Sub Stock Short QTY</th>
-                                  <th className="px-2 py-2 text-white text-center">GRN Pieces QTY</th>
-                                  <th className="px-2 py-2 text-white text-center">Weight</th>
+                                  {/* <th className="px-2 py-2 text-white text-center">Sub Stock Short QTY</th>
+                                  <th className="px-2 py-2 text-white text-center">GRN Pieces QTY</th> */}
+                                  {/* <th className="px-2 py-2 text-white text-center">Weight</th>
                                   <th className="px-2 py-2 text-white text-center">Rate</th>
-                                  <th className="px-2 py-2 text-white text-center">Amount</th>
+                                  <th className="px-2 py-2 text-white text-center">Amount</th> */}
                                   <th className="px-2 py-2 text-white text-center">Remarks</th>
                                 </tr>
                               </thead>
@@ -930,6 +988,7 @@ export const GatePassIn = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
+                                        ref={lrNoDetailsRefs.current[index].irNoHaw}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.irNoHaw}
@@ -955,6 +1014,7 @@ export const GatePassIn = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
+                                        ref={lrNoDetailsRefs.current[index].invoiceNo}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.invoiceNo}
@@ -979,6 +1039,7 @@ export const GatePassIn = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <select
+                                        ref={lrNoDetailsRefs.current[index].partNo}
                                         value={row.partNo}
                                         style={{ width: '100px' }}
                                         onChange={(e) => {
@@ -1011,12 +1072,16 @@ export const GatePassIn = () => {
                                         }}
                                         className={lrNoDetailsError[index]?.partNo ? 'error form-control' : 'form-control'}
                                       >
-                                        <option value="">Select Option</option>
-                                        {partNoList.map((part) => (
-                                          <option key={part.id} value={part.partNo}>
-                                            {part.partNo}
-                                          </option>
-                                        ))}
+                                        <option value="">--Select--</option>
+                                        {partNoList.length > 0 ? (
+                                          partNoList.map((part) => (
+                                            <option key={part.id} value={part.partNo}>
+                                              {part.partNo}
+                                            </option>
+                                          ))
+                                        ) : (
+                                          <option disabled>No Data Found</option>
+                                        )}
                                       </select>
                                       {lrNoDetailsError[index]?.partNo && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1027,7 +1092,7 @@ export const GatePassIn = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        style={{ width: '100px' }}
+                                        style={{ width: '250px' }}
                                         value={row.partDesc}
                                         disabled
                                         className="form-control"
@@ -1036,6 +1101,7 @@ export const GatePassIn = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
+                                        ref={lrNoDetailsRefs.current[index].batchNo}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.batchNo}
@@ -1064,19 +1130,32 @@ export const GatePassIn = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
+                                        ref={lrNoDetailsRefs.current[index].invQty}
+                                        type="text"
                                         style={{ width: '100px' }}
                                         value={row.invQty}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, invQty: value.toUpperCase() } : r))
-                                          );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], invQty: !value ? 'Invoice Qty is required' : '' };
-                                            return newErrors;
-                                          });
+                                          if (/^\d*$/.test(value)) {
+                                            setLrNoDetailsTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, invQty: value.toUpperCase() } : r))
+                                            );
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], invQty: !value ? 'Invoice Qty is required' : '' };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            // Invalid input (alphabet or special character)
+                                            setLrNoDetailsError((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                invQty: 'Only numbers are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
                                         }}
                                         className={lrNoDetailsError[index]?.invQty ? 'error form-control' : 'form-control'}
                                       />
@@ -1088,31 +1167,43 @@ export const GatePassIn = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
+                                        ref={lrNoDetailsRefs.current[index].recQty}
+                                        type="text"
                                         style={{ width: '100px' }}
                                         value={row.recQty}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          const newValue = parseInt(value, 10);
+                                          if (/^\d*$/.test(value)) {
+                                            const newValue = parseInt(value, 10);
 
-                                          if (newValue > parseInt(row.invQty, 10)) {
-                                            setLrNoDetailsError((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], recQty: 'Rec Qty cannot exceed Invoice Qty' };
-                                              return newErrors;
-                                            });
+                                            if (newValue > parseInt(row.invQty, 10)) {
+                                              setLrNoDetailsError((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], recQty: 'Rec Qty cannot exceed Invoice Qty' };
+                                                return newErrors;
+                                              });
+                                            } else {
+                                              setLrNoDetailsTable((prev) =>
+                                                prev.map((r) =>
+                                                  r.id === row.id ? { ...r, recQty: value.toUpperCase(), shortQty: row.invQty - value } : r
+                                                )
+                                              );
+                                              setLrNoDetailsError((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  recQty: !value ? 'Rec Qty is required' : '',
+                                                  shortQty: ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }
                                           } else {
-                                            setLrNoDetailsTable((prev) =>
-                                              prev.map((r) =>
-                                                r.id === row.id ? { ...r, recQty: value.toUpperCase(), shortQty: row.invQty - value } : r
-                                              )
-                                            );
                                             setLrNoDetailsError((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                recQty: !value ? 'Rec Qty is required' : '',
-                                                shortQty: ''
+                                                recQty: 'Only numbers are allowed'
                                               };
                                               return newErrors;
                                             });
@@ -1133,41 +1224,48 @@ export const GatePassIn = () => {
                                         style={{ width: '100px' }}
                                         value={row.shortQty}
                                         disabled
-                                        className={lrNoDetailsError[index]?.shortQty ? 'error form-control' : 'form-control'}
+                                        className="form-control"
                                       />
-                                      {lrNoDetailsError[index]?.shortQty && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].shortQty}
-                                        </div>
-                                      )}
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="number"
+                                        ref={lrNoDetailsRefs.current[index].damageQty}
+                                        type="text"
                                         style={{ width: '100px' }}
                                         value={row.damageQty}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          const newValue = parseInt(value, 10);
+                                          if (/^\d*$/.test(value)) {
+                                            const newValue = parseInt(value, 10);
 
-                                          if (newValue > parseInt(row.recQty, 10)) {
-                                            setLrNoDetailsError((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], damageQty: 'Damage Qty cannot exceed Rec Qty' };
-                                              return newErrors;
-                                            });
+                                            if (newValue > parseInt(row.recQty, 10)) {
+                                              setLrNoDetailsError((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], damageQty: 'Damage Qty cannot exceed Rec Qty' };
+                                                return newErrors;
+                                              });
+                                            } else {
+                                              setLrNoDetailsTable((prev) =>
+                                                prev.map((r) =>
+                                                  r.id === row.id ? { ...r, damageQty: value.toUpperCase(), grnQty: row.recQty - value } : r
+                                                )
+                                              );
+                                              setLrNoDetailsError((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  damageQty: !value ? 'Damage Qty is required' : '',
+                                                  grnQty: ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }
                                           } else {
-                                            setLrNoDetailsTable((prev) =>
-                                              prev.map((r) =>
-                                                r.id === row.id ? { ...r, damageQty: value.toUpperCase(), grnQty: row.recQty - value } : r
-                                              )
-                                            );
                                             setLrNoDetailsError((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                damageQty: !value ? 'Damage Qty is required' : '',
-                                                grnQty: ''
+                                                damageQty: 'Only numbers are allowed'
                                               };
                                               return newErrors;
                                             });
@@ -1187,18 +1285,13 @@ export const GatePassIn = () => {
                                         style={{ width: '100px' }}
                                         value={row.grnQty}
                                         disabled
-                                        className={lrNoDetailsError[index]?.grnQty ? 'error form-control' : 'form-control'}
+                                        className="form-control"
                                       />
-                                      {lrNoDetailsError[index]?.grnQty && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].grnQty}
-                                        </div>
-                                      )}
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input type="text" style={{ width: '100px' }} value={row.subUnit} disabled className="form-control" />
                                     </td>
-                                    <td className="border px-2 py-2">
+                                    {/* <td className="border px-2 py-2">
                                       <input
                                         type="number"
                                         style={{ width: '100px' }}
@@ -1251,8 +1344,8 @@ export const GatePassIn = () => {
                                           {lrNoDetailsError[index].grnPiecesQty}
                                         </div>
                                       )}
-                                    </td>
-                                    <td className="border px-2 py-2">
+                                    </td> */}
+                                    {/* <td className="border px-2 py-2">
                                       <input
                                         type="number"
                                         style={{ width: '100px' }}
@@ -1302,6 +1395,7 @@ export const GatePassIn = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
+                                        ref={lrNoDetailsRefs.current[index].amount}
                                         type="number"
                                         style={{ width: '100px' }}
                                         value={row.amount}
@@ -1323,7 +1417,7 @@ export const GatePassIn = () => {
                                           {lrNoDetailsError[index].amount}
                                         </div>
                                       )}
-                                    </td>
+                                    </td> */}
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
@@ -1334,20 +1428,10 @@ export const GatePassIn = () => {
                                           setLrNoDetailsTable((prev) =>
                                             prev.map((r) => (r.id === row.id ? { ...r, remarks: value.toUpperCase() } : r))
                                           );
-                                          setLrNoDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], remarks: !value ? 'Remarks is required' : '' };
-                                            return newErrors;
-                                          });
                                         }}
                                         onKeyDown={(e) => handleKeyDown(e, row)}
-                                        className={lrNoDetailsError[index]?.remarks ? 'error form-control' : 'form-control'}
+                                        className="form-control"
                                       />
-                                      {lrNoDetailsError[index]?.remarks && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrNoDetailsError[index].remarks}
-                                        </div>
-                                      )}
                                     </td>
                                   </tr>
                                 ))}
@@ -1361,7 +1445,92 @@ export const GatePassIn = () => {
                 )}
                 {value === 1 && (
                   <>
-                    <div>other Info</div>
+                    <div className="row">
+                      <div className="col-md-3 mb-3">
+                        <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.vehicleType}>
+                          <InputLabel id="vehicleType">Vehicle Type</InputLabel>
+                          <Select
+                            labelId="vehicleType"
+                            label="vehicleType"
+                            value={formData.vehicleType}
+                            onChange={handleInputChange}
+                            name="vehicleType"
+                          >
+                            <MenuItem value="45 FEET">45 FEET</MenuItem>
+                            <MenuItem value="CANTER">CANTER</MenuItem>
+                            <MenuItem value="CONTAINER">CONTAINER</MenuItem>
+                            <MenuItem value="TEMPO">TEMPO</MenuItem>
+                          </Select>
+                          {/* {fieldErrors.vehicleType && <FormHelperText>{fieldErrors.vehicleType}</FormHelperText>} */}
+                        </FormControl>
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Vehicle No"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="vehicleNo"
+                          value={formData.vehicleNo}
+                          onChange={handleInputChange}
+                          // error={!!fieldErrors.vehicleNo}
+                          // helperText={fieldErrors.vehicleNo}
+                        />
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Driver"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="driverName"
+                          value={formData.driverName}
+                          onChange={handleInputChange}
+                          // error={!!fieldErrors.driverName}
+                          // helperText={fieldErrors.driverName}
+                        />
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Contact No"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="contact"
+                          value={formData.contact}
+                          onChange={handleInputChange}
+                          inputProps={{ maxLength: 10 }}
+                          error={!!fieldErrors.contact}
+                          helperText={fieldErrors.contact}
+                        />
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Goods Desc"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="goodsDescription"
+                          value={formData.goodsDescription}
+                          onChange={handleInputChange}
+                          // error={!!fieldErrors.goodsDescription}
+                          // helperText={fieldErrors.goodsDescription}
+                        />
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Security Person"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="securityName"
+                          value={formData.securityName}
+                          onChange={handleInputChange}
+                          // error={!!fieldErrors.securityName}
+                          // helperText={fieldErrors.securityName}
+                        />
+                      </div>
+                    </div>
                   </>
                 )}
               </Box>
