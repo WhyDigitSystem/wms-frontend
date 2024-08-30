@@ -66,11 +66,11 @@ export const DeliveryChallen = () => {
     deliveryTerms: '',
     payTerms: '',
     grWaiverNo: '',
-    grWaiverDate: null,
+    grWaiverDate: dayjs(),
     bankName: '',
-    grWaiverClosureDate: null,
+    grWaiverClosureDate: dayjs(),
     gatePassNo: '',
-    gatePassDate: null,
+    gatePassDate: dayjs(),
     insuranceNo: '',
     billTo: '',
     shipTo: '',
@@ -81,7 +81,7 @@ export const DeliveryChallen = () => {
     grossWeight: '',
     gwtUom: '',
     transportName: '',
-    transporterDate: '',
+    transporterDate: dayjs(),
     packingSlipNo: '',
     bin: '',
     taxType: '',
@@ -1063,7 +1063,7 @@ export const DeliveryChallen = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="YYYY/MM/DD"
+                      format="DD/MM/YYYY"
                       disabled
                     />
                   </LocalizationProvider>
@@ -1150,7 +1150,7 @@ export const DeliveryChallen = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="YYYY/MM/DD"
+                      format="DD/MM/YYYY"
                       disabled
                     />
                   </LocalizationProvider>
@@ -1222,7 +1222,7 @@ export const DeliveryChallen = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="YYYY/MM/DD"
+                      format="DD/MM/YYYY"
                       error={fieldErrors.grWaiverDate}
                       helperText={fieldErrors.grWaiverDate && 'Required'}
                     />
@@ -1254,7 +1254,7 @@ export const DeliveryChallen = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="YYYY/MM/DD"
+                      format="DD/MM/YYYY"
                       error={fieldErrors.grWaiverClosureDate}
                       helperText={fieldErrors.grWaiverClosureDate && 'Required'}
                     />
@@ -1286,7 +1286,7 @@ export const DeliveryChallen = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="YYYY/MM/DD"
+                      format="DD/MM/YYYY"
                       error={fieldErrors.gatePassDate}
                       helperText={fieldErrors.gatePassDate && 'Required'}
                     />
@@ -2061,7 +2061,7 @@ export const DeliveryChallen = () => {
                               slotProps={{
                                 textField: { size: 'small', clearable: true }
                               }}
-                              format="YYYY/MM/DD"
+                              format="DD/MM/YYYY"
                               error={fieldErrors.transporterDate}
                               helperText={fieldErrors.transporterDate && 'Required'}
                             />
