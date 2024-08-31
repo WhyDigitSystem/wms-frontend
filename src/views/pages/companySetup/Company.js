@@ -216,7 +216,6 @@ const Company = () => {
   const handleClear = () => {
     setFormData({
       companyCode: '',
-      companyName: '',
       ceo: '',
       address: '',
       country: '',
@@ -228,7 +227,6 @@ const Company = () => {
     });
     setFieldErrors({
       companyCode: '',
-      companyName: '',
       ceo: '',
       address: '',
       country: '',
@@ -239,6 +237,7 @@ const Company = () => {
       website: ''
     });
     setEditId('');
+    getCompanyDetails();
   };
 
   const handleSave = async () => {
