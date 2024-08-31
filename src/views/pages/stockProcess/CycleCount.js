@@ -565,29 +565,6 @@ export const CycleCount = () => {
       transferto: '',
       entryNo: ''
     });
-    setDetailTableData([
-      // {
-      //   fromBin: '',
-      //   fromBinClass: '',
-      //   fromBinType: '',
-      //   fromBCellType: '',
-      //   partNo: '',
-      //   partDesc: '',
-      //   sku: '',
-      //   grnNo: '',
-      //   grnDate: '',
-      //   batchNo: '',
-      //   batchDate: '',
-      //   expDate: '',
-      //   toBin: '',
-      //   toBinType: '',
-      //   toBinClass: '',
-      //   toCellType: '',
-      //   fromQty: '',
-      //   toQty: '',
-      //   remainQty: ''
-      // }
-    ]);
     setFieldErrors({
       docId: '',
       docDate: null,
@@ -595,7 +572,8 @@ export const CycleCount = () => {
       transferto: '',
       entryNo: ''
     });
-    setDetailTableErrors('');
+    setDetailTableData([]);
+    setDetailTableErrors([]);
     setViewId('');
     getNewCycleCountDocId();
   };
@@ -1449,6 +1427,19 @@ export const CycleCount = () => {
                                       </tr>
                                     ))}
                                   </tbody>
+                                  {detailTableErrors.some((error) => error.general) && (
+                                    <tfoot>
+                                      <tr>
+                                        <td colSpan={12} className="error-message">
+                                          {' '}
+                                          {/* Adjust colSpan to match number of columns */}
+                                          <div style={{ color: 'red', fontSize: '14px', textAlign: 'center' }}>
+                                            {detailTableErrors.find((error) => error.general)?.general}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    </tfoot>
+                                  )}
                                 </>
                               ) : (
                                 <>
