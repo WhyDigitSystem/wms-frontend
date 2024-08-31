@@ -321,7 +321,7 @@ export const UserCreationMaster = () => {
 
       // Convert to uppercase if not the email field
       // const updatedValue = name === 'email' ? value : value.toUpperCase();
-      const updatedValue = name === 'email' ? value : value.toUpperCase();
+      const updatedValue = name === 'email' ? value.toLowerCase() : value.toUpperCase();
       setFormData((prevData) => ({ ...prevData, [name]: updatedValue }));
 
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));

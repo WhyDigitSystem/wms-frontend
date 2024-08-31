@@ -281,7 +281,7 @@ export const CustomerMaster = () => {
       if (name === 'active') {
         setFormData({ ...formData, [name]: checked });
       } else if (name === 'email') {
-        setFormData({ ...formData, [name]: value });
+        setFormData({ ...formData, [name]: value.toLowerCase() });
       } else if (name === 'gstReg' && value === 'NO') {
         setFormData({ ...formData, [name]: value, gst: '' });
         setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '', gst: '' }));

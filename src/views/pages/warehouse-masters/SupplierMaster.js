@@ -259,7 +259,7 @@ export const SupplierMaster = () => {
       setFieldErrors({ ...fieldErrors, [name]: '' });
 
       const upperCaseValue = value.toUpperCase();
-      const updatedValue = name === 'email' ? value : upperCaseValue;
+      const updatedValue = name === 'email' ? value.toLowerCase() : upperCaseValue;
 
       setFormData({ ...formData, [name]: updatedValue });
 

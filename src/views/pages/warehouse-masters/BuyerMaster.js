@@ -254,7 +254,7 @@ export const BuyerMaster = () => {
         setFormData({ ...formData, [name]: value, gstNo: '' });
       } else {
         // setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '', gst: '' }));
-        const updatedValue = name === 'email' ? value : value.toUpperCase();
+        const updatedValue = name === 'email' ? value.toLowerCase() : value.toUpperCase();
         setFormData({ ...formData, [name]: updatedValue });
         setFieldErrors({ ...fieldErrors, [name]: '' });
       }
