@@ -84,7 +84,7 @@ export const Grn = () => {
     driverName: '',
     securityName: '',
     containerNo: '',
-    lrDate: null,
+    lrDate: dayjs(),
     goodsDesc: '',
     vehicleNo: '',
     vesselDetails: '',
@@ -476,6 +476,19 @@ export const Grn = () => {
           errorMessage = 'Only alphanumeric characters are allowed';
         }
         break;
+      case 'driverName':
+      case 'securityName':
+        if (!nameRegex.test(value)) {
+          errorMessage = 'Only Alphabets are allowed';
+        }
+        break;
+      case 'contact':
+        if (!numericRegex.test(value)) {
+          errorMessage = 'Only numeric characters are allowed';
+        } else if (value.length > 10) {
+          errorMessage = 'Invalid Mobile Format';
+        }
+        break;
       case 'noOfPallets':
         if (!numericRegex.test(value)) {
           errorMessage = 'Only numeric characters are allowed';
@@ -654,12 +667,12 @@ export const Grn = () => {
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
           lr_Hawb_Hbl_No: !table[table.length - 1].lr_Hawb_Hbl_No ? 'Lr_Hawb_Hbl_No is required' : '',
-          invNo: !table[table.length - 1].invNo ? 'Invoice No is required' : '',
+          invNo: !table[table.length - 1].invNo ? 'Inv No is required' : '',
           partNo: !table[table.length - 1].partNo ? 'Part No is required' : '',
           invQty: !table[table.length - 1].invQty ? 'InvQty is required' : '',
           batch_PalletNo: !table[table.length - 1].batch_PalletNo ? 'Batch No is required' : '',
-          palletQty: !table[table.length - 1].palletQty ? 'Pallet Qty is required' : '',
-          noOfPallets: !table[table.length - 1].noOfPallets ? 'No of Pallets is required' : ''
+          palletQty: !table[table.length - 1].palletQty ? 'Bin Qty is required' : '',
+          noOfPallets: !table[table.length - 1].noOfPallets ? 'No of Bins is required' : ''
         };
         return newErrors;
       });
@@ -708,7 +721,7 @@ export const Grn = () => {
       driverName: '',
       securityName: '',
       containerNo: '',
-      lrDate: null,
+      lrDate: dayjs(),
       goodsDesc: '',
       vehicleNo: '',
       vesselDetails: '',
@@ -1299,13 +1312,13 @@ export const Grn = () => {
                                         LR No./ HAWB No./HBL No <span>&nbsp;*</span>
                                       </th>
                                       <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                        Invoice No <span>&nbsp;*</span>
+                                        Inv No <span>&nbsp;*</span>
                                       </th>
                                       <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                         Shipment No
                                       </th>
                                       <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                        Invoice Date
+                                        Inv Date
                                       </th>
                                       <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                         Part No <span>&nbsp;*</span>
@@ -2338,7 +2351,7 @@ export const Grn = () => {
 
                       <div className="col-md-3 mb-3">
                         <TextField
-                          label="Invoice No"
+                          label="Inv No"
                           variant="outlined"
                           size="small"
                           fullWidth

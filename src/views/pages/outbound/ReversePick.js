@@ -84,27 +84,27 @@ export const ReversePick = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [itemTableData, setItemTableData] = useState([
-    {
-      availQty: '',
-      batchDate: '',
-      batchNo: '',
-      binClass: '',
-      binType: '',
-      cellType: '',
-      clientCode: '',
-      core: '',
-      bin: '',
-      orderQty: '',
-      partDesc: '',
-      partNo: '',
-      pcKey: '',
-      pickQty: '',
-      remainQty: '',
-      sku: '',
-      ssku: '',
-      status: '',
-      revisedQty: ''
-    }
+    // {
+    //   availQty: '',
+    //   batchDate: '',
+    //   batchNo: '',
+    //   binClass: '',
+    //   binType: '',
+    //   cellType: '',
+    //   clientCode: '',
+    //   core: '',
+    //   bin: '',
+    //   orderQty: '',
+    //   partDesc: '',
+    //   partNo: '',
+    //   pcKey: '',
+    //   pickQty: '',
+    //   remainQty: '',
+    //   sku: '',
+    //   ssku: '',
+    //   status: '',
+    //   revisedQty: ''
+    // }
   ]);
 
   const handleAddRow = () => {

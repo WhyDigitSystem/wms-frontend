@@ -580,33 +580,18 @@ export const VasPick = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    Part No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Part Desc
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    SKU
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    Bin
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                  <th className="table-header">Part No</th>
+                                  <th className="table-header">Part Desc</th>
+                                  <th className="table-header">SKU</th>
+                                  <th className="table-header">Bin</th>
+                                  <th className="table-header">Batch No</th>
+                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Batch No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    GRN No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Avl QTY
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Pick QTY
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Remaining QTY
-                                  </th>
+                                  </th> */}
+                                  <th className="table-header">GRN No</th>
+                                  <th className="table-header">Avl QTY</th>
+                                  <th className="table-header">Pick QTY</th>
+                                  <th className="table-header">Remaining QTY</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -622,13 +607,27 @@ export const VasPick = () => {
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
-                                    <td>{row.partNo}</td>
-                                    <td>{row.partDesc}</td>
-                                    <td>{row.sku}</td>
-                                    <td>{row.grnNo}</td>
-                                    <td>{row.batchNo}</td>
-                                    <td>{row.bin}</td>
-                                    <td>{row.avlQty}</td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.partNo}
+                                    </td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.partDesc}
+                                    </td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.sku}
+                                    </td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.grnNo}
+                                    </td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.batchNo}
+                                    </td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.bin}
+                                    </td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.avlQty}
+                                    </td>
                                     <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '150px' }}
@@ -693,7 +692,9 @@ export const VasPick = () => {
                                         </div>
                                       )}
                                     </td>
-                                    <td>{row.remainingQty}</td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.remainingQty}
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>
