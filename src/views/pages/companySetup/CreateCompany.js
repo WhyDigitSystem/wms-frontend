@@ -14,7 +14,7 @@ import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import axios from 'axios';
-import { useRef, useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -113,8 +113,33 @@ const CreateCompany = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked } = e.target;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+  //   const companyNameRegex = /^[A-Za-z 0-9@_\-*]*$/;
+  //   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  //   const companyCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+
+  //   if (name === 'companyName' && !companyNameRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Only alphabetic characters and @*_- are allowed' });
+  //   } else if (name === 'companyCode' && !companyCodeRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else if (name === 'companyAdminName' && !nameRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else {
+  //     if (name === 'active') {
+  //       setFormData({ ...formData, [name]: checked });
+  //     } else if (name === 'companyAdminEmail') {
+  //       setFormData({ ...formData, [name]: value });
+  //     } else {
+  //       setFormData({ ...formData, [name]: value.toUpperCase() });
+  //     }
+
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
     const companyNameRegex = /^[A-Za-z 0-9@_\-*]*$/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -127,15 +152,30 @@ const CreateCompany = () => {
     } else if (name === 'companyAdminName' && !nameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else {
-      if (name === 'active') {
+      let updatedValue = value;
+
+      if (name !== 'companyAdminEmail') {
+        updatedValue = value.toUpperCase();
+      }
+
+      if (type === 'checkbox') {
         setFormData({ ...formData, [name]: checked });
-      } else if (name === 'companyAdminEmail') {
-        setFormData({ ...formData, [name]: value });
       } else {
-        setFormData({ ...formData, [name]: value.toUpperCase() });
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [name]: updatedValue
+        }));
       }
 
       setFieldErrors({ ...fieldErrors, [name]: '' });
+
+      // Update the cursor position after the input change only for text inputs
+      if (type === 'text' || type === 'email' || type === 'textarea') {
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          inputElement.setSelectionRange(selectionStart, selectionEnd);
+        }, 0);
+      }
     }
   };
 
@@ -281,6 +321,7 @@ const CreateCompany = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.companyName}
                   helperText={fieldErrors.companyName}
+                  // inputRef={companyNameRef}
                 />
               </div>
               <div className="col-md-3 mb-3">

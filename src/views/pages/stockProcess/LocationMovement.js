@@ -1015,7 +1015,7 @@ export const LocationMovement = () => {
         id: 1,
         batchDate: '',
         batchNo: '',
-        bin: '',
+        fromBin: '',
         fromQty: '',
         grnDate: '',
         grnNo: '',
@@ -1038,9 +1038,9 @@ export const LocationMovement = () => {
 
   const handleSave = async () => {
     const errors = {};
-    if (!formData.docId) {
-      errors.docId = 'Doc Id is required';
-    }
+    // if (!formData.docId) {
+    //   errors.docId = 'Doc Id is required';
+    // }
     // if (!formData.docDate) {
     //   errors.docDate = ' DocDate is required';
     // }
@@ -1048,8 +1048,8 @@ export const LocationMovement = () => {
     let childTableDataValid = true;
     const newTableErrors = childTableData.map((row) => {
       const rowErrors = {};
-      if (!row.bin) {
-        rowErrors.bin = 'Bin is required';
+      if (!row.fromBin) {
+        rowErrors.fromBin = 'Bin is required';
         childTableDataValid = false;
       }
       if (!row.partNo) {
@@ -1071,7 +1071,7 @@ export const LocationMovement = () => {
     if (Object.keys(errors).length === 0 && childTableDataValid) {
       setIsLoading(true);
       const childVO = childTableData.map((row) => ({
-        bin: row.bin,
+        fromBin: row.fromBin,
         partNo: row.partNo,
         partDesc: row.partDesc,
         batchNo: row.batchNo,

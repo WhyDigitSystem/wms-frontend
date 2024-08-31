@@ -737,39 +737,47 @@ export const CodeConversion = () => {
       const detailsVO = codeConversionDetailsTable.map((row) => ({
         ...(viewId && { id: row.id }),
         actualQty: parseInt(row.actualQty),
-        batchDate: null,
+        batchDate: row.batchDate,
         batchNo: row.batchNo,
         bin: row.bin,
-        binClass: '',
+        binClass: row.binClass,
         binType: row.binType,
-        cbatchDate: null,
+        cbatchDate: row.cbatchDate,
         cbatchNo: row.cbatchNo,
         cbin: row.cbin,
-        cbinType: '',
-        cellType: '',
-        clientCode: '',
-        clotNo: '',
+        cbinClass: row.cBinClass,
+        cbinType: row.cBinType,
+        ccellType: row.cCellType,
+        cclientCode: row.cclientCode,
+        ccore: row.cCore,
+        cellType: row.cellType,
+        cexpDate: row.cexpDate,
+        clientCode: row.clientCode,
+        clotNo: row.clotNo,
         convertQty: parseInt(row.convertQty),
-        core: '',
+        core: row.core,
         cpartDesc: row.cpartDesc,
         cpartNo: row.cpartNo,
-        crate: 0,
+        cpckey: row.cpckey,
+        crate: row.crate,
         csku: row.csku,
-        expDate: null,
-        grnDate: null,
+        cssku: row.cssku,
+        cstockDate: row.cstockDate,
+        expDate: row.expDate,
+        grnDate: row.grnDate,
         grnNo: row.grnNo,
-        lotNo: '',
+        lotNo: row.lotNo,
         partDesc: row.partDescription,
         partNo: row.partNo,
-        pckey: '',
-        qcFlag: '',
+        pckey: row.pckey,
+        qcFlag: row.qcFlag,
         qty: parseInt(row.qty),
-        rate: 0,
+        rate: row.rate,
         remarks: row.remarks,
         sku: row.sku,
-        ssku: '',
-        status: '',
-        stockDate: null
+        ssku: row.ssku,
+        status: row.status,
+        stockDate: row.stockDate
       }));
 
       const saveFormData = {
@@ -1528,9 +1536,21 @@ export const CodeConversion = () => {
                                               style={{ width: '100px' }}
                                               onChange={(e) => {
                                                 const value = e.target.value;
+                                                const selectedCBin = cPalletList.find((row) => row.bin === value);
 
                                                 setCodeConversionDetailsTable((prev) =>
-                                                  prev.map((r) => (r.id === row.id ? { ...r, cbin: value } : r))
+                                                  prev.map((r) =>
+                                                    r.id === row.id
+                                                      ? {
+                                                          ...r,
+                                                          cbin: selectedCBin.bin,
+                                                          cCore: selectedCBin.core,
+                                                          cCellType: selectedCBin.cellType,
+                                                          cBinType: selectedCBin.binType,
+                                                          cBinClass: selectedCBin.cBinClass
+                                                        }
+                                                      : r
+                                                  )
                                                 );
 
                                                 setCodeConversionDetailsError((prev) => {

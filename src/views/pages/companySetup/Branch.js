@@ -142,7 +142,7 @@ const Branch = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
     const branchNameRegex = /^[A-Za-z0-9@_\-* ]*$/;
     const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
@@ -153,28 +153,51 @@ const Branch = () => {
       setFieldErrors({ ...fieldErrors, [name]: 'Only alphanumeric characters and @, _, -, /, are allowed' });
     } else if (name === 'branchName' && !branchNameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Only alphanumeric characters and @, _, -, * are allowed' });
-    } else if (name === 'gst' && !alphanumericRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Special Characters are not allowed' });
-    } else if (name === 'gst' && value.length > 15) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only 15 Digits only allowed' });
-    } else if (name === 'pincode' && !numericRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only numeric are allowed' });
-    } else if (name === 'pincode' && value.length > 6) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only 6 Digits are allowed' });
-    } else if (name === 'mobile' && !numericRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only numeric are allowed' });
-    } else if (name === 'mobile' && value.length > 10) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only 10 Digits are allowed' });
-    } else {
-      if (name === 'active') {
-        setFormData({ ...formData, [name]: checked });
-      } else if (name === 'email') {
-        setFormData({ ...formData, [name]: value });
+    } else if (name === 'gst') {
+      if (!alphanumericRegex.test(value)) {
+        setFieldErrors({ ...fieldErrors, [name]: 'Special Characters are not allowed' });
+      } else if (value.length > 15) {
+        setFieldErrors({ ...fieldErrors, [name]: 'Only 15 Digits are allowed' });
       } else {
-        setFormData({ ...formData, [name]: value.toUpperCase() });
+        setFieldErrors({ ...fieldErrors, [name]: '' });
       }
-
+    } else if (name === 'pincode') {
+      if (!numericRegex.test(value)) {
+        setFieldErrors({ ...fieldErrors, [name]: 'Only numeric characters are allowed' });
+      } else if (value.length > 6) {
+        setFieldErrors({ ...fieldErrors, [name]: 'Only 6 Digits are allowed' });
+      } else {
+        setFieldErrors({ ...fieldErrors, [name]: '' });
+      }
+    } else if (name === 'mobile') {
+      if (!numericRegex.test(value)) {
+        setFieldErrors({ ...fieldErrors, [name]: 'Only numeric characters are allowed' });
+      } else if (value.length > 10) {
+        setFieldErrors({ ...fieldErrors, [name]: 'Only 10 Digits are allowed' });
+      } else {
+        setFieldErrors({ ...fieldErrors, [name]: '' });
+      }
+    } else {
       setFieldErrors({ ...fieldErrors, [name]: '' });
+    }
+
+    // Update the form data
+    if (name === 'active') {
+      setFormData({ ...formData, [name]: checked });
+    } else if (name === 'email') {
+      setFormData({ ...formData, [name]: value });
+    } else {
+      setFormData({ ...formData, [name]: value.toUpperCase() });
+    }
+
+    // Update the cursor position after the input change
+    if (type === 'text' || type === 'textarea' || type === 'email') {
+      setTimeout(() => {
+        const inputElement = document.getElementsByName(name)[0];
+        if (inputElement) {
+          inputElement.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 0);
     }
   };
 

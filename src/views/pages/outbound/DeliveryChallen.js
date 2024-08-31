@@ -951,6 +951,7 @@ export const DeliveryChallen = () => {
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
+          getAllDeliveryChallan();
           getDeliveryChallanDocId();
           showToast('success', editId ? ' Delivery Challan Updated Successfully' : 'Delivery Challan created successfully');
           setIsLoading(false);
