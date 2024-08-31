@@ -373,7 +373,7 @@ const CreateCompany = () => {
           </>
         )}
       </div>
-      <ToastComponent />
+      <ToastContainer />
     </>
   );
 };

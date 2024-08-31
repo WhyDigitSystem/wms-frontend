@@ -239,10 +239,6 @@ const Branch = () => {
     if (!formData.branchName) {
       errors.branchName = 'Company is required';
     }
-
-    // if (!formData.email) {
-    //   errors.email = 'Password is required';
-    // }
     if (!formData.address) {
       errors.address = 'Address is required';
     }
@@ -259,6 +255,12 @@ const Branch = () => {
       errors.gst = 'GST is required';
     } else if (formData.gst.length < 15) {
       errors.gst = 'Invalid GST No';
+    }
+    if (formData.mobile.length > 0 && formData.mobile.length < 10) {
+      errors.mobile = 'Invalid Mobile No';
+    }
+    if (formData.pincode.length > 0 && formData.pincode.length < 6) {
+      errors.pincode = 'Invalid Pincode';
     }
 
     if (Object.keys(errors).length === 0) {
@@ -291,7 +293,7 @@ const Branch = () => {
         if (response.status === true) {
           showToast('success', editId ? ' Branch Updated Successfully' : 'Branch created successfully');
           handleClear();
-          // getAllBranches();
+          getAllBranches();
           setIsLoading(false);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Branch creation failed');

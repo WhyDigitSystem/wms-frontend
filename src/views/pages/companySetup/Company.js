@@ -238,6 +238,7 @@ const Company = () => {
       gst: '',
       website: ''
     });
+    setEditId('');
   };
 
   const handleSave = async () => {

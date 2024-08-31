@@ -115,6 +115,7 @@ export const CountryMaster = () => {
       countryName: '',
       countryCode: ''
     });
+    setEditId('');
   };
 
   const handleSave = async () => {
