@@ -634,7 +634,7 @@ export const UserCreationMaster = () => {
 
     setClientTableErrors(newTableErrors2);
 
-    if (Object.keys(errors).length === 0) {
+    if (Object.keys(errors).length === 0 && roleTableDataValid && branchTableDataValid && clientTableDataValid) {
       setIsLoading(true);
       const roleVo = roleTableData.map((row) => ({
         ...(editId && { id: row.id }),
