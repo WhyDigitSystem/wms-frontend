@@ -223,7 +223,8 @@ const Company = () => {
       city: '',
       pincode: '',
       gst: '',
-      website: ''
+      website: '',
+      active: true
     });
     setFieldErrors({
       companyCode: '',
