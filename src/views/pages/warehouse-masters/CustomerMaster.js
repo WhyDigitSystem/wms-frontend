@@ -388,9 +388,6 @@ export const CustomerMaster = () => {
     if (formData.gstReg === 'YES' && !formData.gst) {
       errors.gst = 'GST is Required';
     } else if (formData.gstReg === 'YES' && formData.gst.length < 15) {
-      errors.mobile = 'Invalid Mobile Format';
-    }
-    if (formData.gst.length < 15) {
       errors.gst = 'Invalid GST Format';
     }
 
@@ -416,8 +413,6 @@ export const CustomerMaster = () => {
 
       return rowErrors;
     });
-    // setFieldErrors(errors);
-
     setClientTableErrors(newTableErrors);
 
     let branchTableDataValid = true;
@@ -433,7 +428,7 @@ export const CustomerMaster = () => {
 
     setBranchTableErrors(newTableErrors1);
 
-    if (Object.keys(errors).length === 0) {
+    if (Object.keys(errors).length === 0 && branchTableDataValid && clientTableDataValid) {
       setIsLoading(true);
       const clientVo = clientTableData.map((row) => ({
         client: row.client,
@@ -715,19 +710,6 @@ export const CustomerMaster = () => {
                   helperText={fieldErrors.pan}
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <TextField
-                  label="GST Registration"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="gstReg"
-                  value={formData.gstReg}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.gstReg}
-                  helperText={fieldErrors.gstReg}
-                />
-              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="TAN"

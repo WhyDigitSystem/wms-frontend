@@ -36,18 +36,11 @@ export const WarehouseMaster = () => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
 
   const [formData, setFormData] = useState({
-    // branch: 'Chennai-UILP',
     warehouse: '',
     active: true,
     orgId: 1
   });
   const [value, setValue] = useState(0);
-  // const [branchTableData, setBranchTableData] = useState([
-  //   {
-  //     id: 1,
-  //     customerBranchCode: ''
-  //   }
-  // ]);
   const [branchList, setBranchList] = useState([]);
   const [clientList, setClientList] = useState([]);
 
@@ -76,16 +69,6 @@ export const WarehouseMaster = () => {
         return newErrors;
       });
     }
-    // if (table === branchTableData) {
-    //   setBranchTableErrors((prevErrors) => {
-    //     const newErrors = [...prevErrors];
-    //     newErrors[table.length - 1] = {
-    //       ...newErrors[table.length - 1],
-    //       customerBranchCode: !table[table.length - 1].customerBranchCode ? 'Customer Branch Code is required' : ''
-    //     };
-    //     return newErrors;
-    //   });
-    // }
   };
 
   const handleAddRow = () => {
@@ -101,35 +84,12 @@ export const WarehouseMaster = () => {
     setClientTableData([...clientTableData, newRow]);
     setClientTableErrors([...clientTableErrors, { client: '', clientCode: '' }]);
   };
-  // const handleAddRow1 = () => {
-  //   if (isLastRowEmpty(branchTableData)) {
-  //     displayRowError(branchTableData);
-  //     return;
-  //   }
-  //   const newRow = {
-  //     id: Date.now(),
-  //     customerBranchCode: ''
-  //   };
-  //   setBranchTableData([...branchTableData, newRow]);
-  //   setBranchTableErrors([
-  //     ...branchTableErrors,
-  //     {
-  //       customerBranchCode: ''
-  //     }
-  //   ]);
-  // };
-
   const [clientTableErrors, setClientTableErrors] = useState([
     {
       client: '',
       clientCode: ''
     }
   ]);
-  // const [branchTableErrors, setBranchTableErrors] = useState([
-  //   {
-  //     customerBranchCode: ''
-  //   }
-  // ]);
 
   const theme = useTheme();
   const anchorRef = useRef(null);
@@ -150,69 +110,6 @@ export const WarehouseMaster = () => {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-
-  //   let errorMessage = '';
-
-  //   switch (name) {
-  //     case 'branch':
-  //     case 'warehouse':
-  //     default:
-  //       break;
-  //   }
-
-  //   if (errorMessage) {
-  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-  //   } else {
-  //     const updatedValue = name === 'email' ? value : value.toUpperCase();
-  //     setFormData({ ...formData, [name]: updatedValue });
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-  // };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-
-  //   const nameRegex = /^[A-Za-z ]*$/;
-  //   const alphaNumericRegex = /^[A-Za-z0-9]*$/;
-  //   const numericRegex = /^[0-9]*$/;
-  //   const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
-  //   const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex for email validation
-
-  //   let errorMessage = '';
-
-  //   // Validation based on field name
-  //   switch (name) {
-  //     case 'branch':
-  //       if (!numericRegex.test(value)) {
-  //         errorMessage = 'Only numeric characters are allowed';
-  //       } else if (value.length > 10) {
-  //         errorMessage = 'Invalid Format';
-  //       }
-  //       break;
-
-  //     case 'warehouse':
-  //       if (!nameRegex.test(value)) {
-  //         errorMessage = 'Only alphabet are allowed';
-  //       }
-  //       break;
-  //   }
-
-  //   // Update field errors and form data
-  //   if (errorMessage) {
-  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
-  //   } else {
-  //     // Convert to uppercase if not the email field
-  //     // const updatedValue = name === 'email' ? value : value.toUpperCase();
-  //     const updatedValue = name === 'email' ? value : value.toUpperCase();
-  //     setFormData((prevData) => ({ ...prevData, [name]: updatedValue }));
-
-  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
-  //   }
-  // };
 
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd } = e.target;
@@ -271,12 +168,6 @@ export const WarehouseMaster = () => {
   const handleDeleteRow = (id) => {
     setClientTableData(clientTableData.filter((row) => row.id !== id));
   };
-  // const handleKeyDown = (e, row) => {
-  //   if (e.key === 'Tab' && row.id === clientTableData[clientTableData.length - 1].id) {
-  //     e.preventDefault();
-  //     handleAddRow();
-  //   }
-  // };
 
   const handleKeyDown = (e, row, table) => {
     if (e.key === 'Tab' && row.id === table[table.length - 1].id) {
@@ -290,29 +181,17 @@ export const WarehouseMaster = () => {
     }
   };
 
-  // const handleDeleteRow1 = (id) => {
-  //   setBranchTableData(branchTableData.filter((row) => row.id !== id));
-  // };
-  // const handleKeyDown1 = (e, row) => {
-  //   if (e.key === 'Tab' && row.id === branchTableData[branchTableData.length - 1].id) {
-  //     e.preventDefault();
-  //     handleAddRow1();
-  //   }
-  // };
-
   const handleClear = () => {
     setFormData({
       warehouse: '',
       active: true
     });
     setClientTableData([{ id: 1, client: '', clientCode: '' }]);
-    // setBranchTableData([{ id: 1, customerBranchCode: '' }]);
     setFieldErrors({
       warehouse: ''
     });
     setEditId('');
     setClientTableErrors(clientTableErrors.map(() => ({ client: '', clientCode: '' })));
-    // setBranchTableErrors(branchTableErrors.map(() => ({ customerBranchCode: '' })));
   };
 
   const handleSave = async () => {
@@ -339,30 +218,12 @@ export const WarehouseMaster = () => {
 
     setClientTableErrors(newTableErrors);
 
-    // let branchTableDataValid = true;
-    // const newTableErrors1 = branchTableData.map((row) => {
-    //   const rowErrors = {};
-    //   if (!row.customerBranchCode) {
-    //     rowErrors.customerBranchCode = 'Customer Branch Code is required';
-    //     branchTableDataValid = false;
-    //   }
-    //   return rowErrors;
-    // });
-    // setFieldErrors(errors);
-
-    // setBranchTableErrors(newTableErrors1);
-
-    if (Object.keys(errors).length === 0) {
+    if (Object.keys(errors).length === 0 && clientTableDataValid) {
       setIsLoading(true);
       const clientVo = clientTableData.map((row) => ({
         client: row.client,
         clientCode: row.clientCode
       }));
-      // const branchVo = branchTableData.map((row) => ({
-      //   customerBranchCode: null
-      // }));
-
-      // const customerBranchCode = null;
 
       const saveFormData = {
         ...(editId && { id: editId }),
@@ -371,8 +232,6 @@ export const WarehouseMaster = () => {
         branchCode: branchCode,
         warehouse: formData.warehouse,
         warehouseClientDTO: clientVo,
-        // warehouseBranchDTO: customerBranchCode,
-
         orgId: orgId,
         createdBy: loginUserName
       };
@@ -418,15 +277,6 @@ export const WarehouseMaster = () => {
     getAllClient();
     getAllWarehouse();
   }, []);
-
-  // useEffect(() => {
-  //   if (inputRef.current) {
-  //     const input = inputRef.current;
-  //     const length = input.value.length;
-  //     input.setSelectionRange(length, length);
-  //     input.focus();
-  //   }
-  // }, [formData.warehouse]);
 
   const handleClientChange = (row, index, event) => {
     const value = event.target.value;
@@ -500,9 +350,6 @@ export const WarehouseMaster = () => {
       if (response.status === true) {
         setListView(false);
         const particularWarehouse = response.paramObjectsMap.Warehouse;
-        // const foundBranch1 = branchList.find((branch) => branch.branchCode === particularUser.branchAccessibleVO.branchcode);
-        // console.log('THE FOUND BRANCH 1 IS:', foundBranch1);
-
         setFormData({
           branch: particularWarehouse.branch,
           warehouse: particularWarehouse.warehouse,
@@ -516,17 +363,6 @@ export const WarehouseMaster = () => {
             clientCode: role.clientCode
           }))
         );
-
-        // const alreadySelectedBranch = particularUser.branchAccessibleVO.map((role) => {
-        //   const foundBranch = branchList.find((branch) => branch.branchCode === role.branchcode);
-        //   console.log(`Searching for branch with code ${role.branchcode}:`, foundBranch);
-        //   return {
-        //     id: role.id,
-        //     branchCode: foundBranch ? foundBranch.branchCode : 'Not Found',
-        //     branch: foundBranch.branch ? foundBranch.branch : 'Not Found'
-        //   };
-        // });
-        // setBranchTableData(alreadySelectedBranch);
       } else {
         console.error('API Error:', response);
       }
@@ -681,10 +517,7 @@ export const WarehouseMaster = () => {
                                         </ButtonBase>
                                       </Tooltip>
                                     </td>
-                                    <td className="text-center">
-                                      {/* <input type="text" value={`${index + 1}`} readOnly style={{ width: '100%' }} /> */}
-                                      <div className="pt-2">{index + 1}</div>
-                                    </td>
+                                    <td className="text-center">{index + 1}</td>
 
                                     <td className="border px-2 py-2">
                                       <select
@@ -708,31 +541,6 @@ export const WarehouseMaster = () => {
                                     </td>
 
                                     <td className="border px-2 py-2 text-center pt-3">{row.clientCode}</td>
-
-                                    {/* <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.clientCode}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setClientTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, clientCode: value } : r))
-                                          );
-                                          setClientTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], clientCode: !value ? 'Client Code is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        onKeyDown={(e) => handleKeyDown(e, row, clientTableData)}
-                                        className={clientTableErrors[index]?.clientCode ? 'error form-control' : 'form-control'}
-                                      />
-                                      {clientTableErrors[index]?.clientCode && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {clientTableErrors[index].clientCode}
-                                        </div>
-                                      )}
-                                    </td> */}
                                   </tr>
                                 ))}
                               </tbody>
@@ -743,103 +551,6 @@ export const WarehouseMaster = () => {
                     </div>
                   </>
                 )}
-                {/* {value === 1 && (
-                  <>
-                    <div className="row d-flex ml">
-                      <div className="mb-1">
-                        <Tooltip title="Add" placement="top">
-                          <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleAddRow1}>
-                            <Avatar
-                              variant="rounded"
-                              sx={{
-                                ...theme.typography.commonAvatar,
-                                ...theme.typography.mediumAvatar,
-                                transition: 'all .2s ease-in-out',
-                                background: theme.palette.secondary.light,
-                                color: theme.palette.secondary.dark,
-                                '&[aria-controls="menu-list-grow"],&:hover': {
-                                  background: theme.palette.secondary.dark,
-                                  color: theme.palette.secondary.light
-                                }
-                              }}
-                              ref={anchorRef}
-                              aria-haspopup="true"
-                              color="inherit"
-                            >
-                              <AddIcon size="1.3rem" stroke={1.5} />
-                            </Avatar>
-                          </ButtonBase>
-                        </Tooltip>
-                      </div>
-                      <div className="row mt-2">
-                        <div className="col-lg-6">
-                          <div className="table-responsive">
-                            <table className="table table-bordered table-responsive">
-                              <thead>
-                                <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '15%' }}>
-                                    Action
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '14%' }}>
-                                    S.No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Customer Branch Code
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {branchTableData.map((row, index) => (
-                                  <tr key={row.id}>
-                                    <td className="border px-2 py-2 text-center">
-                                      <ActionButton
-                                        title="Delete"
-                                        icon={DeleteIcon}
-                                        onClick={() => handleDeleteRow(row.id, branchTableData, setBranchTableData)}
-                                      />
-                                    </td>
-                                    <td className="text-center">
-                                      <div className="pt-2">{index + 1}</div>
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <select
-                                        value={row.customerBranchCode}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setBranchTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, customerBranchCode: value } : r))
-                                          );
-                                          setBranchTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              customerBranchCode: !value ? 'Customer Branch Code is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        onKeyDown={(e) => handleKeyDown(e, row, branchTableData)}
-                                        className={branchTableErrors[index]?.customerBranchCode ? 'error form-control' : 'form-control'}
-                                      >
-            
-                                      </select>
-                                      {branchTableErrors[index]?.customerBranchCode && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {branchTableErrors[index].customerBranchCode}
-                                        </div>
-                                      )}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                )} */}
               </Box>
             </div>
           </>
