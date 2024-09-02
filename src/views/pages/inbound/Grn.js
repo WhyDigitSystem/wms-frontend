@@ -206,7 +206,7 @@ export const Grn = () => {
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
   const listViewColumns = [
-    { accessorKey: 'grndDate', header: 'GRN Date', size: 140 },
+    { accessorKey: 'grnDate', header: 'GRN Date', size: 140 },
     { accessorKey: 'docId', header: 'GRN No', size: 140 },
     { accessorKey: 'gatePassId', header: 'Gate Pass Id', size: 140 },
     { accessorKey: 'supplier', header: 'Supplier', size: 140 },
@@ -380,7 +380,7 @@ export const Grn = () => {
           date: particularGrn.entryDate,
           gatePassId: particularGrn.docId,
           gatePassDate: particularGrn.gatePassDate,
-          grnDate: particularGrn.grndDate,
+          grnDate: particularGrn.grnDate,
           customerPo: particularGrn.customerPo,
           vas: particularGrn.vas === true ? true : false,
           supplierShortName: particularGrn.supplierShortName,
@@ -862,7 +862,7 @@ export const Grn = () => {
       setIsLoading(true);
 
       const lrVo = lrTableData.map((row) => ({
-        // ...(editId && { id: row.id }),
+        ...(editId && { id: row.id }),
         qrCode: row.qrCode,
         lrNoHawbNo: row.lr_Hawb_Hbl_No,
         invoiceNo: row.invNo,
@@ -887,7 +887,7 @@ export const Grn = () => {
         // EXTRA FIELDS
         batchQty: 0,
         rate: 0,
-        binType: ''
+        binType: 'RACK STORAGE'
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
@@ -895,7 +895,7 @@ export const Grn = () => {
         entryDate: formData.date ? dayjs(formData.date).format('YYYY-MM-DD') : null,
         gatePassId: editId ? gatePassIdEdit : formData.gatePassId,
         gatePassDate: formData.gatePassDate ? dayjs(formData.gatePassDate).format('YYYY-MM-DD') : null,
-        grndDate: formData.grnDate ? dayjs(formData.grnDate).format('YYYY-MM-DD') : null,
+        grnDate: formData.grnDate ? dayjs(formData.grnDate).format('YYYY-MM-DD') : null,
         customerPo: formData.customerPo,
         vas: formData.vas,
         supplierShortName: formData.supplierShortName,
@@ -1155,7 +1155,7 @@ export const Grn = () => {
                       format="DD/MM/YYYY"
                       error={fieldErrors.grnDate}
                       helperText={fieldErrors.grnDate && 'Required'}
-                      disabled={editId ? true : false}
+                      // disabled={editId ? true : false}
                     />
                   </LocalizationProvider>
                 </FormControl>
