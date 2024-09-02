@@ -454,8 +454,15 @@ export const UserCreationMaster = () => {
     }
   };
 
-  const handleDeleteRow = (id, table, setTable) => {
-    setTable(table.filter((row) => row.id !== id));
+  const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
+    const rowIndex = table.findIndex((row) => row.id === id);
+    // If the row exists, proceed to delete
+    if (rowIndex !== -1) {
+      const updatedData = table.filter((row) => row.id !== id);
+      const updatedErrors = errorTable.filter((_, index) => index !== rowIndex);
+      setTable(updatedData);
+      setErrorTable(updatedErrors);
+    }
   };
 
   // const getAvailableClients = (currentRowId) => {
@@ -891,7 +898,16 @@ export const UserCreationMaster = () => {
                                       <ActionButton
                                         title="Delete"
                                         icon={DeleteIcon}
-                                        onClick={() => handleDeleteRow(row.id, roleTableData, setRoleTableData)}
+                                        onClick={() =>
+                                          handleDeleteRow(
+                                            row.id,
+                                            roleTableData,
+                                            setRoleTableData,
+                                            roleTableDataErrors,
+                                            setRoleTableDataErrors
+                                          )
+                                        }
+                                        // id, table, setTable, errorTable, setErrorTable
                                       />
                                     </td>
                                     <td className="text-center">
@@ -1017,7 +1033,15 @@ export const UserCreationMaster = () => {
                                       <ActionButton
                                         title="Delete"
                                         icon={DeleteIcon}
-                                        onClick={() => handleDeleteRow(row.id, branchTableData, setBranchTableData)}
+                                        onClick={() =>
+                                          handleDeleteRow(
+                                            row.id,
+                                            branchTableData,
+                                            setBranchTableData,
+                                            branchTableErrors,
+                                            setBranchTableErrors
+                                          )
+                                        }
                                       />
                                     </td>
                                     <td className="text-center">
@@ -1084,7 +1108,15 @@ export const UserCreationMaster = () => {
                                       <ActionButton
                                         title="Delete"
                                         icon={DeleteIcon}
-                                        onClick={() => handleDeleteRow(row.id, clientTableData, setClientTableData)}
+                                        onClick={() =>
+                                          handleDeleteRow(
+                                            row.id,
+                                            clientTableData,
+                                            setClientTableData,
+                                            clientTableErrors,
+                                            setClientTableErrors
+                                          )
+                                        }
                                       />
                                     </td>
                                     <td className="text-center">
