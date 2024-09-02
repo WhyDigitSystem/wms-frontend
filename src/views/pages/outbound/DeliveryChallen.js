@@ -44,7 +44,7 @@ export const DeliveryChallen = () => {
   const [modeOfShipmentList, setModeOfShipmentList] = useState([]);
   const [buyerOrderList, setBuyerOrderList] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const [cbranch, setCbranch] = useState(localStorage.getItem('branchCode'));
+  const [cbranch, setCbranch] = useState(localStorage.getItem('branchcode'));
   const [client, setClient] = useState(localStorage.getItem('client'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [customer, setCustomer] = useState(localStorage.getItem('customer'));
@@ -1044,6 +1044,11 @@ export const DeliveryChallen = () => {
                       onChange={handleBuyerOrderChange}
                       name="buyerOrderNo"
                     >
+                      {buyerOrderList.length === 0 && (
+                        <MenuItem value="">
+                          <em>No Data Found</em>
+                        </MenuItem>
+                      )}
                       {buyerOrderList.map((buyer) => (
                         <MenuItem key={buyer.id} value={buyer.buyerOrderNo}>
                           {buyer.buyerOrderNo}

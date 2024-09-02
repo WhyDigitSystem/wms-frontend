@@ -259,31 +259,40 @@ export const SalesReturn = () => {
   };
 
   const getFillGridDetails = async () => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `salesReturn/getSalesReturnFillGridDetails?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&docId=${formData.prNo}`
-      );
-      console.log('THE VAS PICK GRID DETAILS IS:', response);
-      if (response.status === true) {
-        const gridDetails = response.paramObjectsMap.salesReturnDetailsVO;
-        console.log('THE MODAL TABLE DATA FROM API ARE:', gridDetails);
-
-        setModalTableData(
-          gridDetails.map((row) => ({
-            id: row.id,
-
-            partNo: row.partNo,
-            partDesc: row.partDesc,
-            sku: row.sku,
-            pickQty: row.pickQty
-          }))
+    const errors = {};
+    if (!formData.prNo) {
+      errors.prNo = 'PR No is required';
+    }
+    if (Object.keys(errors).length === 0) {
+      setModalOpen(true);
+      try {
+        const response = await apiCalls(
+          'get',
+          `salesReturn/getSalesReturnFillGridDetails?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&docId=${formData.prNo}`
         );
-        setModalOpen(true);
-        // setDetailTableData([]);
+        console.log('THE VAS PICK GRID DETAILS IS:', response);
+        if (response.status === true) {
+          const gridDetails = response.paramObjectsMap.salesReturnDetailsVO;
+          console.log('THE MODAL TABLE DATA FROM API ARE:', gridDetails);
+
+          setModalTableData(
+            gridDetails.map((row) => ({
+              id: row.id,
+
+              partNo: row.partNo,
+              partDesc: row.partDesc,
+              sku: row.sku,
+              pickQty: row.pickQty
+            }))
+          );
+          setModalOpen(true);
+          // setDetailTableData([]);
+        }
+      } catch (error) {
+        console.error('Error fetching employee data:', error);
       }
-    } catch (error) {
-      console.error('Error fetching employee data:', error);
+    } else {
+      setFieldErrors(errors);
     }
   };
 
@@ -646,9 +655,9 @@ export const SalesReturn = () => {
       prNo: '',
       prDate: null,
       boNo: '',
-      boDate: null,
+      boDate: dayjs(),
       entryNo: '',
-      entryDate: null,
+      entryDate: dayjs(),
       buyerName: '',
       buyerType: '',
       supplierShotName: '',
@@ -718,9 +727,9 @@ export const SalesReturn = () => {
   const handleSave = async () => {
     const errors = {};
 
-    // if (!formData.buyerOrderRefNo) {
-    //   errors.buyerOrderRefNo = 'buyerOrderRefNo is required';
-    // }
+    if (!formData.prNo) {
+      errors.prNo = 'PR No is required';
+    }
 
     setFieldErrors(errors);
 
@@ -951,9 +960,11 @@ export const SalesReturn = () => {
                 <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.prNo}>
                   <InputLabel id="prNo-label">PR No *</InputLabel>
                   <Select labelId="prNo-label" id="prNo *" name="prNo" label="PR No" value={formData.prNo} onChange={handleInputChange}>
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
+                    {prNoList.length === 0 && (
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                    )}
                     {prNoList?.map((row) => (
                       <MenuItem key={row.id} value={row.docId}>
                         {row.docId}
@@ -1681,7 +1692,7 @@ export const SalesReturn = () => {
               </Box>
               <Dialog
                 open={modalOpen}
-                maxWidth={'lg'}
+                maxWidth={'md'}
                 fullWidth={true}
                 onClose={handleCloseModal}
                 PaperComponent={PaperComponent}

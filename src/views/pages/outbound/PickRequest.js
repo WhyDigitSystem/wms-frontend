@@ -208,9 +208,13 @@ export const PickRequest = () => {
     return dayjs().format('HH:mm:ss');
   };
 
+  const getOutTime = () => {
+    setFormData((prev) => ({ ...prev, outTime: getCurrentTime() }));
+  };
+
   // Initialize the outTime field with the current time
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, outTime: getCurrentTime() }));
+    getOutTime();
   }, []);
 
   const getAllGroups = async () => {
@@ -434,7 +438,6 @@ export const PickRequest = () => {
       clientName: '',
       customerName: '',
       customerShortName: '',
-      outTime: '',
       clientAddress: '',
       customerAddress: '',
       status: 'Edit',
@@ -444,28 +447,7 @@ export const PickRequest = () => {
       pickOrder: 'FIFO',
       buyerOrderDate: null
     });
-    setItemTableData([
-      {
-        availQty: '',
-        batchDate: '',
-        batchNo: '',
-        binClass: '',
-        binType: '',
-        cellType: '',
-        clientCode: '',
-        core: '',
-        bin: '',
-        orderQty: '',
-        partDesc: '',
-        partNo: '',
-        pcKey: '',
-        pickQty: '',
-        remainQty: '',
-        sku: '',
-        ssku: '',
-        status: ''
-      }
-    ]);
+    setItemTableData([]);
     setFieldErrors({
       docDate: '',
       pickRequestId: '',
@@ -494,6 +476,7 @@ export const PickRequest = () => {
       totalAmount: ''
     });
     getDocId();
+    getOutTime();
     setItemTableErrors('');
     setEditId('');
   };
@@ -502,7 +485,7 @@ export const PickRequest = () => {
     const errors = {};
 
     if (!formData.buyerRefNo) {
-      errors.buyerRefNo = 'buyerRefNo is required';
+      errors.buyerRefNo = 'Buyer Order Ref No is required';
     }
 
     if (!formData.status) {
@@ -639,26 +622,30 @@ export const PickRequest = () => {
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
 
-  const handleFullGrid = () => {
-    setModalOpen(true);
-    getAllFillGrid();
-  };
-
   const getAllFillGrid = async () => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `pickrequest/getFillGridDetailsForPickRequest?orgId=${orgId}&branchCode=${branchCode}&client=${client}&buyerOrderDocId=${formData.buyerOrderNo}&pickStatus=${formData.status}`
-      );
-      console.log('API Response:', response);
+    const errors = {};
+    if (!formData.buyerRefNo) {
+      errors.buyerRefNo = 'Buyer Order Ref No is required';
+    }
+    if (Object.keys(errors).length === 0) {
+      setModalOpen(true);
+      try {
+        const response = await apiCalls(
+          'get',
+          `pickrequest/getFillGridDetailsForPickRequest?orgId=${orgId}&branchCode=${branchCode}&client=${client}&buyerOrderDocId=${formData.buyerOrderNo}&pickStatus=${formData.status}`
+        );
+        console.log('API Response:', response);
 
-      if (response.status === true) {
-        setFillGridData(response.paramObjectsMap.fillGridDetails);
-      } else {
-        console.error('API Error:', response);
+        if (response.status === true) {
+          setFillGridData(response.paramObjectsMap.fillGridDetails);
+        } else {
+          console.error('API Error:', response);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
       }
-    } catch (error) {
-      console.error('Error fetching data:', error);
+    } else {
+      setFieldErrors(errors);
     }
   };
 
@@ -1035,7 +1022,7 @@ export const PickRequest = () => {
                     <div className="row d-flex ml">
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
+                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={getAllFillGrid} />
                       </div>
                       <div className="row mt-2">
                         <div className="col-lg-12">
@@ -1333,7 +1320,7 @@ export const PickRequest = () => {
             </div>
             <Dialog
               open={modalOpen}
-              maxWidth={'md'}
+              maxWidth={'lg'}
               fullWidth={true}
               onClose={handleCloseModal}
               PaperComponent={PaperComponent}
