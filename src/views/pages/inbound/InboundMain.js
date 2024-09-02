@@ -1,4 +1,3 @@
-import { Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -20,12 +19,13 @@ const InboundMain = () => {
           <Tabs value={value} onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="secondary tabs example">
             <Tab
               value={0}
-              icon={
-                <Tooltip title="Gate Pass In">
-                  <img src="https://cdn-icons-png.flaticon.com/128/5208/5208307.png" alt="Gate Pass In" style={{ width: 34, height: 34 }} />
-                </Tooltip>
-              }
-              iconPosition="start"
+              label="Gate Pass In"
+              // icon={
+              //   <Tooltip title="Gate Pass In">
+              //     <img src="https://cdn-icons-png.flaticon.com/128/5208/5208307.png" alt="Gate Pass In" style={{ width: 34, height: 34 }} />
+              //   </Tooltip>
+              // }
+              // iconPosition="start"
             />
             <Tab value={1} label="GRN" />
             <Tab value={2} label="Put Away" />

@@ -1,36 +1,30 @@
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, FormHelperText, Tooltip, FormControlLabel, Checkbox } from '@mui/material';
-import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import axios from 'axios';
-import { useState, useMemo, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
+import { FormHelperText } from '@mui/material';
+import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import BrowserUpdatedIcon from '@mui/icons-material/BrowserUpdated';
-import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
-import apiCalls from 'apicall';
+import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
+import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { DatePicker } from '@mui/x-date-pickers';
+import React, { useEffect, useRef, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/ActionButton';
 import { getAllActiveCarrier, getAllActiveSupplier } from 'utils/CommonFunctions';
-import React, { useRef } from 'react';
+import { showToast } from 'utils/toast-component';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 export const GatePassIn = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -596,11 +590,11 @@ export const GatePassIn = () => {
         lrNoDetailsTableValid = false;
         if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
       }
-      if (!row.batchNo) {
-        rowErrors.batchNo = 'Batch No is required';
-        lrNoDetailsTableValid = false;
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
-      }
+      // if (!row.batchNo) {
+      //   rowErrors.batchNo = 'Batch No is required';
+      //   lrNoDetailsTableValid = false;
+      //   if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
+      // }
       if (!row.invQty) {
         rowErrors.invQty = 'Inv Qty is required';
         lrNoDetailsTableValid = false;
@@ -961,7 +955,7 @@ export const GatePassIn = () => {
                                   <th className="px-2 py-2 text-white text-center">Inv No *</th>
                                   <th className="px-2 py-2 text-white text-center">Part No *</th>
                                   <th className="px-2 py-2 text-white text-center">Part Desc</th>
-                                  <th className="px-2 py-2 text-white text-center">Batch No *</th>
+                                  <th className="px-2 py-2 text-white text-center">Batch No</th>
                                   <th className="px-2 py-2 text-white text-center">SKU</th>
                                   <th className="px-2 py-2 text-white text-center">Inv QTY *</th>
                                   <th className="px-2 py-2 text-white text-center">Rec QTY *</th>
