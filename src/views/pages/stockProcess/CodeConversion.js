@@ -218,35 +218,27 @@ export const CodeConversion = () => {
   };
   const handlePartNoChange = (row, index, event) => {
     const value = event.target.value;
-
-    // Find the selected part number from the row's partNoList
     const selectedFromPartNo = partNoList.find((b) => b.partNo === value);
-
-    // Update the detail table data
     setCodeConversionDetailsTable((prev) =>
       prev.map((r) =>
         r.id === row.id
           ? {
               ...r,
-              partNo: selectedFromPartNo ? selectedFromPartNo.partNo : '', // Safeguard for undefined
-              partDescription: selectedFromPartNo ? selectedFromPartNo.partDesc : '', // Safeguard for undefined
-              sku: selectedFromPartNo ? selectedFromPartNo.sku : '' // Safeguard for undefined
+              partNo: selectedFromPartNo ? selectedFromPartNo.partNo : '',
+              partDescription: selectedFromPartNo ? selectedFromPartNo.partDesc : '',
+              sku: selectedFromPartNo ? selectedFromPartNo.sku : ''
             }
           : r
       )
     );
-
-    // Update validation errors
     setCodeConversionDetailsError((prev) => {
       const newErrors = [...prev];
       newErrors[index] = {
         ...newErrors[index],
-        partNo: !value ? 'Part number is required' : '' // Set error if partNo is empty
+        partNo: !value ? 'Part number is required' : ''
       };
       return newErrors;
     });
-
-    // Call getGrnNo only if value is not empty
     if (value) {
       getAllGrnNo(value, row);
     }
@@ -286,7 +278,6 @@ export const CodeConversion = () => {
           ? {
               ...r,
               grnNo: selectedGrnNo.grnNo
-              // grnDate: selectedGrnNo ? selectedGrnNo.grnDate : ''
             }
           : r
       )
@@ -300,7 +291,6 @@ export const CodeConversion = () => {
       return newErrors;
     });
     getAllBinType(value, row.partNo, row);
-    // getBatchNo(row.partNo, value, row);
   };
 
   const getAllBinType = async (grnNo, partNo, row) => {
@@ -362,7 +352,6 @@ export const CodeConversion = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        // setBatchNoList(response.paramObjectsMap.codeConversionVO);
         setCodeConversionDetailsTable((prev) =>
           prev.map((r) =>
             r.id === row.id
@@ -387,7 +376,6 @@ export const CodeConversion = () => {
           ? {
               ...r,
               batchNo: selectedBatchNo.batchNo
-              // lotNo: selectedBatchNo ? selectedBatchNo.lotNo : ''
             }
           : r
       )
@@ -400,7 +388,6 @@ export const CodeConversion = () => {
       };
       return newErrors;
     });
-    // getAllBatchNo(value, row.grnNo, row.partNo);
     getAllBin(value, row.binType, row.grnNo, row.partNo, row);
   };
 
@@ -481,11 +468,10 @@ export const CodeConversion = () => {
     }
   };
 
-  //DOUBT LIST
   const getAllCPartNo = async () => {
     try {
       const cPartData = await getAllActiveCpartNo(cbranch, client, orgId);
-      console.log('Processed Data:', cPartData); // Log the processed data
+      console.log('Processed Data:', cPartData);
       if (cPartData && cPartData.length > 0) {
         setCPartNoList(cPartData);
       } else {
@@ -495,7 +481,6 @@ export const CodeConversion = () => {
       console.error('Error fetching supplier data:', error);
     }
   };
-  // DOUBT LIST
   const getAllcPallet = async () => {
     try {
       const response = await apiCalls(
@@ -543,7 +528,6 @@ export const CodeConversion = () => {
 
       if (response.status === true) {
         setViewId(row.original.id);
-        // getAllModeOfShipment();
         const particularCodeConversion = response.paramObjectsMap.codeConversionVO;
         console.log('THE PARTICULAR CUSTOMER IS:', particularCodeConversion);
         setCodeConversionDocId(particularCodeConversion.docId);
@@ -600,31 +584,8 @@ export const CodeConversion = () => {
     setFormData({
       docdate: dayjs()
     });
-    setCodeConversionDetailsTable([
-      {
-        partNo: '',
-        partDescription: '',
-        grnNo: '',
-        sku: '',
-        binType: '',
-        batchNo: '',
-        lotNo: '',
-        bin: '',
-        qty: '',
-        actualQty: '',
-        rate: '',
-        convertQty: '',
-        crate: '',
-        cpartNo: '',
-        cpartDesc: '',
-        csku: '',
-        cbatchNo: '',
-        clotNo: '',
-        cbin: '',
-        remarks: ''
-      }
-    ]);
-    setCodeConversionDetailsError('');
+    setCodeConversionDetailsTable([]);
+    setCodeConversionDetailsError([]);
     setFieldErrors({
       docdate: new Date()
     });
@@ -632,104 +593,65 @@ export const CodeConversion = () => {
     getCodeConversionDocId();
   };
 
+  const handleTableClear = (table) => {
+    if (table === 'codeConversionDetailsTable') {
+      setCodeConversionDetailsTable([]);
+      setCodeConversionDetailsError([]);
+    }
+  };
+
   const lrNoDetailsRefs = useRef([]);
 
-  useEffect(() => {
-    lrNoDetailsRefs.current = codeConversionDetailsTable.map((_, i) => ({
-      partNo: lrNoDetailsRefs.current[i]?.partNo || React.createRef(),
-      grnNo: lrNoDetailsRefs.current[i]?.grnNo || React.createRef(),
-      binType: lrNoDetailsRefs.current[i]?.binType || React.createRef(),
-      batchNo: lrNoDetailsRefs.current[i]?.batchNo || React.createRef(),
-      bin: lrNoDetailsRefs.current[i]?.bin || React.createRef(),
-      actualQty: lrNoDetailsRefs.current[i]?.actualQty || React.createRef(),
-      convertQty: lrNoDetailsRefs.current[i]?.convertQty || React.createRef(),
-      cpartNo: lrNoDetailsRefs.current[i]?.cpartNo || React.createRef(),
-      cbatchNo: lrNoDetailsRefs.current[i]?.cbatchNo || React.createRef(),
-      cbin: lrNoDetailsRefs.current[i]?.cbin || React.createRef()
-    }));
-  }, [codeConversionDetailsTable]);
+  // useEffect(() => {
+  //   lrNoDetailsRefs.current = codeConversionDetailsTable.map((_, i) => ({
+  //     partNo: lrNoDetailsRefs.current[i]?.partNo || React.createRef(),
+  //     grnNo: lrNoDetailsRefs.current[i]?.grnNo || React.createRef(),
+  //     binType: lrNoDetailsRefs.current[i]?.binType || React.createRef(),
+  //     batchNo: lrNoDetailsRefs.current[i]?.batchNo || React.createRef(),
+  //     bin: lrNoDetailsRefs.current[i]?.bin || React.createRef(),
+  //     actualQty: lrNoDetailsRefs.current[i]?.actualQty || React.createRef(),
+  //     convertQty: lrNoDetailsRefs.current[i]?.convertQty || React.createRef(),
+  //     cpartNo: lrNoDetailsRefs.current[i]?.cpartNo || React.createRef(),
+  //     cbatchNo: lrNoDetailsRefs.current[i]?.cbatchNo || React.createRef(),
+  //     cbin: lrNoDetailsRefs.current[i]?.cbin || React.createRef()
+  //   }));
+  // }, [codeConversionDetailsTable]);
 
   const handleSave = async () => {
     const errors = {};
-    let firstInvalidFieldRef = null;
-
-    // Check if the table is empty
-    if (codeConversionDetailsTable.length === 0) {
-      errors.table = 'Details Table is required';
-      setFieldErrors(errors);
-      showToast('error', 'Details Table is required');
-      return; // Exit the function if the table is empty
-    }
-
     let codeConversionDetailsTableValid = true;
-    const newTableErrors = codeConversionDetailsTable.map((row, index) => {
-      const rowErrors = {};
-      if (!row.partNo) {
-        rowErrors.partNo = 'Part No is required';
-        codeConversionDetailsTableValid = false;
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
-      }
-      if (!row.grnNo) {
-        rowErrors.grnNo = 'GRN No is required';
-        codeConversionDetailsTableValid = false;
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].grnNo;
-      }
-      if (!row.binType) {
-        rowErrors.binType = 'Bin Type is required';
-        codeConversionDetailsTableValid = false;
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].binType;
-      }
-      if (!row.batchNo) {
-        rowErrors.batchNo = 'Batch No is required';
-        codeConversionDetailsTableValid = false;
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
-      }
-      if (!row.bin) {
-        rowErrors.bin = 'Bin is required';
-        codeConversionDetailsTableValid = false;
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
-      }
-      if (!row.actualQty) {
-        rowErrors.actualQty = 'Actual Qty is required';
-        codeConversionDetailsTableValid = false;
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].actualQty;
-      }
-      if (!row.convertQty) {
-        rowErrors.convertQty = 'Convert Qty is required';
-        codeConversionDetailsTableValid = false;
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].convertQty;
-      }
-      if (!row.cpartNo) {
-        rowErrors.cpartNo = 'Cpart No is required';
-        codeConversionDetailsTableValid = false;
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].cpartNo;
-      }
-      if (!row.cbatchNo) {
-        rowErrors.cbatchNo = 'C Batch No is required';
-        codeConversionDetailsTableValid = false;
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].cbatchNo;
-      }
-      if (!row.cbin) {
-        rowErrors.cbin = 'C Bin is required';
-        codeConversionDetailsTableValid = false;
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].cbin;
-      }
-
-      return rowErrors;
-    });
-
-    setCodeConversionDetailsError(newTableErrors);
-
-    if (!codeConversionDetailsTableValid || Object.keys(errors).length > 0) {
-      // Focus on the first invalid field
-      if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
-        firstInvalidFieldRef.current.focus();
-      }
+    if (!codeConversionDetailsTable || !Array.isArray(codeConversionDetailsTable) || codeConversionDetailsTable.length === 0) {
+      codeConversionDetailsTableValid = false;
+      setCodeConversionDetailsError([{ general: 'Table Data is required' }]);
     } else {
-      // Proceed with form submission
-    }
+      const newTableErrors = codeConversionDetailsTable.map((row, index) => {
+        const rowErrors = {};
+        if (!row.partNo) rowErrors.partNo = 'Part No is required';
 
-    setFieldErrors(errors);
+        if (!row.grnNo) rowErrors.grnNo = 'GRN No is required';
+
+        if (!row.binType) rowErrors.binType = 'Bin Type is required';
+
+        if (!row.batchNo) rowErrors.batchNo = 'Batch No is required';
+
+        if (!row.bin) rowErrors.bin = 'Bin is required';
+
+        if (!row.actualQty) rowErrors.actualQty = 'Actual Qty is required';
+
+        if (!row.convertQty) rowErrors.convertQty = 'Convert Qty is required';
+
+        if (!row.cpartNo) rowErrors.cpartNo = 'Cpart No is required';
+
+        if (!row.cbatchNo) rowErrors.cbatchNo = 'C Batch No is required';
+
+        if (!row.cbin) rowErrors.cbin = 'C Bin is required';
+
+        if (Object.keys(rowErrors).length > 0) codeConversionDetailsTableValid = false;
+        return rowErrors;
+      });
+
+      setCodeConversionDetailsError(newTableErrors);
+    }
 
     if (Object.keys(errors).length === 0 && codeConversionDetailsTableValid) {
       setIsLoading(true);
@@ -800,7 +722,6 @@ export const CodeConversion = () => {
           console.log('Response:', response);
           handleClear();
           getAllCodeConversions();
-          getCodeConversionDocId();
           showToast('success', viewId ? 'Code Conversion In Updated Successfully' : 'Code Conversion In created successfully');
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Code Conversion In creation failed');
@@ -851,11 +772,9 @@ export const CodeConversion = () => {
           await getAllBatchNo(data.binType, data.grnNo, data.partNo, data);
           await getAllBin(data.batchNo, data.binType, data.grnNo, data.partNo, data);
           await getTableQty(data.bin, data.batchNo, data.binType, data.grnNo, data.partNo, data);
-
-          // Prepare simulated event object
           const simulatedEvent = {
             target: {
-              value: data.bin // Ensure this is the correct field for the bin value
+              value: data.bin
             }
           };
         })
@@ -936,7 +855,6 @@ export const CodeConversion = () => {
 
   return (
     <>
-      <div>{/* <ToastContainer /> */}</div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
@@ -1008,12 +926,10 @@ export const CodeConversion = () => {
                           <>
                             <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
                             <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
-                            <ActionButton title="Clear" icon={ClearIcon} onClick={() => setCodeConversionDetailsTable([])} />
+                            <ActionButton title="Clear" icon={ClearIcon} onClick={() => handleTableClear('codeConversionDetailsTable')} />
                           </>
                         )}
                       </div>
-
-                      {/* Table */}
                       <div className="row mt-2">
                         <div className="col-lg-12">
                           <div className="table-responsive">
@@ -1034,18 +950,14 @@ export const CodeConversion = () => {
                                   <th className="px-2 py-2 text-white text-center">GRN No *</th>
                                   <th className="px-2 py-2 text-white text-center">Bin Type *</th>
                                   <th className="px-2 py-2 text-white text-center">Batch No *</th>
-                                  {/* <th className="px-2 py-2 text-white text-center">Lot No</th> */}
                                   <th className="px-2 py-2 text-white text-center">Bin *</th>
                                   <th className="px-2 py-2 text-white text-center">QTY</th>
                                   <th className="px-2 py-2 text-white text-center">Actual QTY *</th>
-                                  {/* <th className="px-2 py-2 text-white text-center">Rate</th> */}
                                   <th className="px-2 py-2 text-white text-center">Convert QTY *</th>
-                                  {/* <th className="px-2 py-2 text-white text-center">C Rate</th> */}
                                   <th className="px-2 py-2 text-white text-center">C Part No *</th>
                                   <th className="px-2 py-2 text-white text-center">C Part Desc</th>
                                   <th className="px-2 py-2 text-white text-center">C SKU</th>
                                   <th className="px-2 py-2 text-white text-center">C Batch No *</th>
-                                  {/* <th className="px-2 py-2 text-white text-center">C Lotno</th> */}
                                   <th className="px-2 py-2 text-white text-center">C Bin *</th>
                                   <th className="px-2 py-2 text-white text-center">Remarks</th>
                                 </tr>
@@ -1197,18 +1109,6 @@ export const CodeConversion = () => {
                                               </div>
                                             )}
                                           </td>
-
-                                          {/* <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.lotNo}
-                                        disabled
-                                        className="form-control"
-                                        title={row.lotNo}
-                                      />
-                                    </td> */}
-
                                           <td className="border px-2 py-2">
                                             <select
                                               ref={lrNoDetailsRefs.current[index]?.bin}
@@ -1256,10 +1156,9 @@ export const CodeConversion = () => {
                                               value={row.actualQty}
                                               onChange={(e) => {
                                                 const value = e.target.value;
-                                                const intPattern = /^\d*$/; // Pattern to match only whole numbers
+                                                const intPattern = /^\d*$/;
 
                                                 if (intPattern.test(value) || value === '') {
-                                                  // Allow empty values for clearing
                                                   const numericValue = parseInt(value, 10);
                                                   const numericQty = parseInt(row.qty, 10) || 0;
 
@@ -1311,30 +1210,6 @@ export const CodeConversion = () => {
                                               </div>
                                             )}
                                           </td>
-                                          {/* <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.rate}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setCodeConversionDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, rate: value.toUpperCase() } : r))
-                                          );
-                                          setCodeConversionDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], rate: !value ? 'Rate is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={codeConversionDetailsError[index]?.rate ? 'error form-control' : 'form-control'}
-                                      />
-                                      {codeConversionDetailsError[index]?.rate && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {codeConversionDetailsError[index].rate}
-                                        </div>
-                                      )}
-                                    </td> */}
                                           <td className="border px-2 py-2">
                                             <input
                                               ref={lrNoDetailsRefs.current[index]?.convertQty}
@@ -1344,7 +1219,6 @@ export const CodeConversion = () => {
                                               onChange={(e) => {
                                                 const value = e.target.value;
                                                 if (/^\d*$/.test(value)) {
-                                                  // This regex allows only numbers
                                                   setCodeConversionDetailsTable((prev) =>
                                                     prev.map((r) => (r.id === row.id ? { ...r, convertQty: value } : r))
                                                   );
@@ -1357,7 +1231,6 @@ export const CodeConversion = () => {
                                                     return newErrors;
                                                   });
                                                 } else {
-                                                  // Invalid input (alphabet or special character)
                                                   setCodeConversionDetailsError((prev) => {
                                                     const newErrors = [...prev];
                                                     newErrors[index] = {
@@ -1378,30 +1251,6 @@ export const CodeConversion = () => {
                                               </div>
                                             )}
                                           </td>
-                                          {/* <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.crate}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setCodeConversionDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, crate: value.toUpperCase() } : r))
-                                          );
-                                          setCodeConversionDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], crate: !value ? 'C Rate is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={codeConversionDetailsError[index]?.crate ? 'error form-control' : 'form-control'}
-                                      />
-                                      {codeConversionDetailsError[index]?.crate && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {codeConversionDetailsError[index].crate}
-                                        </div>
-                                      )}
-                                    </td> */}
                                           <td className="border px-2 py-2">
                                             <select
                                               ref={lrNoDetailsRefs.current[index]?.cpartNo}
@@ -1409,10 +1258,7 @@ export const CodeConversion = () => {
                                               style={{ width: '100px' }}
                                               onChange={(e) => {
                                                 const value = e.target.value;
-
-                                                // Find the selected cPart in the list
                                                 const selectedCPart = cPartNoList.find((cpart) => cpart.partno === value);
-
                                                 setCodeConversionDetailsTable((prev) =>
                                                   prev.map((r) =>
                                                     r.id === row.id
@@ -1505,30 +1351,6 @@ export const CodeConversion = () => {
                                               </div>
                                             )}
                                           </td>
-                                          {/* <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        style={{ width: '100px' }}
-                                        value={row.clotNo}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setCodeConversionDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, clotNo: value.toUpperCase() } : r))
-                                          );
-                                          setCodeConversionDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], clotNo: !value ? 'C Lot No is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={codeConversionDetailsError[index]?.clotNo ? 'error form-control' : 'form-control'}
-                                      />
-                                      {codeConversionDetailsError[index]?.clotNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {codeConversionDetailsError[index].clotNo}
-                                        </div>
-                                      )}
-                                    </td> */}
                                           <td className="border px-2 py-2">
                                             <select
                                               ref={lrNoDetailsRefs.current[index]?.cbin}
@@ -1606,6 +1428,17 @@ export const CodeConversion = () => {
                                       </tr>
                                     )}
                                   </tbody>
+                                  {codeConversionDetailsError.some((error) => error.general) && (
+                                    <tfoot>
+                                      <tr>
+                                        <td colSpan={18} className="error-message">
+                                          <div style={{ color: 'red', fontSize: '14px', textAlign: 'center' }}>
+                                            {codeConversionDetailsError.find((error) => error.general)?.general}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    </tfoot>
+                                  )}
                                 </>
                               ) : (
                                 <>

@@ -1344,7 +1344,7 @@ export const StockRestate = () => {
                                   {detailTableErrors.some((error) => error.general) && (
                                     <tfoot>
                                       <tr>
-                                        <td colSpan={12} className="error-message">
+                                        <td colSpan={14} className="error-message">
                                           <div style={{ color: 'red', fontSize: '14px', textAlign: 'center' }}>
                                             {detailTableErrors.find((error) => error.general)?.general}
                                           </div>

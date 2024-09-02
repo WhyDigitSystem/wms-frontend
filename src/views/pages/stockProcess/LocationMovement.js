@@ -46,7 +46,7 @@ export const LocationMovement = () => {
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
   const [client, setClient] = useState(localStorage.getItem('client'));
   const [customer, setCustomer] = useState(localStorage.getItem('customer'));
-  // const [finYear, setFinYear] = useState(localStorage.getItem('finYear') ? localStorage.getItem('finYear') : '2024');
+  // const [finYear, setFinYear] = useState(localStorage.getItem('finYear');
   const [finYear, setFinYear] = useState('2024');
   const [warehouse, setWarehouse] = useState(localStorage.getItem('warehouse'));
   const [selectedBin, setSelectedBin] = useState('');
@@ -946,22 +946,12 @@ export const LocationMovement = () => {
     }
   };
 
-  // const handleDeleteRow = (id) => {
-  //   setChildTableData(childTableData.filter((row) => row.id !== id));
-  // };
   const handleDeleteRow = (id) => {
-    // Find the index of the row with the given id
     const rowIndex = childTableData.findIndex((row) => row.id === id);
-
     // If the row exists, proceed to delete
     if (rowIndex !== -1) {
-      // Remove the row from childTableData
       const updatedData = childTableData.filter((row) => row.id !== id);
-
-      // Remove the corresponding errors from childTableErrors
       const updatedErrors = childTableErrors.filter((_, index) => index !== rowIndex);
-
-      // Update the state with the new data and errors
       setChildTableData(updatedData);
       setChildTableErrors(updatedErrors);
     }
@@ -1003,7 +993,7 @@ export const LocationMovement = () => {
     let childTableDataValid = true;
     if (!childTableData || !Array.isArray(childTableData) || childTableData.length === 0) {
       childTableDataValid = false;
-      setChildTableErrors([{ general: 'Table Data is required' }]); // Assuming you want to handle general errors too
+      setChildTableErrors([{ general: 'Table Data is required' }]);
     } else {
       const newTableErrors = childTableData.map((row, index) => {
         const rowErrors = {};
@@ -1147,7 +1137,13 @@ export const LocationMovement = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            <ActionButton
+              title="Save"
+              icon={SaveIcon}
+              isLoading={isLoading}
+              onClick={!viewId ? handleSave : undefined}
+              margin="0 10px 0 10px"
+            />
           </div>
         </div>
         {listView ? (
@@ -1222,11 +1218,14 @@ export const LocationMovement = () => {
                   <>
                     <div className="row d-flex ml">
                       <div className="mb-1">
-                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
-                        <ActionButton title="Clear" icon={ClearIcon} onClick={() => handleTableClear('childTableData')} />
+                        {!viewId && (
+                          <>
+                            <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                            <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
+                            <ActionButton title="Clear" icon={ClearIcon} onClick={() => handleTableClear('childTableData')} />{' '}
+                          </>
+                        )}
                       </div>
-                      {/* Table */}
                       <div className="row mt-2">
                         <div className="col-lg-12">
                           <div className="table-responsive">
@@ -1464,7 +1463,7 @@ export const LocationMovement = () => {
                                   {childTableErrors.some((error) => error.general) && (
                                     <tfoot>
                                       <tr>
-                                        <td colSpan={12} className="error-message">
+                                        <td colSpan={13} className="error-message">
                                           <div style={{ color: 'red', fontSize: '14px', textAlign: 'center' }}>
                                             {childTableErrors.find((error) => error.general)?.general}
                                           </div>
