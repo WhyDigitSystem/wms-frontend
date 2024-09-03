@@ -89,16 +89,39 @@ export const CellTypeMaster = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+
+  //   if (name === 'cellCategory' && !codeRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else {
+  //     setFormData({ ...formData, [name]: value.toUpperCase() });
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, selectionStart, selectionEnd } = e.target;
     const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-    const nameRegex = /^[A-Za-z ]*$/;
+    let errorMessage = '';
 
     if (name === 'cellCategory' && !codeRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+      errorMessage = 'Invalid Format';
+    }
+
+    if (errorMessage) {
+      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
-      setFormData({ ...formData, [name]: value.toUpperCase() });
       setFieldErrors({ ...fieldErrors, [name]: '' });
+      const upperCaseValue = value.toUpperCase();
+      setFormData({ ...formData, [name]: upperCaseValue });
+      setTimeout(() => {
+        if (e.target) {
+          e.target.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 0);
     }
   };
 

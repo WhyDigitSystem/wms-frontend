@@ -82,10 +82,41 @@ export const LocationTypeMaster = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, selectionStart, selectionEnd } = e.target;
+
+  //   const nameRegex = /^[A-Za-z0-9  ]*$/;
+  //   let errorMessage = '';
+
+  //   switch (name) {
+  //     case 'binType':
+  //       if (!nameRegex.test(value)) {
+  //         errorMessage = 'Only Alphanumeric characters are allowed';
+  //       }
+  //       break;
+
+  //     default:
+  //       break;
+  //   }
+
+  //   if (errorMessage) {
+  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
+  //   } else {
+  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+  //     const upperCaseValue = value.toUpperCase();
+  //     setFormData((prevData) => ({ ...prevData, [name]: upperCaseValue }));
+  //     setTimeout(() => {
+  //       if (inputRef.current) {
+  //         inputRef.current.setSelectionRange(selectionStart, selectionEnd);
+  //       }
+  //     }, 0);
+  //   }
+  // };
+
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd } = e.target;
 
-    const nameRegex = /^[A-Za-z0-9  ]*$/;
+    const nameRegex = /^[A-Za-z0-9 ]*$/;
     let errorMessage = '';
 
     switch (name) {
@@ -106,8 +137,9 @@ export const LocationTypeMaster = () => {
       const upperCaseValue = value.toUpperCase();
       setFormData((prevData) => ({ ...prevData, [name]: upperCaseValue }));
       setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.setSelectionRange(selectionStart, selectionEnd);
+        const inputElement = document.getElementsByName(name)[0];
+        if (inputElement) {
+          inputElement.setSelectionRange(selectionStart, selectionEnd);
         }
       }, 0);
     }

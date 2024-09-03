@@ -94,8 +94,30 @@ export const StateMaster = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+  //   const numericRegex = /^[0-9]*$/;
+
+  //   if (name === 'stateCode' && !codeRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else if (name === 'stateCode' && value.length > 2) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Max Lenght is 2' });
+  //   } else if (name === 'stateNo' && !numericRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else if (name === 'stateNo' && value.length > 3) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Max Lenght is 3' });
+  //   } else if (name === 'stateName' && !nameRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else {
+  //     setFormData({ ...formData, [name]: value.toUpperCase() });
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, selectionStart, selectionEnd, type } = e.target;
     const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
     const numericRegex = /^[0-9]*$/;
@@ -103,16 +125,26 @@ export const StateMaster = () => {
     if (name === 'stateCode' && !codeRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else if (name === 'stateCode' && value.length > 2) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Max Lenght is 2' });
+      setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 2' });
     } else if (name === 'stateNo' && !numericRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else if (name === 'stateNo' && value.length > 3) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Max Lenght is 3' });
+      setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 3' });
     } else if (name === 'stateName' && !nameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else {
       setFormData({ ...formData, [name]: value.toUpperCase() });
       setFieldErrors({ ...fieldErrors, [name]: '' });
+
+      // Update the cursor position after the input change
+      if (type === 'text' || type === 'textarea') {
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
+      }
     }
   };
 
