@@ -535,11 +535,22 @@ export const FullFeaturedCrudGrid1 = () => {
       <div>{/* <ToastContainer /> */}</div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+          <div className="d-flex justify-content-between align-items-center" style={{ width: '100%' }}>
+            <div className="d-flex flex-wrap justify-content-start" style={{ marginBottom: '20px' }}>
+              <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+              <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
+            </div>
+            <Box sx={{ flexGrow: 1, marginLeft: '20px' }}>
+              <Stepper activeStep={value} alternativeLabel>
+                {steps.map((label) => (
+                  <Step key={label}>
+                    <StepLabel>{label}</StepLabel>
+                  </Step>
+                ))}
+              </Stepper>
+            </Box>
           </div>
         </div>
         {listView ? (
@@ -549,15 +560,6 @@ export const FullFeaturedCrudGrid1 = () => {
         ) : (
           <>
             <div className="row mt-2">
-              <Box sx={{ width: '100%' }}>
-                <Stepper activeStep={value} alternativeLabel>
-                  {steps.map((label) => (
-                    <Step key={label}>
-                      <StepLabel>{label}</StepLabel>
-                    </Step>
-                  ))}
-                </Stepper>
-              </Box>
               <Box sx={{ padding: 2 }}>
                 {value === 0 && (
                   <>

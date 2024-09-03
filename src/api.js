@@ -1,7 +1,7 @@
-// src/api.js
+// api.js
 import axios from 'axios';
+import { refreshToken } from 'utils/authUtils';
 
-// Create an instance of axios
 const api = axios.create({
   baseURL: `${process.env.REACT_APP_API_URL}/api/`,
   timeout: 10000,
@@ -10,11 +10,12 @@ const api = axios.create({
   }
 });
 
-// Add a request interceptor
 api.interceptors.request.use(
   (config) => {
-    // You can add authorization tokens here if needed
-    // config.headers.Authorization = `Bearer ${yourToken}`;
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -22,23 +23,55 @@ api.interceptors.request.use(
   }
 );
 
-// Add a response interceptor
 api.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
-    // Handle errors globally
+  async (error) => {
+    const originalRequest = error.config;
+
     if (error.response) {
-      // Server responded with a status other than 200 range
       console.error('Error response:', error.response);
+
+      if (error.response.status === 401 && !originalRequest._retry) {
+        // Mark the request as a retry
+        originalRequest._retry = true;
+
+        try {
+          const token = localStorage.getItem('tokenId');
+          const userName = localStorage.getItem('userName'); // Retrieve the userName from your context or storage
+          const newToken = await refreshToken(token, userName);
+
+          console.log('NewToken => ', newToken);
+
+          // Retry the original request with the new token
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
+        } catch (refreshError) {
+          // Handle refresh token failure
+
+          return Promise.reject(refreshError);
+        }
+      } else {
+        // toast.error(`Error: ${error.response.status} - ${error.response.data.message || 'An error occurred'}`, {
+        //   autoClose: 2000,
+        //   theme: 'colored'
+        // });
+      }
     } else if (error.request) {
-      // Request was made but no response received
       console.error('Error request:', error.request);
+      // toast.error('No response received from server', {
+      //   autoClose: 2000,
+      //   theme: 'colored'
+      // });
     } else {
-      // Something else happened while setting up the request
       console.error('Error message:', error.message);
+      // toast.error(`Error: ${error.message}`, {
+      //   autoClose: 2000,
+      //   theme: 'colored'
+      // });
     }
+
     return Promise.reject(error);
   }
 );

@@ -76,6 +76,8 @@ export const GatePassIn = () => {
         partNo: '',
         partDesc: '',
         batchNo: '',
+        batchDate: '',
+        expDate: '',
         sku: '',
         invQty: '',
         recQty: '',
@@ -100,6 +102,8 @@ export const GatePassIn = () => {
       partNo: '',
       partDesc: '',
       batchNo: '',
+      batchDate: '',
+      expDate: '',
       sku: '',
       invQty: '',
       recQty: '',
@@ -152,6 +156,8 @@ export const GatePassIn = () => {
       partNo: '',
       partDesc: '',
       batchNo: '',
+      batchDate: '',
+      expDate: '',
       sku: '',
       invQty: '',
       recQty: '',
@@ -332,6 +338,8 @@ export const GatePassIn = () => {
             partNo: detail.partNo,
             partDesc: detail.partDescription,
             batchNo: detail.batchNo,
+            batchDate: detail.batchDate,
+            expDate: detail.expDate,
             sku: detail.sku,
             invQty: detail.invQty,
             recQty: detail.recQty,
@@ -475,6 +483,8 @@ export const GatePassIn = () => {
         partNo: '',
         partDesc: '',
         batchNo: '',
+        batchDate: '',
+        expDate: '',
         sku: '',
         invQty: '',
         recQty: '',
@@ -956,6 +966,8 @@ export const GatePassIn = () => {
                                   <th className="px-2 py-2 text-white text-center">Part No *</th>
                                   <th className="px-2 py-2 text-white text-center">Part Desc</th>
                                   <th className="px-2 py-2 text-white text-center">Batch No</th>
+                                  <th className="px-2 py-2 text-white text-center">Batch Date</th>
+                                  <th className="px-2 py-2 text-white text-center">Exp Date</th>
                                   <th className="px-2 py-2 text-white text-center">SKU</th>
                                   <th className="px-2 py-2 text-white text-center">Inv QTY *</th>
                                   <th className="px-2 py-2 text-white text-center">Rec QTY *</th>
@@ -1115,6 +1127,58 @@ export const GatePassIn = () => {
                                       {lrNoDetailsError[index]?.batchNo && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                           {lrNoDetailsError[index].batchNo}
+                                        </div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        ref={lrNoDetailsRefs.current[index].batchDate}
+                                        type="text"
+                                        style={{ width: '100px' }}
+                                        value={row.batchDate}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setLrNoDetailsTable((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, batchDate: value.toUpperCase() } : r))
+                                          );
+                                          setLrNoDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], batchDate: !value ? 'Batch Date is required' : '' };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={lrNoDetailsError[index]?.batchDate ? 'error form-control' : 'form-control'}
+                                      />
+                                      {lrNoDetailsError[index]?.batchDate && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {lrNoDetailsError[index].batchDate}
+                                        </div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        ref={lrNoDetailsRefs.current[index].expDate}
+                                        type="text"
+                                        style={{ width: '100px' }}
+                                        value={row.expDate}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setLrNoDetailsTable((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, expDate: value.toUpperCase() } : r))
+                                          );
+                                          setLrNoDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], expDate: !value ? 'Exp Date is required' : '' };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={lrNoDetailsError[index]?.expDate ? 'error form-control' : 'form-control'}
+                                      />
+                                      {lrNoDetailsError[index]?.expDate && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {lrNoDetailsError[index].expDate}
                                         </div>
                                       )}
                                     </td>

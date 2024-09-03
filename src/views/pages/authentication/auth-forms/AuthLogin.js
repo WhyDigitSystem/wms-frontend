@@ -333,7 +333,8 @@ const FirebaseLogin = ({ ...others }) => {
         localStorage.setItem('orgId', response.data.paramObjectsMap.userVO.orgId); // Replace with the actual token
         localStorage.setItem('userId', response.data.paramObjectsMap.userVO.usersId);
         localStorage.setItem('userName', response.data.paramObjectsMap.userVO.userName);
-
+        localStorage.setItem('token', response.data.paramObjectsMap.userVO.token);
+        localStorage.setItem('tokenId', response.data.paramObjectsMap.userVO.tokenId);
         localStorage.setItem('LoginMessage', true);
         const userRoleVO = response.data.paramObjectsMap.userVO.roleVO;
         const roles = userRoleVO.map((row) => ({
