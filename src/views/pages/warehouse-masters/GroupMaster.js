@@ -87,16 +87,42 @@ export const GroupMaster = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+
+  //   if (name === 'groupName' && !nameRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else {
+  //     setFormData({ ...formData, [name]: value.toUpperCase() });
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const { name, value, type, selectionStart, selectionEnd } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
 
+    let errorMessage = '';
+
+    // Validation based on field name
     if (name === 'groupName' && !nameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+      errorMessage = 'Invalid Format';
+    }
+
+    if (errorMessage) {
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
-      setFormData({ ...formData, [name]: value.toUpperCase() });
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+      setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+
+      // Preserve cursor position for text inputs
+      if (type === 'text' && e.target.setSelectionRange) {
+        setTimeout(() => {
+          e.target.setSelectionRange(selectionStart, selectionEnd);
+        }, 0);
+      }
     }
   };
 

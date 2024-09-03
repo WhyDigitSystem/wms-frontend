@@ -68,8 +68,25 @@ export const CityMaster = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked } = e.target;
+  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+
+  //   if (name === 'cityCode' && !codeRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else if (name === 'cityCode' && value.length > 3) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 3' });
+  //   } else if (name === 'cityName' && !nameRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else {
+  //     setFormData({ ...formData, [name]: name === 'active' ? checked : value.toUpperCase() });
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
     const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
 
@@ -80,8 +97,21 @@ export const CityMaster = () => {
     } else if (name === 'cityName' && !nameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else {
-      setFormData({ ...formData, [name]: name === 'active' ? checked : value.toUpperCase() });
+      setFormData({
+        ...formData,
+        [name]: name === 'active' ? checked : value.toUpperCase()
+      });
       setFieldErrors({ ...fieldErrors, [name]: '' });
+
+      // Update the cursor position after the input change
+      if (type === 'text' || type === 'textarea') {
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
+      }
     }
   };
 
@@ -256,11 +286,12 @@ export const CityMaster = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.country}>
                   <InputLabel id="country-label">Country</InputLabel>
                   <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
-                    {countryList?.map((row) => (
-                      <MenuItem key={row.id} value={row.countryName}>
-                        {row.countryName}
-                      </MenuItem>
-                    ))}
+                    {Array.isArray(countryList) &&
+                      countryList?.map((row) => (
+                        <MenuItem key={row.id} value={row.countryName}>
+                          {row.countryName}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
                 </FormControl>

@@ -113,31 +113,6 @@ const CreateCompany = () => {
     }
   };
 
-  // const handleInputChange = (e) => {
-  //   const { name, value, checked } = e.target;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-  //   const companyNameRegex = /^[A-Za-z 0-9@_\-*]*$/;
-  //   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  //   const companyCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-
-  //   if (name === 'companyName' && !companyNameRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Only alphabetic characters and @*_- are allowed' });
-  //   } else if (name === 'companyCode' && !companyCodeRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else if (name === 'companyAdminName' && !nameRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else {
-  //     if (name === 'active') {
-  //       setFormData({ ...formData, [name]: checked });
-  //     } else if (name === 'companyAdminEmail') {
-  //       setFormData({ ...formData, [name]: value });
-  //     } else {
-  //       setFormData({ ...formData, [name]: value.toUpperCase() });
-  //     }
-
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-  // };
   const handleInputChange = (e) => {
     const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;

@@ -283,11 +283,46 @@ export const ItemMaster = () => {
     setValue(newValue);
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+  //   const numericRegex = /^[0-9]*$/;
+  //   const alphanumericRegex = /^[A-Za-z0-9]*$/;
+  //   const specialCharsRegex = /^[A-Za-z0-9@_\-*]*$/;
+
+  //   let errorMessage = '';
+
+  //   switch (name) {
+  //     case 'baseSku':
+  //     case 'ssku':
+  //       if (!alphanumericRegex.test(value)) {
+  //         errorMessage = 'Only Alphanumeric are allowed';
+  //       }
+  //       if (value.length > 12) {
+  //         errorMessage = 'Length between 8 - 12 only';
+  //       }
+  //       break;
+  //     case 'fsn':
+  //     case 'hsnCode':
+  //       if (!numericRegex.test(value)) {
+  //         errorMessage = 'Only Numbers are allowed';
+  //       }
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   if (errorMessage) {
+  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+  //   } else {
+  //     setFormData({ ...formData, [name]: value.toUpperCase() });
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, selectionStart, selectionEnd } = e.target;
     const numericRegex = /^[0-9]*$/;
     const alphanumericRegex = /^[A-Za-z0-9]*$/;
-    const specialCharsRegex = /^[A-Za-z0-9@_\-*]*$/;
 
     let errorMessage = '';
 
@@ -295,10 +330,9 @@ export const ItemMaster = () => {
       case 'baseSku':
       case 'ssku':
         if (!alphanumericRegex.test(value)) {
-          errorMessage = 'Only Alphanumeric are allowed';
-        }
-        if (value.length > 12) {
-          errorMessage = 'Length between 8 - 12 only';
+          errorMessage = 'Only Alphanumeric characters are allowed';
+        } else if (value.length > 12) {
+          errorMessage = 'Length between 8 - 12 characters only';
         }
         break;
       case 'fsn':
@@ -314,8 +348,21 @@ export const ItemMaster = () => {
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
-      setFormData({ ...formData, [name]: value.toUpperCase() });
+      const transformedValue = value.toUpperCase();
+
+      // Calculate the difference in length due to transformation
+      const cursorOffset = transformedValue.length - value.length;
+
+      setFormData({ ...formData, [name]: transformedValue });
       setFieldErrors({ ...fieldErrors, [name]: '' });
+
+      setTimeout(() => {
+        const inputElement = document.getElementsByName(name)[0];
+        if (inputElement) {
+          // Adjust the cursor position considering the transformation
+          inputElement.setSelectionRange(selectionStart + cursorOffset, selectionEnd + cursorOffset);
+        }
+      }, 0);
     }
   };
 
@@ -1122,7 +1169,7 @@ export const ItemMaster = () => {
 
                         <div className="col-md-3 mb-3">
                           <TextField
-                            type="number"
+                            type="text"
                             label="SKU Qty"
                             variant="outlined"
                             size="small"
@@ -1137,7 +1184,7 @@ export const ItemMaster = () => {
 
                         <div className="col-md-3 mb-3">
                           <TextField
-                            type="number"
+                            type="text"
                             label="SSKU Qty"
                             variant="outlined"
                             size="small"
@@ -1164,7 +1211,7 @@ export const ItemMaster = () => {
                         </div> */}
                         <div className="col-md-3 mb-3">
                           <TextField
-                            type="number"
+                            type="text"
                             label="Weight SKU UOM"
                             variant="outlined"
                             size="small"
@@ -1192,7 +1239,7 @@ export const ItemMaster = () => {
 
                         <div className="col-md-3 mb-3">
                           <TextField
-                            type="number"
+                            type="text"
                             label="Critical Stock Level"
                             variant="outlined"
                             size="small"

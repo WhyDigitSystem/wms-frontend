@@ -466,11 +466,12 @@ const Company = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.country}>
                   <InputLabel id="country-label">Country</InputLabel>
                   <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
-                    {countryList?.map((row) => (
-                      <MenuItem key={row.id} value={row.countryName}>
-                        {row.countryName}
-                      </MenuItem>
-                    ))}
+                    {Array.isArray(countryList) &&
+                      countryList?.map((row) => (
+                        <MenuItem key={row.id} value={row.countryName}>
+                          {row.countryName}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
                 </FormControl>

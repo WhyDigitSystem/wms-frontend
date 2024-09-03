@@ -95,20 +95,55 @@ export const UnitMaster = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+
+  //   if (name === 'uom' && !nameRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else if (name === 'unitName' && !nameRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else if (name === 'type' && !nameRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else {
+  //     setFormData({ ...formData, [name]: value.toUpperCase() });
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, selectionStart, selectionEnd } = e.target;
     const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
 
-    if (name === 'uom' && !nameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else if (name === 'unitName' && !nameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else if (name === 'type' && !nameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+    let errorMessage = '';
+
+    switch (name) {
+      case 'uom':
+      case 'unitName':
+      case 'type':
+        if (!nameRegex.test(value)) {
+          errorMessage = 'Invalid Format';
+        }
+        break;
+      default:
+        break;
+    }
+
+    if (errorMessage) {
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
-      setFormData({ ...formData, [name]: value.toUpperCase() });
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+      // Update form data
+      setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+
+      // Preserve cursor position for text inputs
+      if (type !== 'checkbox' && e.target.setSelectionRange) {
+        setTimeout(() => {
+          e.target.setSelectionRange(selectionStart, selectionEnd);
+        }, 0);
+      }
     }
   };
 

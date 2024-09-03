@@ -232,8 +232,51 @@ export const WarehouseLocationMaster = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+  //   const numericRegex = /^[0-9]*$/;
+  //   const alphanumericRegex = /^[A-Za-z0-9 ]*$/;
+  //   const specialCharsRegex = /^[A-Za-z0-9#_\-/\\]*$/;
+
+  //   let errorMessage = '';
+
+  //   switch (name) {
+  //     case 'cellFrom':
+  //     case 'cellTo':
+  //       if (!numericRegex.test(value)) {
+  //         errorMessage = 'Only Numbers are allowed';
+  //       }
+  //       break;
+  //     case 'rowNo':
+  //       if (!specialCharsRegex.test(value)) {
+  //         errorMessage = 'Only alphaNumeric and /,,-_  are allowed';
+  //       }
+  //       break;
+  //     case 'cellFrom':
+  //     case 'cellTo':
+  //       if (!numericRegex.test(value)) {
+  //         errorMessage = 'Only Numeric are allowed';
+  //       }
+  //       break;
+  //     case 'levelIdentity':
+  //       if (!alphanumericRegex.test(value)) {
+  //         errorMessage = 'Only alphaNumeric are allowed';
+  //       }
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   if (errorMessage) {
+  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+  //   } else {
+  //     setFormData({ ...formData, [name]: value.toUpperCase() });
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, selectionStart, selectionEnd } = e.target;
     const numericRegex = /^[0-9]*$/;
     const alphanumericRegex = /^[A-Za-z0-9 ]*$/;
     const specialCharsRegex = /^[A-Za-z0-9#_\-/\\]*$/;
@@ -249,18 +292,12 @@ export const WarehouseLocationMaster = () => {
         break;
       case 'rowNo':
         if (!specialCharsRegex.test(value)) {
-          errorMessage = 'Only alphaNumeric and /,,-_  are allowed';
-        }
-        break;
-      case 'cellFrom':
-      case 'cellTo':
-        if (!numericRegex.test(value)) {
-          errorMessage = 'Only Numeric are allowed';
+          errorMessage = 'Only alphanumeric and /, -, _, \\ characters are allowed';
         }
         break;
       case 'levelIdentity':
         if (!alphanumericRegex.test(value)) {
-          errorMessage = 'Only alphaNumeric are allowed';
+          errorMessage = 'Only alphanumeric characters are allowed';
         }
         break;
       default:
@@ -268,10 +305,17 @@ export const WarehouseLocationMaster = () => {
     }
 
     if (errorMessage) {
-      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
-      setFormData({ ...formData, [name]: value.toUpperCase() });
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+      const upperCaseValue = value.toUpperCase();
+      setFormData((prevData) => ({ ...prevData, [name]: upperCaseValue }));
+      setTimeout(() => {
+        const inputElement = document.getElementsByName(name)[0];
+        if (inputElement) {
+          inputElement.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 0);
     }
   };
 

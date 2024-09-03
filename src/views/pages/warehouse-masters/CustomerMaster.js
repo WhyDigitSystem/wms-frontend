@@ -225,8 +225,76 @@ export const CustomerMaster = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked } = e.target;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+  //   const alphaNumericRegex = /^[A-Za-z0-9]*$/;
+  //   const numericRegex = /^[0-9]*$/;
+  //   const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
+  //   const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+
+  //   let errorMessage = '';
+
+  //   switch (name) {
+  //     case 'customer':
+  //     case 'shortName':
+  //     case 'contactPerson':
+  //       if (!nameRegex.test(value)) {
+  //         errorMessage = 'Only alphabetic characters are allowed';
+  //       }
+  //       break;
+  //     case 'pan':
+  //       if (!alphaNumericRegex.test(value)) {
+  //         errorMessage = 'Only alphanumeric characters are allowed';
+  //       } else if (value.length > 10) {
+  //         errorMessage = 'Invalid Format';
+  //       }
+  //       break;
+  //     case 'branchName':
+  //       if (!branchNameRegex.test(value)) {
+  //         errorMessage = 'Only alphanumeric characters and @, _, -, * are allowed';
+  //       }
+  //       break;
+  //     case 'mobile':
+  //       if (!numericRegex.test(value)) {
+  //         errorMessage = 'Only numeric characters are allowed';
+  //       } else if (value.length > 10) {
+  //         errorMessage = 'Invalid Format';
+  //       }
+  //       break;
+  //     case 'gst':
+  //       if (formData.gstReg === 'YES') {
+  //         if (!alphaNumericRegex.test(value)) {
+  //           errorMessage = 'Only alphanumeric characters are allowed';
+  //         } else if (value.length > 15) {
+  //           errorMessage = 'Invalid Format';
+  //         }
+  //         break;
+  //       }
+  //     default:
+  //       break;
+  //   }
+
+  //   if (errorMessage) {
+  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+  //   } else {
+  //     if (name === 'active') {
+  //       setFormData({ ...formData, [name]: checked });
+  //     } else if (name === 'email') {
+  //       setFormData({ ...formData, [name]: value.toLowerCase() });
+  //     } else if (name === 'gstReg' && value === 'NO') {
+  //       setFormData({ ...formData, [name]: value, gst: '' });
+  //       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '', gst: '' }));
+  //     } else {
+  //       setFormData({ ...formData, [name]: value.toUpperCase() });
+  //     }
+
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
     const alphaNumericRegex = /^[A-Za-z0-9]*$/;
     const numericRegex = /^[0-9]*$/;
@@ -269,8 +337,8 @@ export const CustomerMaster = () => {
           } else if (value.length > 15) {
             errorMessage = 'Invalid Format';
           }
-          break;
         }
+        break;
       default:
         break;
     }
@@ -284,12 +352,22 @@ export const CustomerMaster = () => {
         setFormData({ ...formData, [name]: value.toLowerCase() });
       } else if (name === 'gstReg' && value === 'NO') {
         setFormData({ ...formData, [name]: value, gst: '' });
-        setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '', gst: '' }));
+        setFieldErrors((prevErrors) => ({ ...prevErrors, gst: '' }));
       } else {
         setFormData({ ...formData, [name]: value.toUpperCase() });
       }
 
       setFieldErrors({ ...fieldErrors, [name]: '' });
+
+      // Preserve the cursor position for text-based inputs
+      if (type === 'text' || type === 'textarea') {
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement && inputElement.setSelectionRange) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
+      }
     }
   };
 
@@ -740,11 +818,12 @@ export const CustomerMaster = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.country}>
                   <InputLabel id="country-label">Country</InputLabel>
                   <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
-                    {countryList?.map((row) => (
-                      <MenuItem key={row.id} value={row.countryName}>
-                        {row.countryName}
-                      </MenuItem>
-                    ))}
+                    {Array.isArray(countryList) &&
+                      countryList?.map((row) => (
+                        <MenuItem key={row.id} value={row.countryName}>
+                          {row.countryName}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
                 </FormControl>

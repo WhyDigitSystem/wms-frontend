@@ -59,27 +59,88 @@ export const EmployeeMaster = () => {
     getAllEmployees();
   }, []);
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked } = e.target;
+  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+
+  //   if (name === 'empCode' && !codeRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else if (name === 'empName' && !nameRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else if (name === 'branch') {
+  //     const selectedBranch = branchList.find((br) => br.branch === value);
+  //     if (selectedBranch) {
+  //       setFormData((prevData) => ({
+  //         ...prevData,
+  //         branch: value,
+  //         branchCode: selectedBranch.branchCode
+  //       }));
+  //     }
+  //   } else {
+  //     setFormData({ ...formData, [name]: value.toUpperCase() });
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+    const { name, value, checked, type, selectionStart, selectionEnd } = e.target;
     const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
 
+    let errorMessage = '';
+
+    // Validation for empCode
     if (name === 'empCode' && !codeRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else if (name === 'empName' && !nameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else if (name === 'branch') {
-      const selectedBranch = branchList.find((br) => br.branch === value);
-      if (selectedBranch) {
-        setFormData((prevData) => ({
-          ...prevData,
-          branch: value,
-          branchCode: selectedBranch.branchCode
-        }));
-      }
+      errorMessage = 'Invalid Format';
+    }
+    // Validation for empName
+    else if (name === 'empName' && !nameRegex.test(value)) {
+      errorMessage = 'Invalid Format';
+    }
+
+    // Set or clear error messages
+    if (errorMessage) {
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
-      setFormData({ ...formData, [name]: value.toUpperCase() });
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+
+      if (name === 'branch') {
+        // Handle branch selection
+        const selectedBranch = branchList.find((br) => br.branch === value);
+        if (selectedBranch) {
+          setFormData((prevData) => ({
+            ...prevData,
+            branch: value,
+            branchCode: selectedBranch.branchCode
+          }));
+        } else {
+          // Optionally handle cases where the branch is not found
+          setFormData((prevData) => ({
+            ...prevData,
+            branch: value,
+            branchCode: ''
+          }));
+        }
+      } else if (type === 'checkbox') {
+        // Handle checkbox inputs
+        setFormData((prevData) => ({ ...prevData, [name]: checked }));
+      } else if (type === 'text' || type === 'textarea') {
+        // Handle text-based inputs: convert to uppercase and maintain cursor
+        const upperCaseValue = value.toUpperCase();
+        setFormData((prevData) => ({ ...prevData, [name]: upperCaseValue }));
+
+        // Maintain cursor position
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement && inputElement.setSelectionRange) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
+      } else {
+        // Handle other input types (e.g., select, radio) without transformation
+        setFormData((prevData) => ({ ...prevData, [name]: value }));
+      }
     }
   };
 

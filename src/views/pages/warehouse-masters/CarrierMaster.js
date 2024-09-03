@@ -82,8 +82,37 @@ export const CarrierMaster = () => {
     setValue(newValue);
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+  //   const numericRegex = /^[0-9]*$/;
+  //   const alphanumericRegex = /^[A-Za-z0-9]*$/;
+  //   const specialCharsRegex = /^[A-Za-z0-9@_\-*]*$/;
+
+  //   let errorMessage = '';
+
+  //   switch (name) {
+  //     case '  carrier':
+  //     case 'carrierShortName':
+  //       if (!nameRegex.test(value)) {
+  //         errorMessage = 'Only alphabetic characters are allowed';
+  //       }
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   if (errorMessage) {
+  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+  //   } else {
+  //     const updatedValue = name === 'email' ? value : value.toUpperCase();
+  //     setFormData({ ...formData, [name]: updatedValue });
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, selectionStart, selectionEnd } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
     const numericRegex = /^[0-9]*$/;
     const alphanumericRegex = /^[A-Za-z0-9]*$/;
@@ -92,7 +121,7 @@ export const CarrierMaster = () => {
     let errorMessage = '';
 
     switch (name) {
-      case '  carrier':
+      case 'carrier':
       case 'carrierShortName':
         if (!nameRegex.test(value)) {
           errorMessage = 'Only alphabetic characters are allowed';
@@ -103,11 +132,18 @@ export const CarrierMaster = () => {
     }
 
     if (errorMessage) {
-      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
       const updatedValue = name === 'email' ? value : value.toUpperCase();
-      setFormData({ ...formData, [name]: updatedValue });
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+      setFormData((prevData) => ({ ...prevData, [name]: updatedValue }));
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+
+      // Maintain cursor position after the value is updated
+      setTimeout(() => {
+        if (e.target.setSelectionRange) {
+          e.target.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 0);
     }
   };
 

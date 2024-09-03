@@ -56,8 +56,44 @@ export const CurrencyMaster = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked } = e.target;
+  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+  //   const symbolRegex = /^[a-zA-Z₹$€]*$/;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+  //   let errorMessage = '';
+
+  //   switch (name) {
+  //     case 'currency':
+  //     case 'subCurrency':
+  //       if (!nameRegex.test(value)) {
+  //         errorMessage = 'Only alphabetic characters are allowed';
+  //       }
+  //       break;
+  //     case 'currencySymbol':
+  //       if (value.length > 1) {
+  //         errorMessage = 'Invalid Format';
+  //       }
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   if (errorMessage) {
+  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+  //   } else {
+  //     if (name === 'active') {
+  //       setFormData({ ...formData, [name]: checked });
+  //     } else {
+  //       setFormData({ ...formData, [name]: value.toUpperCase() });
+  //     }
+
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
     const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const symbolRegex = /^[a-zA-Z₹$€]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
@@ -71,7 +107,7 @@ export const CurrencyMaster = () => {
         }
         break;
       case 'currencySymbol':
-        if (value.length > 1) {
+        if (!symbolRegex.test(value) || value.length > 1) {
           errorMessage = 'Invalid Format';
         }
         break;
@@ -82,13 +118,22 @@ export const CurrencyMaster = () => {
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
-      if (name === 'active') {
-        setFormData({ ...formData, [name]: checked });
-      } else {
-        setFormData({ ...formData, [name]: value.toUpperCase() });
-      }
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: name === 'active' ? checked : value.toUpperCase()
+      }));
 
       setFieldErrors({ ...fieldErrors, [name]: '' });
+
+      // Preserve the cursor position for text-based inputs
+      if (type === 'text' || type === 'textarea') {
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement && inputElement.setSelectionRange) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
+      }
     }
   };
 
@@ -271,11 +316,12 @@ export const CurrencyMaster = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.country}>
                   <InputLabel id="country-label">Country</InputLabel>
                   <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
-                    {countryList?.map((row) => (
-                      <MenuItem key={row.id} value={row.countryName}>
-                        {row.countryName}
-                      </MenuItem>
-                    ))}
+                    {Array.isArray(countryList) &&
+                      countryList?.map((row) => (
+                        <MenuItem key={row.id} value={row.countryName}>
+                          {row.countryName}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
                 </FormControl>

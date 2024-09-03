@@ -184,11 +184,87 @@ export const BuyerMaster = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, type, checked } = e.target;
+  //   const numericRegex = /^[0-9]*$/;
+  //   const alphanumericRegex = /^[A-Za-z0-9]*$/;
+  //   const specialCharsRegex = /^[A-Za-z0-9@_\-*]*$/;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+
+  //   let errorMessage = '';
+
+  //   if (name === 'active') {
+  //     setFormData({ ...formData, [name]: checked });
+  //     return;
+  //   }
+
+  //   switch (name) {
+  //     case 'buyerName':
+  //     case 'shortName':
+  //     case 'contactPerson':
+  //       if (!nameRegex.test(value)) {
+  //         errorMessage = 'Only Alphabet are allowed';
+  //       }
+  //       break;
+  //     case 'mobile':
+  //       if (!numericRegex.test(value)) {
+  //         errorMessage = 'Only Numbers are allowed';
+  //       } else if (value.length > 10) {
+  //         errorMessage = 'max Length is 10';
+  //       }
+  //       break;
+  //     case 'pan':
+  //       if (!alphanumericRegex.test(value)) {
+  //         errorMessage = 'Only AlphaNumeric are allowed';
+  //       } else if (value.length > 10) {
+  //         errorMessage = 'max Length is 10';
+  //       }
+  //       break;
+  //     case 'pincode':
+  //       if (!alphanumericRegex.test(value)) {
+  //         errorMessage = 'Only AlphaNumeric are allowed';
+  //       } else if (value.length > 6) {
+  //         errorMessage = 'max Length is 6';
+  //       }
+  //       break;
+  //     case 'gstNo':
+  //       if (formData.gst === 'YES') {
+  //         if (!alphanumericRegex.test(value)) {
+  //           errorMessage = 'Only AlphaNumeric are allowed';
+  //         } else if (value.length > 15) {
+  //           errorMessage = 'Max Length is 15';
+  //         }
+  //       }
+  //       break;
+  //     case 'eccNo':
+  //       if (!alphanumericRegex.test(value)) {
+  //         errorMessage = 'Only AlphaNumeric are allowed';
+  //       } else if (value.length > 15) {
+  //         errorMessage = 'max Length is 15';
+  //       }
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   if (errorMessage) {
+  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+  //   } else {
+  //     if (name === 'gst' && value === 'NO') {
+  //       setFormData({ ...formData, [name]: value, gstNo: '' });
+  //     } else {
+  //       // setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '', gst: '' }));
+  //       const updatedValue = name === 'email' ? value.toLowerCase() : value.toUpperCase();
+  //       setFormData({ ...formData, [name]: updatedValue });
+  //       setFieldErrors({ ...fieldErrors, [name]: '' });
+  //     }
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, selectionStart, selectionEnd, type, checked } = e.target;
     const numericRegex = /^[0-9]*$/;
     const alphanumericRegex = /^[A-Za-z0-9]*$/;
-    const specialCharsRegex = /^[A-Za-z0-9@_\-*]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
 
     let errorMessage = '';
@@ -210,21 +286,21 @@ export const BuyerMaster = () => {
         if (!numericRegex.test(value)) {
           errorMessage = 'Only Numbers are allowed';
         } else if (value.length > 10) {
-          errorMessage = 'max Length is 10';
+          errorMessage = 'Max Length is 10';
         }
         break;
       case 'pan':
         if (!alphanumericRegex.test(value)) {
           errorMessage = 'Only AlphaNumeric are allowed';
         } else if (value.length > 10) {
-          errorMessage = 'max Length is 10';
+          errorMessage = 'Max Length is 10';
         }
         break;
       case 'pincode':
         if (!alphanumericRegex.test(value)) {
           errorMessage = 'Only AlphaNumeric are allowed';
         } else if (value.length > 6) {
-          errorMessage = 'max Length is 6';
+          errorMessage = 'Max Length is 6';
         }
         break;
       case 'gstNo':
@@ -240,7 +316,7 @@ export const BuyerMaster = () => {
         if (!alphanumericRegex.test(value)) {
           errorMessage = 'Only AlphaNumeric are allowed';
         } else if (value.length > 15) {
-          errorMessage = 'max Length is 15';
+          errorMessage = 'Max Length is 15';
         }
         break;
       default:
@@ -253,10 +329,15 @@ export const BuyerMaster = () => {
       if (name === 'gst' && value === 'NO') {
         setFormData({ ...formData, [name]: value, gstNo: '' });
       } else {
-        // setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '', gst: '' }));
         const updatedValue = name === 'email' ? value.toLowerCase() : value.toUpperCase();
-        setFormData({ ...formData, [name]: updatedValue });
+        setFormData((prevData) => ({ ...prevData, [name]: updatedValue }));
         setFieldErrors({ ...fieldErrors, [name]: '' });
+
+        setTimeout(() => {
+          if (e.target.setSelectionRange) {
+            e.target.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
       }
     }
   };

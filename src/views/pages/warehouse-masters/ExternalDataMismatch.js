@@ -73,21 +73,43 @@ export const ExternalDataMismatch = () => {
   //   }
   // };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked } = e.target;
+  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+
+  //   // if (name === 'cityCode' && !codeRegex.test(value)) {
+  //   //   setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   // } else if (name === 'cityCode' && value.length > 3) {
+  //   //   setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 3' });
+  //   // } else if (name === 'cityName' && !nameRegex.test(value)) {
+  //   //   setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   // } else {
+  //   setFormData({ ...formData, [name]: value.toUpperCase() });
+  //   setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   // }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+    const { name, value, selectionStart, selectionEnd } = e.target;
     const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
+    let errorMessage = '';
 
-    // if (name === 'cityCode' && !codeRegex.test(value)) {
-    //   setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    // } else if (name === 'cityCode' && value.length > 3) {
-    //   setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 3' });
-    // } else if (name === 'cityName' && !nameRegex.test(value)) {
-    //   setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    // } else {
-    setFormData({ ...formData, [name]: value.toUpperCase() });
-    setFieldErrors({ ...fieldErrors, [name]: '' });
-    // }
+    // Update field errors and form data
+    if (errorMessage) {
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
+    } else {
+      setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+
+      // Maintain cursor position after the value is updated
+      setTimeout(() => {
+        if (e.target.setSelectionRange) {
+          e.target.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 0);
+    }
   };
 
   const handleClear = () => {

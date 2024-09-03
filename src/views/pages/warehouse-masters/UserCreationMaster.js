@@ -275,17 +275,67 @@ export const UserCreationMaster = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+
+  //   const nameRegex = /^[A-Za-z ]*$/;
+  //   const alphaNumericRegex = /^[A-Za-z0-9]*$/;
+  //   const numericRegex = /^[0-9]*$/;
+  //   const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
+  //   const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex for email validation
+
+  //   let errorMessage = '';
+
+  //   // Validation based on field name
+  //   switch (name) {
+  //     case 'mobileNo':
+  //       if (!numericRegex.test(value)) {
+  //         errorMessage = 'Only numeric characters are allowed';
+  //       } else if (value.length > 10) {
+  //         errorMessage = 'Invalid Format';
+  //       }
+  //       break;
+
+  //     case 'nickName':
+  //       if (!nameRegex.test(value)) {
+  //         errorMessage = 'Only alphabet are allowed';
+  //       }
+  //       break;
+  //   }
+
+  //   // Update field errors and form data
+  //   if (errorMessage) {
+  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
+  //   } else {
+  //     if (name === 'employeeName') {
+  //       const selectedEmp = employeeList.find((emp) => emp.employeeName === value);
+  //       if (selectedEmp) {
+  //         setFormData((prevData) => ({
+  //           ...prevData,
+  //           employeeName: selectedEmp.employeeName,
+  //           employeeCode: selectedEmp.employeeCode
+  //         }));
+  //       }
+  //     }
+
+  //     // Convert to uppercase if not the email field
+  //     // const updatedValue = name === 'email' ? value : value.toUpperCase();
+  //     const updatedValue = name === 'email' ? value.toLowerCase() : value.toUpperCase();
+  //     setFormData((prevData) => ({ ...prevData, [name]: updatedValue }));
+
+  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, selectionStart, selectionEnd } = e.target;
 
     const nameRegex = /^[A-Za-z ]*$/;
-    const alphaNumericRegex = /^[A-Za-z0-9]*$/;
     const numericRegex = /^[0-9]*$/;
-    const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
-    const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex for email validation
 
     let errorMessage = '';
+    let transformedValue = value;
 
     // Validation based on field name
     switch (name) {
@@ -299,12 +349,11 @@ export const UserCreationMaster = () => {
 
       case 'nickName':
         if (!nameRegex.test(value)) {
-          errorMessage = 'Only alphabet are allowed';
+          errorMessage = 'Only alphabets are allowed';
         }
         break;
     }
 
-    // Update field errors and form data
     if (errorMessage) {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
@@ -319,12 +368,22 @@ export const UserCreationMaster = () => {
         }
       }
 
-      // Convert to uppercase if not the email field
-      // const updatedValue = name === 'email' ? value : value.toUpperCase();
-      const updatedValue = name === 'email' ? value.toLowerCase() : value.toUpperCase();
-      setFormData((prevData) => ({ ...prevData, [name]: updatedValue }));
+      // Transform value: uppercase for all except email (which should be lowercase)
+      transformedValue = name === 'email' ? value.toLowerCase() : value.toUpperCase();
 
+      // Update form data with the transformed value
+      setFormData((prevData) => ({ ...prevData, [name]: transformedValue }));
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+
+      // Calculate cursor position adjustment due to transformation
+      const cursorOffset = transformedValue.length - value.length;
+
+      setTimeout(() => {
+        if (e.target.setSelectionRange) {
+          // Adjust cursor position after transformation
+          e.target.setSelectionRange(selectionStart + cursorOffset, selectionEnd + cursorOffset);
+        }
+      }, 0);
     }
   };
 

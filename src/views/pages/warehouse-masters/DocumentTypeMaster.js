@@ -159,8 +159,47 @@ export const DocumentTypeMaster = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+
+  //   const nameRegex = /^[A-Za-z ]*$/;
+  //   const alphaNumericRegex = /^[A-Za-z0-9]*$/;
+  //   const numericRegex = /^[0-9]*$/;
+
+  //   let errorMessage = '';
+
+  //   switch (name) {
+  //     case 'docCode':
+  //       if (!alphaNumericRegex.test(value)) {
+  //         errorMessage = 'Only numeric characters are allowed';
+  //       } else if (value.length > 10) {
+  //         errorMessage = 'Invalid Format';
+  //       }
+  //       break;
+  //   }
+
+  //   if (errorMessage) {
+  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
+  //   } else {
+  //     if (name === 'screenCode') {
+  //       const selectedScreen = screenList.find((scr) => scr.screenCode === value);
+  //       if (selectedScreen) {
+  //         setFormData((prevData) => ({
+  //           ...prevData,
+  //           screenName: selectedScreen.screenName,
+  //           screenCode: selectedScreen.screenCode
+  //         }));
+  //       }
+  //     }
+
+  //     setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+
+  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, selectionStart, selectionEnd } = e.target;
 
     const nameRegex = /^[A-Za-z ]*$/;
     const alphaNumericRegex = /^[A-Za-z0-9]*$/;
@@ -171,11 +210,13 @@ export const DocumentTypeMaster = () => {
     switch (name) {
       case 'docCode':
         if (!alphaNumericRegex.test(value)) {
-          errorMessage = 'Only numeric characters are allowed';
+          errorMessage = 'Only alphanumeric characters are allowed';
         } else if (value.length > 10) {
           errorMessage = 'Invalid Format';
         }
         break;
+
+      // Add other cases here if needed
     }
 
     if (errorMessage) {
@@ -192,9 +233,16 @@ export const DocumentTypeMaster = () => {
         }
       }
 
-      setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
-
+      const updatedValue = value.toUpperCase();
+      setFormData((prevData) => ({ ...prevData, [name]: updatedValue }));
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+
+      // Preserve cursor position for text inputs
+      if (type === 'text' && e.target.setSelectionRange) {
+        setTimeout(() => {
+          e.target.setSelectionRange(selectionStart, selectionEnd);
+        }, 0);
+      }
     }
   };
 

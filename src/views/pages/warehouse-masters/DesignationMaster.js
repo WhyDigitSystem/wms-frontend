@@ -85,15 +85,37 @@ export const DesignationMaster = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked } = e.target;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+
+  //   if (name === 'designationName' && !nameRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else {
+  //     setFormData({ ...formData, [name]: name === 'active' ? checked : value.toUpperCase() });
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
 
     if (name === 'designationName' && !nameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else {
-      setFormData({ ...formData, [name]: name === 'active' ? checked : value.toUpperCase() });
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: type === 'checkbox' ? checked : value.toUpperCase()
+      }));
       setFieldErrors({ ...fieldErrors, [name]: '' });
+
+      // Preserve cursor position for text inputs
+      if (type !== 'checkbox' && e.target.setSelectionRange) {
+        setTimeout(() => {
+          e.target.setSelectionRange(selectionStart, selectionEnd);
+        }, 0);
+      }
     }
   };
 

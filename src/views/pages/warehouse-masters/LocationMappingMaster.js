@@ -345,8 +345,26 @@ export const LocationMappingMaster = () => {
     setValue(newValue);
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+  //   const numericRegex = /^[0-9]*$/;
+  //   const alphanumericRegex = /^[A-Za-z0-9]*$/;
+  //   const specialCharsRegex = /^[A-Za-z0-9@_\-*]*$/;
+
+  //   let errorMessage = '';
+
+  //   if (errorMessage) {
+  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+  //   } else {
+  //     // if (name === 'locationType') {
+  //     // }
+  //     setFormData({ ...formData, [name]: value });
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, selectionStart, selectionEnd } = e.target;
     const numericRegex = /^[0-9]*$/;
     const alphanumericRegex = /^[A-Za-z0-9]*$/;
     const specialCharsRegex = /^[A-Za-z0-9@_\-*]*$/;
@@ -356,10 +374,16 @@ export const LocationMappingMaster = () => {
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
-      // if (name === 'locationType') {
-      // }
-      setFormData({ ...formData, [name]: value });
       setFieldErrors({ ...fieldErrors, [name]: '' });
+      setFormData({ ...formData, [name]: value });
+
+      // Optionally maintain cursor position
+      setTimeout(() => {
+        const inputElement = document.getElementsByName(name)[0];
+        if (inputElement) {
+          inputElement.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 0);
     }
   };
 
