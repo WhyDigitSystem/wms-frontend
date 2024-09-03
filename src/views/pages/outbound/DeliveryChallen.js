@@ -111,9 +111,10 @@ export const DeliveryChallen = () => {
       billAmount: '',
       remarks: ''
     };
-    setLrNoDetailsTable([...lrNoDetailsTable, newRow]);
-    setLrNoDetailsError([
-      ...lrNoDetailsError,
+
+    setLrNoDetailsTable((prev) => [...prev, newRow]);
+    setLrNoDetailsError((prev) => [
+      ...prev,
       {
         pickRequestNo: '',
         prDate: null,
@@ -135,6 +136,24 @@ export const DeliveryChallen = () => {
         remarks: ''
       }
     ]);
+
+    lrNoDetailsRefs.current = [
+      ...lrNoDetailsRefs.current,
+      {
+        outBoundBin: React.createRef(),
+        unitRate: React.createRef(),
+        skuValue: React.createRef(),
+        discount: React.createRef(),
+        tax: React.createRef(),
+        gstTax: React.createRef(),
+        amount: React.createRef(),
+        sgst: React.createRef(),
+        cgst: React.createRef(),
+        igst: React.createRef(),
+        totalGst: React.createRef(),
+        billAmount: React.createRef()
+      }
+    ];
   };
 
   const [lrNoDetailsError, setLrNoDetailsError] = useState([
@@ -686,11 +705,14 @@ export const DeliveryChallen = () => {
   };
 
   useEffect(() => {
-    // If the length of the table changes, update the refs
-    if (lrNoDetailsRefs.current.length !== lrNoDetailsTable.length) {
-      lrNoDetailsRefs.current = lrNoDetailsTable.map(
-        (_, index) =>
-          lrNoDetailsRefs.current[index] || {
+    // Ensure the refs array always matches the length of lrNoDetailsTable
+    if (lrNoDetailsRefs.current.length < lrNoDetailsTable.length) {
+      const diff = lrNoDetailsTable.length - lrNoDetailsRefs.current.length;
+      lrNoDetailsRefs.current = [
+        ...lrNoDetailsRefs.current,
+        ...Array(diff)
+          .fill()
+          .map(() => ({
             outBoundBin: React.createRef(),
             unitRate: React.createRef(),
             skuValue: React.createRef(),
@@ -703,8 +725,8 @@ export const DeliveryChallen = () => {
             igst: React.createRef(),
             totalGst: React.createRef(),
             billAmount: React.createRef()
-          }
-      );
+          }))
+      ];
     }
   }, [lrNoDetailsTable.length]);
 

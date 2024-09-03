@@ -438,7 +438,13 @@ export const ReversePick = () => {
   // };
 
   const handleDeleteRow = (id) => {
-    setItemTableData(itemTableData.filter((row) => row.id !== id));
+    const rowIndex = itemTableData.findIndex((row) => row.id === id);
+    if (rowIndex !== -1) {
+      const updatedData = itemTableData.filter((row) => row.id !== id);
+      const updatedErrors = itemTableErrors.filter((_, index) => index !== rowIndex);
+      setItemTableData(updatedData);
+      setItemTableErrors(updatedErrors);
+    }
   };
   const handleKeyDown = (e, row) => {
     if (e.key === 'Tab' && row.id === itemTableData[itemTableData.length - 1].id) {
@@ -497,7 +503,7 @@ export const ReversePick = () => {
     });
     getDocId();
     getInTime();
-    setItemTableErrors('');
+    setItemTableErrors([]);
     setEditId('');
   };
 
@@ -518,7 +524,28 @@ export const ReversePick = () => {
 
     setFieldErrors(errors);
 
-    if (Object.keys(errors).length === 0) {
+    let itemTableDataValid = true;
+    if (!itemTableData || !Array.isArray(itemTableData) || itemTableData.length === 0) {
+      itemTableDataValid = false;
+      setItemTableErrors([{ general: 'Table Data is required' }]);
+    } else {
+      const newTableErrors = itemTableData.map((row, index) => {
+        const rowErrors = {};
+
+        if (!row.partNo) rowErrors.partNo = 'Part No is required';
+        if (!row.grnNo) rowErrors.grnNo = 'Grn No is required';
+        if (!row.batchNo) rowErrors.batchNo = 'Batch No is required';
+        if (!row.bin) rowErrors.bin = 'Bin is required';
+
+        if (Object.keys(rowErrors).length > 0) itemTableDataValid = false;
+
+        return rowErrors;
+      });
+
+      setItemTableErrors(newTableErrors);
+    }
+
+    if (Object.keys(errors).length === 0 && itemTableDataValid) {
       setIsLoading(true);
       const itemVo = itemTableData.map((row) => ({
         availQty: row.availQty,
@@ -664,6 +691,7 @@ export const ReversePick = () => {
 
         if (response.status === true) {
           setFillGridData(response.paramObjectsMap.fillGridDetails);
+          setItemTableErrors([{ general: '' }]);
         } else {
           console.error('API Error:', response);
         }
@@ -1328,6 +1356,17 @@ export const ReversePick = () => {
                                   ))
                                 )}
                               </tbody>
+                              {itemTableErrors.some((error) => error.general) && (
+                                <tfoot>
+                                  <tr>
+                                    <td colSpan={13} className="error-message">
+                                      <div style={{ color: 'red', fontSize: '14px', textAlign: 'center' }}>
+                                        {itemTableErrors.find((error) => error.general)?.general}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                </tfoot>
+                              )}
                             </table>
                           </div>
                         </div>

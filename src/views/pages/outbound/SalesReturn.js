@@ -100,21 +100,21 @@ export const SalesReturn = () => {
 
   const [value, setValue] = useState(0);
   const [detailTableData, setDetailTableData] = useState([
-    {
-      lrNo: '',
-      invNo: '',
-      partNo: '',
-      partDesc: '',
-      pickQty: '',
-      returnQty: '',
-      damageQty: '',
-      batchNo: '',
-      batchDate: null,
-      expDate: null,
-      noOfBin: '',
-      binQty: '',
-      remarks: ''
-    }
+    // {
+    //   lrNo: '',
+    //   invNo: '',
+    //   partNo: '',
+    //   partDesc: '',
+    //   pickQty: '',
+    //   returnQty: '',
+    //   damageQty: '',
+    //   batchNo: '',
+    //   batchDate: null,
+    //   expDate: null,
+    //   noOfBin: '',
+    //   binQty: '',
+    //   remarks: ''
+    // }
   ]);
 
   const [detailTableErrors, setDetailTableErrors] = useState([
@@ -286,6 +286,7 @@ export const SalesReturn = () => {
             }))
           );
           setModalOpen(true);
+          setDetailTableErrors([{ general: '' }]);
           // setDetailTableData([]);
         }
       } catch (error) {
@@ -674,26 +675,26 @@ export const SalesReturn = () => {
       goodsDesc: ''
     });
     setDetailTableData([
-      {
-        lrNo: '',
-        invNo: '',
-        partNo: '',
-        partDesc: '',
-        unit: '',
-        pickQty: '',
-        returnQty: '',
-        damageQty: '',
-        batchNo: '',
-        batchDate: null,
-        expDate: null,
-        noOfBin: '',
-        binQty: '',
-        weight: '',
-        rate: '',
-        amount: '',
-        insAmt: '',
-        remarks: ''
-      }
+      // {
+      //   lrNo: '',
+      //   invNo: '',
+      //   partNo: '',
+      //   partDesc: '',
+      //   unit: '',
+      //   pickQty: '',
+      //   returnQty: '',
+      //   damageQty: '',
+      //   batchNo: '',
+      //   batchDate: null,
+      //   expDate: null,
+      //   noOfBin: '',
+      //   binQty: '',
+      //   weight: '',
+      //   rate: '',
+      //   amount: '',
+      //   insAmt: '',
+      //   remarks: ''
+      // }
     ]);
     setFieldErrors({
       docId: '',
@@ -720,7 +721,7 @@ export const SalesReturn = () => {
       goodsDesc: ''
     });
     getNewSalesReturnDocId();
-    setDetailTableErrors('');
+    setDetailTableErrors([]);
     setEditId('');
   };
 
@@ -732,8 +733,29 @@ export const SalesReturn = () => {
     }
 
     setFieldErrors(errors);
+    let detailTableDataValid = true;
+    if (!detailTableData || !Array.isArray(detailTableData) || detailTableData.length === 0) {
+      detailTableDataValid = false;
+      setDetailTableErrors([{ general: 'Table Data is required' }]);
+    } else {
+      const newTableErrors = detailTableData.map((row, index) => {
+        const rowErrors = {};
 
-    if (Object.keys(errors).length === 0) {
+        if (!row.lrNo) rowErrors.lrNo = 'LR No is required';
+        if (!row.partNo) rowErrors.partNo = 'Part No is required';
+        if (!row.invNo) rowErrors.invNo = 'Invoice No is required';
+        if (!row.batchNo) rowErrors.batchNo = 'Batch No is required';
+        if (!row.bin) rowErrors.bin = 'Bin is required';
+
+        if (Object.keys(rowErrors).length > 0) detailTableDataValid = false;
+
+        return rowErrors;
+      });
+
+      setDetailTableErrors(newTableErrors);
+    }
+
+    if (Object.keys(errors).length === 0 && detailTableDataValid) {
       setIsLoading(true);
       const salesReturnVo = detailTableData.map((row) => ({
         ...(editId && { id: row.id }),
@@ -1556,6 +1578,17 @@ export const SalesReturn = () => {
                                   ))
                                 )}
                               </tbody>
+                              {detailTableErrors.some((error) => error.general) && (
+                                <tfoot>
+                                  <tr>
+                                    <td colSpan={18} className="error-message">
+                                      <div style={{ color: 'red', fontSize: '14px', textAlign: 'center' }}>
+                                        {detailTableErrors.find((error) => error.general)?.general}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                </tfoot>
+                              )}
                             </table>
                           </div>
                         </div>

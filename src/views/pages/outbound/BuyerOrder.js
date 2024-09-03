@@ -910,11 +910,12 @@ export const BuyerOrder = () => {
                     value={formData.buyerShortName}
                     onChange={handleInputChange}
                   >
-                    {buyerList?.map((row) => (
-                      <MenuItem key={row.id} value={row.buyerShortName.toUpperCase()}>
-                        {row.buyerShortName.toUpperCase()}
-                      </MenuItem>
-                    ))}
+                    {buyerList.length > 0 &&
+                      buyerList.map((row) => (
+                        <MenuItem key={row.id} value={row.buyerShortName.toUpperCase()}>
+                          {row.buyerShortName.toUpperCase()}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.buyerShortName && <FormHelperText error>{fieldErrors.buyerShortName}</FormHelperText>}
                 </FormControl>
