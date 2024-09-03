@@ -841,59 +841,158 @@ export const StockRestate = () => {
     // getBatchNo(row.fromBin, row.partNo, value);
   };
 
+  // const handleToQtyChange = (e, row, index) => {
+  //   const value = e.target.value;
+  //   const numericValue = isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10); // Ensure value is a number
+  //   const numericFromQty = isNaN(parseInt(row.fromQty, 10)) ? 0 : parseInt(row.fromQty, 10); // Ensure fromQty is a number
+  //   const intPattern = /^\d*$/;
+
+  //   if (intPattern.test(value) || value === '') {
+  //     setDetailTableData((prev) => {
+  //       const updatedData = prev.map((r) => {
+  //         if (r.id === row.id) {
+  //           let newRemainQty = numericFromQty - numericValue; // Initial remainQty calculation
+
+  //           const cumulativeToQty = prev.reduce((total, item) => {
+  //             if (
+  //               item.fromBin === r.fromBin &&
+  //               item.partNo === r.partNo &&
+  //               item.grnNo === r.grnNo &&
+  //               item.batchNo === r.batchNo &&
+  //               item.id !== r.id
+  //             ) {
+  //               return total + (isNaN(parseInt(item.toQty, 10)) ? 0 : parseInt(item.toQty, 10));
+  //             }
+  //             return total;
+  //           }, numericValue); // Include the current row's toQty in the cumulative total
+
+  //           // Subtract cumulativeToQty from fromQty to get new remainQty
+  //           newRemainQty = numericFromQty - cumulativeToQty;
+
+  //           // Ensure remainQty is non-negative
+  //           newRemainQty = Math.max(newRemainQty, 0);
+
+  //           console.log(`Updated remainQty for row ${r.id}: ${newRemainQty}`); // Debugging line
+
+  //           return {
+  //             ...r,
+  //             toQty: value,
+  //             remainQty: newRemainQty
+  //           };
+  //         }
+  //         return r;
+  //       });
+
+  //       return updatedData;
+  //     });
+  //     setDetailTableErrors((prev) => {
+  //       const newErrors = [...prev];
+  //       newErrors[index] = {
+  //         ...newErrors[index],
+  //         toQty: ''
+  //       };
+  //       return newErrors;
+  //     });
+  //   } else {
+  //     setDetailTableErrors((prev) => {
+  //       const newErrors = [...prev];
+  //       newErrors[index] = {
+  //         ...newErrors[index],
+  //         toQty: 'Only numbers are allowed'
+  //       };
+  //       return newErrors;
+  //     });
+  //   }
+  // };
+
   const handleToQtyChange = (e, row, index) => {
     const value = e.target.value;
-    const numericValue = isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10); // Ensure value is a number
-    const numericFromQty = isNaN(parseInt(row.fromQty, 10)) ? 0 : parseInt(row.fromQty, 10); // Ensure fromQty is a number
+    const numericValue = isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10);
+    const numericFromQty = isNaN(parseInt(row.fromQty, 10)) ? 0 : parseInt(row.fromQty, 10);
     const intPattern = /^\d*$/;
 
-    if (intPattern.test(value) || value === '') {
+    if (value === '') {
       setDetailTableData((prev) => {
-        const updatedData = prev.map((r) => {
+        return prev.map((r) => {
           if (r.id === row.id) {
-            let newRemainQty = numericFromQty - numericValue; // Initial remainQty calculation
+            return {
+              ...r,
+              toQty: '',
+              remainQty: ''
+            };
+          }
+          return r;
+        });
+      });
+    } else if (intPattern.test(value)) {
+      setDetailTableData((prev) => {
+        let cumulativeToQty = 0;
+        let maxAllowedToQty = numericFromQty;
+        let shouldClearSubsequentRows = false;
 
-            const cumulativeToQty = prev.reduce((total, item) => {
-              if (
-                item.fromBin === r.fromBin &&
-                item.partNo === r.partNo &&
-                item.grnNo === r.grnNo &&
-                item.batchNo === r.batchNo &&
-                item.id !== r.id
-              ) {
-                return total + (isNaN(parseInt(item.toQty, 10)) ? 0 : parseInt(item.toQty, 10));
+        return prev.map((r, idx) => {
+          if (r.fromBin === row.fromBin && r.partNo === row.partNo && r.grnNo === row.grnNo && r.batchNo === row.batchNo) {
+            if (idx === index) {
+              // Calculate the max allowed for the current row
+              maxAllowedToQty = numericFromQty - cumulativeToQty;
+
+              if (numericValue > maxAllowedToQty) {
+                // If the value exceeds the max allowed, display an error
+                setDetailTableErrors((prev) => {
+                  const newErrors = [...prev];
+                  newErrors[index] = {
+                    ...newErrors[index],
+                    toQty: `Cannot exceed ${maxAllowedToQty}`
+                  };
+                  return newErrors;
+                });
+                return {
+                  ...r,
+                  toQty: r.toQty // Keep the previous value if invalid input
+                };
+              } else {
+                // Clear any previous error
+                setDetailTableErrors((prev) => {
+                  const newErrors = [...prev];
+                  newErrors[index] = {
+                    ...newErrors[index],
+                    toQty: ''
+                  };
+                  return newErrors;
+                });
+
+                cumulativeToQty += numericValue;
               }
-              return total;
-            }, numericValue); // Include the current row's toQty in the cumulative total
+            } else {
+              cumulativeToQty += isNaN(parseInt(r.toQty, 10)) ? 0 : parseInt(r.toQty, 10);
+            }
 
-            // Subtract cumulativeToQty from fromQty to get new remainQty
-            newRemainQty = numericFromQty - cumulativeToQty;
+            const newRemainQty = Math.max(numericFromQty - cumulativeToQty, 0);
 
-            // Ensure remainQty is non-negative
-            newRemainQty = Math.max(newRemainQty, 0);
+            if (newRemainQty <= 0 && idx >= index) {
+              shouldClearSubsequentRows = true;
+            }
 
-            console.log(`Updated remainQty for row ${r.id}: ${newRemainQty}`); // Debugging line
+            // Clear subsequent rows if necessary
+            if (shouldClearSubsequentRows && idx > index) {
+              return {
+                ...r,
+                toQty: '',
+                remainQty: ''
+              };
+            }
 
             return {
               ...r,
-              toQty: value,
+              toQty: idx === index ? value : r.toQty,
               remainQty: newRemainQty
             };
           }
           return r;
         });
-
-        return updatedData;
-      });
-      setDetailTableErrors((prev) => {
-        const newErrors = [...prev];
-        newErrors[index] = {
-          ...newErrors[index],
-          toQty: ''
-        };
-        return newErrors;
       });
     } else {
+      // Handle invalid input (non-numeric)
       setDetailTableErrors((prev) => {
         const newErrors = [...prev];
         newErrors[index] = {
@@ -1100,42 +1199,18 @@ export const StockRestate = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    From Bin *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    From Bin Type
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Part No *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Part Desc
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    SKU
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    GRN No *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Batch No *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    To Bin *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    To Bin Type
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    From QTY
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    To QTY *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Remain QTY
-                                  </th>
+                                  <th className="table-header">From Bin *</th>
+                                  <th className="table-header">From Bin Type</th>
+                                  <th className="table-header">Part No *</th>
+                                  <th className="table-header">Part Desc</th>
+                                  <th className="table-header">SKU</th>
+                                  <th className="table-header">GRN No *</th>
+                                  <th className="table-header">Batch No *</th>
+                                  <th className="table-header">To Bin *</th>
+                                  <th className="table-header">To Bin Type</th>
+                                  <th className="table-header">From QTY</th>
+                                  <th className="table-header">To QTY *</th>
+                                  <th className="table-header">Remain QTY</th>
                                 </tr>
                               </thead>
                               {!viewId ? (
@@ -1361,38 +1436,40 @@ export const StockRestate = () => {
                                         <td className="text-center">
                                           <div className="pt-2">{index + 1}</div>
                                         </td>
-                                        <td className="text-center">{row.fromBin}</td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.fromBin}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.fromBinType}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.partNo}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.partDesc}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.sku}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.grnNo}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.batchNo}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.toBin}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.toBinType}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.fromQty}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.toQty}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.remainQty}
                                         </td>
                                       </tr>

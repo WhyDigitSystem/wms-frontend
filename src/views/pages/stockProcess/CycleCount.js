@@ -1089,44 +1089,18 @@ export const CycleCount = () => {
                             <table className="table table-bordered" style={{ width: '100%' }}>
                               <thead>
                                 <tr style={{ backgroundColor: '#673AB7' }}>
-                                  {!viewId && (
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                      Action
-                                    </th>
-                                  )}
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                    S.No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Part No *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Part Desc
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    SKU
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    GRN No *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Batch No *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Bin *
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Bin Type
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Core
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Avl QTY
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Actual QTY *
-                                  </th>
+                                  {!viewId && <th className="table-header">Action</th>}
+                                  <th className="table-header">S.No</th>
+                                  <th className="table-header">Part No *</th>
+                                  <th className="table-header">Part Desc</th>
+                                  <th className="table-header">SKU</th>
+                                  <th className="table-header">GRN No *</th>
+                                  <th className="table-header">Batch No *</th>
+                                  <th className="table-header">Bin *</th>
+                                  <th className="table-header">Bin Type</th>
+                                  <th className="table-header">Core</th>
+                                  <th className="table-header">Avl QTY</th>
+                                  <th className="table-header">Actual QTY *</th>
                                 </tr>
                               </thead>
                               {!viewId ? (
@@ -1246,31 +1220,6 @@ export const CycleCount = () => {
                                                 </div>
                                               )}
                                             </td>
-                                            {/* <td className="border px-2 py-2">
-                                          <select
-                                            value={row.bin}
-                                            style={{ width: '200px' }}
-                                            onChange={(e) => handleBinChange(row, index, e)}
-                                            className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
-                                          >
-                                            <option value="">--Select--</option>
-                                            {Array.isArray(row.rowBinList) &&
-                                              row.rowBinList.map(
-                                                (g, idx) =>
-                                                  g &&
-                                                  g.bin && (
-                                                    <option key={g.bin} value={g.bin}>
-                                                      {g.bin}
-                                                    </option>
-                                                  )
-                                              )}
-                                          </select>
-                                          {detailTableErrors[index]?.bin && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailTableErrors[index].bin}
-                                            </div>
-                                          )}
-                                        </td> */}
                                             <td className="border px-2 py-2">
                                               <select
                                                 value={row.bin}
@@ -1359,7 +1308,7 @@ export const CycleCount = () => {
                                                       const newErrors = [...prev];
                                                       newErrors[index] = {
                                                         ...newErrors[index],
-                                                        actualQty: !value ? 'Rec QTY is required' : ''
+                                                        actualQty: !value ? 'Actual QTY is required' : ''
                                                       };
                                                       return newErrors;
                                                     });
@@ -1415,34 +1364,34 @@ export const CycleCount = () => {
                                         <td className="text-center">
                                           <div className="pt-2">{index + 1}</div>
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.partNo}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.partDesc}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.sku}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.grnNo}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.batchNo}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.bin}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.binType}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.core}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.avlQty}
                                         </td>
-                                        <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.actualQty}
                                         </td>
                                       </tr>
@@ -1526,7 +1475,7 @@ export const CycleCount = () => {
                                 <td className="border p-2 text-center mt-2" style={{ width: '68px' }}>
                                   {index + 1}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.partNo}
                                 </td>
                                 <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>

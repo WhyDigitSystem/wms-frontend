@@ -936,30 +936,24 @@ export const CodeConversion = () => {
                             <table className="table table-bordered">
                               <thead>
                                 <tr style={{ backgroundColor: '#673AB7' }}>
-                                  {!viewId && (
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                      Action
-                                    </th>
-                                  )}
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                    S.No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center">Part No *</th>
-                                  <th className="px-2 py-2 text-white text-center">Part Description</th>
-                                  <th className="px-2 py-2 text-white text-center">SKU</th>
-                                  <th className="px-2 py-2 text-white text-center">GRN No *</th>
-                                  <th className="px-2 py-2 text-white text-center">Bin Type *</th>
-                                  <th className="px-2 py-2 text-white text-center">Batch No *</th>
-                                  <th className="px-2 py-2 text-white text-center">Bin *</th>
-                                  <th className="px-2 py-2 text-white text-center">QTY</th>
-                                  <th className="px-2 py-2 text-white text-center">Actual QTY *</th>
-                                  <th className="px-2 py-2 text-white text-center">Convert QTY *</th>
-                                  <th className="px-2 py-2 text-white text-center">C Part No *</th>
-                                  <th className="px-2 py-2 text-white text-center">C Part Desc</th>
-                                  <th className="px-2 py-2 text-white text-center">C SKU</th>
-                                  <th className="px-2 py-2 text-white text-center">C Batch No *</th>
-                                  <th className="px-2 py-2 text-white text-center">C Bin *</th>
-                                  <th className="px-2 py-2 text-white text-center">Remarks</th>
+                                  {!viewId && <th className="table-header">Action</th>}
+                                  <th className="table-header">S.No</th>
+                                  <th className="table-header">Part No *</th>
+                                  <th className="table-header">Part Description</th>
+                                  <th className="table-header">SKU</th>
+                                  <th className="table-header">GRN No *</th>
+                                  <th className="table-header">Bin Type *</th>
+                                  <th className="table-header">Batch No *</th>
+                                  <th className="table-header">Bin *</th>
+                                  <th className="table-header">QTY</th>
+                                  <th className="table-header">Actual QTY *</th>
+                                  <th className="table-header">Convert QTY *</th>
+                                  <th className="table-header">C Part No *</th>
+                                  <th className="table-header">C Part Desc</th>
+                                  <th className="table-header">C SKU</th>
+                                  <th className="table-header">C Batch No *</th>
+                                  <th className="table-header">C Bin *</th>
+                                  <th className="table-header">Remarks</th>
                                 </tr>
                               </thead>
                               {!viewId ? (
@@ -1448,22 +1442,54 @@ export const CodeConversion = () => {
                                         <td className="text-center">
                                           <div className="pt-2">{index + 1}</div>
                                         </td>
-                                        <td>{row.partNo}</td>
-                                        <td>{row.partDescription}</td>
-                                        <td>{row.sku}</td>
-                                        <td>{row.grnNo}</td>
-                                        <td>{row.binType}</td>
-                                        <td>{row.batchNo}</td>
-                                        <td>{row.bin}</td>
-                                        <td>{row.qty}</td>
-                                        <td>{row.actualQty}</td>
-                                        <td>{row.convertQty}</td>
-                                        <td>{row.cpartNo}</td>
-                                        <td>{row.cpartDesc}</td>
-                                        <td>{row.csku}</td>
-                                        <td>{row.cbatchNo}</td>
-                                        <td>{row.cbin}</td>
-                                        <td>{row.remarks}</td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.partNo}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.partDescription}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.sku}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.grnNo}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.binType}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.batchNo}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.bin}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.qty}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.actualQty}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.convertQty}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.cpartNo}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.cpartDesc}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.csku}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.cbatchNo}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.cbin}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.remarks}
+                                        </td>
                                       </tr>
                                     ))}
                                   </tbody>

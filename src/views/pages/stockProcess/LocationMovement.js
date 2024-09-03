@@ -585,94 +585,7 @@ export const LocationMovement = () => {
     });
     // getFromQty(row.batchNo, row.fromBin, row.grnNo, row.partNo, row);
   };
-  //OLD WORKING TOQTYCHANGE FUNCTION
-  // const handleToQtyChange = (e, row, index) => {
-  //   const value = e.target.value;
-  //   const numericValue = isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10);
-  //   const numericAvlQty = isNaN(parseInt(row.avlQty, 10)) ? 0 : parseInt(row.avlQty, 10);
-  //   const intPattern = /^\d*$/;
-
-  //   if (value === '') {
-  //     setChildTableData((prev) => {
-  //       return prev.map((r) => {
-  //         if (r.id === row.id) {
-  //           return {
-  //             ...r,
-  //             toQty: '',
-  //             remainQty: ''
-  //           };
-  //         }
-  //         return r;
-  //       });
-  //     });
-
-  //     // Clear the error if input is cleared
-  //     // setChildTableErrors((prev) => {
-  //     //   const newErrors = [...prev];
-  //     //   newErrors[index] = {
-  //     //     ...newErrors[index],
-  //     //     toQty: ''
-  //     //   };
-  //     //   return newErrors;
-  //     // });
-  //   } else if (intPattern.test(value) && numericValue <= numericAvlQty) {
-  //     setChildTableData((prev) => {
-  //       return prev.map((r) => {
-  //         if (r.id === row.id) {
-  //           const cumulativeToQty = prev.reduce((total, item) => {
-  //             if (
-  //               item.fromBin === r.fromBin &&
-  //               item.partNo === r.partNo &&
-  //               item.grnNo === r.grnNo &&
-  //               item.batchNo === r.batchNo &&
-  //               item.id !== r.id
-  //             ) {
-  //               return total + (isNaN(parseInt(item.toQty, 10)) ? 0 : parseInt(item.toQty, 10));
-  //             }
-  //             return total;
-  //           }, numericValue);
-
-  //           const newRemainQty = Math.max(numericAvlQty - cumulativeToQty, 0);
-
-  //           console.log(`Updated remainQty for row ${r.id}: ${newRemainQty}`);
-
-  //           return {
-  //             ...r,
-  //             toQty: value,
-  //             remainQty: newRemainQty
-  //           };
-  //         }
-  //         return r;
-  //       });
-  //     });
-
-  //     setChildTableErrors((prev) => {
-  //       const newErrors = [...prev];
-  //       newErrors[index] = {
-  //         ...newErrors[index],
-  //         toQty: ''
-  //       };
-  //       return newErrors;
-  //     });
-  //   } else {
-  //     // Handle invalid input
-  //     setChildTableErrors((prev) => {
-  //       const newErrors = [...prev];
-  //       newErrors[index] = {
-  //         ...newErrors[index],
-  //         toQty: numericValue > numericAvlQty ? 'Not greater than AvlQty' : 'Only numbers are allowed'
-  //       };
-  //       return newErrors;
-  //     });
-
-  //     // Optionally, clear the invalid input value if it's greater than avlQty
-  //     if (numericValue > numericAvlQty) {
-  //       e.target.value = '';
-  //     }
-  //   }
-  // };
-
-  //CURRENT WORKING TOQTYCHANGE FUNCTION
+  //FINAL WORKING TOQTYCHANGE FUNCTION
   const handleToQtyChange = (e, row, index) => {
     const value = e.target.value;
     const numericValue = isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10);
@@ -694,59 +607,73 @@ export const LocationMovement = () => {
       });
     } else if (intPattern.test(value)) {
       setChildTableData((prev) => {
-        let cumulativeToQty = numericValue;
-        let isValid = true;
+        let cumulativeToQty = 0;
+        let maxAllowedToQty = numericAvlQty;
+        let shouldClearSubsequentRows = false;
 
-        prev.forEach((item, i) => {
-          if (item.bin === row.bin && item.partNo === row.partNo && item.batchNo === row.batchNo && item.grnNo === row.grnNo && i < index) {
-            const previousRemainQty = isNaN(parseInt(item.remainQty, 10)) ? 0 : parseInt(item.remainQty, 10);
+        return prev.map((r, idx) => {
+          if (r.fromBin === row.fromBin && r.partNo === row.partNo && r.grnNo === row.grnNo && r.batchNo === row.batchNo) {
+            if (idx === index) {
+              // Calculate the max allowed for the current row
+              maxAllowedToQty = numericAvlQty - cumulativeToQty;
 
-            if (numericValue > previousRemainQty) {
-              isValid = false;
-              setChildTableErrors((prevErrors) => {
-                const newErrors = [...prevErrors];
-                newErrors[index] = {
-                  ...newErrors[index],
-                  toQty: `Cannot be greater than previous row's remainQty (${previousRemainQty})`
+              if (numericValue > maxAllowedToQty) {
+                // If the value exceeds the max allowed, display an error
+                setChildTableErrors((prev) => {
+                  const newErrors = [...prev];
+                  newErrors[index] = {
+                    ...newErrors[index],
+                    toQty: `Cannot exceed ${maxAllowedToQty}`
+                  };
+                  return newErrors;
+                });
+                return {
+                  ...r,
+                  toQty: r.toQty // Keep the previous value if invalid input
                 };
-                return newErrors;
-              });
+              } else {
+                // Clear any previous error
+                setChildTableErrors((prev) => {
+                  const newErrors = [...prev];
+                  newErrors[index] = {
+                    ...newErrors[index],
+                    toQty: ''
+                  };
+                  return newErrors;
+                });
+
+                cumulativeToQty += numericValue;
+              }
+            } else {
+              cumulativeToQty += isNaN(parseInt(r.toQty, 10)) ? 0 : parseInt(r.toQty, 10);
             }
 
-            cumulativeToQty += isNaN(parseInt(item.toQty, 10)) ? 0 : parseInt(item.toQty, 10);
-          }
-        });
+            const newRemainQty = Math.max(numericAvlQty - cumulativeToQty, 0);
 
-        if (isValid && numericValue <= numericAvlQty) {
-          return prev.map((r) => {
-            if (r.id === row.id) {
-              const newRemainQty = Math.max(numericAvlQty - cumulativeToQty, 0);
+            if (newRemainQty <= 0 && idx >= index) {
+              shouldClearSubsequentRows = true;
+            }
 
+            // Clear subsequent rows if necessary
+            if (shouldClearSubsequentRows && idx > index) {
               return {
                 ...r,
-                toQty: value,
-                remainQty: newRemainQty
+                toQty: '',
+                remainQty: ''
               };
             }
-            return r;
-          });
-        } else {
-          return prev;
-        }
-      });
 
-      if (numericValue <= numericAvlQty) {
-        setChildTableErrors((prev) => {
-          const newErrors = [...prev];
-          newErrors[index] = {
-            ...newErrors[index],
-            toQty: ''
-          };
-          return newErrors;
+            return {
+              ...r,
+              toQty: idx === index ? value : r.toQty,
+              remainQty: newRemainQty
+            };
+          }
+          return r;
         });
-      }
+      });
     } else {
-      // Handle invalid input
+      // Handle invalid input (non-numeric)
       setChildTableErrors((prev) => {
         const newErrors = [...prev];
         newErrors[index] = {
@@ -755,90 +682,8 @@ export const LocationMovement = () => {
         };
         return newErrors;
       });
-
-      e.target.value = '';
     }
   };
-
-  // const handleToQtyChange = (e, row, index) => {
-  //   const value = e.target.value;
-  //   const numericValue = isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10);
-  //   const numericAvlQty = isNaN(parseInt(row.avlQty, 10)) ? 0 : parseInt(row.avlQty, 10);
-  //   const intPattern = /^\d*$/;
-
-  //   setChildTableData((prev) => {
-  //     let cumulativeToQty = 0;
-
-  //     return prev.map((r, i) => {
-  //       // Check if rows match by `bin`, `partNo`, `batchNo`, and `grnNo`
-  //       const isSameRowData = r.bin === row.bin && r.partNo === row.partNo && r.batchNo === row.batchNo && r.grnNo === row.grnNo;
-
-  //       if (isSameRowData) {
-  //         if (i === index) {
-  //           if (value === '') {
-  //             // Case 1: Clear only the current row if `toQty` is cleared
-  //             return {
-  //               ...r,
-  //               toQty: '',
-  //               remainQty: ''
-  //             };
-  //           } else if (intPattern.test(value)) {
-  //             cumulativeToQty += numericValue;
-  //             const newRemainQty = Math.max(numericAvlQty - cumulativeToQty, 0);
-
-  //             return {
-  //               ...r,
-  //               toQty: value,
-  //               remainQty: newRemainQty
-  //             };
-  //           }
-  //         } else if (i > index && value === '') {
-  //           // Case 2: If a previous row's `toQty` is cleared, clear all subsequent matching rows
-  //           return {
-  //             ...r,
-  //             toQty: '',
-  //             remainQty: ''
-  //           };
-  //         } else if (i > index && intPattern.test(value)) {
-  //           cumulativeToQty += isNaN(parseInt(r.toQty, 10)) ? 0 : parseInt(r.toQty, 10);
-  //           const newRemainQty = Math.max(numericAvlQty - cumulativeToQty, 0);
-
-  //           return {
-  //             ...r,
-  //             toQty: '',
-  //             remainQty: newRemainQty
-  //           };
-  //         }
-  //       }
-  //       return r;
-  //     });
-  //   });
-
-  //   // Error handling: Clear any existing errors if input is valid
-  //   if (intPattern.test(value)) {
-  //     setChildTableErrors((prev) => {
-  //       const newErrors = [...prev];
-  //       newErrors[index] = {
-  //         ...newErrors[index],
-  //         toQty: ''
-  //       };
-  //       return newErrors;
-  //     });
-  //   } else {
-  //     // Handle invalid input
-  //     setChildTableErrors((prev) => {
-  //       const newErrors = [...prev];
-  //       newErrors[index] = {
-  //         ...newErrors[index],
-  //         toQty: 'Only numbers are allowed'
-  //       };
-  //       return newErrors;
-  //     });
-
-  //     e.target.value = '';
-  //   }
-  // };
-
   const getLocationMovementById = async (row) => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);
