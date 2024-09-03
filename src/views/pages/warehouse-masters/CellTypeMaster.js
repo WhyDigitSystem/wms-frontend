@@ -6,7 +6,7 @@ import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import axios from 'axios';
+import apiCalls from 'apicall';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import 'react-toastify/dist/ReactToastify.css';
@@ -46,13 +46,14 @@ export const CellTypeMaster = () => {
 
   const getAllCellCategory = async () => {
     try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/warehousemastercontroller/getAllCellTypeByOrgId?orgId=${orgId}`
-      );
+      // const response = await axios.get(
+      //   `${process.env.REACT_APP_API_URL}/api/warehousemastercontroller/getAllCellTypeByOrgId?orgId=${orgId}`
+      // );
+      const response = await apiCalls('get', `warehousemastercontroller/getAllCellTypeByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
-      if (response.status === 200) {
-        setListViewData(response.data.paramObjectsMap.cellTypeVO);
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.cellTypeVO);
       } else {
         console.error('API Error:', response.data);
       }
@@ -65,12 +66,15 @@ export const CellTypeMaster = () => {
     setListView(true);
     setEditId(row.original.id);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/warehousemastercontroller/cellType/${row.original.id}`);
+      // const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/warehousemastercontroller/cellType/${row.original.id}`);
+
+      const response = await apiCalls('get', `warehousemastercontroller/cellType/${row.original.id}`);
+
       console.log('API Response:', response);
 
-      if (response.status === 200) {
+      if (response.status === true) {
         setListView(false);
-        const particularCellCategory = response.data.paramObjectsMap.cellTypeVO;
+        const particularCellCategory = response.paramObjectsMap.cellTypeVO;
 
         setFormData({
           cellCategory: particularCellCategory.cellType,
@@ -109,14 +113,16 @@ export const CellTypeMaster = () => {
     setEditId('');
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
+
     if (!formData.cellCategory) {
       errors.cellCategory = 'Cell Category is required';
     }
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
+
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
@@ -127,29 +133,25 @@ export const CellTypeMaster = () => {
 
       console.log('DATA TO SAVE IS:', saveFormData);
 
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/warehousemastercontroller/createUpdateCellType`, saveFormData)
+      try {
+        const result = await apiCalls('put', 'warehousemastercontroller/createUpdateCellType', saveFormData);
 
-        .then((response) => {
-          if (response.data.status === true) {
-            console.log('Response:', response.data);
+        if (result.status === true) {
+          console.log('Response:', result);
 
-            showToast('success', editId ? ' Cell Category Updated Successfully' : 'Cell Category created successfully');
+          showToast('success', editId ? ' Cell Category Updated Successfully' : 'Cell Category created successfully');
 
-            handleClear();
-            getAllCellCategory();
-            setIsLoading(false);
-          } else {
-            showToast('error', response.data.paramObjectsMap.errorMessage || 'Cell Category creation failed');
-            setIsLoading(false);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showToast('error', 'Cell Category creation failed');
-
-          setIsLoading(false);
-        });
+          handleClear();
+          getAllCellCategory();
+        } else {
+          showToast('error', result.paramObjectsMap.errorMessage || 'Cell Category creation failed');
+        }
+      } catch (err) {
+        console.log('error', err);
+        showToast('error', 'Cell Category creation failed');
+      } finally {
+        setIsLoading(false);
+      }
     } else {
       setFieldErrors(errors);
     }

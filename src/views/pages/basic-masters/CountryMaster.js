@@ -2,26 +2,17 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, FormHelperText, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import axios from 'axios';
-import { useRef, useState, useMemo, useEffect } from 'react';
+import apiCalls from 'apicall';
+import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
-import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
-import apiCalls from 'apicall';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 export const CountryMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -60,7 +51,7 @@ export const CountryMaster = () => {
 
   const getAllCountries = async () => {
     try {
-      const result = await apiCalls('get', `commonmaster/country?orgid=1000000001`);
+      const result = await apiCalls('get', `commonmaster/country?orgid=${orgId}`);
       setListViewData(result.paramObjectsMap.countryVO);
       console.log('Test', result);
     } catch (err) {

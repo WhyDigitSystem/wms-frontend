@@ -2,30 +2,16 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import {
-  Avatar,
-  ButtonBase,
-  Tooltip,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Checkbox,
-  FormHelperText,
-  FormControlLabel
-} from '@mui/material';
+import { Checkbox, FormControl, FormControlLabel, FormHelperText, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import axios from 'axios';
-import { useRef, useState, useEffect } from 'react';
-import 'react-tabs/style/react-tabs.css';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { getAllActiveCountries } from 'utils/CommonFunctions';
-import ActionButton from 'utils/ActionButton';
-import ToastComponent, { showToast } from 'utils/toast-component';
 import apiCalls from 'apicall';
+import { useEffect, useRef, useState } from 'react';
+import 'react-tabs/style/react-tabs.css';
+import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/ActionButton';
+import { getAllActiveCountries } from 'utils/CommonFunctions';
+import ToastComponent, { showToast } from 'utils/toast-component';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 export const StateMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -76,24 +62,21 @@ export const StateMaster = () => {
 
   const getAllStates = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/state?orgid=${orgId}`);
-      if (response.status === 200) {
-        setListViewData(response.data.paramObjectsMap.stateVO);
-      } else {
-        console.error('API Error:', response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
+      const result = await apiCalls('get', `commonmaster/state?orgid=${orgId}`);
+      setListViewData(result.paramObjectsMap.stateVO);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
     }
   };
 
   const getStateById = async (row) => {
     setEditId(row.original.id);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/state/${row.original.id}`);
-      if (response.status === 200) {
-        setListView(false);
-        const particularState = response.data.paramObjectsMap.stateVO;
+      // const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/commonmaster/state/${row.original.id}`);
+      const response = await apiCalls('get', `commonmaster/state/${row.original.id}`);
+      if (response.status === true) {
+        const particularState = response.paramObjectsMap.stateVO;
 
         setFormData({
           stateCode: particularState.stateCode,
@@ -102,6 +85,7 @@ export const StateMaster = () => {
           country: particularState.country,
           active: particularState.active === 'Active' ? true : false
         });
+        setListView(false);
       } else {
         console.error('API Error:', response.data);
       }

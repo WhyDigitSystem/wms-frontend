@@ -2,28 +2,20 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, FormHelperText, Tooltip, FormControlLabel, Checkbox } from '@mui/material';
-import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import axios from 'axios';
-import { useRef, useState, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
+import { Checkbox, FormControlLabel, FormHelperText } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import BrowserUpdatedIcon from '@mui/icons-material/BrowserUpdated';
-import ActionButton from 'utils/ActionButton';
-import ToastComponent, { showToast } from 'utils/toast-component';
-import 'react-datepicker/dist/react-datepicker.css';
+import TextField from '@mui/material/TextField';
 import apiCalls from 'apicall';
+import { useEffect, useRef, useState } from 'react';
+import 'react-datepicker/dist/react-datepicker.css';
+import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/ActionButton';
 import { getAllActiveCitiesByState, getAllActiveCountries, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
+import ToastComponent, { showToast } from 'utils/toast-component';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 export const SupplierMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -164,12 +156,13 @@ export const SupplierMaster = () => {
     console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/warehousemastercontroller/supplier/${row.original.id}`);
+      const response = await apiCalls('get', `warehousemastercontroller/supplier/${row.original.id}`);
+
       console.log('API Response:', response);
 
-      if (response.status === 200) {
+      if (response.status === true) {
         setListView(false);
-        const particularSupplier = response.data.paramObjectsMap.Supplier;
+        const particularSupplier = response.paramObjectsMap.Supplier;
 
         setFormData({
           supplierName: particularSupplier.supplier,
