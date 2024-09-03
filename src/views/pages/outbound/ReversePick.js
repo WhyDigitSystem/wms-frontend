@@ -75,7 +75,8 @@ export const ReversePick = () => {
     pickRequestDocDate: '',
     boAmendment: 'No',
     buyerOrderDate: null,
-    revisedQty: ''
+    revisedQty: '',
+    pickRequestDocId: ''
   });
 
   const [value, setValue] = useState(0);
@@ -84,27 +85,27 @@ export const ReversePick = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [itemTableData, setItemTableData] = useState([
-    {
-      availQty: '',
-      batchDate: '',
-      batchNo: '',
-      binClass: '',
-      binType: '',
-      cellType: '',
-      clientCode: '',
-      core: '',
-      bin: '',
-      orderQty: '',
-      partDesc: '',
-      partNo: '',
-      pcKey: '',
-      pickQty: '',
-      remainQty: '',
-      sku: '',
-      ssku: '',
-      status: '',
-      revisedQty: ''
-    }
+    // {
+    //   availQty: '',
+    //   batchDate: '',
+    //   batchNo: '',
+    //   binClass: '',
+    //   binType: '',
+    //   cellType: '',
+    //   clientCode: '',
+    //   core: '',
+    //   bin: '',
+    //   orderQty: '',
+    //   partDesc: '',
+    //   partNo: '',
+    //   pcKey: '',
+    //   pickQty: '',
+    //   remainQty: '',
+    //   sku: '',
+    //   ssku: '',
+    //   status: '',
+    //   revisedQty: ''
+    // }
   ]);
 
   const handleAddRow = () => {
@@ -277,10 +278,13 @@ export const ReversePick = () => {
   const getCurrentTime = () => {
     return dayjs().format('HH:mm:ss');
   };
+  const getInTime = () => {
+    setFormData((prev) => ({ ...prev, inTime: getCurrentTime() }));
+  };
 
   // Initialize the inTime field with the current time
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, inTime: getCurrentTime() }));
+    getInTime();
   }, []);
 
   const getAllGroups = async () => {
@@ -453,7 +457,7 @@ export const ReversePick = () => {
       clientName: '',
       customerName: '',
       customerShortName: '',
-      inTime: '',
+      boAmendment: 'No',
       clientAddress: '',
       customerAddress: '',
       status: 'Edit',
@@ -463,28 +467,7 @@ export const ReversePick = () => {
       pickOrder: 'FIFO',
       pickRequestDocId: ''
     });
-    setItemTableData([
-      {
-        availQty: '',
-        batchDate: '',
-        batchNo: '',
-        binClass: '',
-        binType: '',
-        cellType: '',
-        clientCode: '',
-        core: '',
-        bin: '',
-        orderQty: '',
-        partDesc: '',
-        partNo: '',
-        pcKey: '',
-        pickQty: '',
-        remainQty: '',
-        sku: '',
-        ssku: '',
-        status: ''
-      }
-    ]);
+    setItemTableData([]);
     setFieldErrors({
       docDate: '',
       pickRequestId: '',
@@ -513,6 +496,7 @@ export const ReversePick = () => {
       totalAmount: ''
     });
     getDocId();
+    getInTime();
     setItemTableErrors('');
     setEditId('');
   };
@@ -520,8 +504,12 @@ export const ReversePick = () => {
   const handleSave = async () => {
     const errors = {};
 
+    if (!formData.pickRequestDocId) {
+      errors.pickRequestDocId = 'Pick Request Id is required';
+    }
+
     if (!formData.buyerRefNo) {
-      errors.buyerRefNo = 'buyerRefNo is required';
+      errors.buyerRefNo = 'Buyer Order Ref No is required';
     }
 
     if (!formData.status) {
@@ -660,26 +648,30 @@ export const ReversePick = () => {
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
 
-  const handleFullGrid = () => {
-    setModalOpen(true);
-    getAllFillGrid();
-  };
-
   const getAllFillGrid = async () => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `reversePick/getFillGridDetailsForReversePick?orgId=${orgId}&branchCode=${branchCode}&client=${client}&pickRequestDocId=${formData.pickRequestDocId}`
-      );
-      console.log('API Response:', response);
+    const errors = {};
+    if (!formData.pickRequestDocId) {
+      errors.pickRequestDocId = 'Pick Request Id is required';
+    }
+    if (Object.keys(errors).length === 0) {
+      setModalOpen(true);
+      try {
+        const response = await apiCalls(
+          'get',
+          `reversePick/getFillGridDetailsForReversePick?orgId=${orgId}&branchCode=${branchCode}&client=${client}&pickRequestDocId=${formData.pickRequestDocId}`
+        );
+        console.log('API Response:', response);
 
-      if (response.status === true) {
-        setFillGridData(response.paramObjectsMap.fillGridDetails);
-      } else {
-        console.error('API Error:', response);
+        if (response.status === true) {
+          setFillGridData(response.paramObjectsMap.fillGridDetails);
+        } else {
+          console.error('API Error:', response);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
       }
-    } catch (error) {
-      console.error('Error fetching data:', error);
+    } else {
+      setFieldErrors(errors);
     }
   };
 
@@ -775,10 +767,11 @@ export const ReversePick = () => {
                     value={formData.pickRequestDocId}
                     onChange={handleInputChange}
                   >
-                    {/* Default option */}
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
+                    {buyerOrderNoList.length === 0 && (
+                      <MenuItem value="">
+                        <em>No Data Found</em>
+                      </MenuItem>
+                    )}
 
                     {/* Dynamically mapping buyerOrderNoList to MenuItem components */}
                     {buyerOrderNoList.map((order, index) => (
@@ -1093,7 +1086,7 @@ export const ReversePick = () => {
                     <div className="row d-flex ml">
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
+                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={getAllFillGrid} />
                       </div>
                       <div className="row mt-2">
                         <div className="col-lg-12">
@@ -1381,7 +1374,7 @@ export const ReversePick = () => {
             </div>
             <Dialog
               open={modalOpen}
-              maxWidth={'md'}
+              maxWidth={'lg'}
               fullWidth={true}
               onClose={handleCloseModal}
               PaperComponent={PaperComponent}
@@ -1486,7 +1479,7 @@ export const ReversePick = () => {
               <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
                 <Button onClick={handleCloseModal}>Cancel</Button>
                 <Button color="secondary" onClick={handleSaveSelectedRows} variant="contained">
-                  Save
+                  Proceed
                 </Button>
               </DialogActions>
             </Dialog>

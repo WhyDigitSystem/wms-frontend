@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
 import { Card, Grid, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // third-party
 import ApexCharts from 'apexcharts';
@@ -39,19 +39,19 @@ const BajajAreaChartCard = () => {
           <Grid container alignItems="center" justifyContent="space-between">
             <Grid item>
               <Typography variant="subtitle1" sx={{ color: theme.palette.secondary.dark }}>
-                Bajaj Finery
+                ITC
               </Typography>
             </Grid>
             <Grid item>
               <Typography variant="h4" sx={{ color: theme.palette.grey[800] }}>
-                $1839.00
+                ₹1,83,903.00
               </Typography>
             </Grid>
           </Grid>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="subtitle2" sx={{ color: theme.palette.grey[800] }}>
-            10% Profit
+            200 orders
           </Typography>
         </Grid>
       </Grid>

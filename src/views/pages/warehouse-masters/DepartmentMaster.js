@@ -57,10 +57,10 @@ export const DepartmentMaster = () => {
   const [listViewData, setListViewData] = useState([]);
 
   useEffect(() => {
-    getAllDepart();
+    getAllDepartment();
   }, []);
 
-  const getAllDepart = async () => {
+  const getAllDepartment = async () => {
     try {
       const response = await apiCalls('get', `commonmaster/getAllDepartmentByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
@@ -77,15 +77,14 @@ export const DepartmentMaster = () => {
 
   const getDeptById = async (row) => {
     console.log('THE SELECTED region ID IS:', row.original.id);
-    setEditId(row.original.id);
     try {
       const response = await apiCalls('get', `commonmaster/getAllDepartmentById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
         setListView(false);
+        setEditId(row.original.id);
         const particularDepartment = response.paramObjectsMap.departmentVOs[0];
-
         setFormData({
           code: particularDepartment.code,
           departmentName: particularDepartment.departmentName,
@@ -136,6 +135,7 @@ export const DepartmentMaster = () => {
       departmentName: '',
       code: ''
     });
+    setEditId('');
   };
 
   const handleSave = async () => {
@@ -167,7 +167,7 @@ export const DepartmentMaster = () => {
           console.log('Response:', result);
           showToast('success', editId ? ' Deptartment Updated Successfully' : 'Deptartment created successfully');
           handleClear();
-          getAllDepart();
+          getAllDepartment();
           setIsLoading(false);
         } else {
           showToast('error', result.paramObjectsMap.errorMessage || 'Deptartment creation failed');

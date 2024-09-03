@@ -80,57 +80,9 @@ export const CycleCount = () => {
     docDate: dayjs()
   });
   const [value, setValue] = useState(0);
-  const [detailTableData, setDetailTableData] = useState([
-    // {
-    //   id: 1,
-    //   fromBin: '',
-    //   fromBinClass: '',
-    //   fromBinType: '',
-    //   fromCellType: '',
-    //   partNo: '',
-    //   rowPartNoList: [],
-    //   partDesc: '',
-    //   sku: '',
-    //   grnNo: '',
-    //   grnDate: '',
-    //   batchNo: '',
-    //   batchDate: '',
-    //   expDate: '',
-    //   toBin: '',
-    //   toBinType: '',
-    //   toBinClass: '',
-    //   toCellType: '',
-    //   fromQty: 5000,
-    //   toQty: '',
-    //   remainQty: '',
-    //   fromCore: '',
-    //   toCore: '',
-    //   qcFlag: ''
-    // }
-  ]);
+  const [detailTableData, setDetailTableData] = useState([]);
 
-  const [detailTableErrors, setDetailTableErrors] = useState([
-    {
-      partNo: '',
-      partDesc: '',
-      sku: '',
-      grnNo: '',
-      grnDate: '',
-      batchNo: '',
-      batchDate: '',
-      expDate: '',
-      bin: '',
-      binType: '',
-      binClass: '',
-      cellType: '',
-      core: '',
-      lotNo: '',
-      qcFlag: '',
-      status: '',
-      avlQty: '',
-      actualQty: ''
-    }
-  ]);
+  const [detailTableErrors, setDetailTableErrors] = useState([]);
   const [modalTableData, setModalTableData] = useState([
     {
       id: 1,
@@ -565,29 +517,6 @@ export const CycleCount = () => {
       transferto: '',
       entryNo: ''
     });
-    setDetailTableData([
-      // {
-      //   fromBin: '',
-      //   fromBinClass: '',
-      //   fromBinType: '',
-      //   fromBCellType: '',
-      //   partNo: '',
-      //   partDesc: '',
-      //   sku: '',
-      //   grnNo: '',
-      //   grnDate: '',
-      //   batchNo: '',
-      //   batchDate: '',
-      //   expDate: '',
-      //   toBin: '',
-      //   toBinType: '',
-      //   toBinClass: '',
-      //   toCellType: '',
-      //   fromQty: '',
-      //   toQty: '',
-      //   remainQty: ''
-      // }
-    ]);
     setFieldErrors({
       docId: '',
       docDate: null,
@@ -595,9 +524,16 @@ export const CycleCount = () => {
       transferto: '',
       entryNo: ''
     });
-    setDetailTableErrors('');
+    setDetailTableData([]);
+    setDetailTableErrors([]);
     setViewId('');
     getNewCycleCountDocId();
+  };
+  const handleTableClear = (table) => {
+    if (table === 'detailTableData') {
+      setDetailTableData([]);
+      setDetailTableErrors([]);
+    }
   };
 
   const handleSave = async () => {
@@ -1143,7 +1079,7 @@ export const CycleCount = () => {
                           <>
                             <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
                             <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
-                            <ActionButton title="Clear" icon={ClearIcon} onClick={() => setDetailTableData([])} />
+                            <ActionButton title="Clear" icon={ClearIcon} onClick={() => handleTableClear('detailTableData')} />
                           </>
                         )}
                       </div>
@@ -1196,113 +1132,121 @@ export const CycleCount = () => {
                               {!viewId ? (
                                 <>
                                   <tbody>
-                                    {detailTableData.map((row, index) => (
-                                      <tr key={row.id}>
-                                        <td className="border px-2 py-2 text-center">
-                                          <ActionButton
-                                            title="Delete"
-                                            icon={DeleteIcon}
-                                            onClick={() => handleDeleteRow(row.id, detailTableData, setDetailTableData)}
-                                          />
+                                    {detailTableData.length === 0 ? (
+                                      <tr>
+                                        <td colSpan="18" className="text-center py-2">
+                                          No Data Found
                                         </td>
-                                        <td className="text-center">
-                                          <div className="pt-2">{index + 1}</div>
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <select
-                                            value={row.partNo}
-                                            style={{ width: '200px' }}
-                                            onChange={(e) => handlePartNoChange(row, index, e)}
-                                            className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
-                                          >
-                                            <option value="">-- Select --</option>
-                                            {partNoList?.map((row, index) => (
-                                              <option key={index} value={row.partno}>
-                                                {row.partno}
-                                              </option>
-                                            ))}
-                                          </select>
-                                          {detailTableErrors[index]?.partNo && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailTableErrors[index].partNo}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            style={{ width: '300px' }}
-                                            type="text"
-                                            value={row.partDesc}
-                                            className={detailTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
-                                            disabled
-                                          />
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            style={{ width: '300px' }}
-                                            type="text"
-                                            value={row.sku}
-                                            className={detailTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
-                                            disabled
-                                          />
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <select
-                                            value={row.grnNo}
-                                            style={{ width: '200px' }}
-                                            onChange={(e) => handleGrnNoChange(row, index, e)}
-                                            className={detailTableErrors[index]?.grnNo ? 'error form-control' : 'form-control'}
-                                          >
-                                            <option value="">-- Select --</option>
+                                      </tr>
+                                    ) : (
+                                      <>
+                                        {detailTableData.map((row, index) => (
+                                          <tr key={row.id}>
+                                            <td className="border px-2 py-2 text-center">
+                                              <ActionButton
+                                                title="Delete"
+                                                icon={DeleteIcon}
+                                                onClick={() => handleDeleteRow(row.id, detailTableData, setDetailTableData)}
+                                              />
+                                            </td>
+                                            <td className="text-center">
+                                              <div className="pt-2">{index + 1}</div>
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <select
+                                                value={row.partNo}
+                                                style={{ width: '200px' }}
+                                                onChange={(e) => handlePartNoChange(row, index, e)}
+                                                className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
+                                              >
+                                                <option value="">-- Select --</option>
+                                                {partNoList?.map((row, index) => (
+                                                  <option key={index} value={row.partno}>
+                                                    {row.partno}
+                                                  </option>
+                                                ))}
+                                              </select>
+                                              {detailTableErrors[index]?.partNo && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {detailTableErrors[index].partNo}
+                                                </div>
+                                              )}
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                style={{ width: '300px' }}
+                                                type="text"
+                                                value={row.partDesc}
+                                                className={detailTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
+                                                disabled
+                                              />
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                style={{ width: '300px' }}
+                                                type="text"
+                                                value={row.sku}
+                                                className={detailTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
+                                                disabled
+                                              />
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <select
+                                                value={row.grnNo}
+                                                style={{ width: '200px' }}
+                                                onChange={(e) => handleGrnNoChange(row, index, e)}
+                                                className={detailTableErrors[index]?.grnNo ? 'error form-control' : 'form-control'}
+                                              >
+                                                <option value="">-- Select --</option>
 
-                                            {Array.isArray(row.rowGrnNoList) &&
-                                              row.rowGrnNoList.map(
-                                                (g, idx) =>
-                                                  g &&
-                                                  g.grnNo && (
-                                                    <option key={g.grnNo} value={g.grnNo}>
-                                                      {g.grnNo}
-                                                    </option>
-                                                  )
+                                                {Array.isArray(row.rowGrnNoList) &&
+                                                  row.rowGrnNoList.map(
+                                                    (g, idx) =>
+                                                      g &&
+                                                      g.grnNo && (
+                                                        <option key={g.grnNo} value={g.grnNo}>
+                                                          {g.grnNo}
+                                                        </option>
+                                                      )
+                                                  )}
+                                              </select>
+                                              {detailTableErrors[index]?.grnNo && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {detailTableErrors[index].grnNo}
+                                                </div>
                                               )}
-                                          </select>
-                                          {detailTableErrors[index]?.grnNo && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailTableErrors[index].grnNo}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <select
-                                            value={row.batchNo}
-                                            style={{ width: '200px' }}
-                                            onChange={(e) => handleBatchNoChange(row, index, e)}
-                                            className={detailTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
-                                          >
-                                            <option value="">-- Select --</option>
-                                            {Array.isArray(row.rowBatchNoList) &&
-                                              row.rowBatchNoList.map(
-                                                (g, idx) =>
-                                                  g &&
-                                                  g.batch && (
-                                                    <option key={g.batch} value={g.batch}>
-                                                      {g.batch}
-                                                    </option>
-                                                  )
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <select
+                                                value={row.batchNo}
+                                                style={{ width: '200px' }}
+                                                onChange={(e) => handleBatchNoChange(row, index, e)}
+                                                className={detailTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
+                                              >
+                                                <option value="">-- Select --</option>
+                                                {Array.isArray(row.rowBatchNoList) &&
+                                                  row.rowBatchNoList.map(
+                                                    (g, idx) =>
+                                                      g &&
+                                                      g.batch && (
+                                                        <option key={g.batch} value={g.batch}>
+                                                          {g.batch}
+                                                        </option>
+                                                      )
+                                                  )}
+                                                {batchNoList?.map((batch, index) => (
+                                                  <option key={index} value={batch.batch}>
+                                                    {batch.batch}
+                                                  </option>
+                                                ))}
+                                              </select>
+                                              {detailTableErrors[index]?.batchNo && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {detailTableErrors[index].batchNo}
+                                                </div>
                                               )}
-                                            {batchNoList?.map((batch, index) => (
-                                              <option key={index} value={batch.batch}>
-                                                {batch.batch}
-                                              </option>
-                                            ))}
-                                          </select>
-                                          {detailTableErrors[index]?.batchNo && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailTableErrors[index].batchNo}
-                                            </div>
-                                          )}
-                                        </td>
-                                        {/* <td className="border px-2 py-2">
+                                            </td>
+                                            {/* <td className="border px-2 py-2">
                                           <select
                                             value={row.bin}
                                             style={{ width: '200px' }}
@@ -1327,128 +1271,141 @@ export const CycleCount = () => {
                                             </div>
                                           )}
                                         </td> */}
-                                        <td className="border px-2 py-2">
-                                          <select
-                                            value={row.bin}
-                                            style={{ width: '200px' }}
-                                            onChange={(e) => handleBinChange(row, index, e)}
-                                            className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
-                                          >
-                                            <option value="">--Select--</option>
-                                            {Array.isArray(row.rowBinList) && row.rowBinList.length > 0 ? (
-                                              row.rowBinList.map((g) =>
-                                                g && g.bin ? (
-                                                  <option key={g.bin} value={g.bin}>
-                                                    {g.bin}
+                                            <td className="border px-2 py-2">
+                                              <select
+                                                value={row.bin}
+                                                style={{ width: '200px' }}
+                                                onChange={(e) => handleBinChange(row, index, e)}
+                                                className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
+                                              >
+                                                <option value="">--Select--</option>
+                                                {Array.isArray(row.rowBinList) && row.rowBinList.length > 0 ? (
+                                                  row.rowBinList.map((g) =>
+                                                    g && g.bin ? (
+                                                      <option key={g.bin} value={g.bin}>
+                                                        {g.bin}
+                                                      </option>
+                                                    ) : null
+                                                  )
+                                                ) : (
+                                                  <option value="" disabled>
+                                                    No bins available
                                                   </option>
-                                                ) : null
-                                              )
-                                            ) : (
-                                              <option value="" disabled>
-                                                No bins available
-                                              </option>
-                                            )}
-                                          </select>
-                                          {detailTableErrors[index]?.bin && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailTableErrors[index].bin}
-                                            </div>
-                                          )}
-                                        </td>
+                                                )}
+                                              </select>
+                                              {detailTableErrors[index]?.bin && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {detailTableErrors[index].bin}
+                                                </div>
+                                              )}
+                                            </td>
 
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            style={{ width: '300px' }}
-                                            type="text"
-                                            value={row.binType}
-                                            className={detailTableErrors[index]?.binType ? 'error form-control' : 'form-control'}
-                                            disabled
-                                          />
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            style={{ width: '150px' }}
-                                            type="text"
-                                            value={row.core}
-                                            className={detailTableErrors[index]?.core ? 'error form-control' : 'form-control'}
-                                            disabled
-                                          />
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            style={{ width: '150px' }}
-                                            type="text"
-                                            value={row.avlQty}
-                                            className={detailTableErrors[index]?.avlQty ? 'error form-control' : 'form-control'}
-                                            disabled
-                                          />
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            style={{ width: '150px' }}
-                                            type="text"
-                                            value={row.actualQty}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              const intPattern = /^\d*$/; // Pattern to match only whole numbers
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                style={{ width: '300px' }}
+                                                type="text"
+                                                value={row.binType}
+                                                className={detailTableErrors[index]?.binType ? 'error form-control' : 'form-control'}
+                                                disabled
+                                              />
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                style={{ width: '150px' }}
+                                                type="text"
+                                                value={row.core}
+                                                className={detailTableErrors[index]?.core ? 'error form-control' : 'form-control'}
+                                                disabled
+                                              />
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                style={{ width: '150px' }}
+                                                type="text"
+                                                value={row.avlQty}
+                                                className={detailTableErrors[index]?.avlQty ? 'error form-control' : 'form-control'}
+                                                disabled
+                                              />
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                style={{ width: '150px' }}
+                                                type="text"
+                                                value={row.actualQty}
+                                                onChange={(e) => {
+                                                  const value = e.target.value;
+                                                  const intPattern = /^\d*$/; // Pattern to match only whole numbers
 
-                                              if (intPattern.test(value) || value === '') {
-                                                // Allow empty values for clearing
-                                                const numericValue = parseInt(value, 10);
-                                                const numericAvlQty = parseInt(row.avlQty, 10) || 0;
+                                                  if (intPattern.test(value) || value === '') {
+                                                    // Allow empty values for clearing
+                                                    const numericValue = parseInt(value, 10);
+                                                    const numericAvlQty = parseInt(row.avlQty, 10) || 0;
 
-                                                // if (value === '' || numericValue <= numericAvlQty) {
-                                                // if (value === '') {
-                                                setDetailTableData((prev) => {
-                                                  const updatedData = prev.map((r) => {
-                                                    const updatedActualQty = numericValue || 0;
-                                                    return r.id === row.id
-                                                      ? {
-                                                          ...r,
-                                                          actualQty: value
-                                                        }
-                                                      : r;
-                                                  });
-                                                  return updatedData;
-                                                });
-                                                setDetailTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    actualQty: !value ? 'Rec QTY is required' : ''
-                                                  };
-                                                  return newErrors;
-                                                });
-                                                // } else {
-                                                //   setDetailTableErrors((prev) => {
-                                                //     const newErrors = [...prev];
-                                                //     newErrors[index] = {
-                                                //       ...newErrors[index],
-                                                //       actualQty: 'Rec QTY cannot be greater than Inv QTY'
-                                                //     };
-                                                //     return newErrors;
-                                                //   });
-                                                // }
-                                              } else {
-                                                setDetailTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = { ...newErrors[index], actualQty: 'Invalid value' };
-                                                  return newErrors;
-                                                });
-                                              }
-                                            }}
-                                            className={detailTableErrors[index]?.actualQty ? 'error form-control' : 'form-control'}
-                                            disabled={!row.avlQty}
-                                          />
-                                          {row.avlQty && detailTableErrors[index]?.actualQty && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailTableErrors[index].actualQty}
-                                            </div>
-                                          )}
+                                                    // if (value === '' || numericValue <= numericAvlQty) {
+                                                    // if (value === '') {
+                                                    setDetailTableData((prev) => {
+                                                      const updatedData = prev.map((r) => {
+                                                        const updatedActualQty = numericValue || 0;
+                                                        return r.id === row.id
+                                                          ? {
+                                                              ...r,
+                                                              actualQty: value
+                                                            }
+                                                          : r;
+                                                      });
+                                                      return updatedData;
+                                                    });
+                                                    setDetailTableErrors((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = {
+                                                        ...newErrors[index],
+                                                        actualQty: !value ? 'Rec QTY is required' : ''
+                                                      };
+                                                      return newErrors;
+                                                    });
+                                                    // } else {
+                                                    //   setDetailTableErrors((prev) => {
+                                                    //     const newErrors = [...prev];
+                                                    //     newErrors[index] = {
+                                                    //       ...newErrors[index],
+                                                    //       actualQty: 'Rec QTY cannot be greater than Inv QTY'
+                                                    //     };
+                                                    //     return newErrors;
+                                                    //   });
+                                                    // }
+                                                  } else {
+                                                    setDetailTableErrors((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = { ...newErrors[index], actualQty: 'Invalid value' };
+                                                      return newErrors;
+                                                    });
+                                                  }
+                                                }}
+                                                className={detailTableErrors[index]?.actualQty ? 'error form-control' : 'form-control'}
+                                                disabled={!row.avlQty}
+                                              />
+                                              {row.avlQty && detailTableErrors[index]?.actualQty && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {detailTableErrors[index].actualQty}
+                                                </div>
+                                              )}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </>
+                                    )}
+                                  </tbody>
+                                  {detailTableErrors.some((error) => error.general) && (
+                                    <tfoot>
+                                      <tr>
+                                        <td colSpan={12} className="error-message">
+                                          <div style={{ color: 'red', fontSize: '14px', textAlign: 'center' }}>
+                                            {detailTableErrors.find((error) => error.general)?.general}
+                                          </div>
                                         </td>
                                       </tr>
-                                    ))}
-                                  </tbody>
+                                    </tfoot>
+                                  )}
                                 </>
                               ) : (
                                 <>

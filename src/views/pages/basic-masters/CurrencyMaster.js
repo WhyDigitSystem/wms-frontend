@@ -71,9 +71,7 @@ export const CurrencyMaster = () => {
         }
         break;
       case 'currencySymbol':
-        if (!symbolRegex.test(value)) {
-          errorMessage = 'Only alphabets, $ characters are allowed';
-        } else if (value.length > 10) {
+        if (value.length > 1) {
           errorMessage = 'Invalid Format';
         }
         break;

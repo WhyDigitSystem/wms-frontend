@@ -39,7 +39,7 @@ export const ItemMaster = () => {
   const [unitList, setUnitList] = useState([]);
   const [groupList, setGroupList] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
@@ -68,7 +68,7 @@ export const ItemMaster = () => {
     zoneType: '',
     weightSkuUom: '',
     hsnCode: '',
-    controlBranch: localStorage.getItem('branchCode'),
+    controlBranch: localStorage.getItem('branchcode'),
     criticalStockLevel: '',
     criticalStock: '',
     bchk: '',
@@ -365,7 +365,7 @@ export const ItemMaster = () => {
       zoneType: '',
       weightSkuUom: '',
       hsnCode: '',
-      // controlBranch: '',
+      controlBranch: localStorage.getItem('branchcode'),
       criticalStockLevel: '',
       criticalStock: '',
       bchk: '',
@@ -417,6 +417,13 @@ export const ItemMaster = () => {
     });
     setItemTableErrors('');
     setEditId('');
+  };
+
+  const handleTableClear = (table) => {
+    if (table === 'itemTableData') {
+      setItemTableData([{ id: 1, mrp: '', fDate: '', tDate: '' }]);
+      setItemTableErrors('');
+    }
   };
 
   const handleSave = async () => {
@@ -591,7 +598,7 @@ export const ItemMaster = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Part No"
+                  label="Part No *"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -604,7 +611,7 @@ export const ItemMaster = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Part Desc"
+                  label="Part Desc *"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -716,8 +723,8 @@ export const ItemMaster = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.sku}>
-                  <InputLabel id="sku-label">SKU</InputLabel>
-                  <Select labelId="sku-label" id="sku" name="sku" label="SKU" value={formData.sku} onChange={handleInputChange}>
+                  <InputLabel id="sku-label">SKU *</InputLabel>
+                  <Select labelId="sku-label" id="sku" name="sku" label="SKU *" value={formData.sku} onChange={handleInputChange}>
                     {unitList?.map((row) => (
                       <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
                         {row.unitName.toUpperCase()}
@@ -729,8 +736,8 @@ export const ItemMaster = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.sku}>
-                  <InputLabel id="sku-label">SSKU</InputLabel>
-                  <Select labelId="sku-label" id="ssku" name="ssku" label="SSKU" value={formData.ssku} onChange={handleInputChange}>
+                  <InputLabel id="sku-label">SSKU *</InputLabel>
+                  <Select labelId="sku-label" id="ssku" name="ssku" label="SSKU *" value={formData.ssku} onChange={handleInputChange}>
                     {unitList?.map((row) => (
                       <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
                         {row.unitName.toUpperCase()}
@@ -890,6 +897,7 @@ export const ItemMaster = () => {
                     <div className="row d-flex ml">
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                        <ActionButton title="Clear" icon={ClearIcon} onClick={() => handleTableClear('itemTableData')} />
                       </div>
                       <div className="row mt-2">
                         <div className="col-lg-8">

@@ -37,7 +37,7 @@ export const SupplierMaster = () => {
   const [listView, setListView] = useState(false);
   const [editId, setEditId] = useState('');
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [countryList, setCountryList] = useState([]);
   const [stateList, setStateList] = useState([]);
   const [cityList, setCityList] = useState([]);
@@ -54,7 +54,7 @@ export const SupplierMaster = () => {
     country: '',
     state: '',
     city: '',
-    controlBranch: localStorage.getItem('branchCode'),
+    controlBranch: localStorage.getItem('branchcode'),
     pincode: '',
     email: '',
     // gst: '',
@@ -116,14 +116,6 @@ export const SupplierMaster = () => {
     }
   }, [formData.country, formData.state]);
 
-  // const getAllCountries = async () => {
-  //   try {
-  //     const countryData = await getAllActiveCountries(orgId);
-  //     setCountryList(countryData);
-  //   } catch (error) {
-  //     console.error('Error fetching country data:', error);
-  //   }
-  // };
   const getAllCountries = async () => {
     try {
       const countryData = await getAllActiveCountries(orgId);
@@ -267,7 +259,7 @@ export const SupplierMaster = () => {
       setFieldErrors({ ...fieldErrors, [name]: '' });
 
       const upperCaseValue = value.toUpperCase();
-      const updatedValue = name === 'email' ? value : upperCaseValue;
+      const updatedValue = name === 'email' ? value.toLowerCase() : upperCaseValue;
 
       setFormData({ ...formData, [name]: updatedValue });
 
@@ -306,10 +298,9 @@ export const SupplierMaster = () => {
       country: '',
       state: '',
       city: '',
-      controlBranch: '',
+      controlBranch: localStorage.getItem('branchcode'),
       pincode: '',
       email: '',
-      // gst: '',
       eccNo: '',
       active: true
     });
@@ -333,10 +324,13 @@ export const SupplierMaster = () => {
       eccNo: '',
       active: true
     });
+    setEditId('');
   };
 
   const handleSave = async () => {
     const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!formData.supplierName) {
       errors.supplierName = 'Supplier Name is required';
     }
@@ -356,8 +350,11 @@ export const SupplierMaster = () => {
       errors.contactPerson = 'Contact Person is required';
     }
     if (!formData.mobile) {
-      errors.mobile = 'Mobile Number is required';
+      errors.mobile = 'Mobile is required';
+    } else if (formData.mobile.length < 10) {
+      errors.mobile = 'Invalid Mobile Format';
     }
+
     if (!formData.address) {
       errors.address = 'Address is required';
     }
@@ -370,11 +367,16 @@ export const SupplierMaster = () => {
     if (!formData.city) {
       errors.city = 'City is required';
     }
-    if (!formData.pincode) {
-      errors.pincode = 'Pin code is required';
+    if (formData.pincode.length > 0 && formData.pincode.length < 6) {
+      errors.pincode = 'Invalid Pincode Format';
+    }
+    if (formData.pan.length > 0 && formData.pan.length < 10) {
+      errors.pan = 'Invalid PAN Format';
     }
     if (!formData.email) {
       errors.email = 'Email is required';
+    } else if (!emailRegex.test(formData.email)) {
+      errors.email = 'Invalid MailID Format';
     }
     if (!formData.controlBranch) {
       errors.controlBranch = 'Control Branch is required';
@@ -422,6 +424,7 @@ export const SupplierMaster = () => {
         if (response.status === true) {
           console.log('Response:', response.data);
           handleClear();
+          getAllSuppliers();
           showToast('success', editId ? ' Supplier Updated Successfully' : 'Supplier created successfully');
           setIsLoading(false);
         } else {

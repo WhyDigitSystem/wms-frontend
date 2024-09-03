@@ -2,20 +2,20 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
 import { Avatar, Button, CardActions, CardContent, Divider, Grid, Menu, MenuItem, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // project imports
-import BajajAreaChartCard from './BajajAreaChartCard';
+import { gridSpacing } from 'store/constant';
 import MainCard from 'ui-component/cards/MainCard';
 import SkeletonPopularCard from 'ui-component/cards/Skeleton/PopularCard';
-import { gridSpacing } from 'store/constant';
+import BajajAreaChartCard from './BajajAreaChartCard';
 
 // assets
 import ChevronRightOutlinedIcon from '@mui/icons-material/ChevronRightOutlined';
-import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
-import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
+import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
+import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 
 // ==============================|| DASHBOARD DEFAULT - POPULAR CARD ||============================== //
 
@@ -43,7 +43,7 @@ const PopularCard = ({ isLoading }) => {
               <Grid item xs={12}>
                 <Grid container alignContent="center" justifyContent="space-between">
                   <Grid item>
-                    <Typography variant="h4">Popular Stocks</Typography>
+                    <Typography variant="h4">Popular Customers</Typography>
                   </Grid>
                   <Grid item>
                     <MoreHorizOutlinedIcon
@@ -88,14 +88,14 @@ const PopularCard = ({ isLoading }) => {
                     <Grid container alignItems="center" justifyContent="space-between">
                       <Grid item>
                         <Typography variant="subtitle1" color="inherit">
-                          Bajaj Finery
+                          Casio
                         </Typography>
                       </Grid>
                       <Grid item>
                         <Grid container alignItems="center" justifyContent="space-between">
                           <Grid item>
                             <Typography variant="subtitle1" color="inherit">
-                              $1839.00
+                              ₹1,83,998.00
                             </Typography>
                           </Grid>
                           <Grid item>
@@ -119,7 +119,7 @@ const PopularCard = ({ isLoading }) => {
                   </Grid>
                   <Grid item>
                     <Typography variant="subtitle2" sx={{ color: 'success.dark' }}>
-                      10% Profit
+                      180 orders
                     </Typography>
                   </Grid>
                 </Grid>
@@ -129,14 +129,14 @@ const PopularCard = ({ isLoading }) => {
                     <Grid container alignItems="center" justifyContent="space-between">
                       <Grid item>
                         <Typography variant="subtitle1" color="inherit">
-                          TTML
+                          Mars
                         </Typography>
                       </Grid>
                       <Grid item>
                         <Grid container alignItems="center" justifyContent="space-between">
                           <Grid item>
                             <Typography variant="subtitle1" color="inherit">
-                              $100.00
+                              ₹45,609.00
                             </Typography>
                           </Grid>
                           <Grid item>
@@ -146,12 +146,12 @@ const PopularCard = ({ isLoading }) => {
                                 width: 16,
                                 height: 16,
                                 borderRadius: '5px',
-                                backgroundColor: theme.palette.orange.light,
-                                color: theme.palette.orange.dark,
+                                backgroundColor: theme.palette.success.light,
+                                color: theme.palette.success.dark,
                                 marginLeft: 1.875
                               }}
                             >
-                              <KeyboardArrowDownOutlinedIcon fontSize="small" color="inherit" />
+                              <KeyboardArrowUpOutlinedIcon fontSize="small" color="inherit" />
                             </Avatar>
                           </Grid>
                         </Grid>
@@ -159,8 +159,8 @@ const PopularCard = ({ isLoading }) => {
                     </Grid>
                   </Grid>
                   <Grid item>
-                    <Typography variant="subtitle2" sx={{ color: theme.palette.orange.dark }}>
-                      10% loss
+                    <Typography variant="subtitle2" sx={{ color: theme.palette.success.dark }}>
+                      167 orders
                     </Typography>
                   </Grid>
                 </Grid>
@@ -170,14 +170,14 @@ const PopularCard = ({ isLoading }) => {
                     <Grid container alignItems="center" justifyContent="space-between">
                       <Grid item>
                         <Typography variant="subtitle1" color="inherit">
-                          Reliance
+                          Amazon
                         </Typography>
                       </Grid>
                       <Grid item>
                         <Grid container alignItems="center" justifyContent="space-between">
                           <Grid item>
                             <Typography variant="subtitle1" color="inherit">
-                              $200.00
+                              ₹22,090.00
                             </Typography>
                           </Grid>
                           <Grid item>
@@ -201,7 +201,7 @@ const PopularCard = ({ isLoading }) => {
                   </Grid>
                   <Grid item>
                     <Typography variant="subtitle2" sx={{ color: theme.palette.success.dark }}>
-                      10% Profit
+                      145 orders
                     </Typography>
                   </Grid>
                 </Grid>
@@ -211,14 +211,14 @@ const PopularCard = ({ isLoading }) => {
                     <Grid container alignItems="center" justifyContent="space-between">
                       <Grid item>
                         <Typography variant="subtitle1" color="inherit">
-                          TTML
+                          Britania
                         </Typography>
                       </Grid>
                       <Grid item>
                         <Grid container alignItems="center" justifyContent="space-between">
                           <Grid item>
                             <Typography variant="subtitle1" color="inherit">
-                              $189.00
+                              ₹18,900.00
                             </Typography>
                           </Grid>
                           <Grid item>
@@ -228,8 +228,8 @@ const PopularCard = ({ isLoading }) => {
                                 width: 16,
                                 height: 16,
                                 borderRadius: '5px',
-                                backgroundColor: theme.palette.orange.light,
-                                color: theme.palette.orange.dark,
+                                backgroundColor: theme.palette.success.light,
+                                color: theme.palette.success.dark,
                                 ml: 2
                               }}
                             >
@@ -241,8 +241,8 @@ const PopularCard = ({ isLoading }) => {
                     </Grid>
                   </Grid>
                   <Grid item>
-                    <Typography variant="subtitle2" sx={{ color: theme.palette.orange.dark }}>
-                      10% loss
+                    <Typography variant="subtitle2" sx={{ color: theme.palette.success.dark }}>
+                      136 orders
                     </Typography>
                   </Grid>
                 </Grid>
@@ -252,14 +252,14 @@ const PopularCard = ({ isLoading }) => {
                     <Grid container alignItems="center" justifyContent="space-between">
                       <Grid item>
                         <Typography variant="subtitle1" color="inherit">
-                          Stolon
+                          Flipcart
                         </Typography>
                       </Grid>
                       <Grid item>
                         <Grid container alignItems="center" justifyContent="space-between">
                           <Grid item>
                             <Typography variant="subtitle1" color="inherit">
-                              $189.00
+                              ₹18,900.00
                             </Typography>
                           </Grid>
                           <Grid item>
@@ -269,12 +269,12 @@ const PopularCard = ({ isLoading }) => {
                                 width: 16,
                                 height: 16,
                                 borderRadius: '5px',
-                                backgroundColor: theme.palette.orange.light,
-                                color: theme.palette.orange.dark,
+                                backgroundColor: theme.palette.success.light,
+                                color: theme.palette.success.dark,
                                 ml: 2
                               }}
                             >
-                              <KeyboardArrowDownOutlinedIcon fontSize="small" color="inherit" />
+                              <KeyboardArrowUpOutlinedIcon fontSize="small" color="inherit" />
                             </Avatar>
                           </Grid>
                         </Grid>
@@ -282,8 +282,8 @@ const PopularCard = ({ isLoading }) => {
                     </Grid>
                   </Grid>
                   <Grid item>
-                    <Typography variant="subtitle2" sx={{ color: theme.palette.orange.dark }}>
-                      10% loss
+                    <Typography variant="subtitle2" sx={{ color: theme.palette.success.dark }}>
+                      98 orders
                     </Typography>
                   </Grid>
                 </Grid>

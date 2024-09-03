@@ -1,14 +1,14 @@
 import PropTypes from 'prop-types';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
 import { Avatar, Box, ButtonBase } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // project imports
 import LogoSection from '../LogoSection';
-import SearchSection from './SearchSection';
-import ProfileSection from './ProfileSection';
 import NotificationSection from './NotificationSection';
+import ProfileSection from './ProfileSection';
+import SearchSection from './SearchSection';
 
 // assets
 import { IconMenu2 } from '@tabler/icons-react';
@@ -62,6 +62,21 @@ const Header = ({ handleLeftDrawerToggle }) => {
       <Box sx={{ flexGrow: 1 }} />
 
       {/* notification & profile */}
+      <div className="mt-2" style={{ display: 'flex', alignItems: 'center' }}>
+        <span
+          style={{
+            height: '11px',
+            width: '11px',
+            backgroundColor: '#25BE2B',
+            borderRadius: '50%',
+            display: 'inline-block',
+            marginRight: '8px',
+            marginBottom: '8px'
+          }}
+        ></span>
+        <h6>WMS</h6>
+      </div>
+
       <NotificationSection />
       <GlobalSection />
       <ProfileSection />

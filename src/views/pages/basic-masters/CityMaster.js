@@ -99,6 +99,7 @@ export const CityMaster = () => {
       state: '',
       country: ''
     });
+    setEditId('');
   };
 
   const getAllCities = async () => {

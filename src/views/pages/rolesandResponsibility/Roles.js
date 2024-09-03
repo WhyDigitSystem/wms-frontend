@@ -121,13 +121,13 @@ const Roles = () => {
     const { name, value, checked } = e.target;
     let newValue = value;
 
-    // Transform value to uppercase
+    // Convert the value to uppercase
     newValue = newValue.toUpperCase();
 
-    // Validate value to allow only alphabetic characters
-    newValue = newValue.replace(/[^A-Z ]/g, '');
+    // Remove any characters that are not uppercase letters
+    newValue = newValue.replace(/[^A-Z]/g, '');
 
-    // Update the value of newValue instead of redeclaring it
+    // Handle checkbox input separately
     newValue = name === 'active' ? checked : newValue;
 
     setFormData({ ...formData, [name]: newValue });

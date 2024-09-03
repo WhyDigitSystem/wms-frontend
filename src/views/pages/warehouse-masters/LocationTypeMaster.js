@@ -68,21 +68,6 @@ export const LocationTypeMaster = () => {
     }
   };
 
-  // const getAllLocationTypes = async () => {
-  //   try {
-  //     const response = await apiCalls('get', `warehousemastercontroller/locationType?orgId=${orgId}`);
-
-  //     console.log('API Response:', response);
-
-  //     if (response.status === 200) {
-  //       setListViewData(response.paramObjectsMap.countryVO);
-  //     } else {
-  //       console.error('API Error:', response);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
   const getLocationTypeById = async (row) => {
     console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
     setEditId(row.original.id);
@@ -110,8 +95,6 @@ export const LocationTypeMaster = () => {
     const { name, value, selectionStart, selectionEnd } = e.target;
 
     const nameRegex = /^[A-Za-z0-9  ]*$/;
-    // const numericRegex = /^[0-9]*$/;
-
     let errorMessage = '';
 
     switch (name) {
@@ -119,9 +102,6 @@ export const LocationTypeMaster = () => {
         if (!nameRegex.test(value)) {
           errorMessage = 'Only Alphanumeric characters are allowed';
         }
-        // else if (value.length > 10) {
-        //   errorMessage = 'Invalid Format';
-        // }
         break;
 
       default:
@@ -132,14 +112,8 @@ export const LocationTypeMaster = () => {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
-
-      // Convert the input value to uppercase
       const upperCaseValue = value.toUpperCase();
-
-      // Set the form data and preserve the cursor position
       setFormData((prevData) => ({ ...prevData, [name]: upperCaseValue }));
-
-      // Use a timeout to ensure the cursor position is set after the state update
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.setSelectionRange(selectionStart, selectionEnd);
@@ -149,8 +123,10 @@ export const LocationTypeMaster = () => {
   };
 
   const handleClear = () => {
+    setEditId('');
     setFormData({
-      binType: ''
+      binType: '',
+      active: true
     });
     setFieldErrors({
       binType: ''
@@ -179,13 +155,13 @@ export const LocationTypeMaster = () => {
         if (response.status === true) {
           console.log('Response:', response.data);
 
-          showToast('success', editId ? ' LocationType Updated Successfully' : 'LocationType created successfully');
+          showToast('success', editId ? ' Bin Type Updated Successfully' : 'Bin Type created successfully');
 
           handleClear();
           getAllLocationTypes();
           setIsLoading(false);
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'LocationType creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'Bin Type creation failed');
           setIsLoading(false);
         }
       } catch (error) {

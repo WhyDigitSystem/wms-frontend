@@ -173,7 +173,7 @@ export const BuyerOrder = () => {
     try {
       const response = await apiCalls(
         'get',
-        `buyerOrder/getBoSkuDetails?batch=TEST01&branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&warehouse=${loginWarehouse}`
+        `buyerOrder/getBoSkuDetails?batch=BATCH021&branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&warehouse=${loginWarehouse}`
       );
       console.log('THE WAREHOUSE IS:', response);
       if (response.status === true) {

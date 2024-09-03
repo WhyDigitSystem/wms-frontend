@@ -141,40 +141,133 @@ const Branch = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+  //   const branchNameRegex = /^[A-Za-z0-9@_\-* ]*$/;
+  //   const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+  //   const alphanumericRegex = /^[A-Za-z0-9]*$/;
+  //   const numericRegex = /^[0-9]*$/;
+
+  //   if (name === 'branchCode' && !branchCodeRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Only alphanumeric characters and @, _, -, /, are allowed' });
+  //   } else if (name === 'branchName' && !branchNameRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Only alphanumeric characters and @, _, -, * are allowed' });
+  //   } else if (name === 'gst') {
+  //     if (!alphanumericRegex.test(value)) {
+  //       setFieldErrors({ ...fieldErrors, [name]: 'Special Characters are not allowed' });
+  //     } else if (value.length > 15) {
+  //       setFieldErrors({ ...fieldErrors, [name]: 'Only 15 Digits are allowed' });
+  //     } else {
+  //       setFieldErrors({ ...fieldErrors, [name]: '' });
+  //     }
+  //   } else if (name === 'pincode') {
+  //     if (!numericRegex.test(value)) {
+  //       setFieldErrors({ ...fieldErrors, [name]: 'Only numeric characters are allowed' });
+  //     } else if (value.length > 6) {
+  //       setFieldErrors({ ...fieldErrors, [name]: 'Only 6 Digits are allowed' });
+  //     } else {
+  //       setFieldErrors({ ...fieldErrors, [name]: '' });
+  //     }
+  //   } else if (name === 'mobile') {
+  //     if (!numericRegex.test(value)) {
+  //       setFieldErrors({ ...fieldErrors, [name]: 'Only numeric characters are allowed' });
+  //     } else if (value.length > 10) {
+  //       setFieldErrors({ ...fieldErrors, [name]: 'Only 10 Digits are allowed' });
+  //     } else {
+  //       setFieldErrors({ ...fieldErrors, [name]: '' });
+  //     }
+  //   } else {
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+
+  //   // Update the form data
+  //   if (name === 'active') {
+  //     setFormData({ ...formData, [name]: checked });
+  //   } else if (name === 'email') {
+  //     setFormData({ ...formData, [name]: value });
+  //   } else {
+  //     setFormData({ ...formData, [name]: value.toUpperCase() });
+  //   }
+
+  //   // Update the cursor position after the input change
+  //   if (type === 'text' || type === 'textarea' || type === 'email') {
+  //     setTimeout(() => {
+  //       const inputElement = document.getElementsByName(name)[0];
+  //       if (inputElement) {
+  //         inputElement.setSelectionRange(selectionStart, selectionEnd);
+  //       }
+  //     }, 0);
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
     const branchNameRegex = /^[A-Za-z0-9@_\-* ]*$/;
     const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const alphanumericRegex = /^[A-Za-z0-9]*$/;
     const numericRegex = /^[0-9]*$/;
 
-    if (name === 'branchCode' && !branchCodeRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only alphanumeric characters and @, _, -, /, are allowed' });
-    } else if (name === 'branchName' && !branchNameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only alphanumeric characters and @, _, -, * are allowed' });
-    } else if (name === 'gst' && !alphanumericRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Special Characters are not allowed' });
-    } else if (name === 'gst' && value.length > 15) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only 15 Digits only allowed' });
-    } else if (name === 'pincode' && !numericRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only numeric are allowed' });
-    } else if (name === 'pincode' && value.length > 6) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only 6 Digits are allowed' });
-    } else if (name === 'mobile' && !numericRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only numeric are allowed' });
-    } else if (name === 'mobile' && value.length > 10) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only 10 Digits are allowed' });
-    } else {
-      if (name === 'active') {
-        setFormData({ ...formData, [name]: checked });
-      } else if (name === 'email') {
-        setFormData({ ...formData, [name]: value });
-      } else {
-        setFormData({ ...formData, [name]: value.toUpperCase() });
-      }
+    let newValue = value.toUpperCase();
+    let error = '';
 
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+    if (name === 'branchCode') {
+      if (!branchCodeRegex.test(value)) {
+        error = 'Only alphanumeric characters and @, _, -, /, are allowed';
+      }
+    } else if (name === 'branchName') {
+      if (!branchNameRegex.test(value)) {
+        error = 'Only alphanumeric characters and @, _, -, * are allowed';
+      }
+    } else if (name === 'gst') {
+      if (!alphanumericRegex.test(value)) {
+        error = 'Special Characters are not allowed';
+      } else if (value.length > 15) {
+        error = 'Only 15 characters are allowed';
+      }
+    } else if (name === 'pincode') {
+      if (!numericRegex.test(value)) {
+        error = 'Only numeric characters are allowed';
+      } else if (value.length > 6) {
+        error = 'Only 6 digits are allowed';
+        newValue = value.slice(0, 6); // Limit to 6 digits
+      }
+    } else if (name === 'mobile') {
+      if (!numericRegex.test(value)) {
+        error = 'Only numeric characters are allowed';
+      } else if (value.length > 10) {
+        error = 'Only 10 digits are allowed';
+        newValue = value.slice(0, 10); // Limit to 10 digits
+      }
+    } else if (name === 'active') {
+      newValue = checked;
+    } else if (name === 'email') {
+      newValue = value; // Preserve email case
+    }
+
+    // Update error state
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: error
+    }));
+
+    // Only update form data if there's no error
+    if (!error) {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: newValue
+      }));
+    }
+
+    // Handle cursor position for text, textarea, and email fields
+    if (type === 'text' || type === 'textarea' || type === 'email') {
+      setTimeout(() => {
+        const inputElement = document.getElementsByName(name)[0];
+        if (inputElement) {
+          inputElement.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 0);
     }
   };
 
@@ -216,10 +309,6 @@ const Branch = () => {
     if (!formData.branchName) {
       errors.branchName = 'Company is required';
     }
-
-    // if (!formData.email) {
-    //   errors.email = 'Password is required';
-    // }
     if (!formData.address) {
       errors.address = 'Address is required';
     }
@@ -236,6 +325,12 @@ const Branch = () => {
       errors.gst = 'GST is required';
     } else if (formData.gst.length < 15) {
       errors.gst = 'Invalid GST No';
+    }
+    if (formData.mobile.length > 0 && formData.mobile.length < 10) {
+      errors.mobile = 'Invalid Mobile No';
+    }
+    if (formData.pincode.length > 0 && formData.pincode.length < 6) {
+      errors.pincode = 'Invalid Pincode';
     }
 
     if (Object.keys(errors).length === 0) {
@@ -268,7 +363,7 @@ const Branch = () => {
         if (response.status === true) {
           showToast('success', editId ? ' Branch Updated Successfully' : 'Branch created successfully');
           handleClear();
-          // getAllBranches();
+          getAllBranches();
           setIsLoading(false);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Branch creation failed');

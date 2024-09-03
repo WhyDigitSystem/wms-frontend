@@ -1,9 +1,10 @@
 // assets
-import { IconKey } from '@tabler/icons-react';
+
+import { IconPasswordUser } from '@tabler/icons-react';
 
 // constant
 const icons = {
-  IconKey
+  IconPasswordUser
 };
 
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
@@ -18,7 +19,7 @@ const RolesAndResponsibilities = {
       id: 'rolesAndResponsibilities',
       title: 'Roles And Responsibilities',
       type: 'collapse',
-      icon: icons.IconKey,
+      icon: icons.IconPasswordUser,
 
       children: [
         {

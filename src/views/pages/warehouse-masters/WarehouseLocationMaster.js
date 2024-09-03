@@ -38,7 +38,7 @@ export const WarehouseLocationMaster = () => {
   const [binCategoryList, setBinCategoryList] = useState([]);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [loginUserId, setLoginUserId] = useState(localStorage.getItem('userId'));
-  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
@@ -124,7 +124,7 @@ export const WarehouseLocationMaster = () => {
   const getAllWarehousesByLoginBranch = async () => {
     try {
       const response = await apiCalls('get', `warehousemastercontroller/warehouse/branch?branchcode=${loginBranchCode}&orgid=${orgId}`);
-      console.log('THE WAREHOUSEES IS:', response);
+      console.log('THE warehousemastercontroller/warehouse/branch IS:', response);
       if (response.status === true) {
         setWarehouseList(response.paramObjectsMap.Warehouse);
       }
@@ -190,28 +190,45 @@ export const WarehouseLocationMaster = () => {
   };
 
   const getAllBinDetails = async () => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `warehousemastercontroller/getPalletno?endno=${formData.cellTo}&level=${formData.levelIdentity}&rowno=${formData.rowNo}&startno=${formData.cellFrom}`
-      );
-      console.log('THE WAREHOUSE IS:', response);
-      if (response.status === true) {
-        const palletDetails = response.paramObjectsMap.pallet;
-        console.log('THE PALLET DETAILS ARE:', palletDetails);
-
-        setBinTableData(
-          palletDetails.map((plt) => ({
-            id: plt.id,
-            bin: plt.bin,
-            binCategory: plt.bincategory,
-            status: plt.status === 'T' ? 'True' : 'False',
-            core: plt.core
-          }))
+    const errors = {};
+    if (!formData.warehouse) {
+      errors.warehouse = 'Warehouse is required';
+    }
+    if (!formData.levelIdentity) {
+      errors.levelIdentity = 'Level Identity is required';
+    }
+    if (!formData.cellTo) {
+      errors.cellTo = 'Cell To is required';
+    }
+    if (!formData.rowNo) {
+      errors.rowNo = 'Row is required';
+    }
+    if (Object.keys(errors).length === 0) {
+      try {
+        const response = await apiCalls(
+          'get',
+          `warehousemastercontroller/getPalletno?endno=${formData.cellTo}&level=${formData.levelIdentity}&rowno=${formData.rowNo}&startno=${formData.cellFrom}`
         );
+        console.log('THE WAREHOUSE IS:', response);
+        if (response.status === true) {
+          const palletDetails = response.paramObjectsMap.pallet;
+          console.log('THE PALLET DETAILS ARE:', palletDetails);
+
+          setBinTableData(
+            palletDetails.map((plt) => ({
+              id: plt.id,
+              bin: plt.bin,
+              binCategory: plt.bincategory,
+              status: plt.status === 'T' ? 'True' : 'False',
+              core: plt.core
+            }))
+          );
+        }
+      } catch (error) {
+        console.error('Error fetching employee data:', error);
       }
-    } catch (error) {
-      console.error('Error fetching employee data:', error);
+    } else {
+      setFieldErrors(errors);
     }
   };
 
@@ -331,7 +348,9 @@ export const WarehouseLocationMaster = () => {
   };
 
   const handleClear = () => {
+    setViewId('');
     setFormData({
+      branch: localStorage.getItem('branch'),
       warehouse: '',
       locationType: '',
       rowNo: '',
@@ -358,6 +377,12 @@ export const WarehouseLocationMaster = () => {
       cellTo: ''
     });
     setBinTableErrors('');
+  };
+  const handleTableClear = (table) => {
+    if (table === 'binTableData') {
+      setBinTableData([{ id: 1, bin: '', binCategory: '', status: '', core: '' }]);
+      setBinTableErrors('');
+    }
   };
 
   const handleSave = async () => {
@@ -448,6 +473,7 @@ export const WarehouseLocationMaster = () => {
           handleClear();
           showToast('success', viewId ? ' Warehouse Location Updated Successfully' : 'Warehouse Location created successfully');
           setIsLoading(false);
+          getAllWarehousesLocations();
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Warehouse Location creation failed');
           setIsLoading(false);
@@ -486,7 +512,15 @@ export const WarehouseLocationMaster = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            {/* <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" /> */}
+            <ActionButton
+              title="Save"
+              icon={SaveIcon}
+              isLoading={isLoading}
+              onClick={!viewId ? handleSave : undefined}
+              // onClick={handleSave}
+              margin="0 10px 0 10px"
+            />
           </div>
         </div>
         {listView ? (
@@ -495,7 +529,7 @@ export const WarehouseLocationMaster = () => {
               data={listViewData}
               columns={listViewColumns}
               blockEdit={true}
-              disableEditIcon={true}
+              // disableEditIcon={true} for hide the edit icon
               viewIcon={true}
               toEdit={getWarehouseById}
             />
@@ -504,18 +538,7 @@ export const WarehouseLocationMaster = () => {
           <>
             <div className="row">
               <div className="col-md-3 mb-3">
-                <TextField
-                  label="Branch"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="branch"
-                  value={formData.branch}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.branch}
-                  helperText={fieldErrors.branch}
-                  disabled
-                />
+                <TextField label="Branch" variant="outlined" size="small" fullWidth name="branch" value={formData.branch} disabled />
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.warehouse}>
@@ -651,9 +674,13 @@ export const WarehouseLocationMaster = () => {
                   <>
                     <div className="row d-flex ml">
                       <div className="mb-1">
-                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={getAllBinDetails} />
-                        <ActionButton title="Clear" icon={ClearIcon} />
+                        {!viewId && (
+                          <>
+                            <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                            <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={getAllBinDetails} />
+                            <ActionButton title="Clear" icon={ClearIcon} onClick={() => handleTableClear('binTableData')} />
+                          </>
+                        )}
                       </div>
                       <div className="row mt-2">
                         <div className="col-lg-10">
@@ -841,6 +868,7 @@ export const WarehouseLocationMaster = () => {
           </>
         )}
       </div>
+      <ToastContainer />
     </>
   );
 };

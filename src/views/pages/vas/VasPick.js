@@ -3,44 +3,31 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import {
-  FormHelperText,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Tooltip,
-  FormControlLabel,
-  Checkbox
-} from '@mui/material';
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormHelperText } from '@mui/material';
 
-import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import { useRef, useState, useMemo, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
+import Paper from '@mui/material/Paper';
 import Select from '@mui/material/Select';
-import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
-import apiCalls from 'apicall';
+import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
+import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers';
-import dayjs, { Dayjs } from 'dayjs';
-import { width } from '@mui/system';
-import { getAllActiveLocationTypes } from 'utils/CommonFunctions';
-import Paper from '@mui/material/Paper';
+import apiCalls from 'apicall';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
 import Draggable from 'react-draggable';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/ActionButton';
+import { getAllActiveLocationTypes } from 'utils/CommonFunctions';
+import { showToast } from 'utils/toast-component';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -411,7 +398,7 @@ export const VasPick = () => {
         stockState: formData.stockState,
         stateStatus: formData.stockStateFlag,
         status: formData.status,
-        orgId: orgId,
+        orgId: parseInt(orgId),
         branch: loginBranch,
         branchCode: loginBranchCode,
         client: loginClient,
@@ -593,33 +580,18 @@ export const VasPick = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    Part No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Part Desc
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    SKU
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    Bin
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                  <th className="table-header">Part No</th>
+                                  <th className="table-header">Part Desc</th>
+                                  <th className="table-header">SKU</th>
+                                  <th className="table-header">Bin</th>
+                                  <th className="table-header">Batch No</th>
+                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Batch No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    GRN No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Avl QTY
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Pick QTY
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Remaining QTY
-                                  </th>
+                                  </th> */}
+                                  <th className="table-header">GRN No</th>
+                                  <th className="table-header">Avl QTY</th>
+                                  <th className="table-header">Pick QTY</th>
+                                  <th className="table-header">Remaining QTY</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -635,13 +607,27 @@ export const VasPick = () => {
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
-                                    <td>{row.partNo}</td>
-                                    <td>{row.partDesc}</td>
-                                    <td>{row.sku}</td>
-                                    <td>{row.grnNo}</td>
-                                    <td>{row.batchNo}</td>
-                                    <td>{row.bin}</td>
-                                    <td>{row.avlQty}</td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.partNo}
+                                    </td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.partDesc}
+                                    </td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.sku}
+                                    </td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.grnNo}
+                                    </td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.batchNo}
+                                    </td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.bin}
+                                    </td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.avlQty}
+                                    </td>
                                     <td className="border px-2 py-2">
                                       <input
                                         style={{ width: '150px' }}
@@ -706,7 +692,9 @@ export const VasPick = () => {
                                         </div>
                                       )}
                                     </td>
-                                    <td>{row.remainingQty}</td>
+                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                      {row.remainingQty}
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>

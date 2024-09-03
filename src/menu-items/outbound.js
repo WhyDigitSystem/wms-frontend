@@ -1,9 +1,10 @@
 // assets
-import { IconKey } from '@tabler/icons-react';
+
+import { IconArrowDownFromArc } from '@tabler/icons-react';
 
 // constant
 const icons = {
-  IconKey
+  IconArrowDownFromArc
 };
 
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
@@ -18,7 +19,7 @@ const outbound = {
       title: 'Outbound',
       type: 'item',
       url: '/outbound/outboundmain',
-      icon: icons.IconDashboard
+      icon: icons.IconArrowDownFromArc
     }
   ]
 };

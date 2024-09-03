@@ -1,35 +1,34 @@
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { FormHelperText, Tooltip, FormControlLabel, Checkbox } from '@mui/material';
-import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import { useRef, useState, useMemo, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Checkbox, FormControlLabel, FormHelperText } from '@mui/material';
+import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
+import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
+import apiCalls from 'apicall';
+import { useEffect, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
-import apiCalls from 'apicall';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
+import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers';
 // import 'react-datepicker/dist/react-datepicker.css';
 // import { DatePicker } from 'react-datepicker';
-import dayjs, { Dayjs } from 'dayjs';
-import { width } from '@mui/system';
+import dayjs from 'dayjs';
 import { getAllActiveCarrier, getAllActivePartDetails, getAllActiveSupplier, getAllShipmentModes } from 'utils/CommonFunctions';
 
 export const Grn = () => {
@@ -53,6 +52,7 @@ export const Grn = () => {
   const [partNoList, setPartNoList] = useState([]);
   const [gatePassIdEdit, setGatePassIdEdit] = useState('');
   const [editDocDate, setEditDocDate] = useState(dayjs());
+  const [enableGatePassFields, setEnableGatePassFields] = useState(false);
 
   const [formData, setFormData] = useState({
     docId: '',
@@ -60,11 +60,11 @@ export const Grn = () => {
     editDocDate: dayjs(),
     grnType: '',
     entrySlNo: '',
-    date: null,
+    date: dayjs(),
     tax: '',
     gatePassId: '',
     gatePassDate: null,
-    grnDate: null,
+    grnDate: dayjs(),
     customerPo: '',
     vas: false,
     supplierShortName: '',
@@ -82,7 +82,7 @@ export const Grn = () => {
     driverName: '',
     securityName: '',
     containerNo: '',
-    lrDate: null,
+    lrDate: dayjs(),
     goodsDesc: '',
     vehicleNo: '',
     vesselDetails: '',
@@ -204,7 +204,7 @@ export const Grn = () => {
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
   const listViewColumns = [
-    { accessorKey: 'grndDate', header: 'GRN Date', size: 140 },
+    { accessorKey: 'grnDate', header: 'GRN Date', size: 140 },
     { accessorKey: 'docId', header: 'GRN No', size: 140 },
     { accessorKey: 'gatePassId', header: 'Gate Pass Id', size: 140 },
     { accessorKey: 'supplier', header: 'Supplier', size: 140 },
@@ -223,6 +223,14 @@ export const Grn = () => {
     // getAllVehicleTypes();
     // getAllGrns();
   }, []);
+  useEffect(() => {
+    const totalQty = lrTableData.reduce((sum, row) => sum + (parseInt(row.grnQty, 10) || 0), 0);
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      totGrnQty: totalQty
+    }));
+  }, [lrTableData]);
 
   const getNewGrnDocId = async () => {
     try {
@@ -272,8 +280,8 @@ export const Grn = () => {
         setLrTableData(
           gridDetails.map((row) => ({
             // id: row.id,
-            lrNoHawbNo: row.lrNoHaw,
-            invoiceNo: row.invoiceNo,
+            lr_Hawb_Hbl_No: row.lrNoHaw,
+            invNo: row.invoiceNo,
             invDate: row.invoiceDate ? dayjs(row.invoiceDate).format('YYYY-MM-DD') : null,
             partNo: row.partNo,
             partDesc: row.partDesc,
@@ -291,7 +299,7 @@ export const Grn = () => {
             recQty: row.recQty,
             shortQty: row.shortQty,
             weight: row.weight,
-            batchNo: row.batchNo
+            batch_PalletNo: row.batchNo
           }))
         );
       }
@@ -370,7 +378,7 @@ export const Grn = () => {
           date: particularGrn.entryDate,
           gatePassId: particularGrn.docId,
           gatePassDate: particularGrn.gatePassDate,
-          grnDate: particularGrn.grndDate,
+          grnDate: particularGrn.grnDate,
           customerPo: particularGrn.customerPo,
           vas: particularGrn.vas === true ? true : false,
           supplierShortName: particularGrn.supplierShortName,
@@ -466,6 +474,19 @@ export const Grn = () => {
           errorMessage = 'Only alphanumeric characters are allowed';
         }
         break;
+      case 'driverName':
+      case 'securityName':
+        if (!nameRegex.test(value)) {
+          errorMessage = 'Only Alphabets are allowed';
+        }
+        break;
+      case 'contact':
+        if (!numericRegex.test(value)) {
+          errorMessage = 'Only numeric characters are allowed';
+        } else if (value.length > 10) {
+          errorMessage = 'Invalid Mobile Format';
+        }
+        break;
       case 'noOfPallets':
         if (!numericRegex.test(value)) {
           errorMessage = 'Only numeric characters are allowed';
@@ -478,7 +499,13 @@ export const Grn = () => {
     if (errorMessage) {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
-      if (name === 'gatePassId') {
+      if (name === 'grnType') {
+        setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+        // if (value === 'GATE PASS') setEnableGatePassFields(true);
+        {
+          value === 'GATE PASS' ? setEnableGatePassFields(true) : setEnableGatePassFields(false);
+        }
+      } else if (name === 'gatePassId') {
         const selectedId = gatePassIdList.find((id) => id.docId === value);
         const selectedGatePassId = selectedId.docId;
         if (selectedId) {
@@ -487,8 +514,8 @@ export const Grn = () => {
             gatePassId: selectedId.docId,
             entrySlNo: selectedId.entryNo,
             gatePassDate: dayjs(selectedId.docDate).format('YYYY-MM-DD'),
-            supplierShortName: selectedId.supplierShortName,
-            supplier: selectedId.supplier,
+            supplierShortName: selectedId.supplier,
+            supplier: selectedId.supplierShortName,
             modeOfShipment: selectedId.modeOfShipment.toUpperCase(),
             vehicleType: selectedId.vehicleType.toUpperCase(),
             contact: selectedId.contact,
@@ -638,12 +665,12 @@ export const Grn = () => {
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
           lr_Hawb_Hbl_No: !table[table.length - 1].lr_Hawb_Hbl_No ? 'Lr_Hawb_Hbl_No is required' : '',
-          invNo: !table[table.length - 1].invNo ? 'Invoice No is required' : '',
+          invNo: !table[table.length - 1].invNo ? 'Inv No is required' : '',
           partNo: !table[table.length - 1].partNo ? 'Part No is required' : '',
           invQty: !table[table.length - 1].invQty ? 'InvQty is required' : '',
           batch_PalletNo: !table[table.length - 1].batch_PalletNo ? 'Batch No is required' : '',
-          palletQty: !table[table.length - 1].palletQty ? 'Pallet Qty is required' : '',
-          noOfPallets: !table[table.length - 1].noOfPallets ? 'No of Pallets is required' : ''
+          palletQty: !table[table.length - 1].palletQty ? 'Bin Qty is required' : '',
+          noOfPallets: !table[table.length - 1].noOfPallets ? 'No of Bins is required' : ''
         };
         return newErrors;
       });
@@ -655,8 +682,7 @@ export const Grn = () => {
   };
 
   const handleDateChange = (field, date) => {
-    // const formattedDate = dayjs(date).format('DD-MM-YYYY');
-    const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null; // Updated format for consistency
+    const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
 
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
@@ -671,11 +697,11 @@ export const Grn = () => {
       docDate: dayjs(),
       grnType: '',
       entrySlNo: '',
-      date: null,
+      date: dayjs(),
       tax: '',
       vehicleDetails: '',
       gatePassDate: null,
-      grnDate: null,
+      grnDate: dayjs(),
       customerPo: '',
       vas: false,
       supplierShortName: '',
@@ -693,7 +719,7 @@ export const Grn = () => {
       driverName: '',
       securityName: '',
       containerNo: '',
-      lrDate: null,
+      lrDate: dayjs(),
       goodsDesc: '',
       vehicleNo: '',
       vesselDetails: '',
@@ -834,7 +860,7 @@ export const Grn = () => {
       setIsLoading(true);
 
       const lrVo = lrTableData.map((row) => ({
-        // ...(editId && { id: row.id }),
+        ...(editId && { id: row.id }),
         qrCode: row.qrCode,
         lrNoHawbNo: row.lr_Hawb_Hbl_No,
         invoiceNo: row.invNo,
@@ -859,23 +885,15 @@ export const Grn = () => {
         // EXTRA FIELDS
         batchQty: 0,
         rate: 0,
-        binType: ''
+        binType: 'RACK STORAGE'
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
-        // docDate: formData.docDate ? dayjs(formData.docDate).format('YYYY-MM-DD') : null,
-        // docDate: editId
-        //   ? formData.docDate
-        //     ? dayjs(formData.docDate).format('YYYY-MM-DD')
-        //     : null
-        //   : editDocDate
-        //     ? dayjs(editDocDate).format('YYYY-MM-DD')
-        //     : null,
         entryNo: formData.entrySlNo,
         entryDate: formData.date ? dayjs(formData.date).format('YYYY-MM-DD') : null,
         gatePassId: editId ? gatePassIdEdit : formData.gatePassId,
         gatePassDate: formData.gatePassDate ? dayjs(formData.gatePassDate).format('YYYY-MM-DD') : null,
-        grndDate: formData.grnDate ? dayjs(formData.grnDate).format('YYYY-MM-DD') : null,
+        grnDate: formData.grnDate ? dayjs(formData.grnDate).format('YYYY-MM-DD') : null,
         customerPo: formData.customerPo,
         vas: formData.vas,
         supplierShortName: formData.supplierShortName,
@@ -978,7 +996,8 @@ export const Grn = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />
+            <ActionButton title="Upload" icon={CloudUploadIcon} />
           </div>
         </div>
         {listView ? (
@@ -1012,7 +1031,7 @@ export const Grn = () => {
                     <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.grnType}>
                       <InputLabel id="grnType-label">GRN Type</InputLabel>
                       <Select labelId="grnType-label" label="GRN Type" value={formData.grnType} onChange={handleInputChange} name="grnType">
-                        <MenuItem value="GET PASS">Gate Pass</MenuItem>
+                        <MenuItem value="GET PASS">GATE PASS</MenuItem>
                         <MenuItem value="GRN">GRN</MenuItem>
                       </Select>
                       {fieldErrors.grnType && <FormHelperText>{fieldErrors.grnType}</FormHelperText>}
@@ -1032,6 +1051,7 @@ export const Grn = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.entrySlNo}
                   helperText={fieldErrors.entrySlNo}
+                  disabled={editId ? true : false}
                 />
               </div>
 
@@ -1040,7 +1060,7 @@ export const Grn = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Date"
+                      label="Entry Date"
                       value={formData.date ? dayjs(formData.date, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('date', date)}
                       slotProps={{
@@ -1049,6 +1069,7 @@ export const Grn = () => {
                       format="DD/MM/YYYY"
                       error={fieldErrors.date}
                       helperText={fieldErrors.date && 'Required'}
+                      disabled={editId ? true : false}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1108,6 +1129,7 @@ export const Grn = () => {
                       format="DD/MM/YYYY"
                       error={fieldErrors.gatePassDate}
                       helperText={fieldErrors.gatePassDate && 'Required'}
+                      disabled={editId ? true : false}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1131,6 +1153,7 @@ export const Grn = () => {
                       format="DD/MM/YYYY"
                       error={fieldErrors.grnDate}
                       helperText={fieldErrors.grnDate && 'Required'}
+                      // disabled={editId ? true : false}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1148,6 +1171,7 @@ export const Grn = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.customerPo}
                   helperText={fieldErrors.customerPo}
+                  disabled={editId ? true : false}
                 />
               </div>
 
@@ -1161,6 +1185,7 @@ export const Grn = () => {
                     value={formData.supplierShortName}
                     onChange={handleInputChange}
                     name="supplierShortName"
+                    disabled={editId ? true : false}
                   >
                     {supplierList?.map((row) => (
                       <MenuItem key={row.id} value={row.supplierShortName.toUpperCase()}>
@@ -1174,17 +1199,7 @@ export const Grn = () => {
 
               {/* Supplier */}
               <div className="col-md-3 mb-3">
-                <TextField
-                  label="Supplier"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="supplier"
-                  value={formData.supplier}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.supplier}
-                  helperText={fieldErrors.supplier}
-                />
+                <TextField label="Supplier" variant="outlined" size="small" fullWidth name="supplier" value={formData.supplier} disabled />
               </div>
 
               {/* Bill of Entry */}
@@ -1199,6 +1214,7 @@ export const Grn = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.billOfEntry}
                   helperText={fieldErrors.billOfEntry}
+                  disabled={editId ? true : false}
                 />
               </div>
 
@@ -1215,6 +1231,7 @@ export const Grn = () => {
                     onChange={handleInputChange}
                     name="modeOfShipment"
                     required
+                    disabled={editId ? true : false}
                   >
                     {modeOfShipmentList?.map((row, index) => (
                       <MenuItem key={index} value={row.shipmentMode.toUpperCase()}>
@@ -1237,6 +1254,7 @@ export const Grn = () => {
                     onChange={handleInputChange}
                     name="carrier"
                     required
+                    disabled={editId ? true : false}
                   >
                     {carrierList?.map((row) => (
                       <MenuItem key={row.id} value={row.carrier.toUpperCase()}>
@@ -1274,687 +1292,768 @@ export const Grn = () => {
                       <div className="row mt-2">
                         <div className="col-lg-12">
                           <div className="table-responsive">
-                            <table className="table table-bordered ">
-                              <thead>
-                                <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                    Action
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                    S.No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    QR Code
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    LR No./ HAWB No./HBL No <span>&nbsp;*</span>
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Invoice No <span>&nbsp;*</span>
-                                  </th>
-                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    DN No
-                                  </th> */}
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Shipment No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    Invoice Date
-                                  </th>
-                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    GL Date
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Bin Type
-                                  </th> */}
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Part No <span>&nbsp;*</span>
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Part Desc <span>&nbsp;*</span>
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    SKU <span>&nbsp;*</span>
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Inv QTY<span>&nbsp;*</span>
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Rec QTY
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Short QTY
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Damage QTY
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    GRN QTY<span>&nbsp;*</span>
-                                  </th>
-                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Sub Stock QTY
-                                  </th> */}
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Batch No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Batch Date
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Exp Date
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Bin QTY<span>&nbsp;*</span>
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                    No of Bins<span>&nbsp;*</span>
-                                  </th>
-                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Pkgs
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Weight
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    MRP
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Amount
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Ins Amount
-                                  </th> */}
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Remarks
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {lrTableData.map((row, index) => (
-                                  <tr key={row.id}>
-                                    <td className="border px-2 py-2 text-center">
-                                      <ActionButton
-                                        title="Delete"
-                                        icon={DeleteIcon}
-                                        onClick={() => handleDeleteRow(row.id, lrTableData, setLrTableData)}
-                                      />
-                                    </td>
-                                    <td className="text-center">
-                                      <div className="pt-2">{index + 1}</div>
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.qrCode}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, qrCode: value } : r)));
-                                          setLrTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], qrCode: !value ? 'QR Code is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrTableErrors[index]?.qrCode ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.qrCode && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].qrCode}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.lr_Hawb_Hbl_No}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, lr_Hawb_Hbl_No: value } : r))
-                                          );
-                                          setLrTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              lr_Hawb_Hbl_No: !value ? 'Lr_Hawb_Hbl_No is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.lr_Hawb_Hbl_No && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].lr_Hawb_Hbl_No}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.invNo}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, invNo: value } : r)));
-                                          setLrTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], invNo: !value ? 'Invoice No is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrTableErrors[index]?.invNo ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.invNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].invNo}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.shipmentNo}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, shipmentNo: value } : r)));
-                                          setLrTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], shipmentNo: !value ? 'Shipment No is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrTableErrors[index]?.shipmentNo ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.shipmentNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].shipmentNo}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="date"
-                                        value={row.invDate}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, invDate: value } : r)));
-                                          setLrTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], invDate: !value ? 'Invoice Date is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrTableErrors[index]?.invDate ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.invDate && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].invDate}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <select
-                                        value={row.partNo}
-                                        style={{ width: '200px' }}
-                                        onChange={(e) => handlePartNoChange(row, index, e)}
-                                        className={lrTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">-- Select --</option>
-                                        {partNoList?.map((part) => (
-                                          <option key={part.id} value={part.partno}>
-                                            {part.partno}
-                                          </option>
-                                        ))}
-                                      </select>
-                                      {lrTableErrors[index]?.partNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].partNo}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '300px' }}
-                                        type="text"
-                                        value={row.partDesc}
-                                        className={lrTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
-                                        disabled
-                                      />
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '200px' }}
-                                        type="text"
-                                        value={row.sku}
-                                        className={lrTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
-                                        disabled
-                                      />
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.invQty}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const intPattern = /^\d*$/;
+                            {!editId ? (
+                              <>
+                                <table className="table table-bordered ">
+                                  <thead>
+                                    <tr style={{ backgroundColor: '#673AB7' }}>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                        Action
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                        S.No
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                        QR Code
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        LR No./ HAWB No./HBL No <span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Inv No <span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Shipment No
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                        Inv Date
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Part No <span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Part Desc <span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                        SKU <span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Inv QTY<span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Rec QTY
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Short QTY
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Damage QTY
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                        GRN QTY<span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Batch No
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Batch Date
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Exp Date
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Bin QTY<span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                        No of Bins<span>&nbsp;*</span>
+                                      </th>
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
+                                        Remarks
+                                      </th>
+                                    </tr>
+                                  </thead>
 
-                                          if (intPattern.test(value) || value === '') {
-                                            setLrTableData((prev) => {
-                                              const updatedData = prev.map((r) => {
-                                                return r.id === row.id
-                                                  ? {
-                                                      ...r,
-                                                      invQty: value,
-                                                      recQty: !value ? '' : r.recQty,
-                                                      shortQty: !value ? '' : r.shortQty
-                                                    }
-                                                  : r;
+                                  <tbody>
+                                    {lrTableData.map((row, index) => (
+                                      <tr key={row.id}>
+                                        <td className="border px-2 py-2 text-center">
+                                          <ActionButton
+                                            title="Delete"
+                                            icon={DeleteIcon}
+                                            onClick={() => handleDeleteRow(row.id, lrTableData, setLrTableData)}
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <div className="pt-2">{index + 1}</div>
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            value={row.qrCode}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, qrCode: value } : r)));
+                                              setLrTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], qrCode: !value ? 'QR Code is required' : '' };
+                                                return newErrors;
                                               });
-                                              return updatedData;
-                                            });
+                                            }}
+                                            className={lrTableErrors[index]?.qrCode ? 'error form-control' : 'form-control'}
+                                          />
+                                          {lrTableErrors[index]?.qrCode && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].qrCode}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            value={row.lr_Hawb_Hbl_No}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setLrTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, lr_Hawb_Hbl_No: value } : r))
+                                              );
+                                              setLrTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  lr_Hawb_Hbl_No: !value ? 'Lr_Hawb_Hbl_No is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            className={lrTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
+                                          />
+                                          {lrTableErrors[index]?.lr_Hawb_Hbl_No && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].lr_Hawb_Hbl_No}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            value={row.invNo}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, invNo: value } : r)));
+                                              setLrTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], invNo: !value ? 'Invoice No is required' : '' };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            className={lrTableErrors[index]?.invNo ? 'error form-control' : 'form-control'}
+                                          />
+                                          {lrTableErrors[index]?.invNo && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].invNo}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            value={row.shipmentNo}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setLrTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, shipmentNo: value } : r))
+                                              );
+                                              setLrTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  shipmentNo: !value ? 'Shipment No is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            className={lrTableErrors[index]?.shipmentNo ? 'error form-control' : 'form-control'}
+                                          />
+                                          {lrTableErrors[index]?.shipmentNo && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].shipmentNo}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="date"
+                                            value={row.invDate}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, invDate: value } : r)));
+                                              setLrTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  invDate: !value ? 'Invoice Date is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            className={lrTableErrors[index]?.invDate ? 'error form-control' : 'form-control'}
+                                          />
+                                          {lrTableErrors[index]?.invDate && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].invDate}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <select
+                                            value={row.partNo}
+                                            style={{ width: '200px' }}
+                                            onChange={(e) => handlePartNoChange(row, index, e)}
+                                            className={lrTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
+                                          >
+                                            <option value="">-- Select --</option>
+                                            {partNoList?.map((part) => (
+                                              <option key={part.id} value={part.partno}>
+                                                {part.partno}
+                                              </option>
+                                            ))}
+                                          </select>
+                                          {lrTableErrors[index]?.partNo && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].partNo}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '300px' }}
+                                            type="text"
+                                            value={row.partDesc}
+                                            className={lrTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
+                                            disabled
+                                          />
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '200px' }}
+                                            type="text"
+                                            value={row.sku}
+                                            className={lrTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
+                                            disabled
+                                          />
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            value={row.invQty}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const intPattern = /^\d*$/;
 
-                                            // Clear the error if input is valid
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                invQty: ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            // Set error if input is invalid
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                invQty: 'only numbers are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={lrTableErrors[index]?.invQty ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.invQty && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].invQty}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.recQty}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const intPattern = /^\d*$/; // Pattern to match only whole numbers
-
-                                          if (intPattern.test(value) || value === '') {
-                                            // Allow empty values for clearing
-                                            const numericValue = parseInt(value, 10);
-                                            const numericInvQty = parseInt(row.invQty, 10) || 0;
-
-                                            if (value === '' || numericValue <= numericInvQty) {
-                                              setLrTableData((prev) => {
-                                                const updatedData = prev.map((r) => {
-                                                  const updatedRecQty = numericValue || 0;
-                                                  return r.id === row.id
-                                                    ? {
-                                                        ...r,
-                                                        recQty: value,
-                                                        shortQty: !value ? '' : numericInvQty - updatedRecQty
-                                                      }
-                                                    : r;
+                                              if (intPattern.test(value) || value === '') {
+                                                setLrTableData((prev) => {
+                                                  const updatedData = prev.map((r) => {
+                                                    return r.id === row.id
+                                                      ? {
+                                                          ...r,
+                                                          invQty: value,
+                                                          recQty: !value ? '' : r.recQty,
+                                                          shortQty: !value ? '' : r.shortQty
+                                                        }
+                                                      : r;
+                                                  });
+                                                  return updatedData;
                                                 });
-                                                return updatedData;
-                                              });
-                                              setLrTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  recQty: !value ? 'Rec QTY is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setLrTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  recQty: 'Rec QTY cannot be greater than Inv QTY'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          } else {
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], recQty: 'Invalid value' };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={lrTableErrors[index]?.recQty ? 'error form-control' : 'form-control'}
-                                        disabled={!row.invQty}
-                                      />
-                                      {row.invQty && lrTableErrors[index]?.recQty && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].recQty}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td>
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.shortQty}
-                                        className={lrTableErrors[index]?.shortQty ? 'error form-control' : 'form-control'}
-                                        disabled
-                                      />
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.damageQty}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const intPattern = /^\d*$/; // Pattern to match only whole numbers
 
-                                          if (intPattern.test(value) || value === '') {
-                                            // Allow empty values for clearing
-                                            const numericValue = parseInt(value, 10);
-                                            const numericRecQty = parseInt(row.recQty, 10) || 0;
-
-                                            if (value === '' || numericValue <= numericRecQty) {
-                                              setLrTableData((prev) => {
-                                                const updatedData = prev.map((r) => {
-                                                  const updatedDamageQty = numericValue || 0;
-                                                  return r.id === row.id
-                                                    ? {
-                                                        ...r,
-                                                        damageQty: value,
-                                                        grnQty: !value ? '' : numericRecQty - updatedDamageQty
-                                                      }
-                                                    : r;
+                                                // Clear the error if input is valid
+                                                setLrTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    invQty: ''
+                                                  };
+                                                  return newErrors;
                                                 });
-                                                return updatedData;
-                                              });
+                                              } else {
+                                                // Set error if input is invalid
+                                                setLrTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    invQty: 'only numbers are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={lrTableErrors[index]?.invQty ? 'error form-control' : 'form-control'}
+                                          />
+                                          {lrTableErrors[index]?.invQty && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].invQty}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            value={row.recQty}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const intPattern = /^\d*$/;
+
+                                              if (intPattern.test(value) || value === '') {
+                                                const numericValue = parseInt(value, 10);
+                                                const numericInvQty = parseInt(row.invQty, 10) || 0;
+
+                                                if (value === '' || numericValue <= numericInvQty) {
+                                                  setLrTableData((prev) => {
+                                                    const updatedData = prev.map((r) => {
+                                                      const updatedRecQty = numericValue || 0;
+                                                      return r.id === row.id
+                                                        ? {
+                                                            ...r,
+                                                            recQty: value,
+                                                            shortQty: !value ? '' : numericInvQty - updatedRecQty
+                                                          }
+                                                        : r;
+                                                    });
+                                                    return updatedData;
+                                                  });
+                                                  setLrTableErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      recQty: !value ? 'Rec QTY is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                } else {
+                                                  setLrTableErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      recQty: 'Rec QTY cannot be greater than Inv QTY'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              } else {
+                                                setLrTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = { ...newErrors[index], recQty: 'Invalid value' };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={lrTableErrors[index]?.recQty ? 'error form-control' : 'form-control'}
+                                            disabled={!row.invQty}
+                                          />
+                                          {row.invQty && lrTableErrors[index]?.recQty && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].recQty}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td>
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            value={row.shortQty}
+                                            className={lrTableErrors[index]?.shortQty ? 'error form-control' : 'form-control'}
+                                            disabled
+                                          />
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            value={row.damageQty}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const intPattern = /^\d*$/;
+
+                                              if (intPattern.test(value) || value === '') {
+                                                const numericValue = parseInt(value, 10);
+                                                const numericRecQty = parseInt(row.recQty, 10) || 0;
+
+                                                if (value === '' || numericValue <= numericRecQty) {
+                                                  setLrTableData((prev) => {
+                                                    const updatedData = prev.map((r) => {
+                                                      const updatedDamageQty = numericValue || 0;
+                                                      return r.id === row.id
+                                                        ? {
+                                                            ...r,
+                                                            damageQty: value,
+                                                            grnQty: !value ? '' : numericRecQty - updatedDamageQty
+                                                          }
+                                                        : r;
+                                                    });
+                                                    return updatedData;
+                                                  });
+                                                  setLrTableErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      damageQty: !value ? '' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                } else {
+                                                  setLrTableErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      damageQty: 'Damage QTY cannot be greater than Rec QTY'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              } else {
+                                                setLrTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = { ...newErrors[index], recQty: 'Invalid value' };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={lrTableErrors[index]?.recQty ? 'error form-control' : 'form-control'}
+                                            disabled={!row.recQty}
+                                          />
+                                          {row.recQty && lrTableErrors[index]?.damageQty && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].damageQty}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td>
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            value={row.grnQty}
+                                            className={lrTableErrors[index]?.grnQty ? 'error form-control' : 'form-control'}
+                                            disabled
+                                          />
+                                        </td>
+
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            value={row.batch_PalletNo}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const alphaNumericPattern = /^[a-zA-Z0-9]*$/;
+
+                                              if (alphaNumericPattern.test(value) || value === '') {
+                                                setLrTableData((prev) => {
+                                                  const updatedData = prev.map((r) => {
+                                                    return r.id === row.id
+                                                      ? {
+                                                          ...r,
+                                                          batch_PalletNo: value.toUpperCase()
+                                                        }
+                                                      : r;
+                                                  });
+                                                  return updatedData;
+                                                });
+                                                setLrTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    batch_PalletNo: ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                setLrTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    batch_PalletNo: 'only alphanumeric characters are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={lrTableErrors[index]?.batch_PalletNo ? 'error form-control' : 'form-control'}
+                                          />
+                                          {lrTableErrors[index]?.batch_PalletNo && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].batch_PalletNo}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="date"
+                                            value={row.batchDate}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, batchDate: value } : r)));
                                               setLrTableErrors((prev) => {
                                                 const newErrors = [...prev];
                                                 newErrors[index] = {
                                                   ...newErrors[index],
-                                                  damageQty: !value ? '' : ''
+                                                  batchDate: !value ? 'Invoice Date is required' : ''
                                                 };
                                                 return newErrors;
                                               });
-                                            } else {
+                                            }}
+                                            className={lrTableErrors[index]?.batchDate ? 'error form-control' : 'form-control'}
+                                          />
+                                          {lrTableErrors[index]?.batchDate && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].batchDate}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="date"
+                                            value={row.expDate}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, expDate: value } : r)));
                                               setLrTableErrors((prev) => {
                                                 const newErrors = [...prev];
                                                 newErrors[index] = {
                                                   ...newErrors[index],
-                                                  damageQty: 'Damage QTY cannot be greater than Rec QTY'
+                                                  expDate: !value ? 'Invoice Date is required' : ''
                                                 };
                                                 return newErrors;
                                               });
-                                            }
-                                          } else {
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], recQty: 'Invalid value' };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={lrTableErrors[index]?.recQty ? 'error form-control' : 'form-control'}
-                                        disabled={!row.recQty}
-                                      />
-                                      {row.recQty && lrTableErrors[index]?.damageQty && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].damageQty}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td>
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.grnQty}
-                                        className={lrTableErrors[index]?.grnQty ? 'error form-control' : 'form-control'}
-                                        disabled
-                                      />
-                                    </td>
+                                            }}
+                                            className={lrTableErrors[index]?.expDate ? 'error form-control' : 'form-control'}
+                                          />
+                                          {lrTableErrors[index]?.expDate && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].expDate}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            value={row.palletQty}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const intPattern = /^\d*$/;
 
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.batch_PalletNo}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const alphaNumericPattern = /^[a-zA-Z0-9]*$/;
+                                              if (intPattern.test(value) || value === '') {
+                                                setLrTableData((prev) => {
+                                                  const updatedData = prev.map((r) => {
+                                                    return r.id === row.id
+                                                      ? {
+                                                          ...r,
+                                                          palletQty: value
+                                                        }
+                                                      : r;
+                                                  });
+                                                  return updatedData;
+                                                });
 
-                                          if (alphaNumericPattern.test(value) || value === '') {
-                                            setLrTableData((prev) => {
-                                              const updatedData = prev.map((r) => {
-                                                return r.id === row.id
-                                                  ? {
-                                                      ...r,
-                                                      batch_PalletNo: value.toUpperCase()
-                                                    }
-                                                  : r;
+                                                setLrTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    palletQty: ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                setLrTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    palletQty: 'only numbers are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={lrTableErrors[index]?.palletQty ? 'error form-control' : 'form-control'}
+                                          />
+                                          {lrTableErrors[index]?.palletQty && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].palletQty}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            value={row.noOfPallets}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const intPattern = /^\d*$/;
+
+                                              if (intPattern.test(value) || value === '') {
+                                                setLrTableData((prev) => {
+                                                  const updatedData = prev.map((r) => {
+                                                    return r.id === row.id
+                                                      ? {
+                                                          ...r,
+                                                          noOfPallets: value
+                                                        }
+                                                      : r;
+                                                  });
+                                                  return updatedData;
+                                                });
+
+                                                setLrTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    noOfPallets: ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                setLrTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    noOfPallets: 'only numbers are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={lrTableErrors[index]?.noOfPallets ? 'error form-control' : 'form-control'}
+                                          />
+                                          {lrTableErrors[index]?.noOfPallets && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].noOfPallets}
+                                            </div>
+                                          )}
+                                        </td>
+
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '400px' }}
+                                            type="text"
+                                            value={row.remarks}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, remarks: value } : r)));
+                                              setLrTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], remarks: !value ? 'QR Code is required' : '' };
+                                                return newErrors;
                                               });
-                                              return updatedData;
-                                            });
+                                            }}
+                                            className={lrTableErrors[index]?.remarks ? 'error form-control' : 'form-control'}
+                                            onKeyDown={(e) => handleKeyDown(e, row, lrTableData)}
+                                          />
+                                          {lrTableErrors[index]?.remarks && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].remarks}
+                                            </div>
+                                          )}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </>
+                            ) : (
+                              <>
+                                <table className="table table-bordered" style={{ tableLayout: 'auto', width: '100%' }}>
+                                  <thead>
+                                    <tr style={{ backgroundColor: '#673AB7' }}>
+                                      <th className="table-header">S.No</th>
+                                      <th className="table-header">QR Code</th>
+                                      <th className="table-header">
+                                        LR No./ HAWB <br />
+                                        No./HBL No
+                                      </th>
+                                      <th className="table-header">Inv No</th>
+                                      <th className="table-header">Shipment No</th>
+                                      <th className="table-header">Inv Date</th>
+                                      <th className="table-header">Part No</th>
+                                      <th className="table-header">Part Desc</th>
+                                      <th className="table-header">SKU</th>
+                                      <th className="table-header">Inv QTY</th>
+                                      <th className="table-header">Rec QTY</th>
+                                      <th className="table-header">Short QTY</th>
+                                      <th className="table-header">Damage QTY</th>
+                                      <th className="table-header">GRN QTY</th>
+                                      <th className="table-header">Batch No</th>
+                                      <th className="table-header">Batch Date</th>
+                                      <th className="table-header">Exp Date</th>
+                                      <th className="table-header">Bin QTY</th>
+                                      <th className="table-header">No of Bins</th>
+                                      <th className="table-header">Remarks</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {lrTableData.map((row, index) => (
+                                      <tr key={row.id}>
+                                        <td className="text-center">{index + 1}</td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.qrCode}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.lr_Hawb_Hbl_No}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.invNo}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.shipmentNo}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.invDate}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.partNo}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.partDesc}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.sku}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.invQty}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.recQty}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.shortQty}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.damageQty}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.grnQty}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.batch_PalletNo}
+                                        </td>
 
-                                            // Clear the error if input is valid
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                batch_PalletNo: ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            // Set error if input is invalid
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                batch_PalletNo: 'only alphanumeric characters are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={lrTableErrors[index]?.batch_PalletNo ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.batch_PalletNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].batch_PalletNo}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="date"
-                                        value={row.batchDate}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, batchDate: value } : r)));
-                                          setLrTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], batchDate: !value ? 'Invoice Date is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrTableErrors[index]?.batchDate ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.batchDate && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].batchDate}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="date"
-                                        value={row.expDate}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, expDate: value } : r)));
-                                          setLrTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], expDate: !value ? 'Invoice Date is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrTableErrors[index]?.expDate ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.expDate && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].expDate}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.palletQty}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const intPattern = /^\d*$/;
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.batchDate}
+                                        </td>
 
-                                          if (intPattern.test(value) || value === '') {
-                                            // Allow empty values for clearing
-                                            setLrTableData((prev) => {
-                                              const updatedData = prev.map((r) => {
-                                                return r.id === row.id
-                                                  ? {
-                                                      ...r,
-                                                      palletQty: value
-                                                    }
-                                                  : r;
-                                              });
-                                              return updatedData;
-                                            });
-
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                palletQty: ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            // Set error if input is invalid
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                palletQty: 'only numbers are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={lrTableErrors[index]?.palletQty ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.palletQty && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].palletQty}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.noOfPallets}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const intPattern = /^\d*$/;
-
-                                          if (intPattern.test(value) || value === '') {
-                                            // Allow empty values for clearing
-                                            setLrTableData((prev) => {
-                                              const updatedData = prev.map((r) => {
-                                                return r.id === row.id
-                                                  ? {
-                                                      ...r,
-                                                      noOfPallets: value
-                                                    }
-                                                  : r;
-                                              });
-                                              return updatedData;
-                                            });
-
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                noOfPallets: ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            // Set error if input is invalid
-                                            setLrTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                noOfPallets: 'only numbers are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={lrTableErrors[index]?.noOfPallets ? 'error form-control' : 'form-control'}
-                                      />
-                                      {lrTableErrors[index]?.noOfPallets && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].noOfPallets}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        style={{ width: '400px' }}
-                                        type="text"
-                                        value={row.remarks}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, remarks: value } : r)));
-                                          setLrTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], remarks: !value ? 'QR Code is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={lrTableErrors[index]?.remarks ? 'error form-control' : 'form-control'}
-                                        onKeyDown={(e) => handleKeyDown(e, row, lrTableData)}
-                                      />
-                                      {lrTableErrors[index]?.remarks && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {lrTableErrors[index].remarks}
-                                        </div>
-                                      )}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.expDate}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.palletQty}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.noOfPallets}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.remarks}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1972,9 +2071,7 @@ export const Grn = () => {
                           fullWidth
                           name="totGrnQty"
                           value={formData.totGrnQty}
-                          onChange={handleInputChange}
-                          error={!!fieldErrors.totGrnQty}
-                          helperText={fieldErrors.totGrnQty}
+                          disabled
                         />
                       </div>
                     </div>
@@ -2252,7 +2349,7 @@ export const Grn = () => {
 
                       <div className="col-md-3 mb-3">
                         <TextField
-                          label="Invoice No"
+                          label="Inv No"
                           variant="outlined"
                           size="small"
                           fullWidth

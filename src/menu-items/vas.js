@@ -1,9 +1,10 @@
 // assets
-import { IconKey } from '@tabler/icons-react';
+
+import { IconPackage } from '@tabler/icons-react';
 
 // constant
 const icons = {
-  IconKey
+  IconPackage
 };
 
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
@@ -18,7 +19,7 @@ const vas = {
       title: 'VAS',
       type: 'item',
       url: '/vas/vasmain',
-      icon: icons.IconDashboard
+      icon: icons.IconPackage
     }
   ]
 };

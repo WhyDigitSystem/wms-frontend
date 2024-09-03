@@ -1,19 +1,19 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 // material-ui
+import { Grid, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Grid, MenuItem, TextField, Typography } from '@mui/material';
 
 // third-party
 import ApexCharts from 'apexcharts';
 import Chart from 'react-apexcharts';
 
 // project imports
-import SkeletonTotalGrowthBarChart from 'ui-component/cards/Skeleton/TotalGrowthBarChart';
-import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
+import MainCard from 'ui-component/cards/MainCard';
+import SkeletonTotalGrowthBarChart from 'ui-component/cards/Skeleton/TotalGrowthBarChart';
 
 // chart data
 import chartData from './chart-data/total-growth-bar-chart';
@@ -97,17 +97,18 @@ const TotalGrowthBarChart = ({ isLoading }) => {
           <Grid container spacing={gridSpacing}>
             <Grid item xs={12}>
               <Grid container alignItems="center" justifyContent="space-between">
-                <Grid item>
+                <Typography variant="h4">Inventory Stock</Typography>
+                {/* <Grid item>
                   <Grid container direction="column" spacing={1}>
                     <Grid item>
                       <Typography variant="subtitle2">Total Growth</Typography>
                     </Grid>
                     <Grid item>
-                      <Typography variant="h3">$2,324.00</Typography>
+                      <Typography variant="h3">₹2,324.00</Typography>
                     </Grid>
                   </Grid>
-                </Grid>
-                <Grid item>
+                </Grid> */}
+                {/* <Grid item>
                   <TextField id="standard-select-currency" select value={value} onChange={(e) => setValue(e.target.value)}>
                     {status.map((option) => (
                       <MenuItem key={option.value} value={option.value}>
@@ -115,7 +116,7 @@ const TotalGrowthBarChart = ({ isLoading }) => {
                       </MenuItem>
                     ))}
                   </TextField>
-                </Grid>
+                </Grid> */}
               </Grid>
             </Grid>
             <Grid item xs={12}>

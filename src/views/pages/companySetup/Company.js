@@ -118,26 +118,123 @@ const Company = () => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
-    const nameRegex = /^[A-Za-z ]*$/;
-    const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
-    const numericRegex = /^[0-9]*$/;
-    const alphanumericRegex = /^[A-Za-z0-9]*$/;
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+  //   const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
+  //   const numericRegex = /^[0-9]*$/;
+  //   const alphanumericRegex = /^[A-Za-z0-9]*$/;
 
-    if (name === 'ceo' && !nameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only alphabetic characters are allowed' });
-    } else if (name === 'pincode' && !numericRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only numeric are allowed' });
-    } else if (name === 'pincode' && value.length > 6) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only 6 Digits are allowed' });
-    } else if (name === 'gst' && !alphanumericRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Special Characters are not allowed' });
-    } else if (name === 'gst' && value.length > 15) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Only 15 Digits only allowed' });
+  //   if (name === 'ceo' && !nameRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Only alphabetic characters are allowed' });
+  //   } else if (name === 'pincode') {
+  //     if (!numericRegex.test(value)) {
+  //       setFieldErrors({ ...fieldErrors, [name]: 'Only numeric characters are allowed' });
+  //     } else if (value.length > 6) {
+  //       setFieldErrors({ ...fieldErrors, [name]: 'Only 6 digits are allowed' });
+  //     } else {
+  //       setFieldErrors({ ...fieldErrors, [name]: '' });
+  //     }
+  //   } else if (name === 'gst') {
+  //     if (!alphanumericRegex.test(value)) {
+  //       setFieldErrors({ ...fieldErrors, [name]: 'Special characters are not allowed' });
+  //     } else if (value.length > 15) {
+  //       setFieldErrors({ ...fieldErrors, [name]: 'Only 15 characters are allowed' });
+  //     } else {
+  //       setFieldErrors({ ...fieldErrors, [name]: '' });
+  //     }
+  //   } else {
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+
+  //   // Update the form data
+  //   if (name === 'active') {
+  //     setFormData({ ...formData, [name]: checked });
+  //   } else {
+  //     setFormData({ ...formData, [name]: value.toUpperCase() });
+  //   }
+
+  //   // Update the cursor position after the input change
+  //   if (type === 'text' || type === 'textarea' || type === 'email') {
+  //     setTimeout(() => {
+  //       const inputElement = document.getElementsByName(name)[0];
+  //       if (inputElement) {
+  //         inputElement.setSelectionRange(selectionStart, selectionEnd);
+  //       }
+  //     }, 0);
+  //   }
+  // };
+
+  const handleInputChange = (e) => {
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+
+    // Regular expressions for validation
+    const nameRegex = /^[A-Za-z ]*$/; // Allows only alphabetic characters and spaces
+    const numericRegex = /^[0-9]*$/; // Allows only numeric characters
+    const alphanumericRegex = /^[A-Za-z0-9]*$/; // Allows only alphanumeric characters
+
+    let error = '';
+
+    // Validation logic
+    if (name === 'ceo') {
+      if (!nameRegex.test(value)) {
+        error = 'Only alphabetic characters are allowed';
+      }
+    } else if (name === 'pincode') {
+      if (!numericRegex.test(value)) {
+        error = 'Only numeric characters are allowed';
+      } else if (value.length > 6) {
+        error = 'Only 6 digits are allowed';
+      }
+    } else if (name === 'gst') {
+      if (!alphanumericRegex.test(value)) {
+        error = 'Special characters are not allowed';
+      } else if (value.length > 15) {
+        error = 'Only 15 characters are allowed';
+      }
+    }
+
+    // Handle errors if validation fails
+    if (error) {
+      setFieldErrors((prevErrors) => ({
+        ...prevErrors,
+        [name]: error
+      }));
     } else {
-      setFormData({ ...formData, [name]: name === 'active' ? checked : value.toUpperCase() });
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+      // Clear previous error if input is valid
+      setFieldErrors((prevErrors) => ({
+        ...prevErrors,
+        [name]: ''
+      }));
+
+      // Update the form data
+      let updatedValue = value;
+
+      if (name !== 'active') {
+        updatedValue = value.toUpperCase();
+      }
+
+      if (type === 'checkbox') {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [name]: checked
+        }));
+      } else {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [name]: updatedValue
+        }));
+      }
+
+      // Handle cursor position reset after input change (for text, email, and textarea)
+      if (type === 'text' || type === 'textarea' || type === 'email') {
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
+      }
     }
   };
 
@@ -191,6 +288,7 @@ const Company = () => {
 
   const handleClear = () => {
     setFormData({
+      // companyCode: '',
       ceo: '',
       address: '',
       country: '',
@@ -198,9 +296,11 @@ const Company = () => {
       city: '',
       pincode: '',
       gst: '',
-      website: ''
+      website: '',
+      active: true
     });
     setFieldErrors({
+      // companyCode: '',
       ceo: '',
       address: '',
       country: '',
@@ -210,6 +310,7 @@ const Company = () => {
       gst: '',
       website: ''
     });
+    setEditId('');
   };
 
   const handleSave = async () => {
@@ -330,8 +431,8 @@ const Company = () => {
                   name="companyCode"
                   value={formData.companyCode}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.companyCode}
-                  helperText={fieldErrors.companyCode}
+                  // error={!!fieldErrors.companyCode}
+                  // helperText={fieldErrors.companyCode}
                   disabled
                 />
               </div>

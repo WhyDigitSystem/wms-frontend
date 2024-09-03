@@ -7,6 +7,7 @@ import CoPutaway from './CoPutaway';
 import Kitting from './Kitting';
 import VasPick from './VasPick';
 import VasPutaway from './VasPutaway';
+import DeKitting from './DeKitting';
 
 const VasMain = () => {
   const [value, setValue] = React.useState(0);
@@ -24,6 +25,7 @@ const VasMain = () => {
             <Tab value={2} label="Co-Pick" />
             <Tab value={3} label="Co-PutAway" />
             <Tab value={4} label="Kitting" />
+            <Tab value={5} label="De-Kitting" />
           </Tabs>
         </Box>
         <Box sx={{ padding: 2 }}>
@@ -32,6 +34,7 @@ const VasMain = () => {
           {value === 2 && <CoPick />}
           {value === 3 && <CoPutaway />}
           {value === 4 && <Kitting />}
+          {value === 5 && <DeKitting />}
         </Box>
       </div>
     </>

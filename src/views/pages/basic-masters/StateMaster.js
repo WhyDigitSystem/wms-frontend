@@ -146,6 +146,7 @@ export const StateMaster = () => {
       stateName: '',
       country: ''
     });
+    setEditId('');
   };
 
   const handleSave = async () => {

@@ -54,57 +54,6 @@ export const CustomerMaster = () => {
     gst: '',
     active: true
   });
-  const [value, setValue] = useState(0);
-  const [branchTableData, setBranchTableData] = useState([
-    {
-      id: 1,
-      branchCode: '',
-      branch: ''
-    }
-  ]);
-
-  const handleAddRow = () => {
-    const newRow = {
-      id: Date.now(),
-      client: '',
-      clientCode: '',
-      clientType: '',
-      fifoFife: ''
-    };
-    setClientTableData([...clientTableData, newRow]);
-    setClientTableErrors([...clientTableErrors, { client: '', clientCode: '', clientType: '', fifoFife: '' }]);
-  };
-  const handleAddRow1 = () => {
-    const newRow = {
-      id: Date.now(),
-      branchCode: '',
-      branch: ''
-    };
-    setBranchTableData([...branchTableData, newRow]);
-    setBranchTableErrors([
-      ...branchTableErrors,
-      {
-        branchCode: '',
-        branch: ''
-      }
-    ]);
-  };
-
-  const [clientTableErrors, setClientTableErrors] = useState([
-    {
-      client: '',
-      clientCode: '',
-      clientType: '',
-      fifoFife: ''
-    }
-  ]);
-  const [branchTableErrors, setBranchTableErrors] = useState([
-    {
-      branchCode: '',
-      branch: ''
-    }
-  ]);
-
   const [fieldErrors, setFieldErrors] = useState({
     customer: '',
     shortName: '',
@@ -121,6 +70,30 @@ export const CustomerMaster = () => {
     city: '',
     gst: ''
   });
+  const [value, setValue] = useState(0);
+  const [branchTableData, setBranchTableData] = useState([
+    {
+      id: 1,
+      branchCode: '',
+      branch: ''
+    }
+  ]);
+
+  const [clientTableErrors, setClientTableErrors] = useState([
+    {
+      client: '',
+      clientCode: '',
+      clientType: '',
+      fifoFife: ''
+    }
+  ]);
+  const [branchTableErrors, setBranchTableErrors] = useState([
+    {
+      branchCode: '',
+      branch: ''
+    }
+  ]);
+
   const [listView, setListView] = useState(false);
   const listViewColumns = [
     { accessorKey: 'customerName', header: 'Customer', size: 140 },
@@ -265,6 +238,7 @@ export const CustomerMaster = () => {
     switch (name) {
       case 'customer':
       case 'shortName':
+      case 'contactPerson':
         if (!nameRegex.test(value)) {
           errorMessage = 'Only alphabetic characters are allowed';
         }
@@ -289,7 +263,7 @@ export const CustomerMaster = () => {
         }
         break;
       case 'gst':
-        if (formData.gst === 'YES') {
+        if (formData.gstReg === 'YES') {
           if (!alphaNumericRegex.test(value)) {
             errorMessage = 'Only alphanumeric characters are allowed';
           } else if (value.length > 15) {
@@ -307,31 +281,15 @@ export const CustomerMaster = () => {
       if (name === 'active') {
         setFormData({ ...formData, [name]: checked });
       } else if (name === 'email') {
-        setFormData({ ...formData, [name]: value });
+        setFormData({ ...formData, [name]: value.toLowerCase() });
+      } else if (name === 'gstReg' && value === 'NO') {
+        setFormData({ ...formData, [name]: value, gst: '' });
+        setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '', gst: '' }));
       } else {
         setFormData({ ...formData, [name]: value.toUpperCase() });
       }
 
       setFieldErrors({ ...fieldErrors, [name]: '' });
-    }
-  };
-
-  const handleDeleteRow = (id) => {
-    setClientTableData(clientTableData.filter((row) => row.id !== id));
-  };
-  const handleKeyDown = (e, row) => {
-    if (e.key === 'Tab' && row.id === clientTableData[clientTableData.length - 1].id) {
-      e.preventDefault();
-      handleAddRow();
-    }
-  };
-  const handleDeleteRow1 = (id) => {
-    setBranchTableData(branchTableData.filter((row) => row.id !== id));
-  };
-  const handleKeyDown1 = (e, row) => {
-    if (e.key === 'Tab' && row.id === branchTableData[branchTableData.length - 1].id) {
-      e.preventDefault();
-      handleAddRow1();
     }
   };
 
@@ -354,7 +312,9 @@ export const CustomerMaster = () => {
       active: true
     });
     setClientTableData([{ id: 1, client: '', clientCode: '', clientType: '', fifoFife: '' }]);
+    setClientTableErrors('');
     setBranchTableData([{ id: 1, branchCode: '', branchName: '' }]);
+    setBranchTableErrors('');
     setFieldErrors({
       customer: '',
       shortName: '',
@@ -371,10 +331,25 @@ export const CustomerMaster = () => {
       city: '',
       gst: ''
     });
+    setEditId('');
+  };
+  const handleTableClear = (table) => {
+    if (table === 'clientTableData') {
+      setClientTableData([{ id: 1, client: '', clientCode: '', clientType: '', fifoFife: '' }]);
+      setClientTableErrors('');
+    } else {
+      setBranchTableData([{ id: 1, branchCode: '', branchName: '' }]);
+      setBranchTableErrors('');
+    }
   };
 
   const handleSave = async () => {
     const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(formData.email)) {
+      errors.email = 'Invalid MailID Format';
+    }
     if (!formData.customer) {
       errors.customer = 'Customer is required';
     }
@@ -402,16 +377,18 @@ export const CustomerMaster = () => {
     if (!formData.city) {
       errors.city = 'City is required';
     }
-    if (formData.gst === 'YES' && formData.gst.length < 15) {
-      errors.gst = 'Invalid GST Format';
-    }
     if (!formData.mobile) {
-      errors.mobile = 'mobile is required';
+      errors.mobile = 'Mobile is required';
     } else if (formData.mobile.length < 10) {
       errors.mobile = 'Invalid Mobile Format';
     }
-    if (formData.pan.length < 10) {
+    if (formData.pan.length > 0 && formData.pan.length < 10) {
       errors.pan = 'Invalid PAN Format';
+    }
+    if (formData.gstReg === 'YES' && !formData.gst) {
+      errors.gst = 'GST is Required';
+    } else if (formData.gstReg === 'YES' && formData.gst.length < 15) {
+      errors.gst = 'Invalid GST Format';
     }
 
     let clientTableDataValid = true;
@@ -436,8 +413,6 @@ export const CustomerMaster = () => {
 
       return rowErrors;
     });
-    // setFieldErrors(errors);
-
     setClientTableErrors(newTableErrors);
 
     let branchTableDataValid = true;
@@ -453,7 +428,7 @@ export const CustomerMaster = () => {
 
     setBranchTableErrors(newTableErrors1);
 
-    if (Object.keys(errors).length === 0) {
+    if (Object.keys(errors).length === 0 && branchTableDataValid && clientTableDataValid) {
       setIsLoading(true);
       const clientVo = clientTableData.map((row) => ({
         client: row.client,
@@ -536,9 +511,96 @@ export const CustomerMaster = () => {
     });
   };
 
+  const handleKeyDown = (e, row, table) => {
+    if (e.key === 'Tab' && row.id === table[table.length - 1].id) {
+      e.preventDefault();
+      if (isLastRowEmpty(table)) {
+        displayRowError(table);
+      } else {
+        if (table === clientTableData) handleAddRow();
+        handleAddRow1();
+      }
+    }
+  };
+
+  const handleAddRow = () => {
+    if (isLastRowEmpty(clientTableData)) {
+      displayRowError(clientTableData);
+      return;
+    }
+    const newRow = {
+      id: Date.now(),
+      client: '',
+      clientCode: '',
+      clientType: '',
+      fifoFife: ''
+    };
+    setClientTableData([...clientTableData, newRow]);
+    setClientTableErrors([...clientTableErrors, { client: '', clientCode: '', clientType: '', fifoFife: '' }]);
+  };
+  const handleAddRow1 = () => {
+    if (isLastRowEmpty(branchTableData)) {
+      displayRowError(branchTableData);
+      return;
+    }
+    const newRow = {
+      id: Date.now(),
+      branchCode: '',
+      branch: ''
+    };
+    setBranchTableData([...branchTableData, newRow]);
+    setBranchTableErrors([
+      ...branchTableErrors,
+      {
+        branchCode: '',
+        branch: ''
+      }
+    ]);
+  };
+
+  const isLastRowEmpty = (table) => {
+    const lastRow = table[table.length - 1];
+    if (!lastRow) return false;
+    if (table === branchTableData) {
+      return !lastRow.branchCode;
+    } else if (table === clientTableData) {
+      return !lastRow.client || !lastRow.clientCode || !lastRow.clientType || !lastRow.clientType || !lastRow.fifoFife;
+    }
+    return false;
+  };
+
+  const displayRowError = (table) => {
+    if (table === clientTableData) {
+      setClientTableErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          client: !table[table.length - 1].client ? 'Client is required' : '',
+          clientCode: !table[table.length - 1].clientCode ? 'Client Code is required' : '',
+          clientType: !table[table.length - 1].clientType ? 'Client Type is required' : '',
+          fifoFife: !table[table.length - 1].fifoFife ? 'FiFoFife is required' : ''
+        };
+        return newErrors;
+      });
+    }
+    if (table === branchTableData) {
+      setBranchTableErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          branchCode: !table[table.length - 1].branchCode ? 'Branch Code is required' : ''
+        };
+        return newErrors;
+      });
+    }
+  };
+
+  const handleDeleteRow = (id, table, setTable) => {
+    setTable(table.filter((row) => row.id !== id));
+  };
+
   return (
     <>
-      <div>{/* <ToastContainer /> */}</div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
@@ -648,19 +710,6 @@ export const CustomerMaster = () => {
                   helperText={fieldErrors.pan}
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <TextField
-                  label="GST Registration"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="gstReg"
-                  value={formData.gstReg}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.gstReg}
-                  helperText={fieldErrors.gstReg}
-                />
-              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="TAN"
@@ -784,6 +833,7 @@ export const CustomerMaster = () => {
                     <div className="row d-flex ml">
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                        <ActionButton title="Clear" icon={ClearIcon} onClick={() => handleTableClear('clientTableData')} />
                       </div>
                       {/* Table */}
                       <div className="row mt-2">
@@ -808,7 +858,11 @@ export const CustomerMaster = () => {
                                 {clientTableData.map((row, index) => (
                                   <tr key={row.id}>
                                     <td className="border px-2 py-2 text-center">
-                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+                                      <ActionButton
+                                        title="Delete"
+                                        icon={DeleteIcon}
+                                        onClick={() => handleDeleteRow(row.id, clientTableData, setClientTableData)}
+                                      />
                                     </td>
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
@@ -825,12 +879,11 @@ export const CustomerMaster = () => {
                                           );
                                           setClientTableErrors((prev) => {
                                             const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], client: !value ? 'Gst In is required' : '' };
+                                            newErrors[index] = { ...newErrors[index], client: !value ? 'Client is required' : '' };
                                             return newErrors;
                                           });
                                         }}
                                         className={clientTableErrors[index]?.client ? 'error form-control' : 'form-control'}
-                                        // //style={{ marginBottom: '10px' }}
                                       />
                                       {clientTableErrors[index]?.client && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -875,7 +928,7 @@ export const CustomerMaster = () => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              clientType: !value ? 'State Code is required' : ''
+                                              clientType: !value ? 'Client Type is required' : ''
                                             };
                                             return newErrors;
                                           });
@@ -910,7 +963,7 @@ export const CustomerMaster = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        onKeyDown={(e) => handleKeyDown(e, row)}
+                                        onKeyDown={(e) => handleKeyDown(e, row, clientTableData)}
                                         className={clientTableErrors[index]?.fifoFife ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
@@ -939,6 +992,7 @@ export const CustomerMaster = () => {
                     <div className="row d-flex ml">
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow1} />
+                        <ActionButton title="Clear" icon={ClearIcon} onClick={() => handleTableClear('branchTableData')} />
                       </div>
                       <div className="row mt-2">
                         <div className="col-lg-6">
@@ -962,7 +1016,12 @@ export const CustomerMaster = () => {
                                 {branchTableData.map((row, index) => (
                                   <tr key={row.id}>
                                     <td className="border px-2 py-2 text-center">
-                                      <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow1(row.id)} />
+                                      {/* <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow1(row.id)} /> */}
+                                      <ActionButton
+                                        title="Delete"
+                                        icon={DeleteIcon}
+                                        onClick={() => handleDeleteRow(row.id, branchTableData, setBranchTableData)}
+                                      />
                                     </td>
                                     <td className="text-center">
                                       {/* <input type="text" value={`${index + 1}`} readOnly style={{ width: '100%' }} /> */}
@@ -992,7 +1051,8 @@ export const CustomerMaster = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        onKeyDown={(e) => handleKeyDown1(e, row)}
+                                        // onKeyDown={(e) => handleKeyDown(e, row)}
+                                        onKeyDown={(e) => handleKeyDown(e, row, branchTableData)}
                                         className={branchTableErrors[index]?.branchCode ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Option</option>
