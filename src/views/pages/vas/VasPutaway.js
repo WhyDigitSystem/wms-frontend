@@ -31,6 +31,7 @@ import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
 import { getAllActiveCarrier, getAllActiveSupplier } from 'utils/CommonFunctions';
 import React, { useRef } from 'react';
+import GeneratePdfVasPutaway from './VasPutawaypdf';
 
 export const VasPutaway = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -49,6 +50,9 @@ export const VasPutaway = () => {
   const [warehouse, setWarehouse] = useState(localStorage.getItem('warehouse'));
   const [finYear, setFinYear] = useState('2024');
   const [vasPutAwayDocId, setVasPutAwayDocId] = useState('');
+
+  const [downloadPdf, setDownloadPdf] = useState(false);
+  const [pdfData, setPdfData] = useState([]);
 
   const [formData, setFormData] = useState({
     docdate: dayjs(),
@@ -512,6 +516,12 @@ export const VasPutaway = () => {
     });
   };
 
+  const GeneratePdf = (row) => {
+    console.log('PDF-Data =>', row.original);
+    setPdfData(row.original);
+    setDownloadPdf(true);
+  };
+
   return (
     <>
       <div>{/* <ToastContainer /> */}</div>
@@ -526,7 +536,15 @@ export const VasPutaway = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getVasPutawayById} />
+            <CommonListViewTable
+              data={listViewData}
+              columns={listViewColumns}
+              blockEdit={true}
+              toEdit={getVasPutawayById}
+              isPdf={true}
+              GeneratePdf={GeneratePdf}
+            />
+            {downloadPdf && <GeneratePdfVasPutaway row={pdfData} />}
           </div>
         ) : (
           <>

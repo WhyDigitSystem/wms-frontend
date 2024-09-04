@@ -28,6 +28,7 @@ import ActionButton from 'utils/ActionButton';
 import { getAllActiveLocationTypes } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import GeneratePdfVasPickpdf from './VasPickpdf';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -54,6 +55,9 @@ export const VasPick = () => {
   const [loginFinYear, setLoginFinYear] = useState('2024');
   const [pickBinTypeList, setPickBinTypeList] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
+
+  const [downloadPdf, setDownloadPdf] = useState(false);
+  const [pdfData, setPdfData] = useState([]);
 
   const [formData, setFormData] = useState({
     docId: '',
@@ -460,6 +464,12 @@ export const VasPick = () => {
     setModalOpen(false);
   };
 
+  const GeneratePdf = (row) => {
+    console.log('PDF-Data =>', row.original);
+    setPdfData(row.original);
+    setDownloadPdf(true);
+  };
+
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -473,7 +483,15 @@ export const VasPick = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getVasPickById} />
+            <CommonListViewTable
+              data={listViewData}
+              columns={listViewColumns}
+              blockEdit={true}
+              toEdit={getVasPickById}
+              isPdf={true}
+              GeneratePdf={GeneratePdf}
+            />
+            {downloadPdf && <GeneratePdfVasPickpdf row={pdfData} />}
           </div>
         ) : (
           <>
