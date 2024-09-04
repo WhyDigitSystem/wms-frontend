@@ -243,7 +243,7 @@ const GeneratePdfVasPickpdf = ({ row, callBackFunction }) => {
               marginTop: '5%'
             }}
           >
-            <div>Footer</div>
+            <div>Footer </div>
           </div>
         </div>
       </DialogContent>
