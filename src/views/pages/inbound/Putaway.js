@@ -39,6 +39,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import GeneratePdfTemp from './PutawayPdf';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -69,6 +70,9 @@ export const Putaway = () => {
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
   const [checkedState, setCheckedState] = useState({});
   const [checkAll, setCheckAll] = useState(false);
+
+  const [downloadPdf, setDownloadPdf] = useState(false);
+  const [pdfData, setPdfData] = useState([]);
 
   const [formData, setFormData] = useState({
     binClass: 'Fixed',
@@ -879,6 +883,12 @@ export const Putaway = () => {
     });
   };
 
+  const GeneratePdf = (row) => {
+    console.log('PDF-Data =>', row.original);
+    setPdfData(row.original);
+    setDownloadPdf(true);
+  };
+
   return (
     <>
       <div>{/* <ToastContainer /> */}</div>
@@ -893,7 +903,15 @@ export const Putaway = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getPutAwayById} />
+            <CommonListViewTable
+              data={listViewData}
+              columns={listViewColumns}
+              blockEdit={true}
+              toEdit={getPutAwayById}
+              isPdf={true}
+              GeneratePdf={GeneratePdf}
+            />
+            {downloadPdf && <GeneratePdfTemp row={pdfData} />}
           </div>
         ) : (
           <>

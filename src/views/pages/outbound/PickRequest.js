@@ -28,6 +28,7 @@ import ActionButton from 'utils/ActionButton';
 import { getAllActiveGroups } from 'utils/CommonFunctions';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import GeneratePdfTempPick from './PickRequestPdf';
 
 function PaperComponent(props) {
   return (
@@ -54,6 +55,9 @@ export const PickRequest = () => {
   const [warehouse, setWarehouse] = useState(localStorage.getItem('warehouse'));
   // const [finYear, setFinYear] = useState(localStorage.getItem('finYear') ? localStorage.getItem('finYear') : '2024');
   const [finYear, setFinYear] = useState('2024');
+
+  const [downloadPdf, setDownloadPdf] = useState(false);
+  const [pdfData, setPdfData] = useState([]);
 
   const [formData, setFormData] = useState({
     docId: '',
@@ -707,6 +711,12 @@ export const PickRequest = () => {
     setSelectAll(!selectAll);
   };
 
+  const GeneratePdf = (row) => {
+    console.log('PDF-Data =>', row.original);
+    setPdfData(row.original);
+    setDownloadPdf(true);
+  };
+
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -720,7 +730,15 @@ export const PickRequest = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getAllItemById} />
+            <CommonListViewTable
+              data={listViewData}
+              columns={listViewColumns}
+              blockEdit={true}
+              toEdit={getAllItemById}
+              isPdf={true}
+              GeneratePdf={GeneratePdf}
+            />
+            {downloadPdf && <GeneratePdfTempPick row={pdfData} />}
           </div>
         ) : (
           <>
