@@ -49,6 +49,7 @@ export const LocationMovement = () => {
   // const [finYear, setFinYear] = useState(localStorage.getItem('finYear');
   const [finYear, setFinYear] = useState('2024');
   const [warehouse, setWarehouse] = useState(localStorage.getItem('warehouse'));
+  const storedScreens = JSON.parse(localStorage.getItem('screens')) || [];
   const [selectedBin, setSelectedBin] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -117,57 +118,57 @@ export const LocationMovement = () => {
     }
   ]);
 
-  const handleAddRow = () => {
-    const newRow = {
-      id: Date.now(),
-      batchDate: '',
-      rowBatchNoList: [],
-      batchNo: '',
-      fromBin: '',
-      binClass: '',
-      binType: '',
-      cellType: '',
-      clientCode: '',
-      core: '',
-      expDate: '',
-      avlQty: '',
-      grnDate: '',
-      rowGrnNoList: [],
-      grnNo: '',
-      lotNo: '',
-      partDesc: '',
-      rowPartNoList: [],
-      partNo: '',
-      pcKey: '',
-      qcFlag: '',
-      remainQty: '',
-      sku: '',
-      ssku: '',
-      status: '',
-      stockDate: '',
-      toBin: '',
-      toQty: ''
-    };
-    setChildTableData([...childTableData, newRow]);
-    setChildTableErrors([
-      ...childTableErrors,
-      {
-        batchDate: '',
-        batchNo: '',
-        fromBin: '',
-        fromQty: '',
-        grnDate: '',
-        grnNo: '',
-        lotNo: '',
-        partDesc: '',
-        partNo: '',
-        remainQty: '',
-        sku: '',
-        toBin: '',
-        toQty: ''
-      }
-    ]);
-  };
+  // const handleAddRow = () => {
+  //   const newRow = {
+  //     id: Date.now(),
+  //     batchDate: '',
+  //     rowBatchNoList: [],
+  //     batchNo: '',
+  //     fromBin: '',
+  //     binClass: '',
+  //     binType: '',
+  //     cellType: '',
+  //     clientCode: '',
+  //     core: '',
+  //     expDate: '',
+  //     avlQty: '',
+  //     grnDate: '',
+  //     rowGrnNoList: [],
+  //     grnNo: '',
+  //     lotNo: '',
+  //     partDesc: '',
+  //     rowPartNoList: [],
+  //     partNo: '',
+  //     pcKey: '',
+  //     qcFlag: '',
+  //     remainQty: '',
+  //     sku: '',
+  //     ssku: '',
+  //     status: '',
+  //     stockDate: '',
+  //     toBin: '',
+  //     toQty: ''
+  //   };
+  //   setChildTableData([...childTableData, newRow]);
+  //   setChildTableErrors([
+  //     ...childTableErrors,
+  //     {
+  //       batchDate: '',
+  //       batchNo: '',
+  //       fromBin: '',
+  //       fromQty: '',
+  //       grnDate: '',
+  //       grnNo: '',
+  //       lotNo: '',
+  //       partDesc: '',
+  //       partNo: '',
+  //       remainQty: '',
+  //       sku: '',
+  //       toBin: '',
+  //       toQty: ''
+  //     }
+  //   ]);
+  // };
 
   const [fieldErrors, setFieldErrors] = useState({
     docId: '',
@@ -195,6 +196,7 @@ export const LocationMovement = () => {
     getDocId();
     getAllFromBin();
     getToBinDetails();
+    console.log('the screens from localstorage are:', storedScreens);
   }, []);
   useEffect(() => {
     const totalQty = childTableData.reduce((sum, row) => sum + (parseInt(row.toQty, 10) || 0), 0);
@@ -558,6 +560,10 @@ export const LocationMovement = () => {
       console.error('Error fetching employee data:', error);
     }
   };
+  const getAvailableToBins = (row, currentRowId) => {
+    const selectedFromBin = childTableData.filter((row) => row.id === currentRowId).map((row) => row.fromBin);
+    return toBinList.filter((bin) => !selectedFromBin.includes(bin.toBin));
+  };
   const handleToBinChange = (row, index, event) => {
     const value = event.target.value;
     const selectedToBin = toBinList.find((row) => row.toBin === value);
@@ -785,22 +791,117 @@ export const LocationMovement = () => {
       setFieldErrors({ ...fieldErrors, [name]: '' });
     }
   };
-
-  const handleDeleteRow = (id) => {
-    const rowIndex = childTableData.findIndex((row) => row.id === id);
-    // If the row exists, proceed to delete
-    if (rowIndex !== -1) {
-      const updatedData = childTableData.filter((row) => row.id !== id);
-      const updatedErrors = childTableErrors.filter((_, index) => index !== rowIndex);
-      setChildTableData(updatedData);
-      setChildTableErrors(updatedErrors);
+  const handleKeyDown = (e, row, table) => {
+    if (e.key === 'Tab' && row.id === table[table.length - 1].id) {
+      e.preventDefault();
+      if (isLastRowEmpty(table)) {
+        displayRowError(table);
+      } else {
+        handleAddRow();
+      }
     }
   };
 
-  const handleKeyDown = (e, row) => {
-    if (e.key === 'Tab' && row.id === childTableData[childTableData.length - 1].id) {
-      e.preventDefault();
-      handleAddRow();
+  const handleAddRow = () => {
+    console.log('THE HANDLE ADD ROW FUNCTION IS WORKING');
+
+    if (isLastRowEmpty(childTableData)) {
+      displayRowError(childTableData);
+      return;
+    }
+    console.log('the ok');
+
+    const newRow = {
+      id: Date.now(),
+      batchDate: '',
+      rowBatchNoList: [],
+      batchNo: '',
+      fromBin: '',
+      binClass: '',
+      binType: '',
+      cellType: '',
+      clientCode: '',
+      core: '',
+      expDate: '',
+      avlQty: '',
+      grnDate: '',
+      rowGrnNoList: [],
+      grnNo: '',
+      lotNo: '',
+      partDesc: '',
+      rowPartNoList: [],
+      partNo: '',
+      pcKey: '',
+      qcFlag: '',
+      remainQty: '',
+      sku: '',
+      ssku: '',
+      status: '',
+      stockDate: '',
+      toBin: '',
+      toQty: ''
+    };
+    setChildTableData([...childTableData, newRow]);
+    setChildTableErrors([
+      ...childTableErrors,
+      {
+        batchDate: '',
+        batchNo: '',
+        fromBin: '',
+        fromQty: '',
+        grnDate: '',
+        grnNo: '',
+        lotNo: '',
+        partDesc: '',
+        partNo: '',
+        remainQty: '',
+        sku: '',
+        toBin: '',
+        toQty: ''
+      }
+    ]);
+  };
+  const isLastRowEmpty = (table) => {
+    const lastRow = table[table.length - 1];
+    if (!lastRow) return false;
+
+    if (table === childTableData) {
+      return !lastRow.fromBin || !lastRow.partNo || !lastRow.grnNo || !lastRow.BatchNo || !lastRow.toBin || !lastRow.toQty;
+    }
+    // else if (table === branchTableData) {
+    //   return !lastRow.branchCode;
+    // } else if (table === clientTableData) {
+    //   return !lastRow.customer || !lastRow.client;
+    // }
+    return false;
+  };
+
+  const displayRowError = (table) => {
+    if (table === childTableData) {
+      setChildTableErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          fromBin: !table[table.length - 1].fromBin ? 'fromBin is required' : '',
+          partNo: !table[table.length - 1].partNo ? 'Part No is required' : '',
+          grnNo: !table[table.length - 1].grnNo ? 'GRN No is required' : '',
+          batchNo: !table[table.length - 1].batchNo ? 'Batch No is required' : '',
+          toBin: !table[table.length - 1].toBin ? 'To Bin is required' : '',
+          toQty: !table[table.length - 1].toQty ? 'To Qty is required' : ''
+        };
+        return newErrors;
+      });
+    }
+  };
+
+  const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
+    const rowIndex = table.findIndex((row) => row.id === id);
+    // If the row exists, proceed to delete
+    if (rowIndex !== -1) {
+      const updatedData = table.filter((row) => row.id !== id);
+      const updatedErrors = errorTable.filter((_, index) => index !== rowIndex);
+      setTable(updatedData);
+      setErrorTable(updatedErrors);
     }
   };
 
@@ -995,7 +1096,7 @@ export const LocationMovement = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Doc Id"
+                  label="Doc ID"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1110,7 +1211,19 @@ export const LocationMovement = () => {
                                           {!viewId && (
                                             <>
                                               <td className="border px-2 py-2 text-center">
-                                                <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+                                                <ActionButton
+                                                  title="Delete"
+                                                  icon={DeleteIcon}
+                                                  onClick={() =>
+                                                    handleDeleteRow(
+                                                      row.id,
+                                                      childTableData,
+                                                      setChildTableData,
+                                                      childTableErrors,
+                                                      setChildTableErrors
+                                                    )
+                                                  }
+                                                />
                                               </td>
                                             </>
                                           )}
@@ -1147,6 +1260,7 @@ export const LocationMovement = () => {
                                               className={childTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
                                             >
                                               <option value="">-- Select --</option>
+                                              {/* {row.rowPartNoList.length > 1 && <option value="">-- Select --</option>} */}
                                               {Array.isArray(row.rowPartNoList) &&
                                                 row.rowPartNoList.map(
                                                   (part, idx) =>
@@ -1191,6 +1305,7 @@ export const LocationMovement = () => {
                                               className={childTableErrors[index]?.grnNo ? 'error form-control' : 'form-control'}
                                             >
                                               <option value="">-- Select --</option>
+                                              {/* {row.rowGrnNoList.length > 1 && <option value="">-- Select --</option>} */}
                                               {Array.isArray(row.rowGrnNoList) &&
                                                 row.rowGrnNoList.map(
                                                   (grn, idx) =>
@@ -1216,6 +1331,7 @@ export const LocationMovement = () => {
                                               className={childTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
                                             >
                                               <option value="">-- Select --</option>
+                                              {/* {row.rowBatchNoList.length > 1 && <option value="">-- Select --</option>} */}
                                               {Array.isArray(row.rowBatchNoList) &&
                                                 row.rowBatchNoList.map(
                                                   (batch, idx) =>
@@ -1250,12 +1366,11 @@ export const LocationMovement = () => {
                                               className={childTableErrors[index]?.toBin ? 'error form-control' : 'form-control'}
                                             >
                                               <option value="">--Select--</option>
-                                              {toBinList &&
-                                                toBinList.map((option) => (
-                                                  <option key={option.toBin} value={option.toBin}>
-                                                    {option.toBin}
-                                                  </option>
-                                                ))}
+                                              {getAvailableToBins(row, row.id).map((bin, index) => (
+                                                <option key={index} value={bin.toBin}>
+                                                  {bin.toBin}
+                                                </option>
+                                              ))}
                                             </select>
                                             {childTableErrors[index]?.toBin && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1277,7 +1392,7 @@ export const LocationMovement = () => {
                                               style={{ width: '150px' }}
                                               type="text"
                                               value={row.toQty}
-                                              onChange={(e) => handleToQtyChange(e, row, index)} // Use the refactored function
+                                              onChange={(e) => handleToQtyChange(e, row, index)}
                                               className={childTableErrors[index]?.toQty ? 'error form-control' : 'form-control'}
                                               onKeyDown={(e) => handleKeyDown(e, row, childTableData)}
                                             />
