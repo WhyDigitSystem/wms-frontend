@@ -29,6 +29,7 @@ import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import { showToast } from 'utils/toast-component';
 import apiCalls from 'apicall';
 import ActionButton from 'utils/ActionButton';
+import { getAllActiveScreens } from 'utils/CommonFunctions';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -122,16 +123,29 @@ const Responsibilities = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
-    let newValue = value;
-    newValue = newValue.toUpperCase();
-    newValue = newValue.replace(/[^A-Z]/g, '');
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const nameRegex = /^[A-Za-z ]*$/;
 
-    // Update the value of newValue instead of redeclaring it
-    newValue = name === 'active' ? checked : newValue;
+    if (name === 'name' && !nameRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: name === 'active' ? checked : value.toUpperCase()
+      });
+      setFieldErrors({ ...fieldErrors, [name]: '' });
 
-    setFormData({ ...formData, [name]: newValue });
-    setFieldErrors({ ...fieldErrors, [name]: false });
+      // Update the cursor position after the input change
+      if (type === 'text' || type === 'textarea') {
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
+      }
+    }
   };
 
   const handleSelectChange = (e) => {
@@ -146,11 +160,10 @@ const Responsibilities = () => {
 
   const getAllScreens = async () => {
     try {
-      const result = await apiCalls('get', `commonmaster/allScreenNames`);
-      setScreenList(result.paramObjectsMap.screenNamesVO);
-      console.log('Test', result);
-    } catch (err) {
-      console.log('error', err);
+      const screensData = await getAllActiveScreens(orgId);
+      setScreenList(screensData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
     }
   };
 
@@ -205,7 +218,7 @@ const Responsibilities = () => {
       setIsLoading(false);
 
       const screenVo = selectedScreens.map((row) => ({
-        screenName: row
+        screenName: row.toLowerCase()
       }));
 
       const saveFormData = {

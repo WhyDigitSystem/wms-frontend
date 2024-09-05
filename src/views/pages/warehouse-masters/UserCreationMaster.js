@@ -42,7 +42,7 @@ export const UserCreationMaster = () => {
     mobileNo: '',
     nickName: '',
     email: '',
-    password: 'wds2022',
+    password: 'Wds@2022',
     active: true,
     orgId: 1
   });
@@ -810,11 +810,12 @@ export const UserCreationMaster = () => {
                     onChange={handleInputChange}
                     name="employeeName"
                   >
-                    {employeeList?.map((row) => (
-                      <MenuItem key={row.id} value={row.employeeName}>
-                        {row.employeeName}
-                      </MenuItem>
-                    ))}
+                    {employeeList.length > 0 &&
+                      employeeList.map((row) => (
+                        <MenuItem key={row.id} value={row.employeeName}>
+                          {row.employeeName}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.employeeName && <FormHelperText>{fieldErrors.employeeName}</FormHelperText>}
                 </FormControl>

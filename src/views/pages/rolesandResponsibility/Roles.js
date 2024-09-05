@@ -116,22 +116,30 @@ const Roles = () => {
       fontWeight: selectedRes.indexOf(name) === -1 ? theme.typography.fontWeightRegular : theme.typography.fontWeightMedium
     };
   }
-
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
-    let newValue = value;
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const nameRegex = /^[A-Za-z ]*$/;
 
-    // Convert the value to uppercase
-    newValue = newValue.toUpperCase();
+    if (name === 'role' && !nameRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: name === 'active' ? checked : value.toUpperCase()
+      });
+      setFieldErrors({ ...fieldErrors, [name]: '' });
 
-    // Remove any characters that are not uppercase letters
-    newValue = newValue.replace(/[^A-Z]/g, '');
-
-    // Handle checkbox input separately
-    newValue = name === 'active' ? checked : newValue;
-
-    setFormData({ ...formData, [name]: newValue });
-    setFieldErrors({ ...fieldErrors, [name]: false });
+      // Update the cursor position after the input change
+      if (type === 'text' || type === 'textarea') {
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
+      }
+    }
   };
 
   const handleMultiSelectChange = (event) => {

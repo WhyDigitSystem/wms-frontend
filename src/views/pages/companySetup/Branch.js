@@ -231,7 +231,7 @@ const Branch = () => {
         error = 'Only numeric characters are allowed';
       } else if (value.length > 6) {
         error = 'Only 6 digits are allowed';
-        newValue = value.slice(0, 6); // Limit to 6 digits
+        newValue = value.slice(0, 6);
       }
     } else if (name === 'mobile') {
       if (!numericRegex.test(value)) {
