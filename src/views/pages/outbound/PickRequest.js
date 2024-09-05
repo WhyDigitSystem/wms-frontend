@@ -608,6 +608,7 @@ export const PickRequest = () => {
 
   const handleView = () => {
     setListView(!listView);
+    setDownloadPdf(false);
   };
 
   const handleClose = () => {

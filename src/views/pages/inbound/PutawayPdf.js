@@ -89,7 +89,7 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
           >
             <div>EFit WMS</div>
             <div>Putaway</div>
-            <div>Chennai - UILP</div>
+            <div>{localStorage.getItem('branch')}</div>
           </div>
 
           {/* <!-- Details Section --> */}
@@ -114,9 +114,9 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
                 {row.invoiceNo}
               </div>
             </div>
-            <div style={{ textAlign: 'right' }}>
+            <div style={{ textAlign: 'lrft' }}>
               <div>
-                <strong>Client:</strong> Casio
+                <strong>Client:</strong> {row.client}
               </div>
               <div>
                 <strong>GRN No:</strong> {row.grnNo}
@@ -131,7 +131,7 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
           <div
             style={{
               marginBottom: '20px',
-              textAlign: 'right',
+              textAlign: 'left',
               fontSize: '12px',
               color: '#777'
             }}

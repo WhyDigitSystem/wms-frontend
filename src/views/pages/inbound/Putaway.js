@@ -853,6 +853,7 @@ export const Putaway = () => {
 
   const handleView = () => {
     setListView(!listView);
+    setDownloadPdf(false);
   };
 
   const handleClose = () => {

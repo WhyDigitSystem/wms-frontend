@@ -89,7 +89,7 @@ const GeneratePdfTempPick = ({ row, callBackFunction }) => {
           >
             <div>EFit WMS</div>
             <div>Pick Request</div>
-            <div>Chennai - UILP</div>
+            <div>{localStorage.getItem('branch')}</div>
           </div>
 
           {/* <!-- Details Section --> */}

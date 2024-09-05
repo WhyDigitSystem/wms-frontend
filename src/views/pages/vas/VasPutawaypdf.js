@@ -89,7 +89,7 @@ const GeneratePdfVasPutaway = ({ row, callBackFunction }) => {
           >
             <div>EFit WMS</div>
             <div>VAS Putaway</div>
-            <div>Chennai - UILP</div>
+            <div>{localStorage.getItem('branch')}</div>
           </div>
 
           {/* <!-- Details Section --> */}
@@ -116,7 +116,7 @@ const GeneratePdfVasPutaway = ({ row, callBackFunction }) => {
             </div>
             <div style={{ textAlign: 'right' }}>
               <div>
-                <strong>Client:</strong> Casio
+                <strong>Client:</strong> {row.client}
               </div>
               <div>
                 <strong>GRN No:</strong> {row.grnNo}

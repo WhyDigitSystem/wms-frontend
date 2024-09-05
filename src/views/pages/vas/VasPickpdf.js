@@ -89,7 +89,7 @@ const GeneratePdfVasPickpdf = ({ row, callBackFunction }) => {
           >
             <div>EFit WMS</div>
             <div>Pick Request</div>
-            <div>Chennai - UILP</div>
+            <div>{localStorage.getItem('branch')}</div>
           </div>
 
           {/* <!-- Details Section --> */}
@@ -165,7 +165,7 @@ const GeneratePdfVasPickpdf = ({ row, callBackFunction }) => {
               </tr>
             </thead>
             <tbody>
-              {row.pickRequestDetailsVO?.map((item, index) => (
+              {row.vasPickDetailsVO?.map((item, index) => (
                 <tr key={index} style={{ borderBottom: '1px solid #000000' }}>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{index + 1}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.partNo}</td>
@@ -214,7 +214,7 @@ const GeneratePdfVasPickpdf = ({ row, callBackFunction }) => {
               color: '#333'
             }}
           >
-            Total: {row.pickRequestDetailsVO?.reduce((sum, item) => sum + item.pickQty, 0)}
+            Total: {row.vasPickDetailsVO?.reduce((sum, item) => sum + item.pickQty, 0)}
           </div>
 
           <div
