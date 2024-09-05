@@ -645,7 +645,6 @@ export const SalesReturn = () => {
     const cursorPosition = e.target.selectionStart;
 
     // Regular expressions for validation
-    const nameRegex = /^[A-Za-z ]*$/;
     const alphaNumericRegex = /^[A-Za-z0-9]*$/;
     const numericRegex = /^[0-9]*$/;
 
@@ -717,10 +716,12 @@ export const SalesReturn = () => {
       // Clear any previous error messages
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
 
-      // Restore the cursor position after the change
-      setTimeout(() => {
-        e.target.setSelectionRange(cursorPosition, cursorPosition);
-      }, 0);
+      // Check if setSelectionRange is a function before calling it
+      if (typeof e.target.setSelectionRange === 'function') {
+        setTimeout(() => {
+          e.target.setSelectionRange(cursorPosition, cursorPosition);
+        }, 0);
+      }
     }
   };
 
