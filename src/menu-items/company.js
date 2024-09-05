@@ -16,7 +16,7 @@ const icons2 = {
 };
 
 const loginUserName = localStorage.getItem('userName');
-const loginUserRole = localStorage.getItem('ROLES');
+const loginUserType = localStorage.getItem('userType');
 const storedScreens = JSON.parse(localStorage.getItem('screens')) || [];
 console.log('THE SCREENS FROM LOCALSTORAGE ARE:', storedScreens);
 
@@ -37,9 +37,8 @@ const screenMappings = {
   }
 };
 
-// const filteredChildren = storedScreens.map((screen) => screenMappings[screen.toLowerCase()]).filter(Boolean);
 const filteredChildren =
-  loginUserName === 'admin'
+  loginUserType === 'admin'
     ? Object.values(screenMappings)
     : storedScreens.map((screen) => screenMappings[screen.toLowerCase()]).filter(Boolean);
 

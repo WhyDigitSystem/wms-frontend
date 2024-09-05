@@ -331,6 +331,7 @@ const FirebaseLogin = ({ ...others }) => {
         localStorage.setItem('orgId', response.data.paramObjectsMap.userVO.orgId); // Replace with the actual token
         localStorage.setItem('userId', response.data.paramObjectsMap.userVO.usersId);
         localStorage.setItem('userName', response.data.paramObjectsMap.userVO.userName);
+        localStorage.setItem('userType', response.data.paramObjectsMap.userVO.userType);
         localStorage.setItem('token', response.data.paramObjectsMap.userVO.token);
         localStorage.setItem('tokenId', response.data.paramObjectsMap.userVO.tokenId);
         localStorage.setItem('LoginMessage', true);
@@ -365,6 +366,8 @@ const FirebaseLogin = ({ ...others }) => {
           // Clear stored credentials if "Remember Me" is unchecked
           localStorage.removeItem('rememberedCredentials');
         }
+        navigate('/dashboard/default');
+        window.location.reload(true);
       } else {
         // Successful registration, perform actions like storing tokens and redirecting
         toast.error(response.data.paramObjectsMap.errorMessage, {
