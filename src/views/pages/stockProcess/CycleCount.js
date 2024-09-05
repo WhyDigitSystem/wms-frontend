@@ -987,13 +987,13 @@ export const CycleCount = () => {
           <>
             <div className="row">
               <div className="col-md-3 mb-3">
-                <TextField label="DocId" variant="outlined" size="small" fullWidth name="Doc ID" value={formData.docId} disabled />
+                <TextField label="Document No" variant="outlined" size="small" fullWidth name="Doc ID" value={formData.docId} disabled />
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Doc Date"
+                      label="Document Date"
                       value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
                       slotProps={{
                         textField: { size: 'small', clearable: true }

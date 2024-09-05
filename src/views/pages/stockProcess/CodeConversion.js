@@ -879,7 +879,7 @@ export const CodeConversion = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Doc ID"
+                  label="Document No"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -892,7 +892,7 @@ export const CodeConversion = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Doc Date"
+                      label="Document Date"
                       value={formData.docdate ? dayjs(formData.docdate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('docdate', date)}
                       slotProps={{

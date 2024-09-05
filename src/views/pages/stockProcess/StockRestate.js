@@ -127,7 +127,7 @@ export const StockRestate = () => {
   });
   const listViewColumns = [
     { accessorKey: 'docId', header: 'Stock Restate ID', size: 140 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'docDate', header: 'Document Date', size: 140 },
     { accessorKey: 'transferFrom', header: 'Transfer From', size: 140 },
     { accessorKey: 'transferTo', header: 'Identity transfer To', size: 140 }
   ];
@@ -1138,13 +1138,13 @@ export const StockRestate = () => {
           <>
             <div className="row">
               <div className="col-md-3 mb-3">
-                <TextField label="DocId" variant="outlined" size="small" fullWidth name="Doc ID" value={formData.docId} disabled />
+                <TextField label="Document No" variant="outlined" size="small" fullWidth name="Doc ID" value={formData.docId} disabled />
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Doc Date"
+                      label="Document Date"
                       value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -1157,7 +1157,13 @@ export const StockRestate = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.transferFrom}>
-                  <InputLabel id="transferFrom-label">Transfer From *</InputLabel>
+                  <InputLabel id="transferFrom-label">
+                    {
+                      <span>
+                        Transfer From <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="transferFrom-label"
                     id="transferFrom"
@@ -1176,7 +1182,13 @@ export const StockRestate = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.transferTo}>
-                  <InputLabel id="transferTo-label">Transfer To *</InputLabel>
+                  <InputLabel id="transferTo-label">
+                    {
+                      <span>
+                        Transfer To <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="transferTo-label"
                     id="transferTo"
@@ -1196,7 +1208,11 @@ export const StockRestate = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Entry No"
+                  label={
+                    <span>
+                      Entry No <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
