@@ -16,6 +16,7 @@ const icons2 = {
 };
 
 const loginUserName = localStorage.getItem('userName');
+const loginUserRole = localStorage.getItem('ROLES');
 const storedScreens = JSON.parse(localStorage.getItem('screens')) || [];
 console.log('THE SCREENS FROM LOCALSTORAGE ARE:', storedScreens);
 
