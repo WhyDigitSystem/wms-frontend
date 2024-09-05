@@ -2,26 +2,16 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, FormHelperText, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import axios from 'axios';
-import { useRef, useState, useMemo, useEffect } from 'react';
-import 'react-tabs/style/react-tabs.css';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import TextField from '@mui/material/TextField';
+import apiCalls from 'apicall';
+import { useEffect, useState } from 'react';
+import 'react-tabs/style/react-tabs.css';
+import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
-import apiCalls from 'apicall';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 export const UnitMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -30,8 +20,7 @@ export const UnitMaster = () => {
   const [formData, setFormData] = useState({
     active: true,
     uom: '',
-    type: '',
-    type: '',
+    unitType: '',
     unitName: ''
   });
   const [editId, setEditId] = useState('');
@@ -39,7 +28,7 @@ export const UnitMaster = () => {
   const [fieldErrors, setFieldErrors] = useState({
     unitName: '',
     uom: '',
-    type: ''
+    unitType: ''
   });
   const [listView, setListView] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -51,7 +40,7 @@ export const UnitMaster = () => {
       size: 140
     },
     {
-      accessorKey: 'type',
+      accessorKey: 'unitType',
       header: 'Type',
       size: 140
     },
@@ -65,7 +54,7 @@ export const UnitMaster = () => {
 
   const getAllUnits = async () => {
     try {
-      const result = await apiCalls('get', `commonmaster/unit?orgid=1000000001`);
+      const result = await apiCalls('get', `warehousemastercontroller/getAllUnitByOrgId?orgid=${orgId}`);
       setListViewData(result.paramObjectsMap.unitVO);
       console.log('Test', result);
     } catch (err) {
@@ -77,14 +66,15 @@ export const UnitMaster = () => {
     console.log('THE SELECTED unit ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `commonmaster/unit/${row.original.id}`);
+      const response = await apiCalls('get', `warehousemastercontroller/unit/${row.original.id}`);
 
       if (response.status === true) {
-        const particularUnit = response.paramObjectsMap.unit;
+        const particularUnit = response.paramObjectsMap.unitVO;
         setFormData({
           uom: particularUnit.uom,
           unitName: particularUnit.unitName,
-          active: particularUnit.active === 'Active' ? true : false
+          active: particularUnit.active === 'Active' ? true : false,
+          unitType: particularUnit.unitType
         });
         setListView(false);
       } else {
@@ -151,14 +141,13 @@ export const UnitMaster = () => {
     setFormData({
       unitName: '',
       uom: '',
-      type: '',
-      type: '',
+      unitType: '',
       active: true
     });
     setFieldErrors({
       unitName: '',
       uom: '',
-      type: ''
+      unitType: ''
     });
   };
 
@@ -170,8 +159,8 @@ export const UnitMaster = () => {
     if (!formData.unitName) {
       errors.unitName = 'unit is required';
     }
-    if (!formData.type) {
-      errors.type = 'Type is required';
+    if (!formData.unitType) {
+      errors.unitType = 'Type is required';
     }
 
     if (Object.keys(errors).length === 0) {
@@ -181,7 +170,7 @@ export const UnitMaster = () => {
         active: formData.active,
         uom: formData.uom,
         unitName: formData.unitName,
-        type: formData.type,
+        unitType: formData.unitType,
         orgId: orgId,
         createdby: loginUserName
       };
@@ -189,7 +178,7 @@ export const UnitMaster = () => {
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const result = await apiCalls('post', `commonmaster/createUpdateUnit`, saveFormData);
+        const result = await apiCalls('put', `warehousemastercontroller/createUpdateUnit`, saveFormData);
 
         if (result.status === true) {
           console.log('Response:', result);
@@ -285,11 +274,11 @@ export const UnitMaster = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="type"
-                  value={formData.type}
+                  name="unitType"
+                  value={formData.unitType}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.type}
-                  helperText={fieldErrors.type}
+                  error={!!fieldErrors.unitType}
+                  helperText={fieldErrors.unitType}
                 />
               </div>
               <div className="col-md-3 mb-3">

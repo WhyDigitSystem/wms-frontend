@@ -23,7 +23,7 @@ export const SupplierMaster = () => {
   const [customer, setCustomer] = useState(localStorage.getItem('customer'));
   const [client, setClient] = useState(localStorage.getItem('client'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
-  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchCode'));
+  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
   const [selectedBranchCode, setSelectedBranchCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);

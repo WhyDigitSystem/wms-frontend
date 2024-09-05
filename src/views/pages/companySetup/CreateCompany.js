@@ -1,33 +1,19 @@
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, FormHelperText, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import axios from 'axios';
-import { useState, useMemo, useEffect } from 'react';
-import 'react-tabs/style/react-tabs.css';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
 import Checkbox from '@mui/material/Checkbox';
-import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import FormLabel from '@mui/material/FormLabel';
-import { encryptPassword } from 'views/utilities/encryptPassword';
-import ActionButton from 'utils/ActionButton';
-import ToastComponent, { showToast } from 'utils/toast-component';
+import TextField from '@mui/material/TextField';
 import apiCalls from 'apicall';
+import { useEffect, useState } from 'react';
+import 'react-tabs/style/react-tabs.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/ActionButton';
+import { showToast } from 'utils/toast-component';
+import { encryptPassword } from 'views/utilities/encryptPassword';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 const CreateCompany = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -40,6 +26,7 @@ const CreateCompany = () => {
     companyAdminName: '',
     companyAdminEmail: '',
     companyAdminPwd: '',
+    employeeCode: '',
     active: true
   });
 
@@ -49,6 +36,7 @@ const CreateCompany = () => {
     companyAdminName: '',
     companyAdminEmail: '',
     companyAdminPwd: '',
+    employeeCode: '',
     active: ''
   });
   const [listView, setListView] = useState(false);
@@ -103,6 +91,7 @@ const CreateCompany = () => {
           companyName: particularCompany.companyName,
           companyAdminName: particularCompany.employeeName,
           companyAdminEmail: particularCompany.email,
+          employeeCode: particularCompany.employeeCode,
           active: particularCompany.active === 'Active' ? true : false
         });
       } else {
@@ -161,6 +150,7 @@ const CreateCompany = () => {
       companyAdminName: '',
       companyAdminEmail: '',
       companyAdminPwd: '',
+      employeeCode: '',
       active: true
     });
     setFieldErrors({
@@ -168,6 +158,7 @@ const CreateCompany = () => {
       companyName: '',
       companyAdminName: '',
       companyAdminEmail: '',
+      employeeCode: '',
       companyAdminPwd: ''
     });
     setEditId('');
@@ -187,6 +178,9 @@ const CreateCompany = () => {
     if (!formData.companyAdminEmail) {
       errors.companyAdminEmail = 'Email Id is required';
     }
+    if (!formData.employeeCode) {
+      errors.employeeCode = 'Employee Code is required';
+    }
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
@@ -203,7 +197,6 @@ const CreateCompany = () => {
         createdBy: loginUserName,
         currency: '',
         email: formData.companyAdminEmail,
-        employeeCode: '',
         employeeName: formData.companyAdminName,
         mainCurrency: '',
         note: '',
@@ -212,6 +205,7 @@ const CreateCompany = () => {
         state: '',
         gst: '',
         webSite: '',
+        employeeCode: formData.employeeCode,
         zip: '',
         orgId: orgId
       };
@@ -323,6 +317,19 @@ const CreateCompany = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.companyAdminEmail}
                   helperText={fieldErrors.companyAdminEmail}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="Emp Code"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="employeeCode"
+                  value={formData.employeeCode}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.employeeCode}
+                  helperText={fieldErrors.employeeCode}
                 />
               </div>
               {/* <div className="col-md-3 mb-3">

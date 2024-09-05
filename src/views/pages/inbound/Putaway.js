@@ -37,6 +37,7 @@ import Draggable from 'react-draggable';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
+import { initCaps } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import GeneratePdfTemp from './PutawayPdf';
@@ -84,7 +85,7 @@ export const Putaway = () => {
     carrier: '',
     client: loginClient,
     contact: '',
-    core: '',
+    core: 'Multi',
     createdBy: loginUserName,
     customer: loginCustomer,
     docId: '',
@@ -659,6 +660,8 @@ export const Putaway = () => {
         }));
       } else if (name === 'status') {
         setFormData({ ...formData, [name]: value });
+      } else if (name === 'core') {
+        setFormData({ ...formData, [name]: initCaps(value) });
       } else {
         setFormData({ ...formData, [name]: value.toUpperCase() });
       }
@@ -726,7 +729,7 @@ export const Putaway = () => {
       carrier: '',
       client: loginClient,
       contact: '',
-      core: '',
+      core: 'Multi',
       createdBy: loginUserName,
       customer: loginCustomer,
       docDate: dayjs(),
@@ -1104,17 +1107,16 @@ export const Putaway = () => {
                     value={formData.core}
                     error={!!fieldErrors.core}
                     helperText={fieldErrors.core}
-                    disabled
                   />
                 </div>
               ) : (
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.core}>
                     <InputLabel id="core">Core</InputLabel>
-                    <Select labelId="core" id="core" name="core" label="Core" value={formData.core} onChange={handleInputChange} disabled>
+                    <Select labelId="core" id="core" name="core" label="Core" value={formData.core} onChange={handleInputChange}>
                       <MenuItem value="">Select Option</MenuItem>
-                      <MenuItem value="MULTI">MULTI</MenuItem>
-                      <MenuItem value="SINGLE">SINGLE</MenuItem>
+                      <MenuItem value="Multi">MULTI</MenuItem>
+                      <MenuItem value="Single">SINGLE</MenuItem>
                     </Select>
                     {fieldErrors.core && <FormHelperText error>{fieldErrors.core}</FormHelperText>}
                   </FormControl>

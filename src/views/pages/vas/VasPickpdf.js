@@ -169,10 +169,10 @@ const GeneratePdfVasPickpdf = ({ row, callBackFunction }) => {
                 <tr key={index} style={{ borderBottom: '1px solid #000000' }}>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{index + 1}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.partNo}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.partDesc}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.batch || ''}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.partDescription}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.batchNo || ''}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.sku}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.pickQty}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.picQty}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.bin}</td>
                   <td
                     style={{
@@ -198,7 +198,7 @@ const GeneratePdfVasPickpdf = ({ row, callBackFunction }) => {
                       {/* Uncomment the line below to display an unchecked checkbox */}
                     </div>
                   </td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.availQty}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.avlQty}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}></td>
                 </tr>
               ))}
@@ -214,7 +214,7 @@ const GeneratePdfVasPickpdf = ({ row, callBackFunction }) => {
               color: '#333'
             }}
           >
-            Total: {row.vasPickDetailsVO?.reduce((sum, item) => sum + item.pickQty, 0)}
+            Total: {row.vasPickDetailsVO?.reduce((sum, item) => sum + item.picQty, 0)}
           </div>
 
           <div
