@@ -556,17 +556,72 @@ export const Putaway = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked } = e.target;
+
+  //   let errorMessage = '';
+
+  //   if (errorMessage) {
+  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+  //   } else {
+  //     if (name === 'grnNo') {
+  //       const selectedId = grnList.find((id) => id.docId === value);
+  //       const selectedPutawayId = selectedId.docId;
+  //       if (selectedId) {
+  //         setFormData((prevData) => ({
+  //           ...prevData,
+  //           grnNo: selectedId.docId,
+  //           grnDate: dayjs(selectedId.docDate).format('YYYY-MM-DD'),
+  //           entryNo: selectedId.entryNo,
+  //           entryDate: dayjs(selectedId.entryDate).format('YYYY-MM-DD'),
+  //           gatePassDate: dayjs(selectedId.docDate).format('YYYY-MM-DD'),
+  //           supplierShortName: selectedId.supplierShortName,
+  //           supplier: selectedId.supplier,
+  //           carrier: selectedId.carrier,
+  //           modeOfShipment: selectedId.modeOfShipment.toUpperCase(),
+  //           vehicleType: selectedId.vehicleType.toUpperCase(),
+  //           contact: selectedId.contact,
+  //           driverName: selectedId.driverName.toUpperCase(),
+  //           securityName: selectedId.securityName.toUpperCase(),
+  //           lrDate: dayjs(selectedId.lrDate).format('YYYY-MM-DD'),
+  //           briefDesc: selectedId.goodsDescripition.toUpperCase(),
+  //           vehicleNo: selectedId.vehicleNo,
+  //           lotNo: selectedId.lotNo,
+  //           totalGrnQty: selectedId.totalGrnQty
+  //         }));
+  //         // getPutawayGridDetails(selectedPutawayId);
+  //       }
+  //     } else if (name === 'binClass') {
+  //       setFormData((prevData) => ({
+  //         ...prevData,
+  //         [name]: value
+  //       }));
+  //     } else if (name === 'binPick') {
+  //       setFormData((prevData) => ({
+  //         ...prevData,
+  //         [name]: value
+  //       }));
+  //     } else if (name === 'status') {
+  //       setFormData({ ...formData, [name]: value });
+  //     } else {
+  //       setFormData({ ...formData, [name]: value.toUpperCase() });
+  //     }
+
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd } = e.target;
 
     let errorMessage = '';
 
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
+      // Handle specific cases
       if (name === 'grnNo') {
         const selectedId = grnList.find((id) => id.docId === value);
-        const selectedPutawayId = selectedId.docId;
         if (selectedId) {
           setFormData((prevData) => ({
             ...prevData,
@@ -589,6 +644,7 @@ export const Putaway = () => {
             lotNo: selectedId.lotNo,
             totalGrnQty: selectedId.totalGrnQty
           }));
+          // Optionally call other functions
           // getPutawayGridDetails(selectedPutawayId);
         }
       } else if (name === 'binClass') {
@@ -608,6 +664,14 @@ export const Putaway = () => {
       }
 
       setFieldErrors({ ...fieldErrors, [name]: '' });
+
+      // Restore cursor position after state update
+      setTimeout(() => {
+        const inputElement = document.querySelector(`[name=${name}]`);
+        if (inputElement) {
+          inputElement.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 0);
     }
   };
 

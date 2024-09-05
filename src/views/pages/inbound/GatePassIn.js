@@ -363,84 +363,202 @@ export const GatePassIn = () => {
     }
   };
 
+  // const handleInputChange = (event) => {
+  //   const { name, value } = event.target;
+
+  //   if (name === 'vehicleNo') {
+  //     // Convert the vehicle number to uppercase
+  //     const upperCaseValue = value.toUpperCase();
+
+  //     setFormData({
+  //       ...formData,
+  //       vehicleNo: upperCaseValue
+  //     });
+  //   } else if (name === 'driverName') {
+  //     // Convert the vehicle number to uppercase
+  //     const upperCaseValue = value.toUpperCase();
+
+  //     setFormData({
+  //       ...formData,
+  //       driverName: upperCaseValue
+  //     });
+  //   } else if (name === 'goodsDescription') {
+  //     // Convert the vehicle number to uppercase
+  //     const upperCaseValue = value.toUpperCase();
+
+  //     setFormData({
+  //       ...formData,
+  //       goodsDescription: upperCaseValue
+  //     });
+  //   } else if (name === 'securityName') {
+  //     // Convert the vehicle number to uppercase
+  //     const upperCaseValue = value.toUpperCase();
+
+  //     setFormData({
+  //       ...formData,
+  //       securityName: upperCaseValue
+  //     });
+  //   } else if (name === 'contact') {
+  //     const numericValue = value.replace(/\D/g, '');
+  //     let errorMessage = '';
+
+  //     if (numericValue.length > 10) {
+  //       errorMessage = 'Invalid format';
+  //     }
+
+  //     if (value.length > numericValue.length) {
+  //       errorMessage = 'Alphabet not allowed';
+  //     }
+
+  //     const truncatedValue = numericValue.slice(0, 10);
+
+  //     setFormData({
+  //       ...formData,
+  //       contact: truncatedValue
+  //     });
+
+  //     setFieldErrors({
+  //       ...fieldErrors,
+  //       contact: errorMessage
+  //     });
+  //   } else if (name === 'supplier') {
+  //     const selectedSupplier = supplierList.find((supplier) => supplier.supplierShortName === value);
+  //     setFormData({
+  //       ...formData,
+  //       supplier: value,
+  //       supplierShortName: selectedSupplier ? selectedSupplier.supplier : ''
+  //     });
+  //   } else if (name === 'modeOfShipment') {
+  //     const upperCaseValue = value.toUpperCase();
+  //     setFormData({
+  //       ...formData,
+  //       modeOfShipment: upperCaseValue
+  //     });
+  //     getAllCarrier(value);
+  //   } else {
+  //     setFormData({
+  //       ...formData,
+  //       [name]: value
+  //     });
+  //   }
+  // };
+
+  // const handleInputChange = (event) => {
+  //   const { name, value } = event.target;
+
+  //   // Store cursor position before value change
+  //   const cursorPosition = event.target.selectionStart;
+
+  //   let updatedValue = value; // Default to the current value
+  //   let errorMessage = '';
+
+  //   // Convert specific fields to uppercase
+  //   const upperCaseFields = ['vehicleNo', 'driverName', 'goodsDescription', 'securityName', 'modeOfShipment'];
+  //   if (upperCaseFields.includes(name)) {
+  //     updatedValue = value.toUpperCase();
+  //   }
+
+  //   // Handle 'contact' field for numbers only and handle errors
+  //   if (name === 'contact') {
+  //     const numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+  //     if (value.length > numericValue.length) {
+  //       errorMessage = 'Alphabet not allowed';
+  //     } else if (numericValue.length > 10) {
+  //       errorMessage = 'Invalid format'; // If more than 10 digits
+  //     }
+  //     updatedValue = numericValue.slice(0, 10); // Limit to 10 digits
+  //   }
+
+  //   // Handle 'supplier' field and populate 'supplierShortName'
+  //   if (name === 'supplier') {
+  //     const selectedSupplier = supplierList.find((supplier) => supplier.supplierShortName === value);
+  //     setFormData({
+  //       ...formData,
+  //       supplier: value,
+  //       supplierShortName: selectedSupplier ? selectedSupplier.supplier : ''
+  //     });
+  //     return;
+  //   }
+
+  //   // Special handling for 'modeOfShipment' to trigger API
+  //   if (name === 'modeOfShipment') {
+  //     getAllCarrier(value);
+  //   }
+
+  //   // Update the form data and error messages
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     [name]: updatedValue
+  //   }));
+
+  //   if (name === 'contact') {
+  //     setFieldErrors((prevErrors) => ({
+  //       ...prevErrors,
+  //       contact: errorMessage
+  //     }));
+  //   }
+
+  //   // Restore cursor position after state update
+  //   setTimeout(() => {
+  //     const inputElement = event.target;
+  //     inputElement.setSelectionRange(cursorPosition, cursorPosition); // Restore cursor
+  //   }, 0);
+  // };
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
 
-    if (name === 'vehicleNo') {
-      // Convert the vehicle number to uppercase
-      const upperCaseValue = value.toUpperCase();
+    // Store cursor position before value change
+    const cursorPosition = event.target.selectionStart;
 
-      setFormData({
-        ...formData,
-        vehicleNo: upperCaseValue
-      });
-    } else if (name === 'driverName') {
-      // Convert the vehicle number to uppercase
-      const upperCaseValue = value.toUpperCase();
+    let updatedValue = value.toUpperCase(); // Convert all input to uppercase
+    let errorMessage = '';
 
-      setFormData({
-        ...formData,
-        driverName: upperCaseValue
-      });
-    } else if (name === 'goodsDescription') {
-      // Convert the vehicle number to uppercase
-      const upperCaseValue = value.toUpperCase();
-
-      setFormData({
-        ...formData,
-        goodsDescription: upperCaseValue
-      });
-    } else if (name === 'securityName') {
-      // Convert the vehicle number to uppercase
-      const upperCaseValue = value.toUpperCase();
-
-      setFormData({
-        ...formData,
-        securityName: upperCaseValue
-      });
-    } else if (name === 'contact') {
-      const numericValue = value.replace(/\D/g, '');
-      let errorMessage = '';
-
-      if (numericValue.length > 10) {
-        errorMessage = 'Invalid format';
-      }
-
-      if (value.length > numericValue.length) {
+    // Handle 'contact' field for numbers only and handle errors
+    if (name === 'contact') {
+      const numericValue = updatedValue.replace(/\D/g, ''); // Remove non-numeric characters
+      if (updatedValue.length > numericValue.length) {
         errorMessage = 'Alphabet not allowed';
+      } else if (numericValue.length > 10) {
+        errorMessage = 'Invalid format'; // If more than 10 digits
       }
+      updatedValue = numericValue.slice(0, 10); // Limit to 10 digits
+    }
 
-      const truncatedValue = numericValue.slice(0, 10);
-
+    // Handle 'supplier' field and populate 'supplierShortName'
+    if (name === 'supplier') {
+      const selectedSupplier = supplierList.find((supplier) => supplier.supplierShortName === updatedValue);
       setFormData({
         ...formData,
-        contact: truncatedValue
-      });
-
-      setFieldErrors({
-        ...fieldErrors,
-        contact: errorMessage
-      });
-    } else if (name === 'supplier') {
-      const selectedSupplier = supplierList.find((supplier) => supplier.supplierShortName === value);
-      setFormData({
-        ...formData,
-        supplier: value,
+        supplier: updatedValue,
         supplierShortName: selectedSupplier ? selectedSupplier.supplier : ''
       });
-    } else if (name === 'modeOfShipment') {
-      const upperCaseValue = value.toUpperCase();
-      setFormData({
-        ...formData,
-        modeOfShipment: upperCaseValue
-      });
-      getAllCarrier(value);
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value
-      });
+      return;
     }
+
+    // Special handling for 'modeOfShipment' to trigger API
+    if (name === 'modeOfShipment') {
+      getAllCarrier(updatedValue);
+    }
+
+    // Update the form data and error messages
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: updatedValue
+    }));
+
+    if (name === 'contact') {
+      setFieldErrors((prevErrors) => ({
+        ...prevErrors,
+        contact: errorMessage
+      }));
+    }
+
+    // Restore cursor position after state update
+    setTimeout(() => {
+      const inputElement = event.target;
+      inputElement.setSelectionRange(cursorPosition, cursorPosition); // Restore cursor
+    }, 0);
   };
 
   const handleDateChange = (field, date) => {

@@ -456,14 +456,117 @@ export const Grn = () => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked } = e.target;
 
+  //   const nameRegex = /^[A-Za-z ]*$/;
+  //   const alphaNumericRegex = /^[A-Za-z0-9]*$/;
+  //   const numericRegex = /^[0-9]*$/;
+
+  //   let errorMessage = '';
+
+  //   switch (name) {
+  //     case 'docCode':
+  //     case 'capacity':
+  //     case 'vesselNo':
+  //     case 'hsnNo':
+  //       if (!alphaNumericRegex.test(value)) {
+  //         errorMessage = 'Only alphanumeric characters are allowed';
+  //       }
+  //       break;
+  //     case 'driverName':
+  //     case 'securityName':
+  //       if (!nameRegex.test(value)) {
+  //         errorMessage = 'Only Alphabets are allowed';
+  //       }
+  //       break;
+  //     case 'contact':
+  //       if (!numericRegex.test(value)) {
+  //         errorMessage = 'Only numeric characters are allowed';
+  //       } else if (value.length > 10) {
+  //         errorMessage = 'Invalid Mobile Format';
+  //       }
+  //       break;
+  //     case 'noOfPallets':
+  //       if (!numericRegex.test(value)) {
+  //         errorMessage = 'Only numeric characters are allowed';
+  //       }
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   if (errorMessage) {
+  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
+  //   } else {
+  //     if (name === 'grnType') {
+  //       setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+  //       // if (value === 'GATE PASS') setEnableGatePassFields(true);
+  //       {
+  //         value === 'GATE PASS' ? setEnableGatePassFields(true) : setEnableGatePassFields(false);
+  //       }
+  //     } else if (name === 'gatePassId') {
+  //       const selectedId = gatePassIdList.find((id) => id.docId === value);
+  //       const selectedGatePassId = selectedId.docId;
+  //       if (selectedId) {
+  //         setFormData((prevData) => ({
+  //           ...prevData,
+  //           gatePassId: selectedId.docId,
+  //           entrySlNo: selectedId.entryNo,
+  //           gatePassDate: dayjs(selectedId.docDate).format('YYYY-MM-DD'),
+  //           supplierShortName: selectedId.supplier,
+  //           supplier: selectedId.supplierShortName,
+  //           modeOfShipment: selectedId.modeOfShipment.toUpperCase(),
+  //           vehicleType: selectedId.vehicleType.toUpperCase(),
+  //           contact: selectedId.contact,
+  //           driverName: selectedId.driverName,
+  //           securityName: selectedId.securityName,
+  //           lrDate: dayjs(selectedId.lrDate).format('YYYY-MM-DD'),
+  //           goodsDesc: selectedId.goodsDescription,
+  //           vehicleNo: selectedId.vehicleNo,
+  //           lotNo: selectedId.lotNo
+  //         }));
+  //         getAllCarriers(selectedId.modeOfShipment);
+  //         setFormData((prevData) => ({
+  //           ...prevData,
+  //           carrier: selectedId.carrier.toUpperCase()
+  //         }));
+  //         console.log('THE SELECTED GATEPASS ID IS:', selectedGatePassId);
+
+  //         getGatePassGridDetailsByGatePassId(selectedGatePassId);
+  //       }
+  //     } else if (name === 'supplierShortName') {
+  //       const selectedName = supplierList.find((supplier) => supplier.supplierShortName === value);
+  //       if (selectedName) {
+  //         setFormData((prevData) => ({
+  //           ...prevData,
+  //           supplierShortName: selectedName.supplierShortName,
+  //           supplier: selectedName.supplier
+  //         }));
+  //       }
+  //     } else if (name === 'modeOfShipment') {
+  //       setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+  //       getAllCarriers(value);
+  //     } else if (name === 'vas') {
+  //       setFormData((prevData) => ({ ...prevData, [name]: checked }));
+  //     } else {
+  //       setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+  //     }
+
+  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+  //   }
+  // };
+
+  const handleInputChange = (e) => {
+    const { name, value, checked, selectionStart, selectionEnd } = e.target;
+
+    // Define regex for validation
     const nameRegex = /^[A-Za-z ]*$/;
     const alphaNumericRegex = /^[A-Za-z0-9]*$/;
     const numericRegex = /^[0-9]*$/;
 
     let errorMessage = '';
+    let updatedValue = value.toUpperCase(); // Convert value to uppercase
 
     switch (name) {
       case 'docCode':
@@ -477,15 +580,16 @@ export const Grn = () => {
       case 'driverName':
       case 'securityName':
         if (!nameRegex.test(value)) {
-          errorMessage = 'Only Alphabets are allowed';
+          errorMessage = 'Only alphabets are allowed';
         }
         break;
       case 'contact':
         if (!numericRegex.test(value)) {
           errorMessage = 'Only numeric characters are allowed';
         } else if (value.length > 10) {
-          errorMessage = 'Invalid Mobile Format';
+          errorMessage = 'Invalid mobile format'; // Error message adjusted for consistency
         }
+        updatedValue = value.slice(0, 10); // Limit to 10 digits
         break;
       case 'noOfPallets':
         if (!numericRegex.test(value)) {
@@ -499,15 +603,15 @@ export const Grn = () => {
     if (errorMessage) {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
+      // Handle specific cases
       if (name === 'grnType') {
-        setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
-        // if (value === 'GATE PASS') setEnableGatePassFields(true);
-        {
-          value === 'GATE PASS' ? setEnableGatePassFields(true) : setEnableGatePassFields(false);
-        }
+        setFormData((prevData) => ({
+          ...prevData,
+          [name]: updatedValue
+        }));
+        setEnableGatePassFields(updatedValue === 'GATE PASS');
       } else if (name === 'gatePassId') {
         const selectedId = gatePassIdList.find((id) => id.docId === value);
-        const selectedGatePassId = selectedId.docId;
         if (selectedId) {
           setFormData((prevData) => ({
             ...prevData,
@@ -531,12 +635,12 @@ export const Grn = () => {
             ...prevData,
             carrier: selectedId.carrier.toUpperCase()
           }));
-          console.log('THE SELECTED GATEPASS ID IS:', selectedGatePassId);
+          console.log('THE SELECTED GATEPASS ID IS:', selectedId.docId);
 
-          getGatePassGridDetailsByGatePassId(selectedGatePassId);
+          getGatePassGridDetailsByGatePassId(selectedId.docId);
         }
       } else if (name === 'supplierShortName') {
-        const selectedName = supplierList.find((supplier) => supplier.supplierShortName === value);
+        const selectedName = supplierList.find((supplier) => supplier.supplierShortName === updatedValue);
         if (selectedName) {
           setFormData((prevData) => ({
             ...prevData,
@@ -545,15 +649,33 @@ export const Grn = () => {
           }));
         }
       } else if (name === 'modeOfShipment') {
-        setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
-        getAllCarriers(value);
+        setFormData((prevData) => ({
+          ...prevData,
+          [name]: updatedValue
+        }));
+        getAllCarriers(updatedValue);
       } else if (name === 'vas') {
-        setFormData((prevData) => ({ ...prevData, [name]: checked }));
+        setFormData((prevData) => ({
+          ...prevData,
+          [name]: checked
+        }));
       } else {
-        setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+        setFormData((prevData) => ({
+          ...prevData,
+          [name]: updatedValue
+        }));
       }
 
+      // Clear error message if valid input
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+
+      // Restore cursor position after state update
+      setTimeout(() => {
+        const inputElement = document.querySelector(`[name=${name}]`);
+        if (inputElement) {
+          inputElement.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 0);
     }
   };
 
