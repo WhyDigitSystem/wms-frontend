@@ -147,7 +147,8 @@ export const ItemMaster = () => {
     bchk: '',
     status: '',
     barcode: '',
-    skuCategory: ''
+    skuCategory: '',
+    movingType: ''
   });
   const listViewColumns = [
     { accessorKey: 'partno', header: 'Part No', size: 140 },
@@ -420,6 +421,7 @@ export const ItemMaster = () => {
       parentChildKey: 'CHILD',
       barcode: '',
       skuCategory: '',
+      movingType: '',
       active: true
     });
     setItemTableData([
@@ -460,7 +462,8 @@ export const ItemMaster = () => {
       bchk: '',
       status: '',
       barcode: '',
-      skuCategory: ''
+      skuCategory: '',
+      movingType: ''
     });
     setItemTableErrors('');
     setEditId('');
@@ -483,6 +486,9 @@ export const ItemMaster = () => {
     }
     if (!formData.sku) {
       errors.sku = 'SKU is required';
+    }
+    if (!formData.ssku) {
+      errors.ssku = 'SSKU is required';
     }
     if (!formData.status) {
       errors.status = 'Status is required';
@@ -645,7 +651,11 @@ export const ItemMaster = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Part No *"
+                  label={
+                    <span>
+                      Part No <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -658,7 +668,11 @@ export const ItemMaster = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Part Desc *"
+                  label={
+                    <span>
+                      Part Desc <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -770,7 +784,13 @@ export const ItemMaster = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.sku}>
-                  <InputLabel id="sku-label">SKU *</InputLabel>
+                  <InputLabel id="sku-label">
+                    {
+                      <span>
+                        SKU <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select labelId="sku-label" id="sku" name="sku" label="SKU *" value={formData.sku} onChange={handleInputChange}>
                     {unitList?.map((row) => (
                       <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
@@ -783,7 +803,13 @@ export const ItemMaster = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.sku}>
-                  <InputLabel id="sku-label">SSKU *</InputLabel>
+                  <InputLabel id="sku-label">
+                    {
+                      <span>
+                        SSKU <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select labelId="sku-label" id="ssku" name="ssku" label="SSKU *" value={formData.ssku} onChange={handleInputChange}>
                     {unitList?.map((row) => (
                       <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
@@ -867,7 +893,7 @@ export const ItemMaster = () => {
                   >
                     <MenuItem value="R">R</MenuItem>
                     <MenuItem value="H">H</MenuItem>
-                    <MenuItem value="L">L</MenuItem>
+                    {/* <MenuItem value="L">L</MenuItem> */}
                   </Select>
                   {fieldErrors.status && <FormHelperText error>{fieldErrors.status}</FormHelperText>}
                 </FormControl>
@@ -907,6 +933,24 @@ export const ItemMaster = () => {
                     <MenuItem value="REGULAR">Regular</MenuItem>
                   </Select>
                   {fieldErrors.skuCategory && <FormHelperText error>{fieldErrors.skuCategory}</FormHelperText>}
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.movingType}>
+                  <InputLabel id="movingType-label">Moving Type</InputLabel>
+                  <Select
+                    labelId="movingType-label"
+                    id="movingType"
+                    name="movingType"
+                    label="Moving Type"
+                    value={formData.movingType}
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="FASTMOVING">Fast Moving</MenuItem>
+                    <MenuItem value="SLOWMOVING">Slow Moving</MenuItem>
+                  </Select>
+                  {fieldErrors.movingType && <FormHelperText error>{fieldErrors.movingType}</FormHelperText>}
                 </FormControl>
               </div>
 
