@@ -123,7 +123,7 @@ export const VasPick = () => {
   const [listViewData, setListViewData] = useState([]);
   const listViewColumns = [
     { accessorKey: 'docId', header: 'VAS Pick ID', size: 140 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'docDate', header: 'Document Date', size: 140 },
     { accessorKey: 'picBin', header: 'Picked Bin', size: 140 },
     { accessorKey: 'status', header: 'Status', size: 140 },
     { accessorKey: 'pickedQty', header: 'Picked QTY', size: 140 },
@@ -543,13 +543,13 @@ export const VasPick = () => {
           <>
             <div className="row">
               <div className="col-md-3 mb-3">
-                <TextField label="Doc ID" variant="outlined" size="small" fullWidth name="docId" value={formData.docId} disabled />
+                <TextField label="Document No" variant="outlined" size="small" fullWidth name="docId" value={formData.docId} disabled />
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Doc Date"
+                      label="Document Date"
                       value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -562,7 +562,13 @@ export const VasPick = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.pickBinType}>
-                  <InputLabel id="pickBinType-label">Pick Bin Type</InputLabel>
+                  <InputLabel id="pickBinType-label">
+                    {
+                      <span>
+                        Pick Bin Type <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="pickBinType-label"
                     label="Pick Bin Type"
@@ -582,7 +588,11 @@ export const VasPick = () => {
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.stockState}>
                   <InputLabel id="stockState-label">
-                    Stock State <span>&nbsp;*</span>
+                    {
+                      <span>
+                        Stock State <span className="asterisk">*</span>
+                      </span>
+                    }
                   </InputLabel>
                   <Select
                     labelId="stockState-label"
@@ -601,7 +611,11 @@ export const VasPick = () => {
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
                   <InputLabel id="status-label">
-                    Status <span>&nbsp;*</span>
+                    {
+                      <span>
+                        Status <span className="asterisk">*</span>
+                      </span>
+                    }
                   </InputLabel>
                   <Select labelId="status-label" label="Status" value={formData.status} onChange={handleInputChange} name="status" required>
                     <MenuItem value="Edit">EDIT</MenuItem>

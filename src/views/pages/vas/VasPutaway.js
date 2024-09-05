@@ -79,8 +79,8 @@ export const VasPutaway = () => {
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'docId', header: 'Doc ID', size: 140 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'docId', header: 'Document No', size: 140 },
+    { accessorKey: 'docDate', header: 'Document Date', size: 140 },
     { accessorKey: 'vasPickNo', header: 'Vas Pick No', size: 140 },
     { accessorKey: 'status', header: 'Status', size: 140 }
   ];
@@ -575,7 +575,7 @@ export const VasPutaway = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Doc ID"
+                  label="Document No"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -589,7 +589,7 @@ export const VasPutaway = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Doc Date"
+                      label="Document Date"
                       value={formData.docdate ? dayjs(formData.docdate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('docdate', date)}
                       slotProps={{
@@ -603,7 +603,13 @@ export const VasPutaway = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.vasPickNo}>
-                  <InputLabel id="vasPickNo">VAS Pick No *</InputLabel>
+                  <InputLabel id="vasPickNo">
+                    {
+                      <span>
+                        VAS Pick No <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="vasPickNo"
                     label="VAS Pick No *"
@@ -626,7 +632,13 @@ export const VasPutaway = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                  <InputLabel id="status">Status *</InputLabel>
+                  <InputLabel id="status">
+                    {
+                      <span>
+                        Status <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select labelId="status" label="Status *" value={formData.status} onChange={handleInputChange} name="status">
                     <MenuItem value="EDIT">EDIT</MenuItem>
                     <MenuItem value="SUBMIT">SUBMIT</MenuItem>

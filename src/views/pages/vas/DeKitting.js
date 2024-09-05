@@ -221,8 +221,8 @@ export const DeKitting = () => {
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'docId', header: 'DocId', size: 140 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 140 }
+    { accessorKey: 'docId', header: 'Document No', size: 140 },
+    { accessorKey: 'docDate', header: 'Document Date', size: 140 }
   ];
 
   const [listViewData, setListViewData] = useState([]);
@@ -902,7 +902,7 @@ export const DeKitting = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Doc Id"
+                  label="Document No"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -918,7 +918,7 @@ export const DeKitting = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Doc Date"
+                      label="Document Date"
                       value={formData.docDate}
                       disabled
                       onChange={(date) => handleDateChange('docDate', date)}

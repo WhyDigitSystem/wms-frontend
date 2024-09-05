@@ -191,8 +191,8 @@ export const Kitting = () => {
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'docId', header: 'DocId', size: 140 },
-    { accessorKey: 'docDate', header: 'docDate', size: 140 },
+    { accessorKey: 'docId', header: 'Document No', size: 140 },
+    { accessorKey: 'docDate', header: 'Document Date', size: 140 },
     { accessorKey: 'refNo', header: 'Ref Id', size: 140 },
     { accessorKey: 'refDate', header: 'Ref Date', size: 140 }
   ];
@@ -874,7 +874,7 @@ export const Kitting = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Doc Id"
+                  label="Document No"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -890,7 +890,7 @@ export const Kitting = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Doc Date"
+                      label="Document Date"
                       value={formData.docDate}
                       disabled
                       onChange={(date) => handleDateChange('docDate', date)}
@@ -907,7 +907,11 @@ export const Kitting = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Ref Id"
+                  label={
+                    <span>
+                      Ref Id <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
