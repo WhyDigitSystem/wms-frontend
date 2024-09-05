@@ -17,7 +17,7 @@ const CompanySetup = () => {
         setValue(1);
       }
     }
-  }, [loginUserName, allowedScreens]);
+  }, []);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
