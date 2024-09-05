@@ -1037,7 +1037,7 @@ export const SalesReturn = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Doc Id"
+                  label="Document No"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1053,7 +1053,7 @@ export const SalesReturn = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Doc Date"
+                      label="Document Date"
                       value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -1066,7 +1066,13 @@ export const SalesReturn = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.prNo}>
-                  <InputLabel id="prNo-label">PR No *</InputLabel>
+                  <InputLabel id="prNo-label">
+                    {
+                      <span>
+                        PR No <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select labelId="prNo-label" id="prNo *" name="prNo" label="PR No" value={formData.prNo} onChange={handleInputChange}>
                     {prNoList.length === 0 && (
                       <MenuItem value="">
@@ -1131,7 +1137,7 @@ export const SalesReturn = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Entry No *"
+                  label="Entry No"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1190,7 +1196,7 @@ export const SalesReturn = () => {
               </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.supplierShortName}>
-                  <InputLabel id="supplierShortName-label">Supplier Short Name *</InputLabel>
+                  <InputLabel id="supplierShortName-label">Supplier Short Name</InputLabel>
                   <Select
                     labelId="supplierShortName-label"
                     id="supplierShortName"
@@ -1227,7 +1233,7 @@ export const SalesReturn = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.modeOfShipment}>
-                  <InputLabel id="modeOfShipment-label">Mode of Shipment *</InputLabel>
+                  <InputLabel id="modeOfShipment-label">Mode of Shipment</InputLabel>
                   <Select
                     labelId="modeOfShipment-label"
                     label="Mode of Shipment *"
@@ -1247,7 +1253,7 @@ export const SalesReturn = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.carrier}>
-                  <InputLabel id="carrier-label">Carrier *</InputLabel>
+                  <InputLabel id="carrier-label">Carrier</InputLabel>
                   <Select
                     labelId="carrier-label"
                     label="Carrier *"
@@ -1305,7 +1311,7 @@ export const SalesReturn = () => {
                                     LR.No/HAWB NO/HBL No *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Invoice No *
+                                    Inv No *
                                   </th>
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     Part No *

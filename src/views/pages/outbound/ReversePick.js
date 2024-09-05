@@ -816,7 +816,7 @@ export const ReversePick = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Doc Id"
+                  label="Document No"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -832,7 +832,7 @@ export const ReversePick = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Doc Date"
+                      label="Document Date"
                       value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -846,7 +846,11 @@ export const ReversePick = () => {
 
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.buyerRefNo}>
-                  <InputLabel id="buyerRefNo-label">Pick Request Id</InputLabel>
+                  <InputLabel id="buyerRefNo-label">
+                    <span>
+                      Pick Request Id <span className="asterisk">*</span>
+                    </span>
+                  </InputLabel>
                   <Select
                     labelId="buyerRefNo-label"
                     id="pickRequestDocId"
@@ -892,7 +896,11 @@ export const ReversePick = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Buyer Order Ref No"
+                  label={
+                    <span>
+                      Buyer Order Ref No <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth

@@ -173,7 +173,7 @@ export const BuyerOrder = () => {
     try {
       const response = await apiCalls(
         'get',
-        `buyerOrder/getBoSkuDetails?batch=BATCH021&branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&warehouse=${loginWarehouse}`
+        `buyerOrder/getBoSkuDetails?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&warehouse=${loginWarehouse}`
       );
       console.log('THE WAREHOUSE IS:', response);
       if (response.status === true) {
@@ -751,6 +751,15 @@ export const BuyerOrder = () => {
     if (!formData.invoiceDate) {
       errors.invoiceDate = 'Invoice Date is required';
     }
+    if (!formData.buyerShortName) {
+      errors.buyerShortName = 'Buyer Short Name is required';
+    }
+    if (!formData.billto) {
+      errors.billto = 'Bill To is required';
+    }
+    if (!formData.shipTo) {
+      errors.shipTo = 'Ship To is required';
+    }
 
     let skuDetailsTableDataValid = true;
     const newTableErrors = skuDetailsTableData.map((row) => {
@@ -881,7 +890,7 @@ export const BuyerOrder = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Doc Id"
+                  label="Document No"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -897,7 +906,7 @@ export const BuyerOrder = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Doc Date"
+                      label="Document Date"
                       value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -911,7 +920,11 @@ export const BuyerOrder = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Order No"
+                  label={
+                    <span>
+                      Order No <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -942,7 +955,11 @@ export const BuyerOrder = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Invoice No"
+                  label={
+                    <span>
+                      Invoice No <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -972,7 +989,13 @@ export const BuyerOrder = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.buyerShortName}>
-                  <InputLabel id="buyerShortName">Buyer Short Name</InputLabel>
+                  <InputLabel id="buyerShortName">
+                    {
+                      <span>
+                        Buyer Short Name <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="buyerShortName"
                     id="buyerShortName"
@@ -1006,7 +1029,13 @@ export const BuyerOrder = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.billto}>
-                  <InputLabel id="billto">Bill To</InputLabel>
+                  <InputLabel id="billto">
+                    {
+                      <span>
+                        Bill To <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select labelId="billto" id="billto" name="billto" label="Bill To" value={formData.billto} onChange={handleInputChange}>
                     {buyerList?.map((row) => (
                       <MenuItem key={row.id} value={row.buyerShortName.toUpperCase()}>
@@ -1062,7 +1091,13 @@ export const BuyerOrder = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.shipTo}>
-                  <InputLabel id="shipTo">Ship To</InputLabel>
+                  <InputLabel id="shipTo">
+                    {
+                      <span>
+                        Ship To <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select labelId="shipTo" id="shipTo" name="shipTo" label="Ship To" value={formData.shipTo} onChange={handleInputChange}>
                     {buyerList?.map((row) => (
                       <MenuItem key={row.id} value={row.buyerShortName.toUpperCase()}>

@@ -795,7 +795,7 @@ export const PickRequest = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Doc Id"
+                  label="Document No"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -811,7 +811,7 @@ export const PickRequest = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Doc Date"
+                      label="Document Date"
                       value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -825,7 +825,13 @@ export const PickRequest = () => {
 
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.buyerRefNo}>
-                  <InputLabel id="buyerRefNo-label">Buyer Order Ref No</InputLabel>
+                  <InputLabel id="buyerRefNo-label">
+                    {
+                      <span>
+                        Buyer Order Ref No <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="buyerRefNo-label"
                     id="buyerRefNo"

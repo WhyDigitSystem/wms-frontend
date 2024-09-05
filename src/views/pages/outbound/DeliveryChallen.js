@@ -1090,7 +1090,7 @@ export const DeliveryChallen = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Doc ID"
+                  label="Document No"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1104,7 +1104,7 @@ export const DeliveryChallen = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Doc Date"
+                      label="Document Date"
                       value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('docDate', date)}
                       slotProps={{
@@ -1132,7 +1132,13 @@ export const DeliveryChallen = () => {
               ) : (
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.buyerOrderNo}>
-                    <InputLabel id="buyerOrderNo">Buyer Order No</InputLabel>
+                    <InputLabel id="buyerOrderNo">
+                      {
+                        <span>
+                          Buyer Order No <span className="asterisk">*</span>
+                        </span>
+                      }
+                    </InputLabel>
                     <Select
                       labelId="buyerOrderNo"
                       label="Buyer Order No"
@@ -1187,7 +1193,11 @@ export const DeliveryChallen = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Container No"
+                  label={
+                    <span>
+                      Container No <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1201,7 +1211,11 @@ export const DeliveryChallen = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Vehicle No"
+                  label={
+                    <span>
+                      Vehicle No <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1215,7 +1229,11 @@ export const DeliveryChallen = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Excise Invoice No"
+                  label={
+                    <span>
+                      Excise Invoice No <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1229,7 +1247,11 @@ export const DeliveryChallen = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Commercial Invoice No"
+                  label={
+                    <span>
+                      Commercial Invoice No <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1274,7 +1296,11 @@ export const DeliveryChallen = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Delivery Terms"
+                  label={
+                    <span>
+                      Delivery Terms <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1288,7 +1314,11 @@ export const DeliveryChallen = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Pay Terms"
+                  label={
+                    <span>
+                      Pay Terms <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1302,7 +1332,11 @@ export const DeliveryChallen = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="GR Waiver No"
+                  label={
+                    <span>
+                      GR Waiver No <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1334,7 +1368,11 @@ export const DeliveryChallen = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Bank Name"
+                  label={
+                    <span>
+                      Bank Name <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1366,7 +1404,11 @@ export const DeliveryChallen = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Gate Pass No"
+                  label={
+                    <span>
+                      Gate Pass No <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1398,7 +1440,11 @@ export const DeliveryChallen = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Insurance No"
+                  label={
+                    <span>
+                      Insurance No <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
