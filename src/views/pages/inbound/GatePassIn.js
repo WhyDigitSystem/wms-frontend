@@ -899,7 +899,7 @@ export const GatePassIn = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Doc ID"
+                  label="Document No"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -913,7 +913,7 @@ export const GatePassIn = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Doc Date"
+                      label="Document Date"
                       value={formData.docdate ? dayjs(formData.docdate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('docdate', date)}
                       slotProps={{
@@ -958,7 +958,13 @@ export const GatePassIn = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.supplier}>
-                  <InputLabel id="supplier">Supplier Short Name *</InputLabel>
+                  <InputLabel id="supplier">
+                    {
+                      <span>
+                        Supplier Short Name <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="supplier"
                     label="Supplier Short Name *"
@@ -981,7 +987,7 @@ export const GatePassIn = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Supplier *"
+                  label="Supplier"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -995,7 +1001,13 @@ export const GatePassIn = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.modeOfShipment}>
-                  <InputLabel id="modeOfShipment">Mode Of Shipment *</InputLabel>
+                  <InputLabel id="modeOfShipment">
+                    {
+                      <span>
+                        Mode Of Shipment <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="modeOfShipment"
                     label="Mode Of Shipment *"
@@ -1018,7 +1030,13 @@ export const GatePassIn = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.carrier}>
-                  <InputLabel id="carrier">Carrier/Transport *</InputLabel>
+                  <InputLabel id="carrier">
+                    {
+                      <span>
+                        Carrier/Transport <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="carrier"
                     label="Carrier/Transport *"
@@ -1092,8 +1110,8 @@ export const GatePassIn = () => {
                                   <th className="px-2 py-2 text-white text-center">Short QTY</th>
                                   <th className="px-2 py-2 text-white text-center">Damage QTY *</th>
                                   <th className="px-2 py-2 text-white text-center">GRN QTY</th>
-                                  <th className="px-2 py-2 text-white text-center">Sub SKU</th>
-                                  {/* <th className="px-2 py-2 text-white text-center">Sub Stock Short QTY</th>
+                                  {/* <th className="px-2 py-2 text-white text-center">Sub SKU</th>
+                                  <th className="px-2 py-2 text-white text-center">Sub Stock Short QTY</th>
                                   <th className="px-2 py-2 text-white text-center">GRN Pieces QTY</th> */}
                                   {/* <th className="px-2 py-2 text-white text-center">Weight</th>
                                   <th className="px-2 py-2 text-white text-center">Rate</th>
@@ -1464,10 +1482,10 @@ export const GatePassIn = () => {
                                         className="form-control"
                                       />
                                     </td>
-                                    <td className="border px-2 py-2">
+                                    {/* <td className="border px-2 py-2">
                                       <input type="text" style={{ width: '100px' }} value={row.subUnit} disabled className="form-control" />
                                     </td>
-                                    {/* <td className="border px-2 py-2">
+                                    <td className="border px-2 py-2">
                                       <input
                                         type="number"
                                         style={{ width: '100px' }}

@@ -936,6 +936,7 @@ export const Grn = () => {
   const handleSave = async () => {
     const errors = {};
     if (!formData.grnDate) errors.grnDate = 'GRN Date is required';
+    if (!formData.billOfEntry) errors.billOfEntry = 'E-way Bill is required';
     if (!formData.supplierShortName) errors.supplierShortName = 'Supplier Short Name is required';
 
     if (!formData.modeOfShipment) errors.modeOfShipment = 'Mode of Shipment is required';
@@ -1130,13 +1131,13 @@ export const Grn = () => {
           <>
             <div className="row">
               <div className="col-md-3 mb-3">
-                <TextField label="Doc ID" variant="outlined" size="small" fullWidth name="docId" value={formData.docId} disabled />
+                <TextField label="Document No" variant="outlined" size="small" fullWidth name="docId" value={formData.docId} disabled />
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Doc Date"
+                      label="Document Date"
                       value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -1300,7 +1301,13 @@ export const Grn = () => {
               {/* Supplier Short Name */}
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.supplierShortName}>
-                  <InputLabel id="supplierShortName-label">Supplier Short Name *</InputLabel>
+                  <InputLabel id="supplierShortName-label">
+                    {
+                      <span>
+                        Supplier Short Name <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="supplierShortName-label"
                     label="Supplier Short Name *"
@@ -1327,7 +1334,11 @@ export const Grn = () => {
               {/* Bill of Entry */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="E-Way Bill"
+                  label={
+                    <span>
+                      E-Way Bill <span className="asterisk">*</span>
+                    </span>
+                  }
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1344,7 +1355,11 @@ export const Grn = () => {
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.modeOfShipment}>
                   <InputLabel id="modeOfShipment-label">
-                    Mode of Shipment <span>&nbsp;*</span>
+                    {
+                      <span>
+                        Mode Of Shipment <span className="asterisk">*</span>
+                      </span>
+                    }
                   </InputLabel>
                   <Select
                     labelId="modeOfShipment-label"
@@ -1367,7 +1382,11 @@ export const Grn = () => {
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.carrier}>
                   <InputLabel id="carrier-label">
-                    Carrier <span>&nbsp;*</span>
+                    {
+                      <span>
+                        Carrier <span className="asterisk">*</span>
+                      </span>
+                    }
                   </InputLabel>
                   <Select
                     labelId="carrier-label"
