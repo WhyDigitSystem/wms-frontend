@@ -379,21 +379,81 @@ export const ReversePick = () => {
     setValue(newValue);
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+
+  //   // Check if the value is a string before applying toUpperCase
+  //   let processedValue = value;
+
+  //   // Convert value to uppercase for fields other than 'status'
+  //   if (name !== 'boAmendment' && typeof value === 'string') {
+  //     processedValue = value.toUpperCase();
+  //   }
+
+  //   setFormData({ ...formData, [name]: processedValue });
+
+  //   if (name === 'pickRequestDocId') {
+  //     // Find the selected order from the full list of orders
+  //     const selectedOrder = buyerOrderNoList.find(
+  //       (order) => order.docId && processedValue && order.docId.toLowerCase() === processedValue.toLowerCase()
+  //     );
+
+  //     if (selectedOrder) {
+  //       const refDate = selectedOrder.buyerRefDate ? dayjs(selectedOrder.buyerRefDate) : null;
+
+  //       setFormData((prevFormData) => ({
+  //         ...prevFormData,
+  //         buyerRefNo: selectedOrder.buyerRefNo || '',
+  //         buyerRefDate: refDate, // Set as dayjs object
+  //         clientName: selectedOrder.clientName || '',
+  //         clientShortName: selectedOrder.clientShortName || '',
+  //         customerName: selectedOrder.customerName || '',
+  //         clientAddress: selectedOrder.clientAddress || '',
+  //         customerAddress: selectedOrder.customerAddress || '',
+  //         buyerOrderNo: selectedOrder.buyerOrderNo || '',
+  //         buyerOrderDate: selectedOrder.buyerOrderDate || '',
+  //         buyersReference: selectedOrder.buyersReference || '',
+  //         invoiceNo: selectedOrder.invoiceNo || '',
+  //         pickRequestDocDate: selectedOrder.docDate || '',
+  //         pickRequestDocId: selectedOrder.docId || '',
+  //         boAmendment: selectedOrder.boAmendment || '',
+  //         inTime: formData.inTime || ''
+  //       }));
+  //     } else {
+  //       console.log('No matching order found for the selected value.');
+  //     }
+  //   }
+  // };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    const cursorPosition = e.target.selectionStart; // Capture cursor position
 
     // Check if the value is a string before applying toUpperCase
     let processedValue = value;
 
-    // Convert value to uppercase for fields other than 'status'
+    // Convert value to uppercase for fields other than 'boAmendment'
     if (name !== 'boAmendment' && typeof value === 'string') {
       processedValue = value.toUpperCase();
     }
 
-    setFormData({ ...formData, [name]: processedValue });
+    // Update formData state
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: processedValue
+    }));
 
+    // Maintain cursor position after state change
+    setTimeout(() => {
+      const inputField = document.querySelector(`[name="${name}"]`);
+      if (inputField) {
+        inputField.setSelectionRange(cursorPosition, cursorPosition);
+      }
+    }, 0);
+
+    // Specific logic for 'pickRequestDocId'
     if (name === 'pickRequestDocId') {
-      // Find the selected order from the full list of orders
+      // Find the selected order from the list of orders
       const selectedOrder = buyerOrderNoList.find(
         (order) => order.docId && processedValue && order.docId.toLowerCase() === processedValue.toLowerCase()
       );
@@ -404,7 +464,7 @@ export const ReversePick = () => {
         setFormData((prevFormData) => ({
           ...prevFormData,
           buyerRefNo: selectedOrder.buyerRefNo || '',
-          buyerRefDate: refDate, // Set as dayjs object
+          buyerRefDate: refDate,
           clientName: selectedOrder.clientName || '',
           clientShortName: selectedOrder.clientShortName || '',
           customerName: selectedOrder.customerName || '',

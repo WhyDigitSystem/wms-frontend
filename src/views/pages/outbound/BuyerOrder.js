@@ -462,8 +462,89 @@ export const BuyerOrder = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked } = e.target;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+  //   const alphaNumericRegex = /^[A-Za-z0-9]*$/;
+  //   const numericRegex = /^[0-9]*$/;
+  //   const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
+  //   const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+
+  //   let errorMessage = '';
+
+  //   switch (name) {
+  //     case 'id':
+  //     case 'shortName':
+  //       if (!nameRegex.test(value)) {
+  //         errorMessage = 'Only alphabetic characters are allowed';
+  //       }
+  //       break;
+  //     case 'pan':
+  //       if (!alphaNumericRegex.test(value)) {
+  //         errorMessage = 'Only alphanumeric characters are allowed';
+  //       } else if (value.length > 10) {
+  //         errorMessage = 'Invalid Format';
+  //       }
+  //       break;
+  //     case 'branchName':
+  //       if (!branchNameRegex.test(value)) {
+  //         errorMessage = 'Only alphanumeric characters and @, _, -, * are allowed';
+  //       }
+  //       break;
+  //     case 'mobile':
+  //       if (!numericRegex.test(value)) {
+  //         errorMessage = 'Only numeric characters are allowed';
+  //       } else if (value.length > 10) {
+  //         errorMessage = 'Invalid Format';
+  //       }
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   if (errorMessage) {
+  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+  //   } else {
+  //     if (name === 'active') {
+  //       setFormData({ ...formData, [name]: checked });
+  //     } else if (name === 'buyerShortName') {
+  //       const selectedBuyer = buyerList?.find((row) => row.buyerShortName === value);
+  //       if (selectedBuyer) {
+  //         setFormData((prevData) => ({
+  //           ...prevData,
+  //           buyerShortName: value,
+  //           buyer: selectedBuyer.buyer
+  //         }));
+  //       }
+  //     } else if (name === 'billto') {
+  //       const selectedBuyer = buyerList?.find((row) => row.buyerShortName === value);
+  //       if (selectedBuyer) {
+  //         setFormData((prevData) => ({
+  //           ...prevData,
+  //           billto: value,
+  //           billtoFullName: selectedBuyer.buyer
+  //         }));
+  //       }
+  //     } else if (name === 'shipTo') {
+  //       const selectedBuyer = buyerList?.find((row) => row.buyerShortName === value);
+  //       if (selectedBuyer) {
+  //         setFormData((prevData) => ({
+  //           ...prevData,
+  //           shipTo: value,
+  //           shipToFullName: selectedBuyer.buyer
+  //         }));
+  //       }
+  //     } else {
+  //       setFormData({ ...formData, [name]: value.toUpperCase() });
+  //     }
+
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd } = e.target;
+
     const nameRegex = /^[A-Za-z ]*$/;
     const alphaNumericRegex = /^[A-Za-z0-9]*$/;
     const numericRegex = /^[0-9]*$/;
@@ -503,42 +584,32 @@ export const BuyerOrder = () => {
     }
 
     if (errorMessage) {
-      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
       if (name === 'active') {
-        setFormData({ ...formData, [name]: checked });
-      } else if (name === 'buyerShortName') {
+        setFormData((prevData) => ({ ...prevData, [name]: checked }));
+      } else if (name === 'buyerShortName' || name === 'billto' || name === 'shipTo') {
         const selectedBuyer = buyerList?.find((row) => row.buyerShortName === value);
         if (selectedBuyer) {
           setFormData((prevData) => ({
             ...prevData,
-            buyerShortName: value,
-            buyer: selectedBuyer.buyer
-          }));
-        }
-      } else if (name === 'billto') {
-        const selectedBuyer = buyerList?.find((row) => row.buyerShortName === value);
-        if (selectedBuyer) {
-          setFormData((prevData) => ({
-            ...prevData,
-            billto: value,
-            billtoFullName: selectedBuyer.buyer
-          }));
-        }
-      } else if (name === 'shipTo') {
-        const selectedBuyer = buyerList?.find((row) => row.buyerShortName === value);
-        if (selectedBuyer) {
-          setFormData((prevData) => ({
-            ...prevData,
-            shipTo: value,
-            shipToFullName: selectedBuyer.buyer
+            [name]: value,
+            [`${name}FullName`]: selectedBuyer.buyer
           }));
         }
       } else {
-        setFormData({ ...formData, [name]: value.toUpperCase() });
+        const formattedValue = value.toUpperCase();
+        setFormData((prevData) => ({ ...prevData, [name]: formattedValue }));
       }
 
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+    }
+
+    // Preserve cursor position for text inputs
+    if (e.target.setSelectionRange && e.target.type !== 'checkbox') {
+      setTimeout(() => {
+        e.target.setSelectionRange(selectionStart, selectionEnd);
+      }, 0);
     }
   };
 

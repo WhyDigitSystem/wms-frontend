@@ -317,21 +317,70 @@ export const PickRequest = () => {
     setValue(newValue);
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+
+  //   // Process the value based on the field name
+  //   let processedValue = value;
+
+  //   // Convert value to uppercase for fields other than 'status'
+  //   if (name !== 'status' && typeof value === 'string') {
+  //     processedValue = value.toUpperCase();
+  //   }
+
+  //   setFormData({ ...formData, [name]: processedValue });
+
+  //   if (name === 'buyerRefNo') {
+  //     // Find the selected order from the full list of orders
+  //     const selectedOrder = buyerOrderNoList.find(
+  //       (order) => order.orderNo && processedValue && order.orderNo.toLowerCase() === processedValue.toLowerCase()
+  //     );
+
+  //     if (selectedOrder) {
+  //       const refDate = selectedOrder.refDate ? dayjs(selectedOrder.refDate) : null;
+
+  //       setFormData((prevFormData) => ({
+  //         ...prevFormData,
+  //         buyerRefNo: selectedOrder.orderNo || '',
+  //         buyerRefDate: refDate, // Set as dayjs object
+  //         clientName: selectedOrder.billToName || '',
+  //         clientShortName: selectedOrder.billToShortName || '',
+  //         customerName: selectedOrder.buyer || '',
+  //         clientAddress: selectedOrder.billToAddress || '',
+  //         buyerOrderNo: selectedOrder.docId || '',
+  //         buyersReference: selectedOrder.refNo || '',
+  //         invoiceNo: selectedOrder.invoiceNo || '',
+  //         buyerOrderDate: selectedOrder.docDate || ''
+  //       }));
+  //     } else {
+  //       console.log('No matching order found for the selected value.');
+  //     }
+  //   }
+  // };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
-    // Process the value based on the field name
-    let processedValue = value;
+    const cursorPosition = e.target.selectionStart; // Get the current cursor position
 
     // Convert value to uppercase for fields other than 'status'
-    if (name !== 'status' && typeof value === 'string') {
-      processedValue = value.toUpperCase();
-    }
+    const processedValue = name !== 'status' && typeof value === 'string' ? value.toUpperCase() : value;
 
-    setFormData({ ...formData, [name]: processedValue });
+    // Update the form data
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: processedValue
+    }));
 
+    // Restore cursor position after the formData update
+    setTimeout(() => {
+      const inputField = document.querySelector(`[name="${name}"]`);
+      if (inputField) {
+        inputField.setSelectionRange(cursorPosition, cursorPosition); // Set cursor back to original position
+      }
+    }, 0);
+
+    // Handle buyerRefNo specific logic
     if (name === 'buyerRefNo') {
-      // Find the selected order from the full list of orders
       const selectedOrder = buyerOrderNoList.find(
         (order) => order.orderNo && processedValue && order.orderNo.toLowerCase() === processedValue.toLowerCase()
       );
@@ -342,7 +391,7 @@ export const PickRequest = () => {
         setFormData((prevFormData) => ({
           ...prevFormData,
           buyerRefNo: selectedOrder.orderNo || '',
-          buyerRefDate: refDate, // Set as dayjs object
+          buyerRefDate: refDate,
           clientName: selectedOrder.billToName || '',
           clientShortName: selectedOrder.billToShortName || '',
           customerName: selectedOrder.buyer || '',
@@ -353,7 +402,7 @@ export const PickRequest = () => {
           buyerOrderDate: selectedOrder.docDate || ''
         }));
       } else {
-        console.log('No matching order found for the selected value.');
+        console.warn('No matching order found for the selected buyerRefNo.');
       }
     }
   };

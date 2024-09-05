@@ -573,15 +573,85 @@ export const SalesReturn = () => {
     setValue(newValue);
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked } = e.target;
+
+  //   const nameRegex = /^[A-Za-z ]*$/;
+  //   const alphaNumericRegex = /^[A-Za-z0-9]*$/;
+  //   const numericRegex = /^[0-9]*$/;
+
+  //   let errorMessage = '';
+
+  //   switch (name) {
+  //     case 'docCode':
+  //     case 'capacity':
+  //     case 'vesselNo':
+  //     case 'hsnNo':
+  //       if (!alphaNumericRegex.test(value)) {
+  //         errorMessage = 'Only alphanumeric characters are allowed';
+  //       }
+  //       break;
+  //     case 'noOfPallets':
+  //       if (!numericRegex.test(value)) {
+  //         errorMessage = 'Only numeric characters are allowed';
+  //       }
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   if (errorMessage) {
+  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
+  //   } else {
+  //     if (name === 'prNo') {
+  //       const selectedPrNo = prNoList.find((id) => id.docId === value);
+  //       if (selectedPrNo) {
+  //         setFormData((prevData) => ({
+  //           ...prevData,
+  //           prNo: selectedPrNo.docId,
+  //           prDate: dayjs(selectedPrNo.docDate).format('YYYY-MM-DD'),
+  //           boNo: selectedPrNo.buyerOrderNo,
+  //           boDate: dayjs(selectedPrNo.buyerOrderDate).format('YYYY-MM-DD'),
+  //           buyerName: selectedPrNo.clientName
+  //         }));
+  //       }
+  //     } else if (name === 'supplierShortName') {
+  //       const selectedName = supplierList.find((supplier) => supplier.supplierShortName === value);
+  //       if (selectedName) {
+  //         setFormData((prevData) => ({
+  //           ...prevData,
+  //           supplierShortName: selectedName.supplierShortName,
+  //           supplier: selectedName.supplier
+  //         }));
+  //       }
+  //     } else if (name === 'modeOfShipment') {
+  //       setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+  //       const formattedValue = initCaps(value);
+  //       getAllCarriers(formattedValue);
+  //     } else if (name === 'vas') {
+  //       setFormData((prevData) => ({ ...prevData, [name]: checked }));
+  //     } else {
+  //       setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+  //     }
+
+  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+  //   }
+  // };
+
   const handleInputChange = (e) => {
     const { name, value, checked } = e.target;
 
+    // Store the cursor position before updating the value
+    const cursorPosition = e.target.selectionStart;
+
+    // Regular expressions for validation
     const nameRegex = /^[A-Za-z ]*$/;
     const alphaNumericRegex = /^[A-Za-z0-9]*$/;
     const numericRegex = /^[0-9]*$/;
 
     let errorMessage = '';
 
+    // Validation logic based on the field name
     switch (name) {
       case 'docCode':
       case 'capacity':
@@ -600,9 +670,18 @@ export const SalesReturn = () => {
         break;
     }
 
+    // If there's an error, set it and don't update the formData
     if (errorMessage) {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
+      let processedValue = value;
+
+      // Convert to uppercase for non-checkbox fields
+      if (name !== 'vas') {
+        processedValue = value.toUpperCase();
+      }
+
+      // Handle specific fields
       if (name === 'prNo') {
         const selectedPrNo = prNoList.find((id) => id.docId === value);
         if (selectedPrNo) {
@@ -625,16 +704,23 @@ export const SalesReturn = () => {
           }));
         }
       } else if (name === 'modeOfShipment') {
-        setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+        setFormData((prevData) => ({ ...prevData, [name]: processedValue }));
         const formattedValue = initCaps(value);
         getAllCarriers(formattedValue);
       } else if (name === 'vas') {
         setFormData((prevData) => ({ ...prevData, [name]: checked }));
       } else {
-        setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+        // Default: Update the field in uppercase
+        setFormData((prevData) => ({ ...prevData, [name]: processedValue }));
       }
 
+      // Clear any previous error messages
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+
+      // Restore the cursor position after the change
+      setTimeout(() => {
+        e.target.setSelectionRange(cursorPosition, cursorPosition);
+      }, 0);
     }
   };
 

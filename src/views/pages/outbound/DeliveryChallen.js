@@ -524,10 +524,79 @@ export const DeliveryChallen = () => {
     }
   };
 
+  // const handleInputChange = (event) => {
+  //   const { name, value } = event.target;
+
+  //   // Define regex patterns
+  //   const patterns = {
+  //     vechileNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+  //     containerNO: /^[a-zA-Z]*$/, // Allow alphabets only
+  //     exciseInvoiceNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+  //     commercialInvoiceNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+  //     deliveryTerms: /^[a-zA-Z]*$/, // Allow alphabets only
+  //     payTerms: /^[a-zA-Z]*$/, // Allow alphabets only
+  //     grWaiverNo: /^[a-zA-Z]*$/, // Allow alphabets only
+  //     bankName: /^[a-zA-Z]*$/, // Allow alphabets only
+  //     gatePassNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+  //     insuranceNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+  //     automailerGroup: /^[a-zA-Z]*$/, // Allow alphabets only
+  //     docketNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+  //     noOfBoxes: /^[0-9]*$/, // Allow numbers only
+  //     pkgUom: /^[a-zA-Z]*$/, // Allow alphabets only
+  //     grossWeight: /^[0-9]*$/, // Allow numbers only
+  //     gwtUom: /^[a-zA-Z]*$/, // Allow alphabets only
+  //     transportName: /^[a-zA-Z]*$/, // Allow alphabets only
+  //     packingSlipNo: /^[0-9]*$/, // Allow numbers only
+  //     bin: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+  //     taxType: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
+  //     remarks: /^[a-zA-Z0-9]*$/ // Allow alphabets and numbers only
+  //   };
+
+  //   // Determine the error message based on the field
+  //   const getErrorMessage = (fieldName) => {
+  //     if (patterns[fieldName]) {
+  //       if (fieldName === 'noOfBoxes' || fieldName === 'grossWeight' || fieldName === 'packingSlipNo') {
+  //         return 'Only numbers are allowed.';
+  //       } else if (
+  //         fieldName === 'containerNO' ||
+  //         fieldName === 'deliveryTerms' ||
+  //         fieldName === 'payTerms' ||
+  //         fieldName === 'grWaiverNo' ||
+  //         fieldName === 'bankName' ||
+  //         fieldName === 'automailerGroup' ||
+  //         fieldName === 'pkgUom' ||
+  //         fieldName === 'gwtUom' ||
+  //         fieldName === 'transportName'
+  //       ) {
+  //         return 'Only alphabets are allowed.';
+  //       } else {
+  //         return 'Only alphabets and numbers are allowed.';
+  //       }
+  //     }
+  //     return '';
+  //   };
+
+  //   // Validation and update logic
+  //   if (patterns[name] && !patterns[name].test(value)) {
+  //     setFieldErrors({
+  //       ...fieldErrors,
+  //       [name]: getErrorMessage(name)
+  //     });
+  //   } else {
+  //     // Clear errors and convert value to uppercase before updating form data
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //     setFormData({ ...formData, [name]: value.toUpperCase() });
+  //   }
+  // };
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
+    const inputElement = event.target;
 
-    // Define regex patterns
+    // Capture the cursor position before updating the form
+    const cursorPosition = inputElement.selectionStart;
+
+    // Define regex patterns for validation
     const patterns = {
       vechileNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
       containerNO: /^[a-zA-Z]*$/, // Allow alphabets only
@@ -552,7 +621,7 @@ export const DeliveryChallen = () => {
       remarks: /^[a-zA-Z0-9]*$/ // Allow alphabets and numbers only
     };
 
-    // Determine the error message based on the field
+    // Determine the error message based on the field and validation pattern
     const getErrorMessage = (fieldName) => {
       if (patterns[fieldName]) {
         if (fieldName === 'noOfBoxes' || fieldName === 'grossWeight' || fieldName === 'packingSlipNo') {
@@ -576,17 +645,22 @@ export const DeliveryChallen = () => {
       return '';
     };
 
-    // Validation and update logic
+    // Validate the input and display errors if necessary
     if (patterns[name] && !patterns[name].test(value)) {
       setFieldErrors({
         ...fieldErrors,
         [name]: getErrorMessage(name)
       });
     } else {
-      // Clear errors and convert value to uppercase before updating form data
+      // Clear errors and update the form data in uppercase
       setFieldErrors({ ...fieldErrors, [name]: '' });
       setFormData({ ...formData, [name]: value.toUpperCase() });
     }
+
+    // Restore the cursor position after the form data update
+    setTimeout(() => {
+      inputElement.setSelectionRange(cursorPosition, cursorPosition);
+    }, 0);
   };
 
   const handleDateChange = (field, date) => {
