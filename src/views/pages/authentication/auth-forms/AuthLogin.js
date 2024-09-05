@@ -325,8 +325,6 @@ const FirebaseLogin = ({ ...others }) => {
       });
 
       if (response.data.status) {
-        // Handle authentication failure, display an error message, etc.
-
         console.log('Test1', userData);
         // dispatch(setUser({ orgId: response.data.paramObjectsMap.userVO.orgId }));
 
@@ -336,11 +334,25 @@ const FirebaseLogin = ({ ...others }) => {
         localStorage.setItem('token', response.data.paramObjectsMap.userVO.token);
         localStorage.setItem('tokenId', response.data.paramObjectsMap.userVO.tokenId);
         localStorage.setItem('LoginMessage', true);
+        //SET ROLES
         const userRoleVO = response.data.paramObjectsMap.userVO.roleVO;
         const roles = userRoleVO.map((row) => ({
           role: row.role
         }));
         localStorage.setItem('ROLES', JSON.stringify(roles));
+
+        // SET SCREENS
+        const roleVO = response.data.paramObjectsMap.userVO.roleVO;
+        let allScreensVO = [];
+        roleVO.forEach((roleObj) => {
+          roleObj.responsibilityVO.forEach((responsibility) => {
+            if (responsibility.screensVO) {
+              allScreensVO = allScreensVO.concat(responsibility.screensVO);
+            }
+          });
+        });
+        allScreensVO = [...new Set(allScreensVO)];
+        localStorage.setItem('screens', JSON.stringify(allScreensVO));
 
         // dispatch(setUserRole(userRole));
         resetForm();
