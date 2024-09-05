@@ -84,7 +84,7 @@ const menuItems = {
 
     ...(loginUserType === 'admin' || shouldDisplayInbound ? [inbound] : []),
     ...(loginUserType === 'admin' || shouldDisplayOutbound ? [outbound] : []),
-    ...(loginUserType === 'admin' || shouldDisplayVas ? [outbound] : []),
+    ...(loginUserType === 'admin' || shouldDisplayVas ? [vas] : []),
     ...(loginUserType === 'admin' || shouldDisplayStockProcess ? [stockProcess] : []),
 
     // outbound,
