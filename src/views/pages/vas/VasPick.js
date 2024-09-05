@@ -266,8 +266,46 @@ export const VasPick = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked } = e.target;
+
+  //   const nameRegex = /^[A-Za-z ]*$/;
+  //   const alphaNumericRegex = /^[A-Za-z0-9]*$/;
+  //   const numericRegex = /^[0-9]*$/;
+
+  //   let errorMessage = '';
+
+  //   switch (name) {
+  //     case 'docCode':
+  //       if (!alphaNumericRegex.test(value)) {
+  //         errorMessage = 'Only alphanumeric characters are allowed';
+  //       }
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   if (errorMessage) {
+  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
+  //   } else {
+  //     if (name === 'stockState') {
+  //       setFormData((prevData) => ({
+  //         ...prevData,
+  //         stockState: value,
+  //         stockStateFlag: (value === 'READY TO DISPATCH' && 'R') || (value === 'HOLD' && 'H') || ''
+  //       }));
+  //     } else if (name === 'status') {
+  //       setFormData((prevData) => ({ ...prevData, [name]: value }));
+  //     } else {
+  //       setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
+  //     }
+
+  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd } = e.target;
 
     const nameRegex = /^[A-Za-z ]*$/;
     const alphaNumericRegex = /^[A-Za-z0-9]*$/;
@@ -301,6 +339,14 @@ export const VasPick = () => {
       }
 
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+
+      // Restore cursor position after state update
+      setTimeout(() => {
+        const inputElement = document.querySelector(`[name=${name}]`);
+        if (inputElement) {
+          inputElement.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 0);
     }
   };
 

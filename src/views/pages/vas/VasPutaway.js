@@ -309,9 +309,32 @@ export const VasPutaway = () => {
     }
   };
 
-  const handleInputChange = async (event) => {
-    const { name, value } = event.target;
+  // const handleInputChange = async (event) => {
+  //   const { name, value } = event.target;
 
+  //   if (name === 'vasPickNo') {
+  //     setFormData({
+  //       ...formData,
+  //       vasPickNo: value
+  //     });
+
+  //     // Call the function to get the fill grid data for the selected vasPickNo
+  //     await getFillGridVasPutaway(value);
+  //   } else {
+  //     setFormData({
+  //       ...formData,
+  //       [name]: value
+  //     });
+  //   }
+  // };
+
+  const handleInputChange = async (event) => {
+    const { name, value, selectionStart, selectionEnd } = event.target;
+
+    // Capture the cursor position before the update
+    const cursorPosition = { start: selectionStart, end: selectionEnd };
+
+    // Update form data based on the field name
     if (name === 'vasPickNo') {
       setFormData({
         ...formData,
@@ -326,6 +349,14 @@ export const VasPutaway = () => {
         [name]: value
       });
     }
+
+    // Restore cursor position after state update
+    setTimeout(() => {
+      const inputElement = document.querySelector(`[name=${name}]`);
+      if (inputElement) {
+        inputElement.setSelectionRange(cursorPosition.start, cursorPosition.end);
+      }
+    }, 0);
   };
 
   const handleDateChange = (field, date) => {

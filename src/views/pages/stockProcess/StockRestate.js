@@ -378,8 +378,51 @@ export const StockRestate = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+  //   const specialCharsRegex = /^[A-Za-z0-9#_\-/\\]*$/;
+
+  //   let errorMessage = '';
+
+  //   switch (name) {
+  //     case 'entryNo':
+  //       if (!specialCharsRegex.test(value)) {
+  //         errorMessage = 'Only alphaNumeric, #_-/ are allowed';
+  //       }
+  //       break;
+
+  //     default:
+  //       break;
+  //   }
+
+  //   if (errorMessage) {
+  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+  //   } else {
+  //     let updatedData = { ...formData, [name]: value.toUpperCase() };
+
+  //     if (name === 'transferFrom') {
+  //       updatedData.transferFromFlag = value === 'DEFECTIVE' ? 'D' : value === 'HOLD' ? 'H' : value === 'RELEASE' ? 'R' : '';
+  //       setFromBinList([]);
+  //       getFromBin(updatedData.transferFromFlag);
+  //       getToBinDetails(updatedData.transferFromFlag);
+  //     } else if (name === 'transferTo') {
+  //       updatedData.transferToFlag = value === 'DEFECTIVE' ? 'D' : value === 'HOLD' ? 'H' : value === 'RELEASE' ? 'R' : '';
+  //     }
+
+  //     setFormData(updatedData);
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+
+  //     // Log the updated flag for debugging
+  //     if (name === 'transferFrom') {
+  //       console.log('THE TRANSFER FROM FLAG IS:', updatedData.transferFromFlag);
+  //     } else if (name === 'transferTo') {
+  //       console.log('THE TRANSFER TO FLAG IS:', updatedData.transferToFlag);
+  //     }
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, selectionStart, selectionEnd } = e.target; // Capture cursor positions
     const specialCharsRegex = /^[A-Za-z0-9#_\-/\\]*$/;
 
     let errorMessage = '';
@@ -387,10 +430,9 @@ export const StockRestate = () => {
     switch (name) {
       case 'entryNo':
         if (!specialCharsRegex.test(value)) {
-          errorMessage = 'Only alphaNumeric, #_-/ are allowed';
+          errorMessage = 'Only alphanumeric, #_-/ are allowed';
         }
         break;
-
       default:
         break;
     }
@@ -419,6 +461,14 @@ export const StockRestate = () => {
         console.log('THE TRANSFER TO FLAG IS:', updatedData.transferToFlag);
       }
     }
+
+    // Restore cursor position after state update
+    setTimeout(() => {
+      const inputElement = document.querySelector(`[name=${name}]`);
+      if (inputElement) {
+        inputElement.setSelectionRange(selectionStart, selectionEnd);
+      }
+    }, 0);
   };
 
   const handleKeyDown = (e, row, table) => {

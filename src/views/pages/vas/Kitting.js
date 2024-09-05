@@ -500,8 +500,74 @@ export const Kitting = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked } = e.target;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+  //   const alphaNumericRegex = /^[A-Za-z0-9]*$/;
+  //   const numericRegex = /^[0-9]*$/;
+  //   const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
+  //   const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+
+  //   let errorMessage = '';
+
+  //   switch (name) {
+  //     case 'customer':
+  //     case 'shortName':
+  //       if (!nameRegex.test(value)) {
+  //         errorMessage = 'Only alphabetic characters are allowed';
+  //       }
+  //       break;
+  //     case 'pan':
+  //       if (!alphaNumericRegex.test(value)) {
+  //         errorMessage = 'Only alphanumeric characters are allowed';
+  //       } else if (value.length > 10) {
+  //         errorMessage = 'Invalid Format';
+  //       }
+  //       break;
+  //     case 'branchName':
+  //       if (!branchNameRegex.test(value)) {
+  //         errorMessage = 'Only alphanumeric characters and @, _, -, * are allowed';
+  //       }
+  //       break;
+  //     case 'mobile':
+  //       if (!numericRegex.test(value)) {
+  //         errorMessage = 'Only numeric characters are allowed';
+  //       } else if (value.length > 10) {
+  //         errorMessage = 'Invalid Format';
+  //       }
+  //       break;
+  //     case 'gst':
+  //       if (!alphaNumericRegex.test(value)) {
+  //         errorMessage = 'Only alphanumeric characters are allowed';
+  //       } else if (value.length > 15) {
+  //         errorMessage = 'Invalid Format';
+  //       }
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   if (errorMessage) {
+  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+  //   } else {
+  //     if (name === 'active') {
+  //       setFormData({ ...formData, [name]: checked });
+  //     } else if (name === 'email') {
+  //       setFormData({ ...formData, [name]: value });
+  //     } else {
+  //       setFormData({ ...formData, [name]: value.toUpperCase() });
+  //     }
+
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd } = e.target;
+
+    // Capture the cursor position before the update
+    const cursorPosition = { start: selectionStart, end: selectionEnd };
+
     const nameRegex = /^[A-Za-z ]*$/;
     const alphaNumericRegex = /^[A-Za-z0-9]*$/;
     const numericRegex = /^[0-9]*$/;
@@ -548,18 +614,26 @@ export const Kitting = () => {
     }
 
     if (errorMessage) {
-      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
       if (name === 'active') {
-        setFormData({ ...formData, [name]: checked });
+        setFormData((prevData) => ({ ...prevData, [name]: checked }));
       } else if (name === 'email') {
-        setFormData({ ...formData, [name]: value });
+        setFormData((prevData) => ({ ...prevData, [name]: value }));
       } else {
-        setFormData({ ...formData, [name]: value.toUpperCase() });
+        setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
       }
 
-      setFieldErrors({ ...fieldErrors, [name]: '' });
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
     }
+
+    // Restore cursor position after state update
+    setTimeout(() => {
+      const inputElement = document.querySelector(`[name=${name}]`);
+      if (inputElement) {
+        inputElement.setSelectionRange(cursorPosition.start, cursorPosition.end);
+      }
+    }, 0);
   };
 
   const handleDeleteRow = (id) => {
