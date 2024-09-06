@@ -32,6 +32,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { getAllActiveCarrier, getAllActiveSupplier } from 'utils/CommonFunctions';
 import { Form } from 'react-router-dom';
 import React, { useRef } from 'react';
+import GeneratePdfDeliveryChallanpdf from './DeliveryChallenpdf';
 
 export const DeliveryChallen = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -51,6 +52,9 @@ export const DeliveryChallen = () => {
   const [warehouse, setWarehouse] = useState(localStorage.getItem('warehouse'));
   const [finYear, setFinYear] = useState('2024');
   const [deliveryChallanDocId, setDeliveryChallanDocId] = useState('');
+
+  const [downloadPdf, setDownloadPdf] = useState(false);
+  const [pdfData, setPdfData] = useState([]);
 
   const [formData, setFormData] = useState({
     docDate: dayjs(),
@@ -1068,7 +1072,11 @@ export const DeliveryChallen = () => {
   const handleView = () => {
     setListView(!listView);
   };
-
+  const GeneratePdf = (row) => {
+    console.log('PDF-Data =>', row.original);
+    setPdfData(row.original);
+    setDownloadPdf(true);
+  };
   return (
     <>
       <div>{/* <ToastContainer /> */}</div>
@@ -1083,7 +1091,15 @@ export const DeliveryChallen = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getDeliverChallanById} />
+            <CommonListViewTable
+              data={listViewData}
+              columns={listViewColumns}
+              blockEdit={true}
+              toEdit={getDeliverChallanById}
+              isPdf={true}
+              GeneratePdf={GeneratePdf}
+            />
+            {downloadPdf && <GeneratePdfDeliveryChallanpdf row={pdfData} />}
           </div>
         ) : (
           <>
