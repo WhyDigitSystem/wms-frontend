@@ -18,7 +18,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
@@ -88,19 +88,36 @@ export const VasPutaway = () => {
   const [listViewData, setListViewData] = useState([]);
 
   const [lrNoDetailsTable, setLrNoDetailsTable] = useState([
-    // {
-    //   id: 1,
-    //   partNo: '',
-    //   partDescription: '',
-    //   grnNo: '',
-    //   invQty: '',
-    //   putAwayQty: '',
-    //   fromBin: '',
-    //   bin: '',
-    //   sku: '',
-    //   remarks: ''
-    // }
+    {
+      // id: 1,
+      partNo: '',
+      partDescription: '',
+      grnNo: '',
+      invQty: '',
+      putAwayQty: '',
+      fromBin: '',
+      bin: '',
+      sku: '',
+      remarks: ''
+    }
   ]);
+
+  const lrNoDetailsRefs = useRef(
+    lrNoDetailsTable.map(() => ({
+      bin: React.createRef()
+    }))
+  );
+  useEffect(() => {
+    // If the length of the table changes, update the refs
+    if (lrNoDetailsRefs.current.length !== lrNoDetailsTable.length) {
+      lrNoDetailsRefs.current = lrNoDetailsTable.map(
+        (_, index) =>
+          lrNoDetailsRefs.current[index] || {
+            bin: React.createRef()
+          }
+      );
+    }
+  }, [lrNoDetailsTable.length]);
 
   const handleAddRow = () => {
     const newRow = {
@@ -407,14 +424,6 @@ export const VasPutaway = () => {
     getVasPutawayDocId();
   };
 
-  const lrNoDetailsRefs = useRef([]);
-
-  useEffect(() => {
-    lrNoDetailsRefs.current = lrNoDetailsTable.map((_, i) => ({
-      bin: lrNoDetailsRefs.current[i]?.bin || React.createRef()
-    }));
-  }, [lrNoDetailsTable]);
-
   const handleSave = async () => {
     const errors = {};
     let firstInvalidFieldRef = null;
@@ -441,13 +450,18 @@ export const VasPutaway = () => {
         lrNoDetailsTableValid = false;
         if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
       }
-      // if (!row.remarks) {
-      //   rowErrors.remarks = 'Remarks is required';
-      //   lrNoDetailsTableValid = false;
-      // }
 
       return rowErrors;
     });
+
+    if (!lrNoDetailsTableValid || Object.keys(errors).length > 0) {
+      // Focus on the first invalid field
+      if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+        firstInvalidFieldRef.current.focus();
+      }
+    } else {
+      // Proceed with form submission
+    }
 
     setLrNoDetailsError(newTableErrors);
 

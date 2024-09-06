@@ -30,6 +30,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 // import { DatePicker } from 'react-datepicker';
 import dayjs from 'dayjs';
 import { getAllActiveCarrier, getAllActivePartDetails, getAllActiveSupplier, getAllShipmentModes } from 'utils/CommonFunctions';
+import React, { useRef } from 'react';
 
 export const Grn = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -168,6 +169,35 @@ export const Grn = () => {
       remarks: ''
     }
   ]);
+
+  const lrNoDetailsRefs = useRef(
+    lrTableData.map(() => ({
+      lr_Hawb_Hbl_No: React.createRef(),
+      invNo: React.createRef(),
+      partNo: React.createRef(),
+      invQty: React.createRef(),
+      palletQty: React.createRef(),
+      noOfPallets: React.createRef()
+    }))
+  );
+
+  useEffect(() => {
+    // If the length of the table changes, update the refs
+    if (lrNoDetailsRefs.current.length !== lrTableData.length) {
+      lrNoDetailsRefs.current = lrTableData.map(
+        (_, index) =>
+          lrNoDetailsRefs.current[index] || {
+            lr_Hawb_Hbl_No: React.createRef(),
+            invNo: React.createRef(),
+            partNo: React.createRef(),
+            invQty: React.createRef(),
+            palletQty: React.createRef(),
+            noOfPallets: React.createRef()
+          }
+      );
+    }
+  }, [lrTableData.length]);
+
   const [lrTableErrors, setLrTableErrors] = useState([
     {
       qrCode: '',
@@ -935,6 +965,7 @@ export const Grn = () => {
 
   const handleSave = async () => {
     const errors = {};
+    let firstInvalidFieldRef = null;
     if (!formData.grnDate) errors.grnDate = 'GRN Date is required';
     if (!formData.billOfEntry) errors.billOfEntry = 'E-way Bill is required';
     if (!formData.supplierShortName) errors.supplierShortName = 'Supplier Short Name is required';
@@ -943,39 +974,55 @@ export const Grn = () => {
     if (!formData.carrier) errors.carrier = 'Carrier is required';
 
     let lrTableDataValid = true;
-    const newTableErrors = lrTableData.map((row) => {
+    const newTableErrors = lrTableData.map((row, index) => {
       const rowErrors = {};
       if (!row.lr_Hawb_Hbl_No) {
         rowErrors.lr_Hawb_Hbl_No = 'Lr_Hawb_Hbl_No is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].lr_Hawb_Hbl_No;
         lrTableDataValid = false;
       }
       if (!row.invNo) {
         rowErrors.invNo = 'Invoice No is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].invNo;
         lrTableDataValid = false;
       }
       if (!row.partNo) {
         rowErrors.partNo = 'Part No is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
         lrTableDataValid = false;
       }
       if (!row.invQty) {
         rowErrors.invQty = 'Invoice QTY is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].invQty;
         lrTableDataValid = false;
       }
       if (!row.grnQty) {
         rowErrors.grnQty = 'GRN QTY is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].grnQty;
         lrTableDataValid = false;
       }
       if (!row.palletQty) {
         rowErrors.palletQty = 'Pallet Qty is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].palletQty;
         lrTableDataValid = false;
       }
       if (!row.noOfPallets) {
         rowErrors.noOfPallets = 'No of Pallets is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].noOfPallets;
         lrTableDataValid = false;
       }
       return rowErrors;
     });
     setFieldErrors(errors);
+
+    if (!lrTableDataValid || Object.keys(errors).length > 0) {
+      // Focus on the first invalid field
+      if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+        firstInvalidFieldRef.current.focus();
+      }
+    } else {
+      // Proceed with form submission
+    }
 
     setLrTableErrors(newTableErrors);
 
@@ -1543,6 +1590,7 @@ export const Grn = () => {
                                           <input
                                             style={{ width: '150px' }}
                                             type="text"
+                                            ref={lrNoDetailsRefs.current[index].lr_Hawb_Hbl_No}
                                             value={row.lr_Hawb_Hbl_No}
                                             onChange={(e) => {
                                               const value = e.target.value;
@@ -1570,6 +1618,7 @@ export const Grn = () => {
                                           <input
                                             style={{ width: '150px' }}
                                             type="text"
+                                            ref={lrNoDetailsRefs.current[index].invNo}
                                             value={row.invNo}
                                             onChange={(e) => {
                                               const value = e.target.value;
@@ -1641,6 +1690,7 @@ export const Grn = () => {
                                         </td>
                                         <td className="border px-2 py-2">
                                           <select
+                                            ref={lrNoDetailsRefs.current[index].partNo}
                                             value={row.partNo}
                                             style={{ width: '200px' }}
                                             onChange={(e) => handlePartNoChange(row, index, e)}
@@ -1681,6 +1731,7 @@ export const Grn = () => {
                                           <input
                                             style={{ width: '150px' }}
                                             type="text"
+                                            ref={lrNoDetailsRefs.current[index].invQty}
                                             value={row.invQty}
                                             onChange={(e) => {
                                               const value = e.target.value;
@@ -1973,6 +2024,7 @@ export const Grn = () => {
                                           <input
                                             style={{ width: '150px' }}
                                             type="text"
+                                            ref={lrNoDetailsRefs.current[index].palletQty}
                                             value={row.palletQty}
                                             onChange={(e) => {
                                               const value = e.target.value;
@@ -2022,6 +2074,7 @@ export const Grn = () => {
                                           <input
                                             style={{ width: '150px' }}
                                             type="text"
+                                            ref={lrNoDetailsRefs.current[index].noOfPallets}
                                             value={row.noOfPallets}
                                             onChange={(e) => {
                                               const value = e.target.value;

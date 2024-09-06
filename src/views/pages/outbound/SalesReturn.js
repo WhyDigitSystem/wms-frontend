@@ -29,7 +29,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
@@ -39,6 +39,8 @@ import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import GridOnIcon from '@mui/icons-material/GridOn';
 import Paper from '@mui/material/Paper';
 import Draggable from 'react-draggable';
+import React, { useRef } from 'react';
+
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -100,22 +102,46 @@ export const SalesReturn = () => {
 
   const [value, setValue] = useState(0);
   const [detailTableData, setDetailTableData] = useState([
-    // {
-    //   lrNo: '',
-    //   invNo: '',
-    //   partNo: '',
-    //   partDesc: '',
-    //   pickQty: '',
-    //   returnQty: '',
-    //   damageQty: '',
-    //   batchNo: '',
-    //   batchDate: null,
-    //   expDate: null,
-    //   noOfBin: '',
-    //   binQty: '',
-    //   remarks: ''
-    // }
+    {
+      lrNo: '',
+      invNo: '',
+      partNo: '',
+      partDesc: '',
+      pickQty: '',
+      returnQty: '',
+      damageQty: '',
+      batchNo: '',
+      batchDate: null,
+      expDate: null,
+      noOfBin: '',
+      binQty: '',
+      remarks: ''
+    }
   ]);
+
+  const lrNoDetailsRefs = useRef(
+    detailTableData.map(() => ({
+      lrNo: React.createRef(),
+      partNo: React.createRef(),
+      invNo: React.createRef(),
+      batchNo: React.createRef()
+    }))
+  );
+
+  useEffect(() => {
+    // If the length of the table changes, update the refs
+    if (lrNoDetailsRefs.current.length !== detailTableData.length) {
+      lrNoDetailsRefs.current = detailTableData.map(
+        (_, index) =>
+          lrNoDetailsRefs.current[index] || {
+            lrNo: React.createRef(),
+            partNo: React.createRef(),
+            invNo: React.createRef(),
+            batchNo: React.createRef()
+          }
+      );
+    }
+  }, [detailTableData.length]);
 
   const [detailTableErrors, setDetailTableErrors] = useState([
     {
@@ -814,6 +840,7 @@ export const SalesReturn = () => {
 
   const handleSave = async () => {
     const errors = {};
+    let firstInvalidFieldRef = null;
 
     if (!formData.prNo) {
       errors.prNo = 'PR No is required';
@@ -828,16 +855,37 @@ export const SalesReturn = () => {
       const newTableErrors = detailTableData.map((row, index) => {
         const rowErrors = {};
 
-        if (!row.lrNo) rowErrors.lrNo = 'LR No is required';
-        if (!row.partNo) rowErrors.partNo = 'Part No is required';
-        if (!row.invNo) rowErrors.invNo = 'Invoice No is required';
-        if (!row.batchNo) rowErrors.batchNo = 'Batch No is required';
+        if (!row.lrNo) {
+          rowErrors.lrNo = 'LR No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].lrNo;
+        }
+        if (!row.partNo) {
+          rowErrors.partNo = 'Part No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
+        }
+        if (!row.invNo) {
+          rowErrors.invNo = 'Invoice No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].invNo;
+        }
+        if (!row.batchNo) {
+          rowErrors.batchNo = 'Batch No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
+        }
         if (!row.bin) rowErrors.bin = 'Bin is required';
 
         if (Object.keys(rowErrors).length > 0) detailTableDataValid = false;
 
         return rowErrors;
       });
+
+      if (!detailTableDataValid || Object.keys(errors).length > 0) {
+        // Focus on the first invalid field
+        if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+          firstInvalidFieldRef.current.focus();
+        }
+      } else {
+        // Proceed with form submission
+      }
 
       setDetailTableErrors(newTableErrors);
     }
@@ -1370,6 +1418,7 @@ export const SalesReturn = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
+                                          ref={lrNoDetailsRefs.current[index].lrNo}
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.lrNo}
@@ -1392,6 +1441,7 @@ export const SalesReturn = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
+                                          ref={lrNoDetailsRefs.current[index].invNo}
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.invNo}
@@ -1414,6 +1464,7 @@ export const SalesReturn = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
+                                          ref={lrNoDetailsRefs.current[index].partNo}
                                           value={row.partNo}
                                           style={{ width: '200px' }}
                                           className={detailTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
@@ -1500,6 +1551,7 @@ export const SalesReturn = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
+                                          ref={lrNoDetailsRefs.current[index].batchNo}
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.batchNo}

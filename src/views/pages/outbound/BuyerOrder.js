@@ -29,6 +29,8 @@ import ActionButton from 'utils/ActionButton';
 import { getAllActiveBranches, getAllActiveBuyer, getAllActivePartDetails } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import React, { useRef } from 'react';
+
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -92,7 +94,15 @@ export const BuyerOrder = () => {
   });
   const [value, setValue] = useState(0);
 
-  const [skuDetailsTableData, setSkuDetailsTableData] = useState([]);
+  const [skuDetailsTableData, setSkuDetailsTableData] = useState([
+    {
+      availQty: '',
+      batchNo: '',
+      partDesc: '',
+      partNo: '',
+      qty: ''
+    }
+  ]);
   const [skuDetails, setSkuDetails] = useState([
     {
       id: 1,
@@ -106,6 +116,28 @@ export const BuyerOrder = () => {
       sku: 'KG'
     }
   ]);
+
+  const lrNoDetailsRefs = useRef(
+    skuDetailsTableData.map(() => ({
+      partNo: React.createRef(),
+      batchNo: React.createRef(),
+      qty: React.createRef()
+    }))
+  );
+
+  useEffect(() => {
+    // If the length of the table changes, update the refs
+    if (lrNoDetailsRefs.current.length !== skuDetailsTableData.length) {
+      lrNoDetailsRefs.current = skuDetailsTableData.map(
+        (_, index) =>
+          lrNoDetailsRefs.current[index] || {
+            partNo: React.createRef(),
+            batchNo: React.createRef(),
+            qty: React.createRef()
+          }
+      );
+    }
+  }, [skuDetailsTableData.length]);
 
   useEffect(() => {
     getNewBuyerOrderDocId();
@@ -739,6 +771,7 @@ export const BuyerOrder = () => {
 
   const handleSave = async () => {
     const errors = {};
+    let firstInvalidFieldRef = null;
     if (!formData.orderNo) {
       errors.orderNo = 'Order No is required';
     }
@@ -762,24 +795,36 @@ export const BuyerOrder = () => {
     }
 
     let skuDetailsTableDataValid = true;
-    const newTableErrors = skuDetailsTableData.map((row) => {
+    const newTableErrors = skuDetailsTableData.map((row, index) => {
       const rowErrors = {};
       if (!row.partNo) {
         rowErrors.partNo = 'Part No is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
         skuDetailsTableDataValid = false;
       }
       if (!row.batchNo) {
         rowErrors.batchNo = 'Batch No is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
         skuDetailsTableDataValid = false;
       }
       if (!row.qty) {
         rowErrors.qty = 'Qty is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].qty;
         skuDetailsTableDataValid = false;
       }
 
       return rowErrors;
     });
-    // setFieldErrors(errors);
+    setFieldErrors(errors);
+
+    if (!skuDetailsTableDataValid || Object.keys(errors).length > 0) {
+      // Focus on the first invalid field
+      if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+        firstInvalidFieldRef.current.focus();
+      }
+    } else {
+      // Proceed with form submission
+    }
 
     setSkuDetailsTableErrors(newTableErrors);
 
@@ -1191,6 +1236,7 @@ export const BuyerOrder = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <select
+                                        ref={lrNoDetailsRefs.current[index].partNo}
                                         value={row.partNo}
                                         onChange={(e) => {
                                           const value = e.target.value;
@@ -1248,6 +1294,7 @@ export const BuyerOrder = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <select
+                                        ref={lrNoDetailsRefs.current[index].batchNo}
                                         value={row.batchNo}
                                         // onChange={(e) => {
                                         //   const value = e.target.value;
@@ -1300,6 +1347,7 @@ export const BuyerOrder = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
+                                        ref={lrNoDetailsRefs.current[index].qty}
                                         style={{ width: '150px' }}
                                         type="text"
                                         value={row.qty}

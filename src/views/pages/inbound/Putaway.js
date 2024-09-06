@@ -41,6 +41,8 @@ import { initCaps } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import GeneratePdfTemp from './PutawayPdf';
+import React, { useRef } from 'react';
+
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -111,26 +113,46 @@ export const Putaway = () => {
   });
 
   const [putAwayDetailsTableData, setPutAwayDetailsTableData] = useState([
-    // {
-    //   batchNo: '',
-    //   recQty: '',
-    //   binType: '',
-    //   cellType: 'ACTIVE',
-    //   noOfBins: '',
-    //   bin: '',
-    //   batchDate: '',
-    //   expDate: '',
-    //   partDesc: '',
-    //   shortQty: '',
-    //   grnQty: '',
-    //   damageQty: '',
-    //   pQty: '',
-    //   invQty: '',
-    //   sku: '',
-    //   ssku: '',
-    //   partNo: ''
-    // }
+    {
+      batchNo: '',
+      recQty: '',
+      binType: '',
+      cellType: 'ACTIVE',
+      noOfBins: '',
+      bin: '',
+      batchDate: '',
+      expDate: '',
+      partDesc: '',
+      shortQty: '',
+      grnQty: '',
+      damageQty: '',
+      pQty: '',
+      invQty: '',
+      sku: '',
+      ssku: '',
+      partNo: ''
+    }
   ]);
+
+  const lrNoDetailsRefs = useRef(
+    putAwayDetailsTableData.map(() => ({
+      sku: React.createRef(),
+      bin: React.createRef()
+    }))
+  );
+  useEffect(() => {
+    // If the length of the table changes, update the refs
+    if (lrNoDetailsRefs.current.length !== putAwayDetailsTableData.length) {
+      lrNoDetailsRefs.current = putAwayDetailsTableData.map(
+        (_, index) =>
+          lrNoDetailsRefs.current[index] || {
+            sku: React.createRef(),
+            bin: React.createRef()
+          }
+      );
+    }
+  }, [putAwayDetailsTableData.length]);
+
   const [gridDetailsTableData, setGridDetailsTableData] = useState([
     // {
     //   batchNo: '',
@@ -801,6 +823,7 @@ export const Putaway = () => {
 
   const handleSave = async () => {
     const errors = {};
+    let firstInvalidFieldRef = null;
     if (!formData.grnNo) {
       errors.grnNo = 'Grn No is required';
     }
@@ -818,7 +841,7 @@ export const Putaway = () => {
     }
 
     let putAwayDetailsTableDataValid = true;
-    const newTableErrors = putAwayDetailsTableData.map((row) => {
+    const newTableErrors = putAwayDetailsTableData.map((row, index) => {
       const rowErrors = {};
       if (!row.batchNo) {
         rowErrors.batchNo = 'Batch No is required';
@@ -826,6 +849,7 @@ export const Putaway = () => {
       }
       if (!row.sku) {
         rowErrors.sku = 'Sku is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].sku;
         putAwayDetailsTableDataValid = false;
       }
       if (!row.putAwayQty) {
@@ -834,11 +858,21 @@ export const Putaway = () => {
       }
       if (!row.bin) {
         rowErrors.bin = 'Bin is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
         putAwayDetailsTableDataValid = false;
       }
 
       return rowErrors;
     });
+
+    if (!putAwayDetailsTableDataValid || Object.keys(errors).length > 0) {
+      // Focus on the first invalid field
+      if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+        firstInvalidFieldRef.current.focus();
+      }
+    } else {
+      // Proceed with form submission
+    }
 
     setPutAwayTableErrors(newTableErrors);
 
@@ -1527,6 +1561,7 @@ export const Putaway = () => {
 
                                     <td className="border px-2 py-2">
                                       <select
+                                        ref={lrNoDetailsRefs.current[index].sku}
                                         value={row.sku}
                                         style={{ width: '130px' }}
                                         onChange={(e) => {
@@ -1656,6 +1691,7 @@ export const Putaway = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <select
+                                        ref={lrNoDetailsRefs.current[index].bin}
                                         value={row.bin}
                                         style={{ width: '130px' }}
                                         onChange={(e) => {
