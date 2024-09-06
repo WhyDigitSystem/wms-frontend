@@ -44,7 +44,7 @@ export const LocationMappingMaster = () => {
     branch: loginBranch,
     warehouse: localStorage.getItem('warehouse'),
     locationType: '',
-    clientType: 'FIXED',
+    clientType: 'Fixed',
     rowNo: '',
     levelNo: '',
     client: loginClient,
@@ -397,7 +397,7 @@ export const LocationMappingMaster = () => {
     setFormData({
       warehouse: '',
       locationType: '',
-      clientType: 'FIXED',
+      clientType: 'Fixed',
       rowNo: '',
       levelNo: '',
       active: true
@@ -683,8 +683,8 @@ export const LocationMappingMaster = () => {
                     value={formData.clientType}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="FIXED">FIXED</MenuItem>
-                    <MenuItem value="OPEN">OPEN</MenuItem>
+                    <MenuItem value="Fixed">FIXED</MenuItem>
+                    <MenuItem value="Open">OPEN</MenuItem>
                   </Select>
                   {fieldErrors.clientType && <FormHelperText error>{fieldErrors.clientType}</FormHelperText>}
                 </FormControl>

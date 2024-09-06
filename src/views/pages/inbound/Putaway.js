@@ -61,7 +61,7 @@ export const Putaway = () => {
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [loginFinYear, setLoginFinYear] = useState('2024');
+  const [loginFinYear, setLoginFinYear] = useState(localStorage.getItem('finYear'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [loginUserId, setLoginUserId] = useState(localStorage.getItem('userId'));
   const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
@@ -94,7 +94,7 @@ export const Putaway = () => {
     driverName: '',
     entryNo: '',
     entryDate: null,
-    finYear: '2024',
+    finYear: loginFinYear,
     grnDate: null,
     grnNo: '',
     lotNo: '',
@@ -488,7 +488,7 @@ export const Putaway = () => {
           carrier: particularPutaway.carrier,
           binType: particularPutaway.binType,
           contact: particularPutaway.contact,
-          status: particularPutaway.status === 'Edit' ? 'EDIT' : 'CONFIRM',
+          status: particularPutaway.status,
           lotNo: particularPutaway.lotNo,
           enteredPerson: particularPutaway.enteredPerson,
           binClass: particularPutaway.binClass,
@@ -540,7 +540,7 @@ export const Putaway = () => {
               cellType: pa.cellType,
               batchDate: pa.batchDate,
               status: pa.status,
-              expdate: pa.expdate,
+              expDate: pa.expDate,
               qcFlag: pa.qcFlag,
               ssku: pa.ssku,
               ssqty: pa.ssqty
@@ -729,7 +729,7 @@ export const Putaway = () => {
       carrier: '',
       client: loginClient,
       contact: '',
-      core: 'Multi',
+      core: '',
       createdBy: loginUserName,
       customer: loginCustomer,
       docDate: dayjs(),
@@ -881,14 +881,14 @@ export const Putaway = () => {
         enteredPerson: formData.enteredPerson,
         entryDate: formData.entryDate,
         entryNo: formData.entryNo,
-        finYear: formData.finYear,
+        finYear: loginFinYear,
         grnDate: formData.grnDate,
         grnNo: formData.grnNo,
         lotNo: formData.lotNo,
         modeOfShipment: formData.modeOfShipment,
         orgId: orgId,
         putAwayDetailsDTO,
-        status: formData.status === 'EDIT' ? 'Edit' : 'Confirm',
+        status: formData.status,
         supplier: formData.supplier,
         supplierShortName: formData.supplierShortName,
         vehicleType: formData.vehicleType,
@@ -904,6 +904,7 @@ export const Putaway = () => {
           handleClear();
           showToast('success', editId ? ' Put Away Updated Successfully' : 'Put Away created successfully');
           setIsLoading(false);
+          getAllPutAway();
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Put Away creation failed');
           setIsLoading(false);
