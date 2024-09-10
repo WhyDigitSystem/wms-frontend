@@ -60,6 +60,8 @@ export const Kitting = () => {
       partDescription: '',
       rowBatchNo: [],
       batchNo: '',
+      batchDate: null,
+      expDate: null,
       lotNo: '',
       grnNo: '',
       grnDate: '',
@@ -76,6 +78,8 @@ export const Kitting = () => {
       partNo: '',
       partDescription: '',
       batchNo: '',
+      batchDate: null,
+      expDate: null,
       lotNo: '',
       sku: '',
       qty: '',
@@ -93,7 +97,10 @@ export const Kitting = () => {
       bin: '',
       partNo: '',
       partDescription: '',
+      rowBatchNo: [],
       batchNo: '',
+      batchDate: null,
+      expDate: null,
       lotNo: '',
       grnNo: '',
       grnDate: '',
@@ -367,25 +374,14 @@ export const Kitting = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        // Extract data from response
-
-        const batchData = response.paramObjectsMap.kittingVO.map((item) => ({
-          batchNo: item.batchNo,
-          batchDate: item.batchDate,
-          expDate: item.expDate
-        }));
-        // setBatchOptions(batchData);
-
-        setChildTableData((prev) =>
-          prev.map((r) =>
-            r.id === row.id
-              ? {
-                  ...r,
-                  rowBatchNo: batchData
-                }
-              : r
-          )
-        );
+        const batchData = [
+          {
+            batchNo: response.paramObjectsMap.kittingVO[0].batchNo,
+            batchDate: response.paramObjectsMap.kittingVO[0].batchDate,
+            expDate: response.paramObjectsMap.kittingVO[0].expDate
+          }
+        ];
+        setChildTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, rowBatchNo: batchData } : r)));
       } else {
         console.error('API Error:', response);
       }
@@ -928,6 +924,39 @@ export const Kitting = () => {
     setParentTableErrors(updatedErrors);
   };
 
+  // const handleBatchNoChange = (row, index, e) => {
+  //   const value = e.target.value;
+  //   console.log('Selected Batch No:', value);
+
+  //   const selectedBatchNo = row.rowBatchNo.find((option) => option.batchNo === value);
+  //   console.log('Selected Batch Details:', selectedBatchNo);
+
+  //   if (selectedBatchNo) {
+  //     setChildTableData((prev) => {
+  //       prev.map((r) =>
+  //         r.id === row.id
+  //           ? {
+  //               ...r,
+  //               batchNo: selectedBatchNo.batchNo,
+  //               batchDate: selectedBatchNo.batchDate,
+  //               expDate: selectedBatchNo.expDate
+  //             }
+  //           : r
+  //       );
+  //     });
+  //   }
+
+  //   setChildTableErrors((prev) => {
+  //     const newErrors = [...prev];
+  //     newErrors[index] = {
+  //       ...newErrors[index],
+  //       batchNo: !value ? 'Batch No is required' : ''
+  //     };
+  //     return newErrors;
+  //   });
+  //   getBinByChild(row, value);
+  // };
+
   const handleBatchNoChange = (row, index, e) => {
     const value = e.target.value;
     console.log('Selected Batch No:', value);
@@ -935,30 +964,45 @@ export const Kitting = () => {
     const selectedBatchNo = row.rowBatchNo.find((option) => option.batchNo === value);
     console.log('Selected Batch Details:', selectedBatchNo);
 
-    if (selectedBatchNo) {
-      setChildTableData((prev) => {
-        prev.map((r) =>
-          r.id === row.id
-            ? {
-                ...r,
-                batchNo: selectedBatchNo.batchNo,
-                batchDate: selectedBatchNo.batchDate,
-                expDate: selectedBatchNo.expDate
-              }
-            : r
-        );
-      });
+    // Error handling for batch number selection
+    let batchError = '';
+
+    if (!selectedBatchNo) {
+      batchError = 'Invalid batch number selected';
     }
+
+    if (selectedBatchNo && new Date(selectedBatchNo.expDate) < new Date()) {
+      batchError = 'Selected batch has expired';
+    }
+
+    setChildTableData((prev) => {
+      return prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              batchNo: selectedBatchNo ? selectedBatchNo.batchNo : '',
+              batchDate: selectedBatchNo ? selectedBatchNo.batchDate : '',
+              expDate: selectedBatchNo ? selectedBatchNo.expDate : ''
+            }
+          : r
+      );
+    });
 
     setChildTableErrors((prev) => {
       const newErrors = [...prev];
       newErrors[index] = {
         ...newErrors[index],
-        batchNo: !value ? 'Batch No is required' : ''
+        batchNo: batchError || (!value ? 'Batch No is required' : '')
       };
       return newErrors;
     });
-    getBinByChild(row, value);
+
+    // Call the next function after batch number selection
+    if (!batchError) {
+      getBinByChild(row, value);
+    } else {
+      console.error(batchError);
+    }
   };
 
   return (
@@ -1306,15 +1350,11 @@ export const Kitting = () => {
                                       >
                                         <option value="">Select batch No</option>
                                         {Array.isArray(row.rowBatchNo) &&
-                                          row.rowBatchNo.map(
-                                            (batch, idx) =>
-                                              batch &&
-                                              batch.batchNo && (
-                                                <option key={batch.batchNo} value={batch.batchNo}>
-                                                  {batch.batchNo}
-                                                </option>
-                                              )
-                                          )}
+                                          row.rowBatchNo.map((batch) => (
+                                            <option key={batch.id} value={batch.batchNo}>
+                                              {batch.batchNo}
+                                            </option>
+                                          ))}
                                       </select>
                                       {childTableErrors[index]?.batchNo && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
