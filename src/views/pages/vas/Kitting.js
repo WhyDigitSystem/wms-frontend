@@ -50,13 +50,15 @@ export const Kitting = () => {
   const [grnOptions, setGrnOptions] = useState([]);
   const [batchOptions, setBatchOptions] = useState([]);
   const [binOptions, setBinOptions] = useState([]);
+  const [rowBatchNo, setRowBatchNo] = useState([]);
 
   const [childTableData, setChildTableData] = useState([
     {
       id: 1,
-      pallet: 'BULK',
+      bin: '',
       partNo: '',
       partDescription: '',
+      rowBatchNo: [],
       batchNo: '',
       lotNo: '',
       grnNo: '',
@@ -88,7 +90,7 @@ export const Kitting = () => {
   const handleAddRow = () => {
     const newRow = {
       id: Date.now(),
-      pallet: 'BULK',
+      bin: '',
       partNo: '',
       partDescription: '',
       batchNo: '',
@@ -105,7 +107,7 @@ export const Kitting = () => {
     setChildTableErrors([
       ...childTableErrors,
       {
-        pallet: '',
+        bin: '',
         partNo: '',
         partDescription: '',
         batchNo: '',
@@ -156,7 +158,7 @@ export const Kitting = () => {
 
   const [childTableErrors, setChildTableErrors] = useState([
     {
-      pallet: '',
+      bin: '',
       partNo: '',
       partDescription: '',
       batchNo: '',
@@ -193,6 +195,7 @@ export const Kitting = () => {
     refDate: ''
   });
   const [listView, setListView] = useState(false);
+  const [toBinList, setToBinList] = useState([]);
   const listViewColumns = [
     { accessorKey: 'docId', header: 'Document No', size: 140 },
     { accessorKey: 'docDate', header: 'Document Date', size: 140 },
@@ -371,7 +374,18 @@ export const Kitting = () => {
           batchDate: item.batchDate,
           expDate: item.expDate
         }));
-        setBatchOptions(batchData);
+        // setBatchOptions(batchData);
+
+        setChildTableData((prev) =>
+          prev.map((r) =>
+            r.id === row.id
+              ? {
+                  ...r,
+                  rowBatchNo: batchData
+                }
+              : r
+          )
+        );
       } else {
         console.error('API Error:', response);
       }
@@ -398,7 +412,17 @@ export const Kitting = () => {
           bin: item.bin,
           binClass: item.binClass
         }));
-        setBinOptions(binData);
+        // setBinOptions(binData);
+        // setChildTableData((prev) =>
+        //   prev.map((r) =>
+        //     r.id === row.id
+        //       ? {
+        //           ...r,
+        //           rowBatchNo: binData
+        //         }
+        //       : r
+        //   )
+        // );
       } else {
         console.error('API Error:', response);
       }
@@ -411,7 +435,7 @@ export const Kitting = () => {
     try {
       const response = await apiCalls(
         'get',
-        `kitting/getGrnNOByParent?bin=${'BULK'}&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&partDesc=${selectedPart.partDescription}&partNo=${partNo}&sku=${selectedPart.sku}`
+        `kitting/getGrnNOByParent?bin=${selectedPart.bin}&orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&client=${client}&partDesc=${selectedPart.partDescription}&partNo=${partNo}&sku=${selectedPart.sku}`
       );
       console.log('API Response:', response);
 
@@ -490,7 +514,7 @@ export const Kitting = () => {
         setChildTableData(
           particularCustomer.kittingDetails1VO.map((detail) => ({
             id: detail.id,
-            pallet: 'BULK' || '',
+            bin: detail.bin || '',
             partNo: detail.partNo || '',
             partDescription: detail.partDescription || '',
             batchNo: detail.batchNo || '',
@@ -512,6 +536,7 @@ export const Kitting = () => {
             partNo: detail.ppartNo || '',
             partDescription: detail.ppartDescription || '',
             batchNo: detail.pbatchNo || '',
+            batchDate: detail.pbatchDate || '',
             lotNo: detail.plotNo || '',
             sku: detail.psku || '',
             qty: detail.pqty || '',
@@ -708,7 +733,7 @@ export const Kitting = () => {
     setChildTableData([
       {
         id: 1,
-        pallet: '',
+        bin: '',
         partNo: '',
         partDescription: '',
         batchNo: '',
@@ -764,8 +789,8 @@ export const Kitting = () => {
     let childTableDataValid = true;
     const newTableErrors = childTableData.map((row) => {
       const rowErrors = {};
-      if (!row.pallet) {
-        rowErrors.pallet = 'Pallet is required';
+      if (!row.bin) {
+        rowErrors.bin = 'Bin is required';
         childTableDataValid = false;
       }
       if (!row.partNo) {
@@ -798,12 +823,16 @@ export const Kitting = () => {
     if (Object.keys(errors).length === 0 && childTableDataValid && parentTableDataValid) {
       setIsLoading(true);
       const childVO = childTableData.map((row) => ({
-        pallet: row.pallet,
+        bin: row.bin,
         partNo: row.partNo,
         partDescription: row.partDescription,
         batchNo: row.batchNo,
         lotNo: row.lotNo,
         grnNo: row.grnNo,
+        binType: row.binType,
+        binClass: row.binClass,
+        cellType: row.cellType,
+        core: row.core,
         grnDate: row.grnDate,
         sku: row.sku,
         avlQty: parseInt(row.avlQty),
@@ -820,11 +849,15 @@ export const Kitting = () => {
         psku: row.Sku,
         pqty: parseInt(row.qty),
         punitRate: row.unitRate,
-        // pamount: row.amount,
+        bin: row.bin,
         pgrnNo: row.grnNo,
         pgrnDate: row.grnDate,
         pexpDate: row.expDate,
-        qQcflag: true
+        qQcflag: true,
+        binType: row.binType,
+        binClass: row.binClass,
+        cellType: row.cellType,
+        core: row.core
       }));
 
       const saveFormData = {
@@ -893,6 +926,39 @@ export const Kitting = () => {
       }
     }
     setParentTableErrors(updatedErrors);
+  };
+
+  const handleBatchNoChange = (row, index, e) => {
+    const value = e.target.value;
+    console.log('Selected Batch No:', value);
+
+    const selectedBatchNo = row.rowBatchNo.find((option) => option.batchNo === value);
+    console.log('Selected Batch Details:', selectedBatchNo);
+
+    if (selectedBatchNo) {
+      setChildTableData((prev) => {
+        prev.map((r) =>
+          r.id === row.id
+            ? {
+                ...r,
+                batchNo: selectedBatchNo.batchNo,
+                batchDate: selectedBatchNo.batchDate,
+                expDate: selectedBatchNo.expDate
+              }
+            : r
+        );
+      });
+    }
+
+    setChildTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        batchNo: !value ? 'Batch No is required' : ''
+      };
+      return newErrors;
+    });
+    getBinByChild(row, value);
   };
 
   return (
@@ -1235,47 +1301,20 @@ export const Kitting = () => {
                                       <select
                                         value={row.batchNo}
                                         style={{ width: '130px' }}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          console.log('Selected Batch No:', value);
-
-                                          const selectedBatchNo = batchOptions.find((option) => String(option.batchNo) === String(value));
-                                          console.log('Selected Batch Details:', selectedBatchNo);
-
-                                          if (selectedBatchNo) {
-                                            setChildTableData((prev) => {
-                                              return prev.map((r) =>
-                                                r.id === row.id
-                                                  ? {
-                                                      ...r,
-                                                      batchNo: value,
-                                                      batchDate: selectedBatchNo.batchDate,
-                                                      expDate: selectedBatchNo.expDate
-                                                    }
-                                                  : r
-                                              );
-                                            });
-                                            getBinByChild(row, value);
-                                          }
-
-                                          setChildTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              batchNo: !value ? 'Batch No is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
+                                        onChange={(e) => handleBatchNoChange(row, index, e)}
                                         className={childTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select batch No</option>
-                                        {batchOptions &&
-                                          batchOptions.map((option) => (
-                                            <option key={option.batchNo} value={option.batchNo}>
-                                              {option.batchNo}
-                                            </option>
-                                          ))}
+                                        {Array.isArray(row.rowBatchNo) &&
+                                          row.rowBatchNo.map(
+                                            (batch, idx) =>
+                                              batch &&
+                                              batch.batchNo && (
+                                                <option key={batch.batchNo} value={batch.batchNo}>
+                                                  {batch.batchNo}
+                                                </option>
+                                              )
+                                          )}
                                       </select>
                                       {childTableErrors[index]?.batchNo && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1301,11 +1340,10 @@ export const Kitting = () => {
                                                 r.id === row.id
                                                   ? {
                                                       ...r,
-                                                      bin: value,
+                                                      bin: selectedBin.bin,
                                                       core: selectedBin.core,
                                                       cellType: selectedBin.cellType,
                                                       binType: selectedBin.binType,
-                                                      bin: selectedBin.bin,
                                                       binClass: selectedBin.binClass
                                                     }
                                                   : r
@@ -1489,8 +1527,9 @@ export const Kitting = () => {
                                   <th className="px-2 py-2 text-white text-center">P GRN No</th>
                                   <th className="px-2 py-2 text-white text-center">P GRN Date</th>
                                   <th className="px-2 py-2 text-white text-center">P Batch No</th>
+                                  <th className="px-2 py-2 text-white text-center">P Batch Date</th>
                                   <th className="px-2 py-2 text-white text-center">P Lot No</th>
-
+                                  <th className="px-2 py-2 text-white text-center">P Bin</th>
                                   <th className="px-2 py-2 text-white text-center">P Qty</th>
                                   {/* <th className="px-2 py-2 text-white text-center">P Unit Rate</th>
                                   <th className="px-2 py-2 text-white text-center">P Amount</th> */}
@@ -1663,6 +1702,25 @@ export const Kitting = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
+                                        type="date"
+                                        value={row.batchDate}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setParentTableData((prev) => prev.map((r, i) => (i === index ? { ...r, batchDate: value } : r)));
+                                          setParentTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              batchDate: !value ? 'Batch Date is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={parentTableErrors[index]?.batchDate ? 'error form-control' : 'form-control'}
+                                      />
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
                                         type="text"
                                         value={row.lotNo}
                                         style={{ width: '100px' }}
@@ -1680,6 +1738,59 @@ export const Kitting = () => {
                                         }}
                                         className={parentTableErrors[index]?.lotNo ? 'error form-control' : 'form-control'}
                                       />
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <select
+                                        value={row.bin}
+                                        style={{ width: '130px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          console.log('Selected Bin No:', value);
+
+                                          const selectedBin = toBinList.find((option) => String(option.bin) === String(value));
+                                          console.log('Selected Bin Details:', selectedBin);
+
+                                          if (selectedBin) {
+                                            setParentTableData((prev) => {
+                                              return prev.map((r) =>
+                                                r.id === row.id
+                                                  ? {
+                                                      ...r,
+                                                      bin: selectedBin.bin,
+                                                      core: selectedBin.core,
+                                                      cellType: selectedBin.cellType,
+                                                      binType: selectedBin.binType,
+                                                      binClass: selectedBin.binClass
+                                                    }
+                                                  : r
+                                              );
+                                            });
+                                          }
+
+                                          setChildTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              bin: !value ? 'Bin is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={childTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
+                                      >
+                                        <option value="">Select bin</option>
+                                        {binOptions &&
+                                          binOptions.map((option) => (
+                                            <option key={option.bin} value={option.bin}>
+                                              {option.bin}
+                                            </option>
+                                          ))}
+                                      </select>
+                                      {childTableErrors[index]?.bin && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {childTableErrors[index].bin}
+                                        </div>
+                                      )}
                                     </td>
 
                                     <td className="border px-2 py-2">
