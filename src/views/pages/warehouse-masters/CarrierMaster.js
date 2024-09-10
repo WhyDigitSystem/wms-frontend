@@ -198,7 +198,7 @@ export const CarrierMaster = () => {
         active: formData.active,
         client: formData.client,
         orgId: orgId,
-        createdby: loginUserName
+        createdBy: loginUserName
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);

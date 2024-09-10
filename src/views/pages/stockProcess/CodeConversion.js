@@ -277,7 +277,8 @@ export const CodeConversion = () => {
         r.id === row.id
           ? {
               ...r,
-              grnNo: selectedGrnNo.grnNo
+              grnNo: selectedGrnNo.grnNo,
+              grnDate: selectedGrnNo.grnDate
             }
           : r
       )
@@ -375,7 +376,10 @@ export const CodeConversion = () => {
         r.id === row.id
           ? {
               ...r,
-              batchNo: selectedBatchNo.batchNo
+              batchNo: selectedBatchNo.batchNo,
+              batchDate: selectedBatchNo.batchDate,
+              expDate: selectedBatchNo.expDate,
+              lotNo: selectedBatchNo.lotNo
             }
           : r
       )
@@ -425,7 +429,10 @@ export const CodeConversion = () => {
         r.id === row.id
           ? {
               ...r,
-              bin: selectedBin.bin
+              bin: selectedBin.bin,
+              binClass: selectedBin.binClass,
+              cellType: selectedBin.cellType,
+              core: selectedBin.core
             }
           : r
       )
@@ -716,22 +723,22 @@ export const CodeConversion = () => {
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
-      try {
-        const response = await apiCalls('put', `codeconversion/createUpdateCodeConversion`, saveFormData);
-        if (response.status === true) {
-          console.log('Response:', response);
-          handleClear();
-          getAllCodeConversions();
-          showToast('success', viewId ? 'Code Conversion In Updated Successfully' : 'Code Conversion In created successfully');
-        } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Code Conversion In creation failed');
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        showToast('error', error.message);
-      } finally {
-        setIsLoading(false);
-      }
+      // try {
+      //   const response = await apiCalls('put', `codeconversion/createUpdateCodeConversion`, saveFormData);
+      //   if (response.status === true) {
+      //     console.log('Response:', response);
+      //     handleClear();
+      //     getAllCodeConversions();
+      //     showToast('success', viewId ? 'Code Conversion In Updated Successfully' : 'Code Conversion In created successfully');
+      //   } else {
+      //     showToast('error', response.paramObjectsMap.errorMessage || 'Code Conversion In creation failed');
+      //   }
+      // } catch (error) {
+      //   console.error('Error:', error);
+      //   showToast('error', error.message);
+      // } finally {
+      //   setIsLoading(false);
+      // }
     } else {
       setFieldErrors(errors);
     }
@@ -953,6 +960,7 @@ export const CodeConversion = () => {
                                   <th className="table-header">C SKU</th>
                                   <th className="table-header">C Batch No *</th>
                                   <th className="table-header">C Bin *</th>
+                                  <th className="table-header">C ExpDate *</th>
                                   <th className="table-header">Remarks</th>
                                 </tr>
                               </thead>
@@ -1279,11 +1287,13 @@ export const CodeConversion = () => {
                                             >
                                               <option value="">--Select--</option>
                                               {cPartNoList.length > 0 ? (
-                                                cPartNoList.map((cpart) => (
-                                                  <option key={cpart.id} value={cpart.partno}>
-                                                    {cpart.partno}
-                                                  </option>
-                                                ))
+                                                cPartNoList
+                                                  .filter((cpart) => cpart.partno !== row.partNo)
+                                                  .map((cpart) => (
+                                                    <option key={cpart.id} value={cpart.partno}>
+                                                      {cpart.partno}
+                                                    </option>
+                                                  ))
                                               ) : (
                                                 <option disabled>No Data Found</option>
                                               )}
@@ -1397,6 +1407,19 @@ export const CodeConversion = () => {
                                               </div>
                                             )}
                                           </td>
+
+                                          <td className="border px-2 py-2">
+                                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                              <DatePicker
+                                                value={row.cexpDate ? dayjs(row.cexpDate, 'YYYY-MM-DD') : null}
+                                                slotProps={{
+                                                  textField: { size: 'small', clearable: true, style: { width: '200px' }, disabled: true } // Disable the DatePicker
+                                                }}
+                                                format="DD/MM/YYYY"
+                                              />
+                                            </LocalizationProvider>
+                                          </td>
+
                                           <td className="border px-2 py-2">
                                             <input
                                               type="text"

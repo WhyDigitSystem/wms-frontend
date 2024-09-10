@@ -216,12 +216,13 @@ export const Putaway = () => {
     status: '',
     supplier: '',
     supplierShortName: '',
-    warehouse: loginWarehouse
+    warehouse: loginWarehouse,
+    docDate: new Date()
   });
   const listViewColumns = [
     { accessorKey: 'status', header: 'Status', size: 140 },
-    { accessorKey: 'docId', header: 'Doc Id', size: 140 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'docId', header: 'Document No', size: 140 },
+    { accessorKey: 'docDate', header: 'Document Date', size: 140 },
     { accessorKey: 'grnNo', header: 'GRN No', size: 140 },
     { accessorKey: 'grnDate', header: 'GRN Date', size: 140 },
     { accessorKey: 'entryNo', header: 'Entry No', size: 140 },
@@ -320,7 +321,10 @@ export const Putaway = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setFormData({ docId: response.paramObjectsMap.PutAwayDocId });
+        setFormData((prevData) => ({
+          ...prevData,
+          docId: response.paramObjectsMap.PutAwayDocId
+        }));
       } else {
         console.error('API Error:', response);
       }
@@ -497,7 +501,7 @@ export const Putaway = () => {
 
         // Set the form data
         setFormData({
-          docDate: particularPutaway.docDate ? dayjs(particularPutaway.docDate) : dayjs(),
+          docDate: particularPutaway.docDate,
           grnNo: particularPutaway.grnNo,
           docId: particularPutaway.docId,
           grnDate: particularPutaway.grnDate,
@@ -751,7 +755,7 @@ export const Putaway = () => {
       carrier: '',
       client: loginClient,
       contact: '',
-      core: '',
+      core: 'Multi',
       createdBy: loginUserName,
       customer: loginCustomer,
       docDate: dayjs(),
@@ -765,7 +769,7 @@ export const Putaway = () => {
       lotNo: '',
       modeOfShipment: '',
       orgId: orgId,
-      status: '',
+      status: 'Edit',
       securityName: '',
       supplier: '',
       supplierShortName: '',
@@ -819,6 +823,7 @@ export const Putaway = () => {
       warehouse: loginWarehouse
     });
     getPutAwayDocId();
+    setEditId('');
   };
 
   const handleSave = async () => {
@@ -1021,7 +1026,7 @@ export const Putaway = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Doc Id"
+                  label="Document No"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -1036,15 +1041,12 @@ export const Putaway = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Doc Date"
-                      value={formData.docDate ? dayjs(formData.docDate, 'DD-MM-YYYY') : null}
-                      onChange={(date) => handleDateChange('docDate', date)}
+                      label="Document Date"
+                      value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
                       format="DD/MM/YYYY"
-                      error={fieldErrors.docDate}
-                      helperText={fieldErrors.docDate && 'Required'}
                       disabled
                     />
                   </LocalizationProvider>
@@ -1068,7 +1070,13 @@ export const Putaway = () => {
               ) : (
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.grnNo}>
-                    <InputLabel id="grnNo">Grn No *</InputLabel>
+                    <InputLabel id="grnNo">
+                      {
+                        <span>
+                          Grn No <span className="asterisk">*</span>
+                        </span>
+                      }
+                    </InputLabel>
                     <Select labelId="grnNo" name="grnNo" label="Grn No" value={formData.grnNo} onChange={handleInputChange}>
                       {grnList?.map((row) => (
                         <MenuItem key={row.id} value={row.docId}>
@@ -1309,7 +1317,13 @@ export const Putaway = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.binType}>
-                  <InputLabel id="binType-label">Bin Type *</InputLabel>
+                  <InputLabel id="binType-label">
+                    {
+                      <span>
+                        Bin Type <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="binType-label"
                     id="binType"
@@ -1329,7 +1343,13 @@ export const Putaway = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                  <InputLabel id="status">Status *</InputLabel>
+                  <InputLabel id="status">
+                    {
+                      <span>
+                        Status <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select labelId="status" id="status" name="status" label="Status" value={formData.status} onChange={handleInputChange}>
                     <MenuItem value="Edit">EDIT</MenuItem>
                     <MenuItem value="Confirm">CONFIRM</MenuItem>
