@@ -88,18 +88,18 @@ export const VasPutaway = () => {
   const [listViewData, setListViewData] = useState([]);
 
   const [lrNoDetailsTable, setLrNoDetailsTable] = useState([
-    // {
-    //   id: 1,
-    //   partNo: '',
-    //   partDescription: '',
-    //   grnNo: '',
-    //   invQty: '',
-    //   putAwayQty: '',
-    //   fromBin: '',
-    //   bin: '',
-    //   sku: '',
-    //   remarks: ''
-    // }
+    {
+      id: 1,
+      partNo: '',
+      partDescription: '',
+      grnNo: '',
+      invQty: '',
+      putAwayQty: '',
+      fromBin: '',
+      toBin: '',
+      sku: '',
+      remarks: ''
+    }
   ]);
 
   const handleAddRow = () => {
@@ -483,13 +483,11 @@ export const VasPutaway = () => {
     getVasPutawayDocId();
   };
 
-  const lrNoDetailsRefs = useRef([]);
-
-  useEffect(() => {
-    lrNoDetailsRefs.current = lrNoDetailsTable.map((_, i) => ({
-      toBin: lrNoDetailsRefs.current[i]?.toBin || React.createRef()
-    }));
-  }, [lrNoDetailsTable]);
+  const lrNoDetailsRefs = useRef(
+    lrNoDetailsTable.map(() => ({
+      toBin: React.createRef()
+    }))
+  );
 
   const handleSave = async () => {
     console.log('save');

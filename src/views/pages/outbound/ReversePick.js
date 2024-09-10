@@ -1218,7 +1218,7 @@ export const ReversePick = () => {
                   <>
                     <div className="row d-flex ml">
                       <div className="mb-1">
-                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                        {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
                         <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={getAllFillGrid} />
                       </div>
                       <div className="row mt-2">
