@@ -696,7 +696,7 @@ export const CycleCount = () => {
         r.id === row.id
           ? {
               ...r,
-              grnNo: selectedGrnNo.grnNo,
+              grnNo: selectedGrnNo ? selectedGrnNo.grnNo : '',
               grnDate: selectedGrnNo ? selectedGrnNo.grnDate : ''
             }
           : r
@@ -720,7 +720,7 @@ export const CycleCount = () => {
         r.id === row.id
           ? {
               ...r,
-              batchNo: selectedBatchNo.batch,
+              batchNo: selectedBatchNo ? selectedBatchNo.batch : '',
               batchDate: selectedBatchNo ? selectedBatchNo.batchDate : '',
               expDate: selectedBatchNo ? selectedBatchNo.expDate : ''
             }
@@ -731,7 +731,7 @@ export const CycleCount = () => {
       const newErrors = [...prev];
       newErrors[index] = {
         ...newErrors[index],
-        grnNo: !value ? 'GRN No is required' : ''
+        batchNo: !value ? 'Batch No is required' : ''
       };
       return newErrors;
     });
@@ -771,20 +771,23 @@ export const CycleCount = () => {
   };
 
   const getAvailableBins = (currentRowId, row) => {
-    // Get the partNo and grnNo of the current row
+    // Find the current row using its ID
     const currentRow = detailTableData.find((row) => row.id === currentRowId);
+
     if (!currentRow) {
-      return row.rowBinList; // If currentRowId is not found, return all bins
+      // If the row is not found, return all bins in the rowBinList
+      return row.rowBinList;
     }
 
     const { partNo, grnNo, batchNo } = currentRow;
 
-    // Filter out bins that are already selected in other rows with the same partNo and grnNo
+    // Get all bins already selected in other rows with the same partNo, grnNo, and batchNo
     const selectedBins = detailTableData
       .filter((row) => row.id !== currentRowId && row.partNo === partNo && row.grnNo === grnNo && row.batchNo === batchNo)
       .map((row) => row.bin);
 
-    return binList.filter((bin) => !selectedBins.includes(bin.bin));
+    // Return only the bins that are not selected by other rows
+    return row.rowBinList.filter((bin) => !selectedBins.includes(bin.bin));
   };
 
   const handleFromQtyChange = (row, index, event) => {
@@ -1180,6 +1183,12 @@ export const CycleCount = () => {
                                               >
                                                 <option value="">-- Select --</option>
                                                 {Array.isArray(row.rowBatchNoList) &&
+                                                  row.rowBatchNoList.map((g, idx) => (
+                                                    <option key={g.batch} value={g.batch}>
+                                                      {g.batch}
+                                                    </option>
+                                                  ))}
+                                                {/* {Array.isArray(row.rowBatchNoList) &&
                                                   row.rowBatchNoList.map(
                                                     (g, idx) =>
                                                       g &&
@@ -1188,7 +1197,7 @@ export const CycleCount = () => {
                                                           {g.batch}
                                                         </option>
                                                       )
-                                                  )}
+                                                  )} */}
                                                 {batchNoList?.map((batch, index) => (
                                                   <option key={index} value={batch.batch}>
                                                     {batch.batch}
@@ -1201,7 +1210,7 @@ export const CycleCount = () => {
                                                 </div>
                                               )}
                                             </td>
-                                            <td className="border px-2 py-2">
+                                            {/* <td className="border px-2 py-2">
                                               <select
                                                 value={row.bin}
                                                 style={{ width: '200px' }}
@@ -1211,6 +1220,36 @@ export const CycleCount = () => {
                                                 <option value="">--Select--</option>
                                                 {Array.isArray(row.rowBinList) && row.rowBinList.length > 0 ? (
                                                   row.rowBinList.map((g) =>
+                                                    g && g.bin ? (
+                                                      <option key={g.bin} value={g.bin}>
+                                                        {g.bin}
+                                                      </option>
+                                                    ) : null
+                                                  )
+                                                ) : (
+                                                  <option value="" disabled>
+                                                    No bins available
+                                                  </option>
+                                                )}
+                                              </select>
+                                              {detailTableErrors[index]?.bin && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {detailTableErrors[index].bin}
+                                                </div>
+                                              )}
+                                            </td> */}
+
+                                            <td className="border px-2 py-2">
+                                              <select
+                                                value={row.bin}
+                                                style={{ width: '200px' }}
+                                                onChange={(e) => handleBinChange(row, index, e)}
+                                                className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
+                                              >
+                                                <option value="">--Select--</option>
+                                                {Array.isArray(row.rowBinList) && row.rowBinList.length > 0 ? (
+                                                  // Use getAvailableBins to filter bins
+                                                  getAvailableBins(row.id, row).map((g) =>
                                                     g && g.bin ? (
                                                       <option key={g.bin} value={g.bin}>
                                                         {g.bin}
@@ -1406,39 +1445,20 @@ export const CycleCount = () => {
                         <table className="table table-bordered ">
                           <thead>
                             <tr style={{ backgroundColor: '#673AB7' }}>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                              <th className="table-header">
                                 <Checkbox checked={selectAll} onChange={handleSelectAll} />
                               </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                Part No
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                Part Desc
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                SKU
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                GRN No
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                Batch No
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                Bin
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                Bin Type
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                Core
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                Status
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                Avl QTY
-                              </th>
+                              <th className="table-header">S.No</th>
+                              <th className="table-header">Part No</th>
+                              <th className="table-header">Part Desc</th>
+                              <th className="table-header">SKU</th>
+                              <th className="table-header">GRN No</th>
+                              <th className="table-header">Batch No</th>
+                              <th className="table-header">Bin</th>
+                              <th className="table-header">Bin Type</th>
+                              <th className="table-header">Core</th>
+                              <th className="table-header">Status</th>
+                              <th className="table-header">Avl QTY</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1454,33 +1474,36 @@ export const CycleCount = () => {
                                   />
                                 </td>
                                 <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                  {index + 1}
+                                </td>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.partNo}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.partDesc}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.sku}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.grnNo}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.batchNo}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.bin}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.binType}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.core}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.status}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.avlQty}
                                 </td>
                               </tr>

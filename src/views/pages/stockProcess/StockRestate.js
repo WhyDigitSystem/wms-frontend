@@ -1546,45 +1546,21 @@ export const StockRestate = () => {
                         <table className="table table-bordered ">
                           <thead>
                             <tr style={{ backgroundColor: '#673AB7' }}>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                              <th className="table-header">
                                 <Checkbox checked={selectAll} onChange={handleSelectAll} />
                               </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                S.No
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                From Bin
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                From Bin Type
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                Part No
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                Part Desc
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                SKU
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                GRN No
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                Batch No
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                To Bin
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                To Bin Type
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                From QTY
-                              </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                To QTY
-                              </th>
+                              <th className="table-header">S.No</th>
+                              <th className="table-header">From Bin</th>
+                              <th className="table-header">From Bin Type</th>
+                              <th className="table-header">Part No</th>
+                              <th className="table-header">Part Desc</th>
+                              <th className="table-header">SKU</th>
+                              <th className="table-header">GRN No</th>
+                              <th className="table-header">Batch No</th>
+                              <th className="table-header">To Bin</th>
+                              <th className="table-header">To Bin Type</th>
+                              <th className="table-header">From QTY</th>
+                              <th className="table-header">To QTY</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1599,40 +1575,40 @@ export const StockRestate = () => {
                                     }}
                                   />
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {index + 1}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.fromBin}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.fromBinType}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.partNo}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.partDesc}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.sku}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.grnNo}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.batchNo}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.toBin}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.toBinType}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.fromQty}
                                 </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.toQty}
                                 </td>
                               </tr>

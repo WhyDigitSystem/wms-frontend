@@ -1515,14 +1515,14 @@ export const LocationMovement = () => {
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                       S.No
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center">Bin</th>
-                                    <th className="px-2 py-2 text-white text-center">Part No</th>
-                                    <th className="px-2 py-2 text-white text-center">Part Description</th>
-                                    <th className="px-2 py-2 text-white text-center">SKU</th>
-                                    <th className="px-2 py-2 text-white text-center">GRN No</th>
-                                    <th className="px-2 py-2 text-white text-center">GRN Date</th>
-                                    <th className="px-2 py-2 text-white text-center">Batch No</th>
-                                    <th className="px-2 py-2 text-white text-center">From Qty</th>
+                                    <th className="table-header">Bin</th>
+                                    <th className="table-header">Part No</th>
+                                    <th className="table-header">Part Description</th>
+                                    <th className="table-header">SKU</th>
+                                    <th className="table-header">GRN No</th>
+                                    <th className="table-header">GRN Date</th>
+                                    <th className="table-header">Batch No</th>
+                                    <th className="table-header">From Qty</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1537,46 +1537,30 @@ export const LocationMovement = () => {
                                           }}
                                         />
                                       </td>
-                                      <td className="text-center">
-                                        <div className="pt-1">{index + 1}</div>
+                                      <td className="text-center">{index + 1}</td>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.fromBin || ''}
                                       </td>
-                                      <td className="border p-0">
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>
-                                          {row.fromBin || ''}
-                                        </div>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.partNo || ''}
                                       </td>
-                                      <td className="border p-0">
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>
-                                          {row.partNo || ''}
-                                        </div>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.partDesc || ''}
                                       </td>
-                                      <td className="border p-0">
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>
-                                          {row.partDesc || ''}
-                                        </div>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.sku || ''}
                                       </td>
-                                      <td className="border p-0">
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.sku || ''}</div>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.grnNo || ''}
                                       </td>
-                                      <td className="border p-0">
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>
-                                          {row.grnNo || ''}
-                                        </div>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.grnDate || ''}
                                       </td>
-                                      <td className="border p-0">
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>
-                                          {row.grnDate || ''}
-                                        </div>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.batchNo || ''}
                                       </td>
-                                      <td className="border p-0">
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>
-                                          {row.batchNo || ''}
-                                        </div>
-                                      </td>
-                                      <td className="border p-0">
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>
-                                          {row.avlQty || ''}
-                                        </div>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.avlQty || ''}
                                       </td>
                                     </tr>
                                   ))}
