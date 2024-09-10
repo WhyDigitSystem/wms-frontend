@@ -1,48 +1,29 @@
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import {
-  FormHelperText,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Tooltip,
-  FormControlLabel,
-  Checkbox
-} from '@mui/material';
-import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import axios from 'axios';
-import { useEffect, useRef, useState } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import Box from '@mui/material/Box';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import BrowserUpdatedIcon from '@mui/icons-material/BrowserUpdated';
-import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
-import GridOnIcon from '@mui/icons-material/GridOn';
-import { getAllActiveLocationTypes, getAllActivePartDetails } from 'utils/CommonFunctions';
-import apiCalls from 'apicall';
-import dayjs from 'dayjs';
+import FormControl from '@mui/material/FormControl';
+import Paper from '@mui/material/Paper';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
+import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers';
-import Paper from '@mui/material/Paper';
+import apiCalls from 'apicall';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
 import Draggable from 'react-draggable';
+import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/ActionButton';
+import { getAllActivePartDetails } from 'utils/CommonFunctions';
+import { showToast } from 'utils/toast-component';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -1428,9 +1409,6 @@ export const CycleCount = () => {
                               <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                                 <Checkbox checked={selectAll} onChange={handleSelectAll} />
                               </th>
-                              <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                S.No
-                              </th>
                               <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
                                 Part No
                               </th>
@@ -1456,6 +1434,9 @@ export const CycleCount = () => {
                                 Core
                               </th>
                               <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                Status
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
                                 Avl QTY
                               </th>
                             </tr>
@@ -1471,9 +1452,6 @@ export const CycleCount = () => {
                                       setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
                                     }}
                                   />
-                                </td>
-                                <td className="border p-2 text-center mt-2" style={{ width: '68px' }}>
-                                  {index + 1}
                                 </td>
                                 <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                   {row.partNo}
@@ -1498,6 +1476,9 @@ export const CycleCount = () => {
                                 </td>
                                 <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
                                   {row.core}
+                                </td>
+                                <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
+                                  {row.status}
                                 </td>
                                 <td className="border p-2 text-center mt-2" style={{ width: '200px' }}>
                                   {row.avlQty}

@@ -21,7 +21,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
 import Draggable from 'react-draggable';
 import 'react-toastify/dist/ReactToastify.css';
@@ -29,7 +29,6 @@ import ActionButton from 'utils/ActionButton';
 import { getAllActiveGroups } from 'utils/CommonFunctions';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import React, { useRef } from 'react';
 
 function PaperComponent(props) {
   return (
@@ -76,7 +75,6 @@ export const ReversePick = () => {
     pickRequestDocDate: '',
     boAmendment: 'No',
     buyerOrderDate: null,
-    revisedQty: '',
     pickRequestDocId: ''
   });
 
@@ -86,50 +84,28 @@ export const ReversePick = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [itemTableData, setItemTableData] = useState([
-    {
-      availQty: '',
-      batchDate: '',
-      batchNo: '',
-      binClass: '',
-      binType: '',
-      cellType: '',
-      clientCode: '',
-      core: '',
-      bin: '',
-      orderQty: '',
-      partDesc: '',
-      partNo: '',
-      pcKey: '',
-      pickQty: '',
-      remainQty: '',
-      sku: '',
-      ssku: '',
-      status: '',
-      revisedQty: ''
-    }
+    // {
+    //   availQty: '',
+    //   batchDate: '',
+    //   batchNo: '',
+    //   binClass: '',
+    //   binType: '',
+    //   cellType: '',
+    //   clientCode: '',
+    //   core: '',
+    //   bin: '',
+    //   orderQty: '',
+    //   partDesc: '',
+    //   partNo: '',
+    //   pcKey: '',
+    //   pickQty: '',
+    //   remainQty: '',
+    //   sku: '',
+    //   ssku: '',
+    //   status: '',
+    //   revisedQty: ''
+    // }
   ]);
-
-  const lrNoDetailsRefs = useRef(
-    itemTableData.map(() => ({
-      partNo: React.createRef(),
-      bin: React.createRef(),
-      batchNo: React.createRef()
-    }))
-  );
-
-  useEffect(() => {
-    // If the length of the table changes, update the refs
-    if (lrNoDetailsRefs.current.length !== itemTableData.length) {
-      lrNoDetailsRefs.current = itemTableData.map(
-        (_, index) =>
-          lrNoDetailsRefs.current[index] || {
-            partNo: React.createRef(),
-            bin: React.createRef(),
-            batchNo: React.createRef()
-          }
-      );
-    }
-  }, [itemTableData.length]);
 
   const handleAddRow = () => {
     const newRow = {
@@ -378,6 +354,7 @@ export const ReversePick = () => {
             binType: detail.binType || '',
             cellType: detail.cellType || '',
             clientCode: detail.clientCode || '',
+            expDate: detail.expDate || '',
             core: detail.core || '',
             bin: detail.bin || '',
             orderQty: detail.orderQty || '',
@@ -385,7 +362,9 @@ export const ReversePick = () => {
             partNo: detail.partNo || '',
             pcKey: detail.pcKey || '',
             pickQty: detail.pickQty || '',
-            revisedQty: detail.revisedQty,
+            grnDate: detail.grnDate || '',
+            grnNo: detail.grnNo || '',
+            revisedQty: detail.revisedQty || '',
             sku: detail.sku || '',
             qcFlag: detail.qcFlag
           }))
@@ -448,15 +427,50 @@ export const ReversePick = () => {
   //   }
   // };
 
+  const handleInputChangeGrid = (e, index, fieldName) => {
+    const { value } = e.target;
+
+    // Ensure the index and fieldName are provided for table fields like revisedQty
+    if (typeof index === 'number' && fieldName) {
+      setItemTableData((prevData) => {
+        const updatedData = [...prevData];
+        updatedData[index][fieldName] = value; // Update the specific field for the correct row
+        return updatedData;
+      });
+
+      // Optionally: handle field validation here if needed
+      if (value === '' || isNaN(value)) {
+        setItemTableErrors((prevErrors) => {
+          const updatedErrors = [...prevErrors];
+          updatedErrors[index] = { ...updatedErrors[index], [fieldName]: 'Invalid quantity' };
+          return updatedErrors;
+        });
+      } else {
+        setItemTableErrors((prevErrors) => {
+          const updatedErrors = [...prevErrors];
+          updatedErrors[index] = { ...updatedErrors[index], [fieldName]: '' }; // Clear error if valid
+          return updatedErrors;
+        });
+      }
+    } else {
+      // Handle regular form fields
+      setFormData((prevData) => ({
+        ...prevData,
+        [e.target.name]: value.toUpperCase()
+      }));
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     const cursorPosition = e.target.selectionStart; // Capture cursor position
 
     // Check if the value is a string before applying toUpperCase
     let processedValue = value;
+    // let processedValue = name !== 'status' && typeof value === 'string' ? value.toUpperCase() : value;
 
     // Convert value to uppercase for fields other than 'boAmendment'
-    if (name !== 'boAmendment' && typeof value === 'string') {
+    if (typeof value === 'string' && name !== 'boAmendment' && name !== 'status') {
       processedValue = value.toUpperCase();
     }
 
@@ -592,7 +606,6 @@ export const ReversePick = () => {
 
   const handleSave = async () => {
     const errors = {};
-    let firstInvalidFieldRef = null;
 
     if (!formData.pickRequestDocId) {
       errors.pickRequestDocId = 'Pick Request Id is required';
@@ -608,46 +621,28 @@ export const ReversePick = () => {
 
     setFieldErrors(errors);
 
-    let itemTableDataValid = true;
-    if (!itemTableData || !Array.isArray(itemTableData) || itemTableData.length === 0) {
-      itemTableDataValid = false;
-      setItemTableErrors([{ general: 'Table Data is required' }]);
-    } else {
-      const newTableErrors = itemTableData.map((row, index) => {
-        const rowErrors = {};
+    // let itemTableDataValid = true;
+    // if (!itemTableData || !Array.isArray(itemTableData) || itemTableData.length === 0) {
+    //   itemTableDataValid = false;
+    //   setItemTableErrors([{ general: 'Table Data is required' }]);
+    // } else {
+    //   const newTableErrors = itemTableData.map((row, index) => {
+    //     const rowErrors = {};
 
-        if (!row.partNo) {
-          rowErrors.partNo = 'Part No is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
-        }
-        if (!row.grnNo) rowErrors.grnNo = 'Grn No is required';
-        if (!row.batchNo) {
-          rowErrors.batchNo = 'Batch No is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
-        }
-        if (!row.bin) {
-          rowErrors.bin = 'Bin is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
-        }
+    //     if (!row.partNo) rowErrors.partNo = 'Part No is required';
+    //     if (!row.grnNo) rowErrors.grnNo = 'Grn No is required';
+    //     if (!row.batchNo) rowErrors.batchNo = 'Batch No is required';
+    //     if (!row.bin) rowErrors.bin = 'Bin is required';
 
-        if (Object.keys(rowErrors).length > 0) itemTableDataValid = false;
+    //     if (Object.keys(rowErrors).length > 0) itemTableDataValid = false;
 
-        return rowErrors;
-      });
+    //     return rowErrors;
+    //   });
 
-      if (!itemTableDataValid || Object.keys(errors).length > 0) {
-        // Focus on the first invalid field
-        if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
-          firstInvalidFieldRef.current.focus();
-        }
-      } else {
-        // Proceed with form submission
-      }
+    //   setItemTableErrors(newTableErrors);
+    // }
 
-      setItemTableErrors(newTableErrors);
-    }
-
-    if (Object.keys(errors).length === 0 && itemTableDataValid) {
+    if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       const itemVo = itemTableData.map((row) => ({
         availQty: row.availQty,
@@ -671,7 +666,7 @@ export const ReversePick = () => {
         status: row.status,
         expDate: row.expDate,
         grnDate: row.grnDate,
-        revisedQty: parseInt(formData.revisedQty)
+        revisedQty: parseInt(row.revisedQty)
       }));
 
       const saveFormData = {
@@ -718,7 +713,7 @@ export const ReversePick = () => {
           handleClear();
           showToast('success', editId ? ' Reverse Pick Updated Successfully' : 'Reverse Pick created successfully');
           setIsLoading(false);
-          // getAllItems();
+          getAllPickRequest();
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Reverse Pick creation failed');
           setIsLoading(false);
@@ -1164,8 +1159,8 @@ export const ReversePick = () => {
                     value={formData.status}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="Edit">Edit</MenuItem>
-                    <MenuItem value="Confirm">Confirm</MenuItem>
+                    <MenuItem value="Edit">EDIT</MenuItem>
+                    <MenuItem value="Confirm">CONFIRM</MenuItem>
                   </Select>
                   {fieldErrors.status && <FormHelperText error>{fieldErrors.status}</FormHelperText>}
                 </FormControl>
@@ -1296,7 +1291,6 @@ export const ReversePick = () => {
                                       {/* Part Code */}
                                       <td className="border px-2 py-2">
                                         <input
-                                          ref={lrNoDetailsRefs.current[index].partNo}
                                           type="text"
                                           style={{ width: '100px' }}
                                           value={row.partNo}
@@ -1341,7 +1335,6 @@ export const ReversePick = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          ref={lrNoDetailsRefs.current[index].bin}
                                           type="text"
                                           style={{ width: '100px' }}
                                           value={row.bin}
@@ -1376,7 +1369,6 @@ export const ReversePick = () => {
                                       {/* SKU */}
                                       <td className="border px-2 py-2">
                                         <input
-                                          ref={lrNoDetailsRefs.current[index].batchNo}
                                           type="text"
                                           value={row.batchNo}
                                           style={{ width: '100px' }}
@@ -1444,9 +1436,9 @@ export const ReversePick = () => {
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
-                                          value={row.revisedQty}
+                                          value={row.revisedQty || ''}
                                           style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'revisedQty')}
+                                          onChange={(e) => handleInputChangeGrid(e, index, 'revisedQty')}
                                           className={itemTableErrors[index]?.revisedQty ? 'error form-control' : 'form-control'}
                                         />
                                         {itemTableErrors[index]?.revisedQty && (

@@ -1,48 +1,32 @@
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import {
-  FormHelperText,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Tooltip,
-  FormControlLabel,
-  Checkbox
-} from '@mui/material';
-import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import axios from 'axios';
-import { useEffect, useRef, useState } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormHelperText } from '@mui/material';
+import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
+import Paper from '@mui/material/Paper';
 import Select from '@mui/material/Select';
-import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import BrowserUpdatedIcon from '@mui/icons-material/BrowserUpdated';
-import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
-import GridOnIcon from '@mui/icons-material/GridOn';
-import { getAllActiveLocationTypes } from 'utils/CommonFunctions';
-import apiCalls from 'apicall';
-import dayjs from 'dayjs';
+import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
+import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers';
-import Paper from '@mui/material/Paper';
+import apiCalls from 'apicall';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
 import Draggable from 'react-draggable';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/ActionButton';
+import { showToast } from 'utils/toast-component';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -70,7 +54,7 @@ export const StockRestate = () => {
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
-  const [loginFinYear, setLoginFinYear] = useState(2024);
+  const [loginFinYear, setLoginFinYear] = useState(localStorage.getItem('finYear'));
   const [selectAll, setSelectAll] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -165,7 +149,7 @@ export const StockRestate = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockRestate/getFillGridDetailsForStockRestate?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&tranferFromFlag=${formData.transferFromFlag}&tranferToFlag=${formData.transferToFlag}&warehouse=CHENNAI WAREHOUSE`
+        `stockRestate/getFillGridDetailsForStockRestate?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&tranferFromFlag=${formData.transferFromFlag}&tranferToFlag=${formData.transferToFlag}&warehouse=${loginWarehouse}`
       );
       console.log('THE VAS PICK GRID DETAILS IS:', response);
       if (response.status === true) {
@@ -222,7 +206,7 @@ export const StockRestate = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockRestate/getFromBinDetailsForStockRestate?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&tranferFromFlag=${selectedTransferFromFlag}&warehouse=CHENNAI%20WAREHOUSE`
+        `stockRestate/getFromBinDetailsForStockRestate?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&tranferFromFlag=${selectedTransferFromFlag}&warehouse=${loginWarehouse}`
       );
       console.log('THE FROM BIN LIST IS:', response);
       if (response.status === true) {
@@ -236,7 +220,7 @@ export const StockRestate = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockRestate/getPartNoDetailsForStockRestate?branchCode=${loginBranchCode}&client=${loginClient}&fromBin=${selectedFromBin}&orgId=${orgId}&tranferFromFlag=${selectedTransferFromFlag}&warehouse=CHENNAI%20WAREHOUSE`
+        `stockRestate/getPartNoDetailsForStockRestate?branchCode=${loginBranchCode}&client=${loginClient}&fromBin=${selectedFromBin}&orgId=${orgId}&tranferFromFlag=${selectedTransferFromFlag}&warehouse=${loginWarehouse}`
       );
       console.log('THE FROM BIN LIST IS:', response);
       if (response.status === true) {
@@ -260,7 +244,7 @@ export const StockRestate = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockRestate/getGrnNoDetailsForStockRestate?branchCode=${loginBranchCode}&client=${loginClient}&fromBin=${selectedRowFromBin}&orgId=${orgId}&partNo=${selectedRowPartNo}&tranferFromFlag=${formData.transferFromFlag}&warehouse=CHENNAI%20WAREHOUSE`
+        `stockRestate/getGrnNoDetailsForStockRestate?branchCode=${loginBranchCode}&client=${loginClient}&fromBin=${selectedRowFromBin}&orgId=${orgId}&partNo=${selectedRowPartNo}&tranferFromFlag=${formData.transferFromFlag}&warehouse=${loginWarehouse}`
       );
       console.log('THE FROM BIN LIST IS:', response);
       if (response.status === true) {
@@ -274,7 +258,7 @@ export const StockRestate = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockRestate/getbatchNoDetailsForStockRestate?branchCode=${loginBranchCode}&client=${loginClient}&fromBin=${selectedFromBin}&grnNo=${selectedGrnNo}&orgId=${orgId}&partNo=${selectedPartNo}&tranferFromFlag=${formData.transferFromFlag}&warehouse=CHENNAI%20WAREHOUSE`
+        `stockRestate/getbatchNoDetailsForStockRestate?branchCode=${loginBranchCode}&client=${loginClient}&fromBin=${selectedFromBin}&grnNo=${selectedGrnNo}&orgId=${orgId}&partNo=${selectedPartNo}&tranferFromFlag=${formData.transferFromFlag}&warehouse=${loginWarehouse}`
       );
       console.log('THE FROM BIN LIST IS:', response);
       if (response.status === true) {
@@ -288,7 +272,7 @@ export const StockRestate = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockRestate/getToBinDetails?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&tranferFromFlag=${selectedTransferFromFlag}&warehouse=CHENNAI%20WAREHOUSE`
+        `stockRestate/getToBinDetails?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&tranferFromFlag=${selectedTransferFromFlag}&warehouse=${loginWarehouse}`
       );
       console.log('THE TO BIN LIST ARE:', response);
       if (response.status === true) {
@@ -302,7 +286,7 @@ export const StockRestate = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockRestate/getFromQtyForStockRestate?batchNo=${selectedBatchNo}&branchCode=${loginBranchCode}&client=${loginClient}&fromBin=${selectedFromBin}&grnNo=${selectedGrnNo}&orgId=${orgId}&partNo=${selectedPartNo}&tranferFromFlag=${formData.transferFromFlag}&warehouse=CHENNAI%20WAREHOUSE`
+        `stockRestate/getFromQtyForStockRestate?batchNo=${selectedBatchNo}&branchCode=${loginBranchCode}&client=${loginClient}&fromBin=${selectedFromBin}&grnNo=${selectedGrnNo}&orgId=${orgId}&partNo=${selectedPartNo}&tranferFromFlag=${formData.transferFromFlag}&warehouse=${loginWarehouse}`
       );
       console.log('THE ROW. TO BIN IS IS:', selectedPartNo);
 
@@ -608,9 +592,6 @@ export const StockRestate = () => {
     }
     if (!formData.transferTo) {
       errors.transferTo = 'Transfer To is required';
-    }
-    if (!formData.entryNo) {
-      errors.entryNo = 'Entry No is required';
     }
 
     let detailTableDataValid = true;
@@ -1208,11 +1189,7 @@ export const StockRestate = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  label={
-                    <span>
-                      Entry No <span className="asterisk">*</span>
-                    </span>
-                  }
+                  label={<span>Entry No</span>}
                   variant="outlined"
                   size="small"
                   fullWidth

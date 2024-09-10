@@ -264,8 +264,9 @@ export const LocationMovement = () => {
             id: row.id,
             fromBin: row.bin,
             fromBinClass: row.binClass,
-            fromBinType: row.fromBinType,
+            fromBinType: row.binType,
             fromCellType: row.cellType,
+            fromCore: row.core,
             partNo: row.partNo,
             partDesc: row.partDesc,
             sku: row.sku,
@@ -575,7 +576,8 @@ export const LocationMovement = () => {
               toBin: selectedToBin.toBin,
               toBinType: selectedToBin ? selectedToBin.toBinType : '',
               toBinClass: selectedToBin ? selectedToBin.toBinClass : '',
-              toCellType: selectedToBin ? selectedToBin.toCellType : ''
+              toCellType: selectedToBin ? selectedToBin.toCellType : '',
+              toCore: selectedToBin ? selectedToBin.toCore : ''
               // toCore: selectedToBin ? selectedToBin.toCore : ''
             }
           : r
@@ -705,11 +707,16 @@ export const LocationMovement = () => {
           particularLocationMovement.locationMovementDetailsVO.map((detail) => ({
             id: detail.id,
             fromBin: detail.bin || '',
+            fromBinClass: detail.binClass,
+            fromBinType: detail.fromBinType,
+            fromCellType: detail.cellType,
+            fromCore: detail.core,
+            expDate: detail.expDate,
+            partNo: detail.partNo,
             partNo: detail.partNo || '',
             partDesc: detail.partDesc || '',
             batchNo: detail.batchNo || '',
             batchDate: detail.batchDate || '',
-            lotNo: detail.lotNo || '', // Corrected from lotNo to lotNo
             grnNo: detail.grnNo || '',
             grnDate: detail.grnDate || '',
             sku: detail.sku || '',
@@ -717,6 +724,7 @@ export const LocationMovement = () => {
             toQty: detail.toQty || '',
             remainingQty: detail.remainingQty || '',
             toBin: detail.toBin,
+            toCellType: detail.toCellType,
             toBinType: detail.toBinType,
             remainQty: detail.remainingQty
           }))
@@ -957,6 +965,11 @@ export const LocationMovement = () => {
       setIsLoading(true);
       const childVO = childTableData.map((row) => ({
         fromBin: row.fromBin,
+        fromBinClass: row.fromBinClass,
+        fromBinType: row.fromBinType,
+        fromCellType: row.fromCellType,
+        fromCore: row.fromCore,
+        toCore: row.toCore,
         partNo: row.partNo,
         partDesc: row.partDesc,
         batchNo: row.batchNo,
@@ -968,6 +981,7 @@ export const LocationMovement = () => {
         ssku: row.sku,
         fromQty: parseInt(row.avlQty),
         // qty: parseInt(row.qty),
+        expDate: row.expDate,
         toBin: row.toBin,
         binClass: row.binClass,
         binType: row.binType,
@@ -1508,7 +1522,6 @@ export const LocationMovement = () => {
                                     <th className="px-2 py-2 text-white text-center">GRN No</th>
                                     <th className="px-2 py-2 text-white text-center">GRN Date</th>
                                     <th className="px-2 py-2 text-white text-center">Batch No</th>
-                                    <th className="px-2 py-2 text-white text-center">Lot No</th>
                                     <th className="px-2 py-2 text-white text-center">From Qty</th>
                                   </tr>
                                 </thead>

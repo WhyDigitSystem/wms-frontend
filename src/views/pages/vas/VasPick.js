@@ -51,8 +51,7 @@ export const VasPick = () => {
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
-  // const [loginFinYear, setLoginFinYear] = useState(localStorage.getItem('finYear'));
-  const [loginFinYear, setLoginFinYear] = useState('2024');
+  const [loginFinYear, setLoginFinYear] = useState(localStorage.getItem('finYear'));
   const [pickBinTypeList, setPickBinTypeList] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -235,6 +234,7 @@ export const VasPick = () => {
           docDate: particularVasPick.docDate,
           pickBinType: particularVasPick.picBin,
           stockState: particularVasPick.stockState,
+          stockStateFlag: particularVasPick.stateStatus,
           status: particularVasPick.status
         });
         setVasPickGridTableData(
@@ -253,9 +253,9 @@ export const VasPick = () => {
             binClass: row.binClass,
             core: row.core,
             expDate: row.expDate,
-            qcFlag: row.qcflag,
+            qcFlag: row.qcFlag,
             pickQty: row.picQty,
-            cellType: row.cell
+            cellType: row.cellType
           }))
         );
       } else {
@@ -453,7 +453,7 @@ export const VasPick = () => {
         branchCode: loginBranchCode,
         client: loginClient,
         customer: loginCustomer,
-        finYear: '2024',
+        finYear: loginFinYear,
         warehouse: loginWarehouse,
         vasPickDetailsDTO: gridVo,
         createdBy: loginUserName

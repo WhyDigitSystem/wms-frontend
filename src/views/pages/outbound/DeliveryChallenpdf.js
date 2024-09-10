@@ -104,7 +104,7 @@ const GeneratePdfDeliveryChallanpdf = ({ row, callBackFunction }) => {
           >
             <div>
               <div>
-                <strong>HENSEL ELECTRIC INDIA </strong>
+                <strong>{row.customer}</strong>
                 <p>GH</p>
                 {/* {row.customer} */}
               </div>
@@ -112,20 +112,20 @@ const GeneratePdfDeliveryChallanpdf = ({ row, callBackFunction }) => {
             <div style={{ textAlign: 'left' }}>
               <div>
                 <strong>DOCID : </strong>
-                <span>CCUW/19/HEDC/000527</span>
+                <span>{row.docId}</span>
                 {/* {row.buyerRefNo} */}
               </div>
               <div>
                 <strong>DOCDATE : </strong>
-                <span>20/03/2020</span>
+                <span>{row.docDate}</span>
                 {/* {row.buyerOrderNo} */}
               </div>
               <div>
                 <strong>BUYERORDERNO:</strong>
-                <span>HWK/19-20/0532</span>
+                <span>{row.buyerOrderNo}</span>
               </div>
               <div>
-                <strong>REFNO :</strong> <span>CCUW/19/HEPR/000527</span>
+                <strong>REFNO :</strong> <span>{row.deliveryChallanDetailsVO[0].pickRequestNo}</span>
               </div>
             </div>
           </div>
@@ -141,7 +141,7 @@ const GeneratePdfDeliveryChallanpdf = ({ row, callBackFunction }) => {
           >
             <div>
               <div>
-                <strong>VEGNESH </strong>
+                <strong>{row.buyer} </strong>
                 {/* {row.docDate} */}
                 <p>VEGNESH ENTERPRISES</p>
               </div>
@@ -172,7 +172,7 @@ const GeneratePdfDeliveryChallanpdf = ({ row, callBackFunction }) => {
           >
             <thead>
               <tr style={{ backgroundColor: '#673ab7', color: '#fff' }}>
-                {/* <th style={{ border: '1px solid #000000', padding: '10px' }}>Sl.</th> */}
+                <th style={{ border: '1px solid #000000', padding: '10px' }}>Sl.</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>PartNO</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>PARTDESC</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>QTY</th>
@@ -185,41 +185,15 @@ const GeneratePdfDeliveryChallanpdf = ({ row, callBackFunction }) => {
               </tr>
             </thead>
             <tbody>
-              {row.vasPickDetailsVO?.map((item, index) => (
+              {row.deliveryChallanDetailsVO?.map((item, index) => (
                 <tr key={index} style={{ borderBottom: '1px solid #000000' }}>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{index + 1}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.partno}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.partdesc}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.partNo}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.partDescription}</td>
                   {/* <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.batch || ''}</td> */}
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.qty}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.rate}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.shippedQty}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.unitRate}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.amount}</td>
-                  <td
-                    style={{
-                      border: '1px solid #000000',
-                      padding: '10px',
-                      textAlign: 'center'
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: 'inline-block',
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '50%',
-                        border: '1px solid #333',
-                        textAlign: 'center',
-                        lineHeight: '20px',
-                        fontSize: '16px'
-                      }}
-                    >
-                      {/* Uncomment the line below to display a checked checkbox */}
-                      {/* ☑ */}
-                      {/* Uncomment the line below to display an unchecked checkbox */}
-                    </div>
-                  </td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.availQty}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}></td>
                 </tr>
               ))}
             </tbody>
@@ -234,7 +208,7 @@ const GeneratePdfDeliveryChallanpdf = ({ row, callBackFunction }) => {
               color: '#333'
             }}
           >
-            Total: {row.vasPickDetailsVO?.reduce((sum, item) => sum + item.pickQty, 0)}
+            Total: {row.deliveryChallanDetailsVO?.reduce((sum, item) => sum + item.amount, 0)}
           </div>
 
           <div

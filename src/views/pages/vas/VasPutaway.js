@@ -18,7 +18,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
@@ -64,7 +64,7 @@ export const VasPutaway = () => {
       invQty: '',
       putAwayQty: '',
       fromBin: '',
-      bin: '',
+      toBin: '',
       sku: '',
       remarks: ''
     }
@@ -88,36 +88,19 @@ export const VasPutaway = () => {
   const [listViewData, setListViewData] = useState([]);
 
   const [lrNoDetailsTable, setLrNoDetailsTable] = useState([
-    {
-      // id: 1,
-      partNo: '',
-      partDescription: '',
-      grnNo: '',
-      invQty: '',
-      putAwayQty: '',
-      fromBin: '',
-      bin: '',
-      sku: '',
-      remarks: ''
-    }
+    // {
+    //   id: 1,
+    //   partNo: '',
+    //   partDescription: '',
+    //   grnNo: '',
+    //   invQty: '',
+    //   putAwayQty: '',
+    //   fromBin: '',
+    //   bin: '',
+    //   sku: '',
+    //   remarks: ''
+    // }
   ]);
-
-  const lrNoDetailsRefs = useRef(
-    lrNoDetailsTable.map(() => ({
-      bin: React.createRef()
-    }))
-  );
-  useEffect(() => {
-    // If the length of the table changes, update the refs
-    if (lrNoDetailsRefs.current.length !== lrNoDetailsTable.length) {
-      lrNoDetailsRefs.current = lrNoDetailsTable.map(
-        (_, index) =>
-          lrNoDetailsRefs.current[index] || {
-            bin: React.createRef()
-          }
-      );
-    }
-  }, [lrNoDetailsTable.length]);
 
   const handleAddRow = () => {
     const newRow = {
@@ -130,7 +113,22 @@ export const VasPutaway = () => {
       fromBin: '',
       bin: '',
       sku: '',
-      remarks: ''
+      remarks: '',
+      batchNo: '',
+      batchDate: '',
+      binClass: '',
+      binType: '',
+      cellType: '',
+      clientCode: '',
+      core: '',
+      expDate: '',
+      qcFlag: '',
+      stockDate: '',
+      toBinType: '',
+      toBinClass: '',
+      toCellType: '',
+      toCore: '',
+      toBin: ''
     };
     setLrNoDetailsTable([...lrNoDetailsTable, newRow]);
     setLrNoDetailsError([
@@ -142,7 +140,7 @@ export const VasPutaway = () => {
         invQty: '',
         putAwayQty: '',
         fromBin: '',
-        bin: '',
+        toBin: '',
         sku: '',
         remarks: ''
       }
@@ -157,6 +155,7 @@ export const VasPutaway = () => {
     getVasPutawayDocId();
     getAllVasPickNo();
     getAllVasPutaway();
+    getToBinDetailsVasPutaway();
   }, []);
 
   const getVasPutawayDocId = async () => {
@@ -210,17 +209,9 @@ export const VasPutaway = () => {
         let totalGrnQty = 0;
         let totalPutawayQty = 0;
 
-        // Fetch bin list (dropdown values)
-        const binResponse = await apiCalls(
-          'get',
-          `vasputaway/getToBinDetailsVasPutaway?branchCode=${cbranch}&client=${client}&orgId=${orgId}&warehouse=${warehouse}`
-        );
-
-        const binList = binResponse.status ? binResponse.paramObjectsMap.ToBin : [];
-
         const data = response.paramObjectsMap.vasPutawayVO.map((item, index) => {
-          const invQty = parseFloat(item.picqty) || 0;
-          const putAwayQty = parseFloat(item.picqty) || 0;
+          const invQty = parseFloat(item.pickQty) || 0;
+          const putAwayQty = parseFloat(item.putawayQty) || 0;
 
           totalGrnQty += invQty;
           totalPutawayQty += putAwayQty;
@@ -230,12 +221,20 @@ export const VasPutaway = () => {
             partNo: item.partNo,
             partDescription: item.partDesc,
             grnNo: item.grnNo,
+            grnDate: item.grnDate,
             invQty: invQty,
             putAwayQty: putAwayQty,
             fromBin: item.bin,
-            bin: item.bin, // Default bin value
+            binClass: item.binClass,
+            binType: item.binType,
+            cellType: item.cellType,
+            core: item.core,
+            expDate: item.expDate,
+            batchNo: item.batchNo,
+            batchDate: item.batchDate,
+            qcFlag: item.qcFlag,
             sku: item.sku,
-            binList: binList // Include bin list in each row data
+            binList: tableBinList // Include bin list in each row data
           };
         });
 
@@ -252,6 +251,38 @@ export const VasPutaway = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
     }
+  };
+
+  const handleToBinChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedToBin = tableBinList.find((row) => row.bin === value);
+    console.log('selectedToBin', selectedToBin);
+    setLrNoDetailsTable((prev) => {
+      const updatedTable = prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              toBin: selectedToBin.bin,
+              toBinType: selectedToBin ? selectedToBin.binType : '',
+              toBinClass: selectedToBin ? selectedToBin.binClass : '',
+              toCellType: selectedToBin ? selectedToBin.cellType : '',
+              toCore: selectedToBin ? selectedToBin.core : ''
+            }
+          : r
+      );
+
+      // Trigger validation after table update
+      setLrNoDetailsError((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = {
+          ...newErrors[index],
+          toBin: !value ? 'Bin is required' : ''
+        };
+        return newErrors;
+      });
+
+      return updatedTable;
+    });
   };
 
   const getAllVasPutaway = async () => {
@@ -273,6 +304,25 @@ export const VasPutaway = () => {
     }
   };
 
+  const getToBinDetailsVasPutaway = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `vasputaway/getToBinDetailsVasPutaway?branchCode=${cbranch}&client=${client}&orgId=${orgId}&warehouse=${warehouse}`
+      );
+
+      console.log('API Response getToBinDetailsVasPutaway', response);
+
+      if (response.status === true) {
+        setTableBinList(response.paramObjectsMap.ToBin);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   const getVasPutawayById = async (row) => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);
@@ -284,14 +334,6 @@ export const VasPutaway = () => {
       if (response.status === true) {
         setListView(false);
         const particularVasPutaway = response.paramObjectsMap.vasPutawayVO;
-
-        // Fetch bin list (dropdown values) again if needed
-        const binResponse = await apiCalls(
-          'get',
-          `vasputaway/getToBinDetailsVasPutaway?branchCode=${cbranch}&client=${client}&orgId=${orgId}&warehouse=${warehouse}`
-        );
-
-        const binList = binResponse.status ? binResponse.paramObjectsMap.ToBin : [];
 
         console.log('THE PARTICULAR CUSTOMER IS:', particularVasPutaway);
         setVasPutAwayDocId(particularVasPutaway.docId);
@@ -309,13 +351,28 @@ export const VasPutaway = () => {
             partNo: detail.partNo,
             partDescription: detail.partDesc,
             grnNo: detail.grnNo,
+            grnDate: detail.grnDate,
             invQty: detail.invQty,
             putAwayQty: detail.putAwayQty,
             fromBin: detail.fromBin,
-            bin: detail.bin,
             sku: detail.sku,
             remarks: detail.remarks,
-            binList: binList // Add binList to each row
+            batchNo: detail.batchNo,
+            batchDate: detail.batchDate,
+            binClass: detail.fromBinClass,
+            binType: detail.fromBinType,
+            cellType: detail.fromCellType,
+            clientCode: detail.clientCode,
+            core: detail.fromCore,
+            expDate: detail.expDate,
+            qcFlag: detail.qcFlag,
+            stockDate: detail.stockDate,
+            toBinType: detail.toBinType,
+            toBinClass: detail.toBinClass,
+            toCellType: detail.toCellType,
+            toCore: detail.toCore,
+            binList: tableBinList,
+            toBin: detail.toBin
           }))
         );
       } else {
@@ -347,6 +404,8 @@ export const VasPutaway = () => {
 
   const handleInputChange = async (event) => {
     const { name, value, selectionStart, selectionEnd } = event.target;
+
+    const processedValue = name !== 'status' && typeof value === 'string' ? value.toUpperCase() : value;
 
     // Capture the cursor position before the update
     const cursorPosition = { start: selectionStart, end: selectionEnd };
@@ -424,7 +483,17 @@ export const VasPutaway = () => {
     getVasPutawayDocId();
   };
 
+  const lrNoDetailsRefs = useRef([]);
+
+  useEffect(() => {
+    lrNoDetailsRefs.current = lrNoDetailsTable.map((_, i) => ({
+      toBin: lrNoDetailsRefs.current[i]?.toBin || React.createRef()
+    }));
+  }, [lrNoDetailsTable]);
+
   const handleSave = async () => {
+    console.log('save');
+
     const errors = {};
     let firstInvalidFieldRef = null;
     if (!formData.vasPickNo) {
@@ -445,23 +514,18 @@ export const VasPutaway = () => {
     let lrNoDetailsTableValid = true;
     const newTableErrors = lrNoDetailsTable.map((row, index) => {
       const rowErrors = {};
-      if (!row.bin) {
-        rowErrors.bin = 'Bin is required';
+      if (!row.toBin) {
+        rowErrors.toBin = 'Bin is required';
         lrNoDetailsTableValid = false;
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].toBin;
       }
+      // if (!row.remarks) {
+      //   rowErrors.remarks = 'Remarks is required';
+      //   lrNoDetailsTableValid = false;
+      // }
 
       return rowErrors;
     });
-
-    if (!lrNoDetailsTableValid || Object.keys(errors).length > 0) {
-      // Focus on the first invalid field
-      if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
-        firstInvalidFieldRef.current.focus();
-      }
-    } else {
-      // Proceed with form submission
-    }
 
     setLrNoDetailsError(newTableErrors);
 
@@ -475,29 +539,35 @@ export const VasPutaway = () => {
     }
 
     setFieldErrors(errors);
-
+    console.log('save 2');
     if (Object.keys(errors).length === 0 && lrNoDetailsTableValid) {
+      console.log('save 3');
       setIsLoading(true);
       const lrNoDetailsVO = lrNoDetailsTable.map((row) => ({
         partNo: row.partNo,
         partDesc: row.partDescription,
         grnNo: row.grnNo,
+        grnDate: row.grnDate,
         invQty: parseInt(row.invQty),
         putAwayQty: parseInt(row.putAwayQty),
         fromBin: row.fromBin,
-        bin: row.bin,
         sku: row.sku,
         remarks: row.remarks,
-        binClass: '',
-        binType: '',
-        cellType: '',
-        clientCode: '',
-        core: '',
-        expDate: null,
-        grnDate: null,
-        pckey: '',
-        ssku: '',
-        stockDate: null
+        batchNo: row.batchNo,
+        batchDate: row.batchDate,
+        fromBinClass: row.binClass,
+        fromBinType: row.binType,
+        fromCellType: row.cellType,
+        clientCode: row.clientCode,
+        fromCore: row.core,
+        expDate: row.expDate,
+        qcFlag: row.qcFlag,
+        stockDate: row.stockDate,
+        toBin: row.toBin,
+        toBinType: row.toBinType,
+        toBinClass: row.toBinClass,
+        toCellType: row.toCellType,
+        toCore: row.toCore
       }));
 
       const saveFormData = {
@@ -616,33 +686,45 @@ export const VasPutaway = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.vasPickNo}>
-                  <InputLabel id="vasPickNo">
-                    {
-                      <span>
-                        VAS Pick No <span className="asterisk">*</span>
-                      </span>
-                    }
-                  </InputLabel>
-                  <Select
-                    labelId="vasPickNo"
+                {editId ? (
+                  <TextField
                     label="VAS Pick No *"
-                    value={formData.vasPickNo}
-                    onChange={handleInputChange}
+                    variant="outlined"
+                    size="small"
+                    fullWidth
                     name="vasPickNo"
-                  >
-                    {vasNoList.length > 0 ? (
-                      vasNoList.map((vas) => (
-                        <MenuItem key={vas.id} value={vas.vasPickNo}>
-                          {vas.vasPickNo}
-                        </MenuItem>
-                      ))
-                    ) : (
-                      <MenuItem disabled>No Data Found</MenuItem>
-                    )}
-                  </Select>
-                  {fieldErrors.vasPickNo && <FormHelperText>{fieldErrors.vasPickNo}</FormHelperText>}
-                </FormControl>
+                    value={formData.vasPickNo}
+                    disabled
+                  />
+                ) : (
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.vasPickNo}>
+                    <InputLabel id="vasPickNo">
+                      {
+                        <span>
+                          VAS Pick No <span className="asterisk">*</span>
+                        </span>
+                      }
+                    </InputLabel>
+                    <Select
+                      labelId="vasPickNo"
+                      label="VAS Pick No *"
+                      value={formData.vasPickNo}
+                      onChange={handleInputChange}
+                      name="vasPickNo"
+                    >
+                      {vasNoList.length > 0 ? (
+                        vasNoList.map((vas) => (
+                          <MenuItem key={vas.id} value={vas.vasPickNo}>
+                            {vas.vasPickNo}
+                          </MenuItem>
+                        ))
+                      ) : (
+                        <MenuItem disabled>No Data Found</MenuItem>
+                      )}
+                    </Select>
+                    {fieldErrors.vasPickNo && <FormHelperText>{fieldErrors.vasPickNo}</FormHelperText>}
+                  </FormControl>
+                )}
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
@@ -654,8 +736,8 @@ export const VasPutaway = () => {
                     }
                   </InputLabel>
                   <Select labelId="status" label="Status *" value={formData.status} onChange={handleInputChange} name="status">
-                    <MenuItem value="EDIT">EDIT</MenuItem>
-                    <MenuItem value="SUBMIT">SUBMIT</MenuItem>
+                    <MenuItem value="Edit">EDIT</MenuItem>
+                    <MenuItem value="Confirm">CONFIRM</MenuItem>
                   </Select>
                   {fieldErrors.status && <FormHelperText>{fieldErrors.status}</FormHelperText>}
                 </FormControl>
@@ -785,24 +867,24 @@ export const VasPutaway = () => {
 
                                       <td className="border px-2 py-2">
                                         <select
-                                          ref={lrNoDetailsRefs.current[index]?.bin}
-                                          value={row.bin}
+                                          ref={lrNoDetailsRefs.current[index]?.toBin}
+                                          value={row.toBin}
                                           style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
+                                          onChange={(e) => handleToBinChange(row, index, e)}
+                                          // onChange={(e) => {
+                                          //   const value = e.target.value;
 
-                                            setLrNoDetailsTable((prev) => prev.map((r) => (r.id === row.id ? { ...r, bin: value } : r)));
-
-                                            setLrNoDetailsError((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                bin: !value ? 'Bin is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={lrNoDetailsError[index]?.bin ? 'error form-control' : 'form-control'}
+                                          //   setLrNoDetailsTable((prev) => prev.map((r) => (r.id === row.id ? { ...r, bin: value } : r)));
+                                          //   setLrNoDetailsError((prev) => {
+                                          //     const newErrors = [...prev];
+                                          //     newErrors[index] = {
+                                          //       ...newErrors[index],
+                                          //       bin: !value ? 'Bin is required' : ''
+                                          //     };
+                                          //     return newErrors;
+                                          //   });
+                                          // }}
+                                          className={lrNoDetailsError[index]?.toBin ? 'error form-control' : 'form-control'}
                                         >
                                           <option value="">--Select--</option>
                                           {row.binList && row.binList.length > 0 ? (
@@ -815,9 +897,9 @@ export const VasPutaway = () => {
                                             <option disabled>No Data Found</option>
                                           )}
                                         </select>
-                                        {lrNoDetailsError[index]?.bin && (
+                                        {lrNoDetailsError[index]?.toBin && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {lrNoDetailsError[index].bin}
+                                            {lrNoDetailsError[index].toBin}
                                           </div>
                                         )}
                                       </td>

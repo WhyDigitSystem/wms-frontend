@@ -26,11 +26,9 @@ import Draggable from 'react-draggable';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import { getAllActiveBranches, getAllActiveBuyer, getAllActivePartDetails } from 'utils/CommonFunctions';
+import { getAllActiveBranches, getAllActiveBuyer } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import React, { useRef } from 'react';
-
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -68,7 +66,7 @@ export const BuyerOrder = () => {
     branch: loginBranch,
     branchCode: loginBranchCode,
     buyerShortName: '',
-    buyer: '',
+    buyerFullName: '',
     client: loginClient,
     company: 'String',
     createdBy: loginUserName,
@@ -83,7 +81,7 @@ export const BuyerOrder = () => {
     // location: '',
     orderDate: null,
     orderNo: '',
-    orderQty: 0,
+    orderQty: '',
     orgId: orgId,
     reMarks: '',
     refDate: null,
@@ -94,15 +92,7 @@ export const BuyerOrder = () => {
   });
   const [value, setValue] = useState(0);
 
-  const [skuDetailsTableData, setSkuDetailsTableData] = useState([
-    {
-      availQty: '',
-      batchNo: '',
-      partDesc: '',
-      partNo: '',
-      qty: ''
-    }
-  ]);
+  const [skuDetailsTableData, setSkuDetailsTableData] = useState([]);
   const [skuDetails, setSkuDetails] = useState([
     {
       id: 1,
@@ -116,28 +106,6 @@ export const BuyerOrder = () => {
       sku: 'KG'
     }
   ]);
-
-  const lrNoDetailsRefs = useRef(
-    skuDetailsTableData.map(() => ({
-      partNo: React.createRef(),
-      batchNo: React.createRef(),
-      qty: React.createRef()
-    }))
-  );
-
-  useEffect(() => {
-    // If the length of the table changes, update the refs
-    if (lrNoDetailsRefs.current.length !== skuDetailsTableData.length) {
-      lrNoDetailsRefs.current = skuDetailsTableData.map(
-        (_, index) =>
-          lrNoDetailsRefs.current[index] || {
-            partNo: React.createRef(),
-            batchNo: React.createRef(),
-            qty: React.createRef()
-          }
-      );
-    }
-  }, [skuDetailsTableData.length]);
 
   useEffect(() => {
     getNewBuyerOrderDocId();
@@ -377,7 +345,7 @@ export const BuyerOrder = () => {
           invoiceNo: particularBuyerOrder.invoiceNo,
           invoiceDate: particularBuyerOrder.invoiceDate,
           buyerShortName: particularBuyerOrder.buyerShortName,
-          buyer: particularBuyerOrder.buyer,
+          buyerFullName: particularBuyerOrder.buyer,
           currency: particularBuyerOrder.currency,
           exRate: particularBuyerOrder.exRate,
           billto: particularBuyerOrder.billToShortName,
@@ -415,10 +383,13 @@ export const BuyerOrder = () => {
 
   const getAllPartNo = async () => {
     try {
-      const partNoData = await getAllActivePartDetails(loginBranchCode, loginClient, orgId);
-      console.log('THE ACTIVE PART DETAILS ARE:', partNoData);
+      const response = await apiCalls(
+        'get',
+        `buyerOrder/getPartNoByBuyerOrder?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&warehouse=${loginWarehouse}`
+      );
+      // console.log('THE ACTIVE PART DETAILS ARE:', partNoData);
 
-      setPartNoList(partNoData);
+      setPartNoList(response.paramObjectsMap.partNoDetails);
     } catch (error) {
       console.error('Error fetching vehicle types:', error);
     }
@@ -455,7 +426,8 @@ export const BuyerOrder = () => {
         r.id === row.id
           ? {
               ...r,
-              batchNo: selectedBatchNo.batch
+              batchNo: selectedBatchNo.batch,
+              expDate: selectedBatchNo.expDate
             }
           : r
       )
@@ -622,11 +594,13 @@ export const BuyerOrder = () => {
         setFormData((prevData) => ({ ...prevData, [name]: checked }));
       } else if (name === 'buyerShortName' || name === 'billto' || name === 'shipTo') {
         const selectedBuyer = buyerList?.find((row) => row.buyerShortName === value);
+        console.log('buyer', selectedBuyer);
         if (selectedBuyer) {
           setFormData((prevData) => ({
             ...prevData,
             [name]: value,
-            [`${name}FullName`]: selectedBuyer.buyer
+            [`${name}FullName`]: selectedBuyer.buyer,
+            buyerFullName: selectedBuyer.buyer
           }));
         }
       } else {
@@ -717,7 +691,7 @@ export const BuyerOrder = () => {
       branch: '',
       branchCode: '',
       buyerShortName: '',
-      buyer: '',
+      buyerFullName: '',
       client: '',
       company: '',
       createdBy: '',
@@ -745,6 +719,7 @@ export const BuyerOrder = () => {
       branch: '',
       branchCode: '',
       buyerShortName: '',
+      buyerFullName: '',
       client: '',
       company: '',
       createdBy: '',
@@ -771,7 +746,6 @@ export const BuyerOrder = () => {
 
   const handleSave = async () => {
     const errors = {};
-    let firstInvalidFieldRef = null;
     if (!formData.orderNo) {
       errors.orderNo = 'Order No is required';
     }
@@ -795,36 +769,24 @@ export const BuyerOrder = () => {
     }
 
     let skuDetailsTableDataValid = true;
-    const newTableErrors = skuDetailsTableData.map((row, index) => {
+    const newTableErrors = skuDetailsTableData.map((row) => {
       const rowErrors = {};
       if (!row.partNo) {
         rowErrors.partNo = 'Part No is required';
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
         skuDetailsTableDataValid = false;
       }
       if (!row.batchNo) {
         rowErrors.batchNo = 'Batch No is required';
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
         skuDetailsTableDataValid = false;
       }
       if (!row.qty) {
         rowErrors.qty = 'Qty is required';
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].qty;
         skuDetailsTableDataValid = false;
       }
 
       return rowErrors;
     });
-    setFieldErrors(errors);
-
-    if (!skuDetailsTableDataValid || Object.keys(errors).length > 0) {
-      // Focus on the first invalid field
-      if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
-        firstInvalidFieldRef.current.focus();
-      }
-    } else {
-      // Proceed with form submission
-    }
+    // setFieldErrors(errors);
 
     setSkuDetailsTableErrors(newTableErrors);
 
@@ -840,7 +802,7 @@ export const BuyerOrder = () => {
         qty: row.qty,
         // EXTRA FIELDS
         remarks: '',
-        expDate: null
+        expDate: row.expDate
       }));
 
       const saveFormData = {
@@ -849,7 +811,7 @@ export const BuyerOrder = () => {
         billToShortName: formData.billto,
         branch: loginBranch,
         branchCode: loginBranchCode,
-        buyer: formData.buyer,
+        buyer: formData.buyerFullName,
         buyerOrderDetailsDTO: buyerOrderDetailsDTO,
         buyerShortName: formData.buyerShortName,
         client: loginClient,
@@ -1065,10 +1027,10 @@ export const BuyerOrder = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="buyer"
-                  value={formData.buyer}
-                  error={!!fieldErrors.buyer}
-                  helperText={fieldErrors.buyer}
+                  name="buyerFullName"
+                  value={formData.buyerFullName}
+                  error={!!fieldErrors.buyerFullName}
+                  helperText={fieldErrors.buyerFullName}
                   disabled
                 />
               </div>
@@ -1236,11 +1198,10 @@ export const BuyerOrder = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <select
-                                        ref={lrNoDetailsRefs.current[index].partNo}
                                         value={row.partNo}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          const selectedPartNo = partNoList.find((p) => p.partno === value);
+                                          const selectedPartNo = partNoList.find((p) => p.partNo === value);
 
                                           setSkuDetailsTableData((prev) =>
                                             prev.map((r, i) =>
@@ -1268,8 +1229,8 @@ export const BuyerOrder = () => {
                                       >
                                         <option value="">Select Option</option>
                                         {partNoList?.map((part) => (
-                                          <option key={part.id} value={part.partno}>
-                                            {part.partno}
+                                          <option key={part.id} value={part.partNo}>
+                                            {part.partNo}
                                           </option>
                                         ))}
                                       </select>
@@ -1294,7 +1255,6 @@ export const BuyerOrder = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <select
-                                        ref={lrNoDetailsRefs.current[index].batchNo}
                                         value={row.batchNo}
                                         // onChange={(e) => {
                                         //   const value = e.target.value;
@@ -1347,7 +1307,6 @@ export const BuyerOrder = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].qty}
                                         style={{ width: '150px' }}
                                         type="text"
                                         value={row.qty}
