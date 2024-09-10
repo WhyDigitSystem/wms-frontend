@@ -1425,7 +1425,7 @@ export const Putaway = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">INVOICE No</th>
+                                  <th className="px-2 py-2 text-white text-center">Inv No</th>
                                   <th className="px-2 py-2 text-white text-center">Part No</th>
                                   <th className="px-2 py-2 text-white text-center">Batch</th>
                                   <th className="px-2 py-2 text-white text-center">Part Description</th>
