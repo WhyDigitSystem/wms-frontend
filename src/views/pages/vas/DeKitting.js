@@ -173,6 +173,7 @@ export const DeKitting = () => {
         qty: ''
       }
     ]);
+    getDocId();
   };
 
   const [parentTableErrors, setParentTableErrors] = useState([
@@ -574,6 +575,13 @@ export const DeKitting = () => {
             grnNo: modifiedDocId
           }))
         );
+
+        // setChildTable((prevParentTableData) =>
+        //   prevParentTableData.map((row) => ({
+        //     ...row,
+        //     grnNo: modifiedDocId // Set the same grnNo for all rows
+        //   }))
+        // );
       } else {
         console.error('API Error:', response);
       }
@@ -950,8 +958,6 @@ export const DeKitting = () => {
                 {value === 0 && (
                   <>
                     <div className="row d-flex ml">
-                      <div className="mb-1">{!editId && <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />}</div>
-                      {/* Table */}
                       <div className="row mt-2">
                         <div className="col-lg-12">
                           <div className="table-responsive">
@@ -1039,26 +1045,26 @@ export const DeKitting = () => {
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
-                                          value={row.partDesc}
+                                          value={row.sku}
                                           disabled
                                           style={{ width: '200px' }}
                                           onChange={(e) => {
                                             const value = e.target.value;
-                                            setParentTable((prev) => prev.map((r) => (r.id === row.id ? { ...r, partDesc: value } : r)));
+                                            setParentTable((prev) => prev.map((r) => (r.id === row.id ? { ...r, sku: value } : r)));
                                             setParentTableErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                partDesc: !value ? 'Part Description is required' : ''
+                                                sku: !value ? 'Sku is required' : ''
                                               };
                                               return newErrors;
                                             });
                                           }}
-                                          className={parentTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
+                                          className={parentTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
                                         />
                                         {parentTableErrors[index]?.partDesc && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {parentTableErrors[index].partDesc}
+                                            {parentTableErrors[index].sku}
                                           </div>
                                         )}
                                       </td>
@@ -1266,8 +1272,9 @@ export const DeKitting = () => {
                   <>
                     <div className="row d-flex ml">
                       <div className="mb-1">
-                        {childTable.length > 0 ? '' : <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow1} />}
+                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow1} />
                       </div>
+
                       <div className="row mt-2">
                         <div className="col-lg-12">
                           <div className="table-responsive">

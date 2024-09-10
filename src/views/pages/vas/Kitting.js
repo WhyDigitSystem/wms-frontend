@@ -226,7 +226,7 @@ export const Kitting = () => {
   useEffect(() => {
     getAllKitting();
     getDocId();
-
+    getAllBinDetails();
     getAllChildPart();
     getAllParentPart();
   }, []);
@@ -439,6 +439,32 @@ export const Kitting = () => {
               : r
           )
         );
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getAllBinDetails = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `warehousemastercontroller/getAllBinDetails?warehouse=${warehouse}&branchCode=${branchCode}&client=${client}&orgId=${orgId}`
+      );
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        console.log('response.paramObjectsMap.Bins:', response.paramObjectsMap.Bins);
+        const optionsBin = response.paramObjectsMap.Bins.map((item) => ({
+          binClass: item.binClass,
+          binType: item.binType, // Ensure these fields exist in the response
+          cellType: item.cellType, // Ensure these fields exist in the response
+          core: item.core,
+          bin: item.bin
+        }));
+        setBinOptions(optionsBin);
       } else {
         console.error('API Error:', response);
       }
@@ -740,7 +766,6 @@ export const Kitting = () => {
 
   const handleClear = () => {
     setFormData({
-      // docId: '',
       docDate: null,
       refNo: '',
       refDate: '',
@@ -785,6 +810,7 @@ export const Kitting = () => {
       refNo: '',
       refDate: ''
     });
+    getDocId();
   };
 
   const handleSave = async () => {
@@ -843,6 +869,8 @@ export const Kitting = () => {
         partNo: row.partNo,
         partDescription: row.partDescription,
         batchNo: row.batchNo,
+        expDate: row.expDate,
+        batchDate: row.batchDate,
         lotNo: row.lotNo,
         grnNo: row.grnNo,
         binType: row.binType,
@@ -861,19 +889,20 @@ export const Kitting = () => {
         ppartNo: row.partNo,
         ppartDescription: row.partDescription,
         pbatchNo: row.batchNo,
+        pbatchDate: row.batchDate,
         plotNo: row.lotNo,
-        psku: row.Sku,
+
+        psku: row.sku,
         pqty: parseInt(row.qty),
-        punitRate: row.unitRate,
-        bin: row.bin,
+        pbin: row.bin,
         pgrnNo: row.grnNo,
         pgrnDate: row.grnDate,
         pexpDate: row.expDate,
-        qQcflag: true,
-        binType: row.binType,
-        binClass: row.binClass,
-        cellType: row.cellType,
-        core: row.core
+        pqcflag: true,
+        pbinType: row.binType,
+        pbinClass: row.binClass,
+        pcellType: row.cellType,
+        pcore: row.core
       }));
 
       const saveFormData = {
@@ -1779,7 +1808,7 @@ export const Kitting = () => {
                                           const value = e.target.value;
                                           console.log('Selected Bin No:', value);
 
-                                          const selectedBin = toBinList.find((option) => String(option.bin) === String(value));
+                                          const selectedBin = binOptions.find((option) => option.bin === value);
                                           console.log('Selected Bin Details:', selectedBin);
 
                                           if (selectedBin) {
