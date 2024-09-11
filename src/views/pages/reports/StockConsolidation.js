@@ -31,6 +31,10 @@ export const StockConsolidation = () => {
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
   const [partList, setPartList] = useState([]);
+  //   const [formData, setFormData] = useState({
+  //     selectedDate: null,
+  //     partNo: ''
+  //   });
   const [formData, setFormData] = useState({
     selectedDate: dayjs(),
     partNo: ''
@@ -62,6 +66,10 @@ export const StockConsolidation = () => {
   };
 
   const handleClear = () => {
+    // setFormData({
+    //   selectedDate: null,
+    //   partNo: ''
+    // });
     setFormData({
       selectedDate: dayjs(),
       partNo: ''
@@ -92,7 +100,6 @@ export const StockConsolidation = () => {
         if (response.status === true) {
           console.log('Response:', response);
           setRowData(response.paramObjectsMap.stockDetails);
-          //   showToast('success', 'Data Retrived successfully');
           setIsLoading(false);
           setListView(true);
         } else {
@@ -118,18 +125,23 @@ export const StockConsolidation = () => {
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
 
-  const handlePartNoChange = (event, value) => {
+  const handleInputChange = (fieldName) => (event, value) => {
     if (value) {
       setFormData((prevData) => ({
         ...prevData,
-        partNo: value.partno
+        [fieldName]: value.partno
       }));
     } else {
       setFormData((prevData) => ({
         ...prevData,
-        partNo: ''
+        [fieldName]: ''
       }));
     }
+
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      [fieldName]: ''
+    }));
   };
 
   return (
@@ -160,16 +172,60 @@ export const StockConsolidation = () => {
               </LocalizationProvider>
             </FormControl>
           </div>
+          {/* <div className="col-md-3 mb-3">
+            <FormControl fullWidth variant="filled" size="small" error={!!fieldErrors.selectedDate}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  label="Effective Date"
+                  value={formData.selectedDate ? dayjs(formData.selectedDate, 'DD-MM-YYYY') : null}
+                  onChange={(date) => handleDateChange('selectedDate', date)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      size="small"
+                      error={!!fieldErrors.selectedDate} // Apply error styling here
+                      helperText={fieldErrors.selectedDate} // Apply helper text here
+                      InputProps={{
+                        ...params.InputProps,
+                        style: { height: 40 } // Consistent height
+                      }}
+                      sx={{
+                        '& .MuiOutlinedInput-root.Mui-error': {
+                          '& fieldset': {
+                            borderColor: 'error.main'
+                          }
+                        }
+                      }} // Custom styling for error state
+                    />
+                  )}
+                  format="DD/MM/YYYY"
+                />
+              </LocalizationProvider>
+              {fieldErrors.selectedDate && <FormHelperText error>{fieldErrors.selectedDate}</FormHelperText>}
+            </FormControl>
+          </div> */}
+
           <div className="col-md-3 mb-3">
             <Autocomplete
               disablePortal
               options={partList}
-              getOptionLabel={(partList) => `${partList.partno}`}
-              sx={{ width: 300 }}
+              getOptionLabel={(option) => option.partno}
+              sx={{ width: '100%' }}
               size="small"
               value={formData.partNo ? partList.find((p) => p.partno === formData.partNo) : null}
-              onChange={handlePartNoChange}
-              renderInput={(params) => <TextField {...params} label="Select PartNo" />}
+              onChange={handleInputChange('partNo')}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Select PartNo"
+                  error={!!fieldErrors.partNo}
+                  helperText={fieldErrors.partNo}
+                  InputProps={{
+                    ...params.InputProps,
+                    style: { height: 40 }
+                  }}
+                />
+              )}
             />
           </div>
         </div>
