@@ -27,6 +27,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import React, { useRef } from 'react';
+
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -69,7 +71,51 @@ export const StockRestate = () => {
     entryNo: ''
   });
   const [value, setValue] = useState(0);
-  const [detailTableData, setDetailTableData] = useState([]);
+  const [detailTableData, setDetailTableData] = useState([
+    {
+      id: 1,
+      fromBin: '',
+      fromBinType: '',
+      partNo: '',
+      partDesc: '',
+      sku: '',
+      grnNo: '',
+      batchNo: '',
+      toBin: '',
+      toBinType: '',
+      fromQty: '',
+      toQty: '',
+      remainQty: ''
+    }
+  ]);
+
+  const lrNoDetailsRefs = useRef(
+    detailTableData.map(() => ({
+      fromBin: React.createRef(),
+      partNo: React.createRef(),
+      grnNo: React.createRef(),
+      batchNo: React.createRef(),
+      toBin: React.createRef(),
+      toQty: React.createRef()
+    }))
+  );
+
+  useEffect(() => {
+    // If the length of the table changes, update the refs
+    if (lrNoDetailsRefs.current.length !== detailTableData.length) {
+      lrNoDetailsRefs.current = detailTableData.map(
+        (_, index) =>
+          lrNoDetailsRefs.current[index] || {
+            fromBin: React.createRef(),
+            partNo: React.createRef(),
+            grnNo: React.createRef(),
+            batchNo: React.createRef(),
+            toBin: React.createRef(),
+            toQty: React.createRef()
+          }
+      );
+    }
+  }, [detailTableData.length]);
 
   const [detailTableErrors, setDetailTableErrors] = useState([]);
   const [modalTableData, setModalTableData] = useState([
@@ -587,6 +633,8 @@ export const StockRestate = () => {
 
   const handleSave = async () => {
     const errors = {};
+    let firstInvalidFieldRef = null;
+
     if (!formData.transferFrom) {
       errors.transferFrom = 'Transfer From is required';
     }
@@ -601,12 +649,30 @@ export const StockRestate = () => {
     } else {
       const newTableErrors = detailTableData.map((row, index) => {
         const rowErrors = {};
-        if (!row.fromBin) rowErrors.fromBin = 'From Bin is required';
-        if (!row.partNo) rowErrors.partNo = 'Part No is required';
-        if (!row.grnNo) rowErrors.grnNo = 'Grn No is required';
-        if (!row.batchNo) rowErrors.batchNo = 'Batch No is required';
-        if (!row.toBin) rowErrors.toBin = 'To Bin is required';
-        if (!row.toQty) rowErrors.toQty = 'To QTY is required';
+        if (!row.fromBin) {
+          rowErrors.fromBin = 'From Bin is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].fromBin;
+        }
+        if (!row.partNo) {
+          rowErrors.partNo = 'Part No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
+        }
+        if (!row.grnNo) {
+          rowErrors.grnNo = 'Grn No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].grnNo;
+        }
+        if (!row.batchNo) {
+          rowErrors.batchNo = 'Batch No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
+        }
+        if (!row.toBin) {
+          rowErrors.toBin = 'To Bin is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].toBin;
+        }
+        if (!row.toQty) {
+          rowErrors.toQty = 'To QTY is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].toQty;
+        }
 
         if (Object.keys(rowErrors).length > 0) detailTableDataValid = false;
 
@@ -614,6 +680,15 @@ export const StockRestate = () => {
       });
 
       setDetailTableErrors(newTableErrors);
+
+      if (!detailTableDataValid || Object.keys(errors).length > 0) {
+        // Focus on the first invalid field
+        if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+          firstInvalidFieldRef.current.focus();
+        }
+      } else {
+        // Proceed with form submission
+      }
     }
 
     if (Object.keys(errors).length === 0 && detailTableDataValid) {
@@ -1281,6 +1356,7 @@ export const StockRestate = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
+                                                ref={lrNoDetailsRefs.current[index].fromBin}
                                                 value={row.fromBin}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handleFromBinChange(row, index, e)}
@@ -1310,6 +1386,7 @@ export const StockRestate = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
+                                                ref={lrNoDetailsRefs.current[index].partNo}
                                                 value={row.partNo || ''}
                                                 onChange={(e) => handlePartNoChange(row, index, e)}
                                                 className={`form-control ${detailTableErrors[index]?.partNo ? 'error' : ''}`}
@@ -1354,6 +1431,7 @@ export const StockRestate = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
+                                                ref={lrNoDetailsRefs.current[index].grnNo}
                                                 value={row.grnNo}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handleGrnNoChange(row, index, e)}
@@ -1374,6 +1452,7 @@ export const StockRestate = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
+                                                ref={lrNoDetailsRefs.current[index].batchNo}
                                                 value={row.batchNo}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handleBatchNoChange(row, index, e)}
@@ -1394,6 +1473,7 @@ export const StockRestate = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
+                                                ref={lrNoDetailsRefs.current[index].toBin}
                                                 value={row.toBin}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handleToBinChange(row, index, e)}
@@ -1432,6 +1512,7 @@ export const StockRestate = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <input
+                                                ref={lrNoDetailsRefs.current[index].toQty}
                                                 style={{ width: '150px' }}
                                                 type="text"
                                                 value={row.toQty}

@@ -24,6 +24,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import React, { useRef } from 'react';
 
 function PaperComponent(props) {
   return (
@@ -66,7 +67,49 @@ export const LocationMovement = () => {
   const [partNoOptionsBin, setPartNoOptionsBin] = useState([]);
   const [fillGridData, setFillGridData] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
-  const [childTableData, setChildTableData] = useState([]);
+  const [childTableData, setChildTableData] = useState([
+    {
+      id: 1,
+      fromBin: '',
+      partNo: '',
+      partDesc: '',
+      sku: '',
+      grnNo: '',
+      batchNo: '',
+      avlQty: '',
+      toBin: '',
+      toBinType: '',
+      toQty: '',
+      remainQty: ''
+    }
+  ]);
+
+  const lrNoDetailsRefs = useRef(
+    childTableData.map(() => ({
+      fromBin: React.createRef(),
+      partNo: React.createRef(),
+      grnNo: React.createRef(),
+      toBin: React.createRef(),
+      toQty: React.createRef()
+    }))
+  );
+
+  useEffect(() => {
+    // If the length of the table changes, update the refs
+    if (lrNoDetailsRefs.current.length !== childTableData.length) {
+      lrNoDetailsRefs.current = childTableData.map(
+        (_, index) =>
+          lrNoDetailsRefs.current[index] || {
+            fromBin: React.createRef(),
+            partNo: React.createRef(),
+            grnNo: React.createRef(),
+            toBin: React.createRef(),
+            toQty: React.createRef()
+          }
+      );
+    }
+  }, [childTableData.length]);
+
   const [childTableErrors, setChildTableErrors] = useState([]);
 
   const [modalTableData, setModalTableData] = useState([
@@ -939,6 +982,8 @@ export const LocationMovement = () => {
 
   const handleSave = async () => {
     const errors = {};
+    let firstInvalidFieldRef = null;
+
     let childTableDataValid = true;
     if (!childTableData || !Array.isArray(childTableData) || childTableData.length === 0) {
       childTableDataValid = false;
@@ -946,12 +991,30 @@ export const LocationMovement = () => {
     } else {
       const newTableErrors = childTableData.map((row, index) => {
         const rowErrors = {};
-        if (!row.fromBin) rowErrors.fromBin = 'From Bin is required';
-        if (!row.partNo) rowErrors.partNo = 'Part No is required';
-        if (!row.grnNo) rowErrors.grnNo = 'Grn No is required';
-        if (!row.batchNo) rowErrors.batchNo = 'Batch No is required';
-        if (!row.toBin) rowErrors.toBin = 'To Bin is required';
-        if (!row.toQty) rowErrors.toQty = 'To QTY is required';
+        if (!row.fromBin) {
+          rowErrors.fromBin = 'From Bin is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].fromBin;
+        }
+        if (!row.partNo) {
+          rowErrors.partNo = 'Part No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
+        }
+        if (!row.grnNo) {
+          rowErrors.grnNo = 'Grn No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].grnNo;
+        }
+        if (!row.batchNo) {
+          rowErrors.batchNo = 'Batch No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
+        }
+        if (!row.toBin) {
+          rowErrors.toBin = 'To Bin is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].toBin;
+        }
+        if (!row.toQty) {
+          rowErrors.toQty = 'To QTY is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].toQty;
+        }
 
         if (Object.keys(rowErrors).length > 0) childTableDataValid = false;
 
@@ -959,6 +1022,15 @@ export const LocationMovement = () => {
       });
 
       setChildTableErrors(newTableErrors);
+    }
+
+    if (!childTableDataValid || Object.keys(errors).length > 0) {
+      // Focus on the first invalid field
+      if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+        firstInvalidFieldRef.current.focus();
+      }
+    } else {
+      // Proceed with form submission
     }
 
     if (childTableDataValid) {
@@ -1246,6 +1318,7 @@ export const LocationMovement = () => {
                                           </td>
                                           <td className="border px-2 py-2">
                                             <select
+                                              ref={lrNoDetailsRefs.current[index].fromBin}
                                               value={row.fromBin}
                                               style={{ width: '130px' }}
                                               onChange={(e) => handleFromBinChange(row, index, e)}
@@ -1268,6 +1341,7 @@ export const LocationMovement = () => {
                                           </td>
                                           <td className="border px-2 py-2">
                                             <select
+                                              ref={lrNoDetailsRefs.current[index].partNo}
                                               value={row.partNo}
                                               style={{ width: '130px' }}
                                               onChange={(e) => handlePartNoChange(row, index, e)}
@@ -1313,6 +1387,7 @@ export const LocationMovement = () => {
                                           </td>
                                           <td className="border px-2 py-2">
                                             <select
+                                              ref={lrNoDetailsRefs.current[index].grnNo}
                                               value={row.grnNo}
                                               style={{ width: '225px' }}
                                               onChange={(e) => handleGrnNoChange(row, index, e)}
@@ -1339,6 +1414,7 @@ export const LocationMovement = () => {
                                           </td>
                                           <td className="border px-2 py-2">
                                             <select
+                                              ref={lrNoDetailsRefs.current[index].batchNo}
                                               value={row.batchNo}
                                               style={{ width: '200px' }}
                                               onChange={(e) => handleBatchNoChange(row, index, e)}
@@ -1374,6 +1450,7 @@ export const LocationMovement = () => {
                                           </td>
                                           <td className="border px-2 py-2">
                                             <select
+                                              ref={lrNoDetailsRefs.current[index].toBin}
                                               value={row.toBin}
                                               style={{ width: '200px' }}
                                               onChange={(e) => handleToBinChange(row, index, e)}
@@ -1403,6 +1480,7 @@ export const LocationMovement = () => {
                                           </td>
                                           <td className="border px-2 py-2">
                                             <input
+                                              ref={lrNoDetailsRefs.current[index].toQty}
                                               style={{ width: '150px' }}
                                               type="text"
                                               value={row.toQty}

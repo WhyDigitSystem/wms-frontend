@@ -24,6 +24,8 @@ import ActionButton from 'utils/ActionButton';
 import { getAllActivePartDetails } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import React, { useRef } from 'react';
+
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -61,7 +63,45 @@ export const CycleCount = () => {
     docDate: dayjs()
   });
   const [value, setValue] = useState(0);
-  const [detailTableData, setDetailTableData] = useState([]);
+  const [detailTableData, setDetailTableData] = useState([
+    {
+      id: 1,
+      partNo: '',
+      partDesc: '',
+      sku: '',
+      grnNo: '',
+      batchNo: '',
+      bin: '',
+      binType: '',
+      core: '',
+      avlQty: '',
+      actualQty: ''
+    }
+  ]);
+
+  const lrNoDetailsRefs = useRef(
+    detailTableData.map(() => ({
+      partNo: React.createRef(),
+      grnNo: React.createRef(),
+      batchNo: React.createRef(),
+      bin: React.createRef()
+    }))
+  );
+
+  useEffect(() => {
+    // If the length of the table changes, update the refs
+    if (lrNoDetailsRefs.current.length !== detailTableData.length) {
+      lrNoDetailsRefs.current = detailTableData.map(
+        (_, index) =>
+          lrNoDetailsRefs.current[index] || {
+            partNo: React.createRef(),
+            grnNo: React.createRef(),
+            batchNo: React.createRef(),
+            bin: React.createRef()
+          }
+      );
+    }
+  }, [detailTableData.length]);
 
   const [detailTableErrors, setDetailTableErrors] = useState([]);
   const [modalTableData, setModalTableData] = useState([
@@ -521,6 +561,8 @@ export const CycleCount = () => {
     console.log('first');
 
     const errors = {};
+    let firstInvalidFieldRef = null;
+
     console.log('detailTableData is:', detailTableData);
 
     let detailTableDataValid = true;
@@ -531,12 +573,24 @@ export const CycleCount = () => {
       const newTableErrors = detailTableData.map((row, index) => {
         const rowErrors = {};
 
-        if (!row.partNo) rowErrors.partNo = 'Part No is required';
-        if (!row.grnNo) rowErrors.grnNo = 'Grn No is required';
-        if (!row.batchNo) rowErrors.batchNo = 'Batch No is required';
-        if (!row.bin) rowErrors.bin = 'To Bin is required';
-        if (!row.avlQty) rowErrors.avlQty = 'To QTY is required';
-        if (!row.actualQty) rowErrors.actualQty = 'Actual QTY is required';
+        if (!row.partNo) {
+          rowErrors.partNo = 'Part No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
+        }
+        if (!row.grnNo) {
+          rowErrors.grnNo = 'Grn No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].grnNo;
+        }
+        if (!row.batchNo) {
+          rowErrors.batchNo = 'Batch No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
+        }
+        if (!row.bin) {
+          rowErrors.bin = 'To Bin is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
+        }
+        // if (!row.avlQty) rowErrors.avlQty = 'To QTY is required';
+        // if (!row.actualQty) rowErrors.actualQty = 'Actual QTY is required';
 
         if (Object.keys(rowErrors).length > 0) detailTableDataValid = false;
 
@@ -1112,6 +1166,7 @@ export const CycleCount = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
+                                                ref={lrNoDetailsRefs.current[index].partNo}
                                                 value={row.partNo}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handlePartNoChange(row, index, e)}
@@ -1150,6 +1205,7 @@ export const CycleCount = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
+                                                ref={lrNoDetailsRefs.current[index].grnNo}
                                                 value={row.grnNo}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handleGrnNoChange(row, index, e)}
@@ -1176,6 +1232,7 @@ export const CycleCount = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
+                                                ref={lrNoDetailsRefs.current[index].batchNo}
                                                 value={row.batchNo}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handleBatchNoChange(row, index, e)}
@@ -1241,6 +1298,7 @@ export const CycleCount = () => {
 
                                             <td className="border px-2 py-2">
                                               <select
+                                                ref={lrNoDetailsRefs.current[index].bin}
                                                 value={row.bin}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handleBinChange(row, index, e)}
