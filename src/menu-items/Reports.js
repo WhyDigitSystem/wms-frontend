@@ -4,19 +4,19 @@ const icons = {
   IconArrowDownFromArc
 };
 
-const outbound = {
-  id: 'outbound',
-  title: 'Outbound',
+const Reports = {
+  id: 'reports',
+  title: 'Reports',
   type: 'group',
   children: [
     {
-      id: 'outbound',
-      title: 'Outbound',
+      id: 'reports',
+      title: 'Reports',
       type: 'item',
-      url: '/outbound/outboundmain',
+      url: '/reports/reportsmain',
       icon: icons.IconArrowDownFromArc
     }
   ]
 };
 
-export default outbound;
+export default Reports;

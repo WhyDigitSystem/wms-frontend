@@ -5,7 +5,6 @@ import React from 'react';
 import CodeConversion from './CodeConversion';
 import CycleCount from './CycleCount';
 import LocationMovement from './LocationMovement';
-import StockConsolidation from './StockConsolidation';
 import StockRestate from './StockRestate';
 
 const StockProcessMain = () => {
@@ -23,7 +22,6 @@ const StockProcessMain = () => {
             <Tab value={1} label="Stock Restate" />
             <Tab value={2} label="Code Conversion" />
             <Tab value={3} label="Cycle Count" />
-            <Tab value={4} label="Stock Consolidation" />
           </Tabs>
         </Box>
         <Box sx={{ padding: 2 }}>
@@ -31,7 +29,6 @@ const StockProcessMain = () => {
           {value === 1 && <StockRestate />}
           {value === 2 && <CodeConversion />}
           {value === 3 && <CycleCount />}
-          {value === 4 && <StockConsolidation />}
         </Box>
       </div>
     </>

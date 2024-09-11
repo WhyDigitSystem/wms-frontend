@@ -46,6 +46,7 @@ const InboundMain = Loadable(lazy(() => import('views/pages/inbound/InboundMain'
 const OutboundMain = Loadable(lazy(() => import('views/pages/outbound/OutboundMain')));
 const VasMain = Loadable(lazy(() => import('views/pages/vas/VasMain')));
 const StockProcessMain = Loadable(lazy(() => import('views/pages/stockProcess/StockProcessMain')));
+const ReportMain = Loadable(lazy(() => import('views/pages/reports/ReportMain')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
 
@@ -201,6 +202,10 @@ const WMSRoutes = {
     {
       path: '/stock-process/stockprocessmain',
       element: <StockProcessMain />
+    },
+    {
+      path: '/reports/reportsmain',
+      element: <ReportMain />
     }
   ]
 };
