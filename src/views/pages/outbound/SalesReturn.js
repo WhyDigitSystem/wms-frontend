@@ -219,10 +219,10 @@ export const SalesReturn = () => {
     totalReturnQty: ''
   });
   const listViewColumns = [
-    { accessorKey: 'docId', header: 'Doc Id', size: 140 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'docId', header: 'Document No', size: 140 },
+    { accessorKey: 'docDate', header: 'Document Date', size: 140 },
     { accessorKey: 'prNo', header: 'Pr. No', size: 140 },
-    { accessorKey: 'entryNo', header: 'entryNo', size: 140 }
+    { accessorKey: 'entryNo', header: 'Entry No', size: 140 }
   ];
 
   const [listViewData, setListViewData] = useState([
