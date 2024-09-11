@@ -217,7 +217,7 @@ export const StockConsolidation = () => {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Select PartNo"
+                  label="Part No"
                   error={!!fieldErrors.partNo}
                   helperText={fieldErrors.partNo}
                   InputProps={{
