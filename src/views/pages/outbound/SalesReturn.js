@@ -85,7 +85,7 @@ export const SalesReturn = () => {
     entryDate: dayjs(),
     buyerName: '',
     buyerType: '',
-    supplierShotName: '',
+    supplierShortName: '',
     supplier: '',
     modeOfShipment: '',
     carrier: '',
@@ -102,46 +102,46 @@ export const SalesReturn = () => {
 
   const [value, setValue] = useState(0);
   const [detailTableData, setDetailTableData] = useState([
-    {
-      lrNo: '',
-      invNo: '',
-      partNo: '',
-      partDesc: '',
-      pickQty: '',
-      returnQty: '',
-      damageQty: '',
-      batchNo: '',
-      batchDate: null,
-      expDate: null,
-      noOfBin: '',
-      binQty: '',
-      remarks: ''
-    }
+    // {
+    //   lrNo: '',
+    //   invNo: '',
+    //   partNo: '',
+    //   partDesc: '',
+    //   pickQty: '',
+    //   returnQty: '',
+    //   damageQty: '',
+    //   batchNo: '',
+    //   batchDate: null,
+    //   expDate: null,
+    //   noOfBin: '',
+    //   binQty: '',
+    //   remarks: ''
+    // }
   ]);
 
-  const lrNoDetailsRefs = useRef(
-    detailTableData.map(() => ({
-      lrNo: React.createRef(),
-      partNo: React.createRef(),
-      invNo: React.createRef(),
-      batchNo: React.createRef()
-    }))
-  );
+  // const lrNoDetailsRefs = useRef(
+  //   detailTableData.map(() => ({
+  //     lrNo: React.createRef(),
+  //     partNo: React.createRef(),
+  //     invNo: React.createRef(),
+  //     batchNo: React.createRef()
+  //   }))
+  // );
 
-  useEffect(() => {
-    // If the length of the table changes, update the refs
-    if (lrNoDetailsRefs.current.length !== detailTableData.length) {
-      lrNoDetailsRefs.current = detailTableData.map(
-        (_, index) =>
-          lrNoDetailsRefs.current[index] || {
-            lrNo: React.createRef(),
-            partNo: React.createRef(),
-            invNo: React.createRef(),
-            batchNo: React.createRef()
-          }
-      );
-    }
-  }, [detailTableData.length]);
+  // useEffect(() => {
+  //   // If the length of the table changes, update the refs
+  //   if (lrNoDetailsRefs.current.length !== detailTableData.length) {
+  //     lrNoDetailsRefs.current = detailTableData.map(
+  //       (_, index) =>
+  //         lrNoDetailsRefs.current[index] || {
+  //           lrNo: React.createRef(),
+  //           partNo: React.createRef(),
+  //           invNo: React.createRef(),
+  //           batchNo: React.createRef()
+  //         }
+  //     );
+  //   }
+  // }, [detailTableData.length]);
 
   const [detailTableErrors, setDetailTableErrors] = useState([
     {
@@ -204,7 +204,7 @@ export const SalesReturn = () => {
     entryDate: null,
     buyerName: '',
     buyerType: '',
-    supplierShotName: '',
+    supplierShortName: '',
     supplier: '',
     modeOfShipment: '',
     carrier: '',
@@ -546,7 +546,7 @@ export const SalesReturn = () => {
 
         setFormData({
           docId: particularItem.docId,
-          docDate: particularItem.docId,
+          docDate: particularItem.docDate,
           prNo: particularItem.prNo,
           prDate: particularItem.prDate,
           boNo: particularItem.boNo,
@@ -555,7 +555,7 @@ export const SalesReturn = () => {
           entryDate: particularItem.entryDate,
           buyerName: particularItem.buyerName,
           buyerType: particularItem.buyerType,
-          supplierShotName: particularItem.supplierShortName,
+          supplierShortName: particularItem.supplierShortName,
           supplier: particularItem.supplier,
           modeOfShipment: particularItem.modeOfShipment,
           carrier: particularItem.carrier,
@@ -572,12 +572,13 @@ export const SalesReturn = () => {
 
         setDetailTableData(
           particularItem.salesReturnDetailsVO.map((detail) => ({
-            lrNo: detail.lrNo,
-            invNo: detail.invNo,
+            lrNo: detail.lrno,
+            invoiceNo: detail.invoiceNo,
             partNo: detail.partNo,
             partDesc: detail.partDesc,
+            sku: detail.sku,
             pickQty: detail.pickQty,
-            returnQty: detail.returnQty,
+            returnQty: detail.retQty,
             damageQty: detail.damageQty,
             batchNo: detail.batchNo,
             batchDate: detail.batchDate,
@@ -774,7 +775,7 @@ export const SalesReturn = () => {
       entryDate: dayjs(),
       buyerName: '',
       buyerType: '',
-      supplierShotName: '',
+      supplierShortName: '',
       supplier: '',
       modeOfShipment: '',
       carrier: '',
@@ -820,7 +821,7 @@ export const SalesReturn = () => {
       entryDate: null,
       buyerName: '',
       buyerType: '',
-      supplierShotName: '',
+      supplierShortName: '',
       supplier: '',
       modeOfShipment: '',
       carrier: '',
@@ -840,7 +841,7 @@ export const SalesReturn = () => {
 
   const handleSave = async () => {
     const errors = {};
-    let firstInvalidFieldRef = null;
+    // let firstInvalidFieldRef = null;
 
     if (!formData.prNo) {
       errors.prNo = 'PR No is required';
@@ -855,37 +856,40 @@ export const SalesReturn = () => {
       const newTableErrors = detailTableData.map((row, index) => {
         const rowErrors = {};
 
-        if (!row.lrNo) {
-          rowErrors.lrNo = 'LR No is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].lrNo;
-        }
-        if (!row.partNo) {
-          rowErrors.partNo = 'Part No is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
-        }
-        if (!row.invNo) {
-          rowErrors.invNo = 'Invoice No is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].invNo;
-        }
-        if (!row.batchNo) {
-          rowErrors.batchNo = 'Batch No is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
-        }
-        if (!row.bin) rowErrors.bin = 'Bin is required';
+        // if (!row.lrNo) {
+        //   rowErrors.lrNo = 'LR No is required';
+        //   if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].lrNo;
+        // }
+        // if (!row.partNo) {
+        //   rowErrors.partNo = 'Part No is required';
+        //   if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
+        // }
+        // if (!row.invNo) {
+        //   rowErrors.invNo = 'Invoice No is required';
+        //   if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].invNo;
+        // }
+        // if (!row.batchNo) {
+        //   rowErrors.batchNo = 'Batch No is required';
+        //   if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
+        // }
+        if (!row.lrNo) rowErrors.lrNo = 'LR No is required';
+        if (!row.partNo) rowErrors.partNo = 'Part No is required';
+        if (!row.invoiceNo) rowErrors.invoiceNo = 'Invoice No is required';
+        if (!row.binQty) rowErrors.binQty = 'Bin Qty is required';
 
         if (Object.keys(rowErrors).length > 0) detailTableDataValid = false;
 
         return rowErrors;
       });
 
-      if (!detailTableDataValid || Object.keys(errors).length > 0) {
-        // Focus on the first invalid field
-        if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
-          firstInvalidFieldRef.current.focus();
-        }
-      } else {
-        // Proceed with form submission
-      }
+      // if (!detailTableDataValid || Object.keys(errors).length > 0) {
+      //   // Focus on the first invalid field
+      //   if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+      //     firstInvalidFieldRef.current.focus();
+      //   }
+      // } else {
+      //   // Proceed with form submission
+      // }
 
       setDetailTableErrors(newTableErrors);
     }
@@ -894,19 +898,19 @@ export const SalesReturn = () => {
       setIsLoading(true);
       const salesReturnVo = detailTableData.map((row) => ({
         ...(editId && { id: row.id }),
-        lrNo: row.lrNo,
-        invNo: row.invoiceNo,
+        lrno: row.lrNo,
+        invoiceNo: row.invoiceNo,
         partNo: row.partNo,
-        partDescripition: row.partDesc,
+        partDesc: row.partDesc,
         sku: row.sku,
         pickQty: row.pickQty,
-        returnQty: row.retQty,
+        retQty: row.returnQty,
         damageQty: row.damageQty,
         batchNo: row.batchNo,
         batchDate: row.batchDate,
         expDate: row.expDate,
-        palletQty: row.binQty,
-        noOfPallet: row.noOfBins,
+        binQty: row.binQty,
+        noOfBin: row.noOfBin,
         remarks: row.remarks,
         //EXTRA FIELDS
         qcFlag: ''
@@ -1418,7 +1422,6 @@ export const SalesReturn = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          ref={lrNoDetailsRefs.current[index].lrNo}
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.lrNo}
@@ -1427,7 +1430,7 @@ export const SalesReturn = () => {
                                             setDetailTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, lrNo: value } : r)));
                                             setDetailTableErrors((prev) => {
                                               const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], lrNo: !value ? 'QR Code is required' : '' };
+                                              newErrors[index] = { ...newErrors[index], lrNo: !value ? 'Lr No is required' : '' };
                                               return newErrors;
                                             });
                                           }}
@@ -1441,30 +1444,30 @@ export const SalesReturn = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          ref={lrNoDetailsRefs.current[index].invNo}
                                           style={{ width: '150px' }}
                                           type="text"
-                                          value={row.invNo}
+                                          value={row.invoiceNo}
                                           onChange={(e) => {
                                             const value = e.target.value;
-                                            setDetailTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, invNo: value } : r)));
+                                            setDetailTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, invoiceNo: value } : r))
+                                            );
                                             setDetailTableErrors((prev) => {
                                               const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], invNo: !value ? 'Invoice No is required' : '' };
+                                              newErrors[index] = { ...newErrors[index], invoiceNo: !value ? 'Invoice No is required' : '' };
                                               return newErrors;
                                             });
                                           }}
-                                          className={detailTableErrors[index]?.invNo ? 'error form-control' : 'form-control'}
+                                          className={detailTableErrors[index]?.invoiceNo ? 'error form-control' : 'form-control'}
                                         />
-                                        {detailTableErrors[index]?.invNo && (
+                                        {detailTableErrors[index]?.invoiceNo && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailTableErrors[index].invNo}
+                                            {detailTableErrors[index].invoiceNo}
                                           </div>
                                         )}
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          ref={lrNoDetailsRefs.current[index].partNo}
                                           value={row.partNo}
                                           style={{ width: '200px' }}
                                           className={detailTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
@@ -1505,14 +1508,66 @@ export const SalesReturn = () => {
                                           value={row.returnQty}
                                           onChange={(e) => {
                                             const value = e.target.value;
-                                            setDetailTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, returnQty: value } : r))
-                                            );
-                                            setDetailTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], returnQty: !value ? 'QR Code is required' : '' };
-                                              return newErrors;
-                                            });
+                                            const pickQty = row.pickQty;
+                                            const intPattern = /^\d*$/; // Allow empty string or digits
+
+                                            if (value === '') {
+                                              // Allow empty input
+                                              setDetailTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, returnQty: value } : r))
+                                              );
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  returnQty: ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else if (!intPattern.test(value)) {
+                                              // If input is not a number, show an error
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  returnQty: 'Only numbers are allowed'
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else if (Number(value) <= 0) {
+                                              // If input is zero or negative, show an error
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  returnQty: 'Return Qty must be greater than zero'
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else if (Number(value) > pickQty) {
+                                              // If input exceeds pickQty, show an error
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  returnQty: `Return Qty cannot exceed Pick Qty (${pickQty})`
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else {
+                                              // Update state if input is valid
+                                              setDetailTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, returnQty: value } : r))
+                                              );
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  returnQty: ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }
                                           }}
                                           className={detailTableErrors[index]?.returnQty ? 'error form-control' : 'form-control'}
                                         />
@@ -1529,19 +1584,68 @@ export const SalesReturn = () => {
                                           value={row.damageQty}
                                           onChange={(e) => {
                                             const value = e.target.value;
-                                            setDetailTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, damageQty: value } : r))
-                                            );
-                                            setDetailTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                damageQty: !value ? 'Damage Qty is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
+                                            const returnQty = row.returnQty;
+                                            const intPattern = /^\d*$/; // Only allow numbers or empty input
+
+                                            if (value === '') {
+                                              // Allow empty input
+                                              setDetailTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, damageQty: value } : r))
+                                              );
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  damageQty: 'Damage Qty is required'
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else if (!intPattern.test(value)) {
+                                              // If input is not a number, show an error
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  damageQty: 'Only numbers are allowed'
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else if (Number(value) <= 0) {
+                                              // If input is zero or negative, show an error
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  damageQty: 'Damage Qty must be greater than zero'
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else if (Number(value) > returnQty) {
+                                              // If damageQty exceeds returnQty, show an error
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  damageQty: `Damage Qty cannot exceed Return Qty (${returnQty})`
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else {
+                                              // Update state if input is valid
+                                              setDetailTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, damageQty: value } : r))
+                                              );
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  damageQty: ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }
                                           }}
-                                          className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
+                                          className={detailTableErrors[index]?.damageQty ? 'error form-control' : 'form-control'}
                                         />
                                         {detailTableErrors[index]?.damageQty && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1549,9 +1653,9 @@ export const SalesReturn = () => {
                                           </div>
                                         )}
                                       </td>
+
                                       <td className="border px-2 py-2">
                                         <input
-                                          ref={lrNoDetailsRefs.current[index].batchNo}
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.batchNo}
@@ -1567,7 +1671,7 @@ export const SalesReturn = () => {
                                               return newErrors;
                                             });
                                           }}
-                                          className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
+                                          className={detailTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
                                         />
                                         {detailTableErrors[index]?.batchNo && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1588,7 +1692,7 @@ export const SalesReturn = () => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                batchDate: !value ? 'Invoice Date is required' : ''
+                                                batchDate: !value ? 'Batch Date is required' : ''
                                               };
                                               return newErrors;
                                             });
@@ -1612,7 +1716,7 @@ export const SalesReturn = () => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                expDate: !value ? 'Invoice Date is required' : ''
+                                                expDate: !value ? 'Exp Date is required' : ''
                                               };
                                               return newErrors;
                                             });
@@ -1632,39 +1736,48 @@ export const SalesReturn = () => {
                                           value={row.binQty}
                                           onChange={(e) => {
                                             const value = e.target.value;
+                                            const maxBinQty = (row.returnQty || 0) - (row.damageQty || 0); // Calculate maxBinQty
                                             const intPattern = /^\d*$/;
 
-                                            if (intPattern.test(value) || value === '') {
-                                              setDetailTableData((prev) => {
-                                                const updatedData = prev.map((r) => {
-                                                  return r.id === row.id
-                                                    ? {
-                                                        ...r,
-                                                        binQty: value
-                                                        // recQty: !value ? '' : r.recQty,
-                                                      }
-                                                    : r;
-                                                });
-                                                return updatedData;
-                                              });
-
-                                              // Clear the error if input is valid
+                                            if (value === '') {
+                                              // Allow empty input
+                                              setDetailTableData(
+                                                (prev) => prev.map((r) => (r.id === row.id ? { ...r, binQty: value, noOfBin: '' } : r)) // Clear noOfBin as well
+                                              );
                                               setDetailTableErrors((prev) => {
                                                 const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  binQty: ''
-                                                };
+                                                newErrors[index] = { ...newErrors[index], binQty: 'Bin Qty is required' };
+                                                return newErrors;
+                                              });
+                                            } else if (!intPattern.test(value)) {
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], binQty: 'Only numbers are allowed' };
+                                                return newErrors;
+                                              });
+                                            } else if (Number(value) <= 0) {
+                                              // If input is zero or negative, show an error
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], binQty: 'Bin Qty must be greater than zero' };
+                                                return newErrors;
+                                              });
+                                            } else if (Number(value) > maxBinQty) {
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], binQty: `Bin Qty cannot exceed ${maxBinQty}` };
                                                 return newErrors;
                                               });
                                             } else {
-                                              // Set error if input is invalid
+                                              // Valid input, calculate noOfBin
+                                              const noOfBin = Math.ceil(maxBinQty / Number(value));
+
+                                              setDetailTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, binQty: value, noOfBin: noOfBin } : r))
+                                              );
                                               setDetailTableErrors((prev) => {
                                                 const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  binQty: 'only numbers are allowed'
-                                                };
+                                                newErrors[index] = { ...newErrors[index], binQty: '' };
                                                 return newErrors;
                                               });
                                             }
@@ -1677,23 +1790,17 @@ export const SalesReturn = () => {
                                           </div>
                                         )}
                                       </td>
-                                      <td>
+
+                                      <td className="border px-2 py-2">
                                         <input
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.noOfBin}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setDetailTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, weight: value } : r)));
-                                            setDetailTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], weight: !value ? 'QR Code is required' : '' };
-                                              return newErrors;
-                                            });
-                                          }}
+                                          disabled // Disabled to prevent user input
                                           className={detailTableErrors[index]?.noOfBin ? 'error form-control' : 'form-control'}
                                         />
                                       </td>
+
                                       <td className="border px-2 py-2">
                                         <input
                                           style={{ width: '300px' }}
@@ -1711,7 +1818,7 @@ export const SalesReturn = () => {
                                               return newErrors;
                                             });
                                           }}
-                                          className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
+                                          className={detailTableErrors[index]?.remarks ? 'error form-control' : 'form-control'}
                                         />
                                         {detailTableErrors[index]?.remarks && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
