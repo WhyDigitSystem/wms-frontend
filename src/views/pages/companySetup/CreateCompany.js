@@ -166,6 +166,8 @@ const CreateCompany = () => {
 
   const handleSave = async () => {
     const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!formData.companyCode) {
       errors.companyCode = 'Company Code is required';
     }
@@ -175,11 +177,13 @@ const CreateCompany = () => {
     if (!formData.companyAdminName) {
       errors.companyAdminName = 'Admin Name is required';
     }
-    if (!formData.companyAdminEmail) {
-      errors.companyAdminEmail = 'Email Id is required';
-    }
     if (!formData.employeeCode) {
       errors.employeeCode = 'Employee Code is required';
+    }
+    if (!formData.companyAdminEmail) {
+      errors.companyAdminEmail = 'company Admin Email ID is required';
+    } else if (!emailRegex.test(formData.companyAdminEmail)) {
+      errors.companyAdminEmail = 'Invalid MailID Format';
     }
 
     if (Object.keys(errors).length === 0) {
