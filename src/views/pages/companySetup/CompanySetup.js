@@ -9,10 +9,11 @@ import { useEffect, useState } from 'react';
 const CompanySetup = () => {
   const [value, setValue] = React.useState(0);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [loginUserType, setLoginUserType] = useState(localStorage.getItem('userType'));
   const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
 
   useEffect(() => {
-    if (loginUserName !== 'admin') {
+    if (loginUserType !== 'admin') {
       if (allowedScreens.includes('branch') && !allowedScreens.includes('company')) {
         setValue(1);
       }
@@ -26,7 +27,7 @@ const CompanySetup = () => {
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <Box sx={{ width: '100%' }}>
-          {loginUserName === 'admin' ? (
+          {loginUserType === 'admin' ? (
             <>
               <Tabs
                 value={value}
