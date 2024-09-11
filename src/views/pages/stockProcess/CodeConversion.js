@@ -17,7 +17,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Draggable from 'react-draggable';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -25,7 +25,6 @@ import ActionButton from 'utils/ActionButton';
 import { getAllActiveCpartNo } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import React, { useRef } from 'react';
 
 function PaperComponent(props) {
   return (
@@ -156,27 +155,7 @@ export const CodeConversion = () => {
   ];
 
   const [listViewData, setListViewData] = useState([]);
-  const [codeConversionDetailsTable, setCodeConversionDetailsTable] = useState([
-    {
-      partNo: '',
-      partDescription: '',
-      grnNo: '',
-      sku: '',
-      binType: '',
-      batchNo: '',
-      bin: '',
-      qty: '',
-      actualQty: '',
-      convertQty: '',
-      cpartNo: '',
-      cpartDesc: '',
-      csku: '',
-      cbatchNo: '',
-      cexpDate: '',
-      cbin: '',
-      remarks: ''
-    }
-  ]);
+  const [codeConversionDetailsTable, setCodeConversionDetailsTable] = useState([]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -618,47 +597,25 @@ export const CodeConversion = () => {
     }
   };
 
-  const lrNoDetailsRefs = useRef(
-    codeConversionDetailsTable.map(() => ({
-      partNo: React.createRef(),
-      grnNo: React.createRef(),
-      binType: React.createRef(),
-      batchNo: React.createRef(),
-      bin: React.createRef(),
-      actualQty: React.createRef(),
-      convertQty: React.createRef(),
-      cpartNo: React.createRef(),
-      cbatchNo: React.createRef(),
-      cbin: React.createRef(),
-      convertQty: React.createRef()
-    }))
-  );
-  useEffect(() => {
-    // If the length of the table changes, update the refs
-    if (lrNoDetailsRefs.current.length !== codeConversionDetailsTable.length) {
-      lrNoDetailsRefs.current = codeConversionDetailsTable.map(
-        (_, index) =>
-          lrNoDetailsRefs.current[index] || {
-            partNo: React.createRef(),
-            grnNo: React.createRef(),
-            binType: React.createRef(),
-            batchNo: React.createRef(),
-            bin: React.createRef(),
-            actualQty: React.createRef(),
-            convertQty: React.createRef(),
-            cpartNo: React.createRef(),
-            cbatchNo: React.createRef(),
-            cbin: React.createRef(),
-            convertQty: React.createRef()
-          }
-      );
-    }
-  }, [codeConversionDetailsTable.length]);
+  const lrNoDetailsRefs = useRef([]);
+
+  // useEffect(() => {
+  //   lrNoDetailsRefs.current = codeConversionDetailsTable.map((_, i) => ({
+  //     partNo: lrNoDetailsRefs.current[i]?.partNo || React.createRef(),
+  //     grnNo: lrNoDetailsRefs.current[i]?.grnNo || React.createRef(),
+  //     binType: lrNoDetailsRefs.current[i]?.binType || React.createRef(),
+  //     batchNo: lrNoDetailsRefs.current[i]?.batchNo || React.createRef(),
+  //     bin: lrNoDetailsRefs.current[i]?.bin || React.createRef(),
+  //     actualQty: lrNoDetailsRefs.current[i]?.actualQty || React.createRef(),
+  //     convertQty: lrNoDetailsRefs.current[i]?.convertQty || React.createRef(),
+  //     cpartNo: lrNoDetailsRefs.current[i]?.cpartNo || React.createRef(),
+  //     cbatchNo: lrNoDetailsRefs.current[i]?.cbatchNo || React.createRef(),
+  //     cbin: lrNoDetailsRefs.current[i]?.cbin || React.createRef()
+  //   }));
+  // }, [codeConversionDetailsTable]);
 
   const handleSave = async () => {
     const errors = {};
-    let firstInvalidFieldRef = null;
-
     let codeConversionDetailsTableValid = true;
     if (!codeConversionDetailsTable || !Array.isArray(codeConversionDetailsTable) || codeConversionDetailsTable.length === 0) {
       codeConversionDetailsTableValid = false;
@@ -666,70 +623,29 @@ export const CodeConversion = () => {
     } else {
       const newTableErrors = codeConversionDetailsTable.map((row, index) => {
         const rowErrors = {};
-        if (!row.partNo) {
-          rowErrors.partNo = 'Part No is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
-        }
+        if (!row.partNo) rowErrors.partNo = 'Part No is required';
 
-        if (!row.grnNo) {
-          rowErrors.grnNo = 'GRN No is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].grnNo;
-        }
+        if (!row.grnNo) rowErrors.grnNo = 'GRN No is required';
 
-        if (!row.binType) {
-          rowErrors.binType = 'Bin Type is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].binType;
-        }
+        if (!row.binType) rowErrors.binType = 'Bin Type is required';
 
-        if (!row.batchNo) {
-          rowErrors.batchNo = 'Batch No is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
-        }
+        if (!row.batchNo) rowErrors.batchNo = 'Batch No is required';
 
-        if (!row.bin) {
-          rowErrors.bin = 'Bin is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
-        }
+        if (!row.bin) rowErrors.bin = 'Bin is required';
 
-        if (!row.actualQty) {
-          rowErrors.actualQty = 'Actual Qty is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].actualQty;
-        }
+        if (!row.actualQty) rowErrors.actualQty = 'Actual Qty is required';
 
-        if (!row.convertQty) {
-          rowErrors.convertQty = 'Convert Qty is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].convertQty;
-        }
+        if (!row.convertQty) rowErrors.convertQty = 'Convert Qty is required';
 
-        if (!row.cpartNo) {
-          rowErrors.cpartNo = 'Cpart No is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].cpartNo;
-        }
+        if (!row.cpartNo) rowErrors.cpartNo = 'Cpart No is required';
 
-        if (!row.cbatchNo) {
-          rowErrors.cbatchNo = 'C Batch No is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].cbatchNo;
-        }
-
-        if (!row.cbin) {
-          rowErrors.cbin = 'C Bin is required';
-          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].cbin;
-        }
+        if (!row.cbin) rowErrors.cbin = 'C Bin is required';
 
         if (Object.keys(rowErrors).length > 0) codeConversionDetailsTableValid = false;
         return rowErrors;
       });
 
       setCodeConversionDetailsError(newTableErrors);
-
-      if (!codeConversionDetailsTableValid || Object.keys(errors).length > 0) {
-        // Focus on the first invalid field
-        if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
-          firstInvalidFieldRef.current.focus();
-        }
-      } else {
-        // Proceed with form submission
-      }
     }
 
     if (Object.keys(errors).length === 0 && codeConversionDetailsTableValid) {
@@ -1030,9 +946,9 @@ export const CodeConversion = () => {
                                   <th className="table-header">C Part No *</th>
                                   <th className="table-header">C Part Desc</th>
                                   <th className="table-header">C SKU</th>
-                                  <th className="table-header">C Batch No *</th>
+                                  {/* <th className="table-header">C Batch No *</th> */}
                                   <th className="table-header">C Bin *</th>
-                                  <th className="table-header">C ExpDate *</th>
+                                  {/* <th className="table-header">C ExpDate *</th> */}
                                   <th className="table-header">Remarks</th>
                                 </tr>
                               </thead>
@@ -1397,7 +1313,7 @@ export const CodeConversion = () => {
                                               title={row.csku}
                                             />
                                           </td>
-                                          <td className="border px-2 py-2">
+                                          {/* <td className="border px-2 py-2">
                                             <input
                                               ref={lrNoDetailsRefs.current[index]?.cbatchNo}
                                               type="text"
@@ -1426,7 +1342,7 @@ export const CodeConversion = () => {
                                                 {codeConversionDetailsError[index].cbatchNo}
                                               </div>
                                             )}
-                                          </td>
+                                          </td> */}
                                           <td className="border px-2 py-2">
                                             <select
                                               ref={lrNoDetailsRefs.current[index]?.cbin}
@@ -1445,7 +1361,7 @@ export const CodeConversion = () => {
                                                           cCore: selectedCBin.core,
                                                           cCellType: selectedCBin.cellType,
                                                           cBinType: selectedCBin.binType,
-                                                          cBinClass: selectedCBin.cBinClass
+                                                          cBinClass: selectedCBin.binClass
                                                         }
                                                       : r
                                                   )
@@ -1480,7 +1396,7 @@ export const CodeConversion = () => {
                                             )}
                                           </td>
 
-                                          <td className="border px-2 py-2">
+                                          {/* <td className="border px-2 py-2">
                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                               <DatePicker
                                                 value={row.cexpDate ? dayjs(row.cexpDate, 'YYYY-MM-DD') : null}
@@ -1490,7 +1406,7 @@ export const CodeConversion = () => {
                                                 format="DD/MM/YYYY"
                                               />
                                             </LocalizationProvider>
-                                          </td>
+                                          </td> */}
 
                                           <td className="border px-2 py-2">
                                             <input
