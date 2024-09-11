@@ -20,6 +20,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import React, { useRef } from 'react';
 
 export const DeKitting = () => {
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId')));
@@ -65,6 +66,27 @@ export const DeKitting = () => {
       qty: ''
     }
   ]);
+
+  const lrNoDetailsRefs = useRef(
+    parentTable.map(() => ({
+      partNo: React.createRef(),
+      qty: React.createRef()
+    }))
+  );
+
+  useEffect(() => {
+    // If the length of the table changes, update the refs
+    if (lrNoDetailsRefs.current.length !== parentTable.length) {
+      lrNoDetailsRefs.current = parentTable.map(
+        (_, index) =>
+          lrNoDetailsRefs.current[index] || {
+            partNo: React.createRef(),
+            qty: React.createRef()
+          }
+      );
+    }
+  }, [parentTable.length]);
+
   const [childTable, setChildTable] = useState([
     {
       id: 1,
@@ -771,24 +793,38 @@ export const DeKitting = () => {
     // }
 
     const errors = {};
+    let firstInvalidFieldRef = null;
+
     if (!formData.docId) {
       errors.docId = 'Doc Id is required';
     }
 
     let parentTableDataValid = true;
-    const newTableErrors = parentTable.map((row) => {
+    const newTableErrors = parentTable.map((row, index) => {
       const rowErrors = {};
       if (!row.partNo) {
         rowErrors.partNo = 'Part No is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
         parentTableDataValid = false;
       }
       if (!row.qty) {
         rowErrors.qty = 'Qty is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].qty;
         parentTableDataValid = false;
       }
       return rowErrors;
     });
     setFieldErrors(errors);
+
+    if (!parentTableDataValid || Object.keys(errors).length > 0) {
+      // Focus on the first invalid field
+      if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+        firstInvalidFieldRef.current.focus();
+      }
+    } else {
+      // Proceed with form submission
+    }
+
     setParentTableErrors(newTableErrors);
 
     let childTableDataValid = true;
@@ -997,6 +1033,7 @@ export const DeKitting = () => {
 
                                       <td className="border px-2 py-2">
                                         <select
+                                          ref={lrNoDetailsRefs.current[index].partNo}
                                           value={row.partNo}
                                           style={{ width: '200px' }}
                                           onChange={(e) => handlePartNoChange(row, index, e)}
@@ -1199,6 +1236,7 @@ export const DeKitting = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
+                                          ref={lrNoDetailsRefs.current[index].qty}
                                           type="text"
                                           value={row.qty}
                                           style={{ width: '100px' }}

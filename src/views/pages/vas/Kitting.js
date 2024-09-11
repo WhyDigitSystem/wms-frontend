@@ -21,6 +21,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import React, { useRef } from 'react';
 
 export const Kitting = () => {
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId')));
@@ -73,6 +74,29 @@ export const Kitting = () => {
       amount: ''
     }
   ]);
+
+  const lrNoDetailsRefs = useRef(
+    childTableData.map(() => ({
+      partNo: React.createRef(),
+      bin: React.createRef(),
+      qty: React.createRef()
+    }))
+  );
+
+  useEffect(() => {
+    // If the length of the table changes, update the refs
+    if (lrNoDetailsRefs.current.length !== childTableData.length) {
+      lrNoDetailsRefs.current = childTableData.map(
+        (_, index) =>
+          lrNoDetailsRefs.current[index] || {
+            partNo: React.createRef(),
+            bin: React.createRef(),
+            qty: React.createRef()
+          }
+      );
+    }
+  }, [childTableData.length]);
+
   const [parentTableData, setParentTableData] = useState([
     {
       id: 1,
@@ -91,6 +115,24 @@ export const Kitting = () => {
       expDate: ''
     }
   ]);
+
+  // const lrNoParentDetailsRefs = useRef(
+  //   parentTableData.map(() => ({
+  //     pbin: React.createRef()
+  //   }))
+  // );
+
+  // useEffect(() => {
+  //   // If the length of the table changes, update the refs
+  //   if (lrNoParentDetailsRefs.current.length !== parentTableData.length) {
+  //     lrNoParentDetailsRefs.current = parentTableData.map(
+  //       (_, index) =>
+  //         lrNoParentDetailsRefs.current[index] || {
+  //           pbin: React.createRef()
+  //         }
+  //     );
+  //   }
+  // }, [parentTableData.length]);
 
   const handleAddRow = () => {
     const newRow = {
@@ -815,6 +857,8 @@ export const Kitting = () => {
 
   const handleSave = async () => {
     const errors = {};
+    let firstInvalidFieldRef = null;
+
     if (!formData.docId) {
       errors.docId = 'Doc Id is required';
     }
@@ -829,18 +873,21 @@ export const Kitting = () => {
     }
 
     let childTableDataValid = true;
-    const newTableErrors = childTableData.map((row) => {
+    const newTableErrors = childTableData.map((row, index) => {
       const rowErrors = {};
-      if (!row.bin) {
-        rowErrors.bin = 'Bin is required';
-        childTableDataValid = false;
-      }
       if (!row.partNo) {
         rowErrors.partNo = 'PartNo is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
+        childTableDataValid = false;
+      }
+      if (!row.bin) {
+        rowErrors.bin = 'Bin is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
         childTableDataValid = false;
       }
       if (!row.qty) {
         rowErrors.qty = 'qty Type is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].qty;
         childTableDataValid = false;
       }
       return rowErrors;
@@ -848,6 +895,15 @@ export const Kitting = () => {
     // setFieldErrors(errors);
 
     setChildTableErrors(newTableErrors);
+
+    if (!childTableDataValid || Object.keys(errors).length > 0) {
+      // Focus on the first invalid field
+      if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+        firstInvalidFieldRef.current.focus();
+      }
+    } else {
+      // Proceed with form submission
+    }
 
     let parentTableDataValid = true;
     const newTableErrors1 = parentTableData.map((row) => {
@@ -1158,6 +1214,7 @@ export const Kitting = () => {
 
                                     <td className="border px-2 py-2">
                                       <select
+                                        ref={lrNoDetailsRefs.current[index].partNo}
                                         value={row.partNo}
                                         style={{ width: '130px' }}
                                         onChange={(e) => {
@@ -1364,6 +1421,7 @@ export const Kitting = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <select
+                                        ref={lrNoDetailsRefs.current[index].bin}
                                         value={row.bin}
                                         style={{ width: '130px' }}
                                         onChange={(e) => handleBinChange(row, index, e)}
@@ -1488,6 +1546,7 @@ export const Kitting = () => {
 
                                     <td className="border px-2 py-2">
                                       <input
+                                        ref={lrNoDetailsRefs.current[index].qty}
                                         type="text"
                                         value={row.qty}
                                         style={{ width: '100px' }}
