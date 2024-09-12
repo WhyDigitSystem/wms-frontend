@@ -29,8 +29,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 // import 'react-datepicker/dist/react-datepicker.css';
 // import { DatePicker } from 'react-datepicker';
 import dayjs from 'dayjs';
-import { getAllActiveCarrier, getAllActivePartDetails, getAllActiveSupplier, getAllShipmentModes } from 'utils/CommonFunctions';
 import React, { useRef } from 'react';
+import { getAllActiveCarrier, getAllActivePartDetails, getAllActiveSupplier, getAllShipmentModes } from 'utils/CommonFunctions';
 
 export const Grn = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -1235,7 +1235,7 @@ export const Grn = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.entrySlNo}
                   helperText={fieldErrors.entrySlNo}
-                  disabled={editId ? true : false}
+                  disabled={formData.grnType === 'GRN'}
                 />
               </div>
 
@@ -1253,7 +1253,7 @@ export const Grn = () => {
                       format="DD/MM/YYYY"
                       error={fieldErrors.date}
                       helperText={fieldErrors.date && 'Required'}
-                      disabled={editId ? true : false}
+                      disabled={formData.grnType === 'GRN'}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1284,6 +1284,7 @@ export const Grn = () => {
                         labelId="gatePassId-label"
                         label="Gate Pass No"
                         value={formData.gatePassId}
+                        disabled={formData.grnType === 'GRN'}
                         onChange={handleInputChange}
                         name="gatePassId"
                       >
@@ -1313,7 +1314,7 @@ export const Grn = () => {
                       format="DD/MM/YYYY"
                       error={fieldErrors.gatePassDate}
                       helperText={fieldErrors.gatePassDate && 'Required'}
-                      disabled={editId ? true : false}
+                      disabled
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -2034,7 +2035,7 @@ export const Grn = () => {
                                             </div>
                                           )}
                                         </td>
-                                        <td className="border px-2 py-2">
+                                        {/* <td className="border px-2 py-2">
                                           <input
                                             style={{ width: '150px' }}
                                             type="text"
@@ -2083,7 +2084,79 @@ export const Grn = () => {
                                               {lrTableErrors[index].palletQty}
                                             </div>
                                           )}
+                                        </td> */}
+
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            style={{ width: '150px' }}
+                                            type="text"
+                                            ref={lrNoDetailsRefs.current[index]?.palletQty}
+                                            value={row.palletQty}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const maxPalletQty = (row.grnQty || 0) - (row.damageQty || 0); // Calculate maxPalletQty
+                                              const intPattern = /^\d*$/;
+
+                                              if (value === '') {
+                                                // Allow empty input and clear noOfBin as well
+                                                setLrTableData((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, palletQty: value, noOfBin: '' } : r))
+                                                );
+                                                setLrTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = { ...newErrors[index], palletQty: 'Pallet Qty is required' };
+                                                  return newErrors;
+                                                });
+                                              } else if (!intPattern.test(value)) {
+                                                // Validate if only numbers are allowed
+                                                setLrTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = { ...newErrors[index], palletQty: 'Only numbers are allowed' };
+                                                  return newErrors;
+                                                });
+                                              } else if (Number(value) <= 0) {
+                                                // Validate if input is zero or negative
+                                                setLrTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    palletQty: 'Pallet Qty must be greater than zero'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else if (Number(value) > maxPalletQty) {
+                                                // Validate if palletQty exceeds maxPalletQty
+                                                setLrTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    palletQty: `Pallet Qty cannot exceed ${maxPalletQty}`
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                // Valid input, calculate noOfBin (optional)
+                                                const noOfBin = Math.ceil(maxPalletQty / Number(value));
+
+                                                setLrTableData((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, palletQty: value, noOfPallets: noOfBin } : r))
+                                                );
+                                                setLrTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = { ...newErrors[index], palletQty: '' };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={lrTableErrors[index]?.palletQty ? 'error form-control' : 'form-control'}
+                                          />
+                                          {lrTableErrors[index]?.palletQty && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {lrTableErrors[index].palletQty}
+                                            </div>
+                                          )}
                                         </td>
+
                                         <td className="border px-2 py-2">
                                           <input
                                             style={{ width: '150px' }}

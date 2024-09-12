@@ -1,42 +1,42 @@
-import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
-import { Avatar, Box, List, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { Box, Typography } from '@mui/material';
+import { styled, useTheme } from '@mui/material/styles';
 import { useState } from 'react';
+import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 import MainCard from 'ui-component/cards/MainCard';
 import TotalIncomeCard from 'ui-component/cards/Skeleton/TotalIncomeCard';
-// assets
 import WarehouseDialog from './WarehouseDialog';
-// styles
-import { styled } from '@mui/material/styles';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
-  backgroundColor: theme.palette.primary.dark,
-  color: theme.palette.primary.light,
+  backgroundColor: theme.palette.background.paper,
+  color: theme.palette.text.primary,
+  borderRadius: '16px',
   overflow: 'hidden',
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
   position: 'relative',
+  padding: '1px', // Increased padding for better content spacing
+
+  width: '320px', // Fixed width for the card
+  height: '185px', // Increased height for a better layout
   '&:after': {
     content: '""',
     position: 'absolute',
-    width: 210,
-    height: 210,
-    background: `linear-gradient(210.04deg, ${theme.palette.primary[200]} -50.94%, rgba(144, 202, 249, 0) 83.49%)`,
+    width: 120, // Larger size for the background circle
+    height: 120,
+    // background: `linear-gradient(210.04deg, ${theme.palette.primary.main} -50.94%, rgba(144, 202, 249, 0) 83.49%)`,
     borderRadius: '50%',
-    top: -30,
-    right: -180
-  },
-  '&:before': {
-    content: '""',
-    position: 'absolute',
-    width: 210,
-    height: 210,
-    background: `linear-gradient(140.9deg, ${theme.palette.primary[200]} -14.02%, rgba(144, 202, 249, 0) 77.58%)`,
-    borderRadius: '50%',
-    top: -160,
-    right: -130
+    top: -10, // Adjusted position of the circle
+    right: -50
   }
 }));
 
-// ==============================|| DASHBOARD - TOTAL INCOME DARK CARD ||============================== //
+const data = [
+  { name: 'Occupied', value: 80 },
+  { name: 'Available', value: 20 }
+];
+
+const COLORS = ['#00C49F', '#FFBB28'];
+
+const renderCustomLabel = ({ percent }) => `${(percent * 100).toFixed(0)}%`;
 
 const TotalIncomeDarkCard = ({ isLoading }) => {
   const theme = useTheme();
@@ -55,54 +55,45 @@ const TotalIncomeDarkCard = ({ isLoading }) => {
       {isLoading ? (
         <TotalIncomeCard />
       ) : (
-        <>
-          <CardWrapper border={false} content={false}>
-            <Box sx={{ p: 2 }}>
-              <List sx={{ py: 0 }}>
-                <ListItem alignItems="center" disableGutters sx={{ py: 0 }}>
-                  <ListItemAvatar>
-                    <Avatar
-                      variant="rounded"
-                      sx={{
-                        ...theme.typography.commonAvatar,
-                        ...theme.typography.largeAvatar,
-                        backgroundColor: theme.palette.primary[800],
-                        color: '#fff'
-                      }}
-                      onClick={handleDialogOpen}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <TableChartOutlinedIcon fontSize="inherit" />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    sx={{
-                      py: 0,
-                      mt: 0.45,
-                      mb: 0.45
-                    }}
-                    primary={
-                      <Typography variant="h4" sx={{ color: '#fff' }}>
-                        80% Occupied
-                      </Typography>
-                    }
-                    secondary={
-                      <Typography
-                        variant="subtitle2"
-                        sx={{ color: 'primary.light', mt: 0.25, cursor: 'pointer' }}
-                        onClick={handleDialogOpen}
-                      >
-                        View Warehouse
-                      </Typography>
-                    }
-                  />
-                </ListItem>
-              </List>
+        <CardWrapper>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 600, mb: 1 }}>
+              Warehouse Occupancy
+            </Typography>
+            <Box sx={{ width: '100%', height: 120 }}>
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    data={data}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius="60%"
+                    outerRadius="80%"
+                    dataKey="value"
+                    startAngle={90}
+                    endAngle={-270}
+                    paddingAngle={5}
+                    label={renderCustomLabel}
+                    labelLine={false}
+                  >
+                    {data.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
             </Box>
-          </CardWrapper>
-
+            <Box mt={0}>
+              {/* <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 500 }}>
+                80% Occupied
+              </Typography> */}
+              <Typography variant="body2" sx={{ color: theme.palette.primary.main, cursor: 'pointer', mt: 0 }} onClick={handleDialogOpen}>
+                View Details
+              </Typography>
+            </Box>
+          </Box>
           <WarehouseDialog open={dialogOpen} onClose={handleDialogClose} />
-        </>
+        </CardWrapper>
       )}
     </>
   );

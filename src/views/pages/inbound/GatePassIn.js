@@ -55,6 +55,7 @@ export const GatePassIn = () => {
     driverName: '',
     contact: '',
     goodsDescription: '',
+    freeze: false,
     securityName: ''
   });
   const [value, setValue] = useState(0);
@@ -326,7 +327,8 @@ export const GatePassIn = () => {
           driverName: particularGatePassIn.driverName,
           contact: particularGatePassIn.contact,
           goodsDescription: particularGatePassIn.goodsDescription,
-          securityName: particularGatePassIn.securityName
+          securityName: particularGatePassIn.securityName,
+          freeze: particularGatePassIn.freeze
           // active: particularGatePassIn.active === 'Active' ? true : false
         });
         setLrNoDetailsTable(
@@ -601,7 +603,8 @@ export const GatePassIn = () => {
       driverName: '',
       contact: '',
       goodsDescription: '',
-      securityName: ''
+      securityName: '',
+      freeze: false
     });
     setLrNoDetailsTable([
       {
@@ -794,6 +797,8 @@ export const GatePassIn = () => {
       const lrNoDetailsVO = lrNoDetailsTable.map((row) => ({
         amount: 0,
         batchNo: row.batchNo,
+        batchDate: row.batchDate,
+        expDate: row.expDate,
         damageQty: parseInt(row.damageQty),
         grnPiecesQty: 0,
         invQty: parseInt(row.invQty),
@@ -896,7 +901,11 @@ export const GatePassIn = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            {formData.freeze ? (
+              ''
+            ) : (
+              <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            )}
           </div>
         </div>
         {listView ? (
@@ -941,6 +950,7 @@ export const GatePassIn = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
+                  disabled={formData.freeze}
                   name="entryNo"
                   value={formData.entryNo}
                   onChange={handleInputChange}
@@ -955,6 +965,7 @@ export const GatePassIn = () => {
                       label="Date"
                       value={formData.entryDate ? dayjs(formData.entryDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('entryDate', date)}
+                      disabled={formData.freeze}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
@@ -978,6 +989,7 @@ export const GatePassIn = () => {
                     labelId="supplier"
                     label="Supplier Short Name *"
                     value={formData.supplier}
+                    disabled={formData.freeze}
                     onChange={handleInputChange}
                     name="supplier"
                   >
@@ -1023,6 +1035,7 @@ export const GatePassIn = () => {
                     value={formData.modeOfShipment}
                     onChange={handleInputChange}
                     name="modeOfShipment"
+                    disabled={formData.freeze}
                   >
                     {modeOfShipmentList.length > 0 ? (
                       modeOfShipmentList?.map((mode) => (
@@ -1051,6 +1064,7 @@ export const GatePassIn = () => {
                     label="Carrier/Transport *"
                     value={formData.carrier}
                     onChange={handleInputChange}
+                    disabled={formData.freeze}
                     name="carrier"
                   >
                     {carrierList.length > 0 ? (
@@ -1143,6 +1157,7 @@ export const GatePassIn = () => {
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.irNoHaw}
+                                        disabled={formData.freeze}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setLrNoDetailsTable((prev) =>
@@ -1168,6 +1183,7 @@ export const GatePassIn = () => {
                                         ref={lrNoDetailsRefs.current[index].invoiceNo}
                                         type="text"
                                         style={{ width: '100px' }}
+                                        disabled={formData.freeze}
                                         value={row.invoiceNo}
                                         onChange={(e) => {
                                           const value = e.target.value;
@@ -1193,6 +1209,7 @@ export const GatePassIn = () => {
                                         ref={lrNoDetailsRefs.current[index].partNo}
                                         value={row.partNo}
                                         style={{ width: '100px' }}
+                                        disabled={formData.freeze}
                                         onChange={(e) => {
                                           const value = e.target.value;
 
@@ -1255,6 +1272,7 @@ export const GatePassIn = () => {
                                         ref={lrNoDetailsRefs.current[index].batchNo}
                                         type="text"
                                         style={{ width: '100px' }}
+                                        disabled={formData.freeze}
                                         value={row.batchNo}
                                         onChange={(e) => {
                                           const value = e.target.value;
@@ -1279,13 +1297,14 @@ export const GatePassIn = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         ref={lrNoDetailsRefs.current[index].batchDate}
-                                        type="text"
-                                        style={{ width: '100px' }}
+                                        type="date"
+                                        style={{ width: '200px' }}
+                                        disabled={formData.freeze}
                                         value={row.batchDate}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, batchDate: value.toUpperCase() } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, batchDate: value } : r))
                                           );
                                           setLrNoDetailsError((prev) => {
                                             const newErrors = [...prev];
@@ -1305,14 +1324,13 @@ export const GatePassIn = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         ref={lrNoDetailsRefs.current[index].expDate}
-                                        type="text"
-                                        style={{ width: '100px' }}
+                                        type="date"
+                                        style={{ width: '200px' }}
+                                        disabled={formData.freeze}
                                         value={row.expDate}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setLrNoDetailsTable((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, expDate: value.toUpperCase() } : r))
-                                          );
+                                          setLrNoDetailsTable((prev) => prev.map((r) => (r.id === row.id ? { ...r, expDate: value } : r)));
                                           setLrNoDetailsError((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = { ...newErrors[index], expDate: !value ? 'Exp Date is required' : '' };
@@ -1337,6 +1355,7 @@ export const GatePassIn = () => {
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.invQty}
+                                        disabled={formData.freeze}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           if (/^\d*$/.test(value)) {
@@ -1374,6 +1393,7 @@ export const GatePassIn = () => {
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.recQty}
+                                        disabled={formData.freeze}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           if (/^\d*$/.test(value)) {
@@ -1436,6 +1456,7 @@ export const GatePassIn = () => {
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.damageQty}
+                                        disabled={formData.freeze}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           if (/^\d*$/.test(value)) {
@@ -1626,6 +1647,7 @@ export const GatePassIn = () => {
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.remarks}
+                                        disabled={formData.freeze}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setLrNoDetailsTable((prev) =>
@@ -1673,6 +1695,7 @@ export const GatePassIn = () => {
                           variant="outlined"
                           size="small"
                           fullWidth
+                          disabled={formData.freeze}
                           name="vehicleNo"
                           value={formData.vehicleNo}
                           onChange={handleInputChange}
@@ -1686,6 +1709,7 @@ export const GatePassIn = () => {
                           variant="outlined"
                           size="small"
                           fullWidth
+                          disabled={formData.freeze}
                           name="driverName"
                           value={formData.driverName}
                           onChange={handleInputChange}
@@ -1699,6 +1723,7 @@ export const GatePassIn = () => {
                           variant="outlined"
                           size="small"
                           fullWidth
+                          disabled={formData.freeze}
                           name="contact"
                           value={formData.contact}
                           onChange={handleInputChange}
@@ -1713,6 +1738,7 @@ export const GatePassIn = () => {
                           variant="outlined"
                           size="small"
                           fullWidth
+                          disabled={formData.freeze}
                           name="goodsDescription"
                           value={formData.goodsDescription}
                           onChange={handleInputChange}
@@ -1726,6 +1752,7 @@ export const GatePassIn = () => {
                           variant="outlined"
                           size="small"
                           fullWidth
+                          disabled={formData.freeze}
                           name="securityName"
                           value={formData.securityName}
                           onChange={handleInputChange}

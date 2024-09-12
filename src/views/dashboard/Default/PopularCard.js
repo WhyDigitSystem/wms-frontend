@@ -13,7 +13,6 @@ import BajajAreaChartCard from './BajajAreaChartCard';
 
 // assets
 import ChevronRightOutlinedIcon from '@mui/icons-material/ChevronRightOutlined';
-import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 
@@ -205,7 +204,7 @@ const PopularCard = ({ isLoading }) => {
                     </Typography>
                   </Grid>
                 </Grid>
-                <Divider sx={{ my: 1.5 }} />
+                {/* <Divider sx={{ my: 1.5 }} />
                 <Grid container direction="column">
                   <Grid item>
                     <Grid container alignItems="center" justifyContent="space-between">
@@ -245,9 +244,9 @@ const PopularCard = ({ isLoading }) => {
                       136 orders
                     </Typography>
                   </Grid>
-                </Grid>
+                </Grid> */}
                 <Divider sx={{ my: 1.5 }} />
-                <Grid container direction="column">
+                {/* <Grid container direction="column">
                   <Grid item>
                     <Grid container alignItems="center" justifyContent="space-between">
                       <Grid item>
@@ -286,7 +285,7 @@ const PopularCard = ({ isLoading }) => {
                       98 orders
                     </Typography>
                   </Grid>
-                </Grid>
+                </Grid> */}
               </Grid>
             </Grid>
           </CardContent>
