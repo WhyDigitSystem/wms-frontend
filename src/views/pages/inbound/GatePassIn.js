@@ -555,9 +555,18 @@ export const GatePassIn = () => {
     }
 
     // Restore cursor position after state update
+    // setTimeout(() => {
+    //   const inputElement = event.target;
+    //   inputElement.setSelectionRange(cursorPosition, cursorPosition); // Restore cursor
+    // }, 0);
+
     setTimeout(() => {
       const inputElement = event.target;
-      inputElement.setSelectionRange(cursorPosition, cursorPosition); // Restore cursor
+
+      // Check if inputElement is an input or textarea
+      if (inputElement && (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA')) {
+        inputElement.setSelectionRange(cursorPosition, cursorPosition); // Restore cursor
+      }
     }, 0);
   };
 

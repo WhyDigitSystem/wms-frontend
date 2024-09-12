@@ -170,34 +170,6 @@ export const Grn = () => {
     }
   ]);
 
-  const lrNoDetailsRefs = useRef(
-    lrTableData.map(() => ({
-      lr_Hawb_Hbl_No: React.createRef(),
-      invNo: React.createRef(),
-      partNo: React.createRef(),
-      invQty: React.createRef(),
-      palletQty: React.createRef(),
-      noOfPallets: React.createRef()
-    }))
-  );
-
-  useEffect(() => {
-    // If the length of the table changes, update the refs
-    if (lrNoDetailsRefs.current.length !== lrTableData.length) {
-      lrNoDetailsRefs.current = lrTableData.map(
-        (_, index) =>
-          lrNoDetailsRefs.current[index] || {
-            lr_Hawb_Hbl_No: React.createRef(),
-            invNo: React.createRef(),
-            partNo: React.createRef(),
-            invQty: React.createRef(),
-            palletQty: React.createRef(),
-            noOfPallets: React.createRef()
-          }
-      );
-    }
-  }, [lrTableData.length]);
-
   const [lrTableErrors, setLrTableErrors] = useState([
     {
       qrCode: '',
@@ -230,6 +202,48 @@ export const Grn = () => {
       remarks: ''
     }
   ]);
+
+  // const lrNoDetailsRefs = useRef(
+  //   lrTableData.map(() => ({
+  //     lr_Hawb_Hbl_No: React.createRef(),
+  //     invNo: React.createRef(),
+  //     partNo: React.createRef(),
+  //     invQty: React.createRef(),
+  //     palletQty: React.createRef(),
+  //     noOfPallets: React.createRef()
+  //   }))
+  // );
+
+  // useEffect(() => {
+  //   // If the length of the table changes, update the refs
+  //   if (lrNoDetailsRefs.current.length !== lrTableData.length) {
+  //     lrNoDetailsRefs.current = lrTableData.map(
+  //       (_, index) =>
+  //         lrNoDetailsRefs.current[index] || {
+  //           lr_Hawb_Hbl_No: React.createRef(),
+  //           invNo: React.createRef(),
+  //           partNo: React.createRef(),
+  //           invQty: React.createRef(),
+  //           palletQty: React.createRef(),
+  //           noOfPallets: React.createRef()
+  //         }
+  //     );
+  //   }
+  // }, [lrTableData.length]);
+
+  const lrNoDetailsRefs = useRef([]);
+
+  useEffect(() => {
+    lrNoDetailsRefs.current = lrTableData.map((_, index) => ({
+      lr_Hawb_Hbl_No: lrNoDetailsRefs.current[index]?.lr_Hawb_Hbl_No || React.createRef(),
+      invNo: lrNoDetailsRefs.current[index]?.invNo || React.createRef(),
+      partNo: lrNoDetailsRefs.current[index]?.partNo || React.createRef(),
+      invQty: lrNoDetailsRefs.current[index]?.invQty || React.createRef(),
+      palletQty: lrNoDetailsRefs.current[index]?.palletQty || React.createRef(),
+      noOfPallets: lrNoDetailsRefs.current[index]?.noOfPallets || React.createRef()
+    }));
+  }, [lrTableData]);
+
   const [value, setValue] = useState(0);
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
@@ -380,7 +394,7 @@ export const Grn = () => {
     try {
       const response = await apiCalls(
         'get',
-        `grn/getAllGrn?branch=CHENNAI&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
+        `grn/getAllGrn?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&finYear=${loginFinYear}&orgId=${orgId}&warehouse=${loginWarehouse}`
       );
       setListViewData(response.paramObjectsMap.grnVO);
     } catch (error) {
@@ -1111,7 +1125,7 @@ export const Grn = () => {
         if (response.status === true) {
           console.log('Response:', response);
           showToast('success', editId ? 'GRN Updated Successfully' : 'GRN created successfully');
-          // handleClear();
+          handleClear();
           getAllGrns();
           setIsLoading(false);
         } else {
@@ -1590,7 +1604,7 @@ export const Grn = () => {
                                           <input
                                             style={{ width: '150px' }}
                                             type="text"
-                                            ref={lrNoDetailsRefs.current[index].lr_Hawb_Hbl_No}
+                                            ref={lrNoDetailsRefs.current[index]?.lr_Hawb_Hbl_No}
                                             value={row.lr_Hawb_Hbl_No}
                                             onChange={(e) => {
                                               const value = e.target.value;
@@ -1618,7 +1632,7 @@ export const Grn = () => {
                                           <input
                                             style={{ width: '150px' }}
                                             type="text"
-                                            ref={lrNoDetailsRefs.current[index].invNo}
+                                            ref={lrNoDetailsRefs.current[index]?.invNo}
                                             value={row.invNo}
                                             onChange={(e) => {
                                               const value = e.target.value;
@@ -1690,7 +1704,7 @@ export const Grn = () => {
                                         </td>
                                         <td className="border px-2 py-2">
                                           <select
-                                            ref={lrNoDetailsRefs.current[index].partNo}
+                                            ref={lrNoDetailsRefs.current[index]?.partNo}
                                             value={row.partNo}
                                             style={{ width: '200px' }}
                                             onChange={(e) => handlePartNoChange(row, index, e)}
@@ -1731,7 +1745,7 @@ export const Grn = () => {
                                           <input
                                             style={{ width: '150px' }}
                                             type="text"
-                                            ref={lrNoDetailsRefs.current[index].invQty}
+                                            ref={lrNoDetailsRefs.current[index]?.invQty}
                                             value={row.invQty}
                                             onChange={(e) => {
                                               const value = e.target.value;
@@ -2024,7 +2038,7 @@ export const Grn = () => {
                                           <input
                                             style={{ width: '150px' }}
                                             type="text"
-                                            ref={lrNoDetailsRefs.current[index].palletQty}
+                                            ref={lrNoDetailsRefs.current[index]?.palletQty}
                                             value={row.palletQty}
                                             onChange={(e) => {
                                               const value = e.target.value;
@@ -2074,7 +2088,7 @@ export const Grn = () => {
                                           <input
                                             style={{ width: '150px' }}
                                             type="text"
-                                            ref={lrNoDetailsRefs.current[index].noOfPallets}
+                                            ref={lrNoDetailsRefs.current[index]?.noOfPallets}
                                             value={row.noOfPallets}
                                             onChange={(e) => {
                                               const value = e.target.value;

@@ -134,24 +134,33 @@ export const Putaway = () => {
     }
   ]);
 
-  const lrNoDetailsRefs = useRef(
-    putAwayDetailsTableData.map(() => ({
-      sku: React.createRef(),
-      bin: React.createRef()
-    }))
-  );
+  // const lrNoDetailsRefs = useRef(
+  //   putAwayDetailsTableData.map(() => ({
+  //     sku: React.createRef(),
+  //     bin: React.createRef()
+  //   }))
+  // );
+  // useEffect(() => {
+  //   // If the length of the table changes, update the refs
+  //   if (lrNoDetailsRefs.current.length !== putAwayDetailsTableData.length) {
+  //     lrNoDetailsRefs.current = putAwayDetailsTableData.map(
+  //       (_, index) =>
+  //         lrNoDetailsRefs.current[index] || {
+  //           sku: React.createRef(),
+  //           bin: React.createRef()
+  //         }
+  //     );
+  //   }
+  // }, [putAwayDetailsTableData.length]);
+
+  const lrNoDetailsRefs = useRef([]);
+
   useEffect(() => {
-    // If the length of the table changes, update the refs
-    if (lrNoDetailsRefs.current.length !== putAwayDetailsTableData.length) {
-      lrNoDetailsRefs.current = putAwayDetailsTableData.map(
-        (_, index) =>
-          lrNoDetailsRefs.current[index] || {
-            sku: React.createRef(),
-            bin: React.createRef()
-          }
-      );
-    }
-  }, [putAwayDetailsTableData.length]);
+    lrNoDetailsRefs.current = putAwayDetailsTableData.map((_, index) => ({
+      sku: lrNoDetailsRefs.current[index]?.sku || React.createRef(),
+      bin: lrNoDetailsRefs.current[index]?.bin || React.createRef()
+    }));
+  }, [putAwayDetailsTableData]);
 
   const [gridDetailsTableData, setGridDetailsTableData] = useState([
     // {
@@ -639,7 +648,7 @@ export const Putaway = () => {
   // };
 
   const handleInputChange = (e) => {
-    const { name, value, checked, selectionStart, selectionEnd } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
 
     let errorMessage = '';
 
@@ -674,30 +683,27 @@ export const Putaway = () => {
           // Optionally call other functions
           // getPutawayGridDetails(selectedPutawayId);
         }
-      } else if (name === 'binClass') {
+      } else if (name === 'binClass' || name === 'binPick') {
         setFormData((prevData) => ({
           ...prevData,
           [name]: value
         }));
-      } else if (name === 'binPick') {
-        setFormData((prevData) => ({
-          ...prevData,
-          [name]: value
-        }));
-      } else if (name === 'status') {
-        setFormData({ ...formData, [name]: value });
-      } else if (name === 'core') {
-        setFormData({ ...formData, [name]: initCaps(value) });
+      } else if (name === 'status' || name === 'core') {
+        setFormData({ ...formData, [name]: name === 'core' ? initCaps(value) : value });
       } else {
         setFormData({ ...formData, [name]: value.toUpperCase() });
       }
 
       setFieldErrors({ ...fieldErrors, [name]: '' });
 
-      // Restore cursor position after state update
+      // Restore cursor position after state update, only for inputs that support text selection
       setTimeout(() => {
         const inputElement = document.querySelector(`[name=${name}]`);
-        if (inputElement) {
+        if (
+          inputElement &&
+          (inputElement.tagName === 'INPUT' || inputElement.tagName === 'TEXTAREA') &&
+          (type === 'text' || type === 'password' || type === 'search' || type === 'tel' || type === 'url')
+        ) {
           inputElement.setSelectionRange(selectionStart, selectionEnd);
         }
       }, 0);
@@ -785,18 +791,20 @@ export const Putaway = () => {
         bin: '',
         binType: '',
         cellType: '',
-        grnQty: 0,
+        grnQty: '',
         invNo: '',
-        invQty: 0,
+        invQty: '',
         partDesc: '',
         partNo: '',
-        putAwayQty: 0,
-        recQty: 0,
+        batchNo: '',
+        pQty: '',
+        recQty: '',
         remarks: '',
         sku: '',
         ssku: ''
       }
     ]);
+    setPutAwayTableErrors('');
     setFieldErrors({
       binClass: '',
       binPick: '',
@@ -838,29 +846,29 @@ export const Putaway = () => {
     if (!formData.status) {
       errors.status = 'Status is required';
     }
-    if (!formData.binClass) {
-      errors.binClass = 'Bin Class is required';
-    }
-    if (!formData.binPick) {
-      errors.binPick = 'Bin Pick is required';
-    }
+    // if (!formData.binClass) {
+    //   errors.binClass = 'Bin Class is required';
+    // }
+    // if (!formData.binPick) {
+    //   errors.binPick = 'Bin Pick is required';
+    // }
 
     let putAwayDetailsTableDataValid = true;
     const newTableErrors = putAwayDetailsTableData.map((row, index) => {
       const rowErrors = {};
-      if (!row.batchNo) {
-        rowErrors.batchNo = 'Batch No is required';
-        putAwayDetailsTableDataValid = false;
-      }
+      // if (!row.batchNo) {
+      //   rowErrors.batchNo = 'Batch No is required';
+      //   putAwayDetailsTableDataValid = false;
+      // }
       if (!row.sku) {
         rowErrors.sku = 'Sku is required';
         if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].sku;
         putAwayDetailsTableDataValid = false;
       }
-      if (!row.putAwayQty) {
-        rowErrors.putAwayQty = 'Batch No is required';
-        putAwayDetailsTableDataValid = false;
-      }
+      // if (!row.putAwayQty) {
+      //   rowErrors.putAwayQty = 'PutAwayQty is required';
+      //   putAwayDetailsTableDataValid = false;
+      // }
       if (!row.bin) {
         rowErrors.bin = 'Bin is required';
         if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
@@ -881,7 +889,7 @@ export const Putaway = () => {
 
     setPutAwayTableErrors(newTableErrors);
 
-    if (Object.keys(errors).length === 0) {
+    if (Object.keys(errors).length === 0 && putAwayDetailsTableDataValid) {
       setIsLoading(true);
       const putAwayDetailsDTO = putAwayDetailsTableData.map((row) => ({
         batch: row.batchNo,
@@ -957,6 +965,141 @@ export const Putaway = () => {
       setFieldErrors(errors);
     }
   };
+
+  // const handleSave = async () => {
+  //   const errors = {};
+  //   let firstInvalidFieldRef = null;
+
+  //   // Validate form fields
+  //   if (!formData.grnNo) {
+  //     errors.grnNo = 'Grn No is required';
+  //   }
+  //   if (!formData.binType) {
+  //     errors.binType = 'Bin Type is required';
+  //   }
+  //   if (!formData.status) {
+  //     errors.status = 'Status is required';
+  //   }
+  //   if (!formData.binClass) {
+  //     errors.binClass = 'Bin Class is required';
+  //   }
+  //   if (!formData.binPick) {
+  //     errors.binPick = 'Bin Pick is required';
+  //   }
+
+  //   // Validate table fields
+  //   let putAwayDetailsTableDataValid = true;
+  //   const newTableErrors = putAwayDetailsTableData.map((row, index) => {
+  //     const rowErrors = {};
+  //     if (!row.batchNo) {
+  //       rowErrors.batchNo = 'Batch No is required';
+  //       putAwayDetailsTableDataValid = false;
+  //     }
+  //     if (!row.sku) {
+  //       rowErrors.sku = 'Sku is required';
+  //       if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index]?.sku;
+  //       putAwayDetailsTableDataValid = false;
+  //     }
+  //     if (!row.putAwayQty) {
+  //       rowErrors.putAwayQty = 'Put Away Quantity is required';
+  //       putAwayDetailsTableDataValid = false;
+  //     }
+  //     if (!row.bin) {
+  //       rowErrors.bin = 'Bin is required';
+  //       if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index]?.bin;
+  //       putAwayDetailsTableDataValid = false;
+  //     }
+  //     return rowErrors;
+  //   });
+
+  //   // Set the errors in state
+  //   setPutAwayTableErrors(newTableErrors);
+
+  //   // Log the validation state for debugging
+  //   console.log('Validation state:', { putAwayDetailsTableDataValid, errors, newTableErrors });
+
+  //   // Stop form submission if any errors are found
+  //   if (!putAwayDetailsTableDataValid || Object.keys(errors).length > 0) {
+  //     console.log('Form submission blocked due to validation errors.');
+  //     if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+  //       firstInvalidFieldRef.current.focus();
+  //     }
+  //     return;
+  //   }
+
+  //   // Proceed with form submission
+  //   setIsLoading(true);
+
+  //   const putAwayDetailsDTO = putAwayDetailsTableData.map((row) => ({
+  //     batch: row.batchNo,
+  //     batchDate: row.batchDate,
+  //     bin: row.bin,
+  //     binType: row.binType,
+  //     cellType: row.cellType,
+  //     expdate: row.expDate,
+  //     grnQty: row.grnQty,
+  //     invoiceNo: row.invoiceNo,
+  //     invQty: row.invQty,
+  //     partDesc: row.partDesc,
+  //     partNo: row.partNo,
+  //     putAwayQty: row.putAwayQty,
+  //     recQty: row.recQty,
+  //     remarks: row.remarks,
+  //     sku: row.sku,
+  //     ssku: row.ssku
+  //   }));
+
+  //   const saveFormData = {
+  //     ...(editId && { id: editId }),
+  //     binClass: formData.binClass,
+  //     binPick: formData.binPick,
+  //     binType: formData.binType,
+  //     branch: loginBranch,
+  //     branchCode: loginBranchCode,
+  //     carrier: formData.carrier,
+  //     contact: formData.contact,
+  //     client: loginClient,
+  //     core: formData.core,
+  //     createdBy: loginUserName,
+  //     customer: loginCustomer,
+  //     driverName: formData.driverName,
+  //     enteredPerson: formData.enteredPerson,
+  //     entryDate: formData.entryDate,
+  //     entryNo: formData.entryNo,
+  //     finYear: loginFinYear,
+  //     grnDate: formData.grnDate,
+  //     grnNo: formData.grnNo,
+  //     lotNo: formData.lotNo,
+  //     modeOfShipment: formData.modeOfShipment,
+  //     orgId: orgId,
+  //     putAwayDetailsDTO,
+  //     status: formData.status,
+  //     supplier: formData.supplier,
+  //     supplierShortName: formData.supplierShortName,
+  //     vehicleType: formData.vehicleType,
+  //     vehicleNo: formData.vehicleNo,
+  //     warehouse: loginWarehouse
+  //   };
+
+  //   console.log('DATA TO SAVE IS:', saveFormData);
+
+  //   try {
+  //     const response = await apiCalls('put', `putaway/createUpdatePutAway`, saveFormData);
+  //     console.log('API Response:', response);
+  //     if (response.status === true) {
+  //       handleClear();
+  //       showToast('success', editId ? 'Put Away Updated Successfully' : 'Put Away created successfully');
+  //       getAllPutAway();
+  //     } else {
+  //       showToast('error', response.paramObjectsMap.errorMessage || 'Put Away creation failed');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     showToast('error', 'Put Away creation failed');
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const handleView = () => {
     setListView(!listView);
@@ -1425,7 +1568,7 @@ export const Putaway = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">Inv No</th>
+                                  <th className="px-2 py-2 text-white text-center">INVOICE No</th>
                                   <th className="px-2 py-2 text-white text-center">Part No</th>
                                   <th className="px-2 py-2 text-white text-center">Batch</th>
                                   <th className="px-2 py-2 text-white text-center">Part Description</th>
@@ -1581,7 +1724,8 @@ export const Putaway = () => {
 
                                     <td className="border px-2 py-2">
                                       <select
-                                        ref={lrNoDetailsRefs.current[index].sku}
+                                        // ref={lrNoDetailsRefs.current[index].sku}
+                                        ref={lrNoDetailsRefs.current[index]?.sku}
                                         value={row.sku}
                                         style={{ width: '130px' }}
                                         onChange={(e) => {
@@ -1711,7 +1855,9 @@ export const Putaway = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <select
-                                        ref={lrNoDetailsRefs.current[index].bin}
+                                        // ref={lrNoDetailsRefs.current[index].bin}
+
+                                        ref={lrNoDetailsRefs.current[index]?.bin}
                                         value={row.bin}
                                         style={{ width: '130px' }}
                                         onChange={(e) => {

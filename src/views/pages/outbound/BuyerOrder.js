@@ -105,27 +105,37 @@ export const BuyerOrder = () => {
     }
   ]);
 
-  const lrNoDetailsRefs = useRef(
-    skuDetailsTableData.map(() => ({
-      partNo: React.createRef(),
-      batchNo: React.createRef(),
-      qty: React.createRef()
-    }))
-  );
+  // const lrNoDetailsRefs = useRef(
+  //   skuDetailsTableData.map(() => ({
+  //     partNo: React.createRef(),
+  //     batchNo: React.createRef(),
+  //     qty: React.createRef()
+  //   }))
+  // );
+
+  // useEffect(() => {
+  //   // If the length of the table changes, update the refs
+  //   if (lrNoDetailsRefs.current.length !== skuDetailsTableData.length) {
+  //     lrNoDetailsRefs.current = skuDetailsTableData.map(
+  //       (_, index) =>
+  //         lrNoDetailsRefs.current[index] || {
+  //           partNo: React.createRef(),
+  //           batchNo: React.createRef(),
+  //           qty: React.createRef()
+  //         }
+  //     );
+  //   }
+  // }, [skuDetailsTableData.length]);
+
+  const lrNoDetailsRefs = useRef([]);
 
   useEffect(() => {
-    // If the length of the table changes, update the refs
-    if (lrNoDetailsRefs.current.length !== skuDetailsTableData.length) {
-      lrNoDetailsRefs.current = skuDetailsTableData.map(
-        (_, index) =>
-          lrNoDetailsRefs.current[index] || {
-            partNo: React.createRef(),
-            batchNo: React.createRef(),
-            qty: React.createRef()
-          }
-      );
-    }
-  }, [skuDetailsTableData.length]);
+    lrNoDetailsRefs.current = skuDetailsTableData.map((_, index) => ({
+      partNo: lrNoDetailsRefs.current[index]?.partNo || React.createRef(),
+      batchNo: lrNoDetailsRefs.current[index]?.batchNo || React.createRef(),
+      qty: lrNoDetailsRefs.current[index]?.qty || React.createRef()
+    }));
+  }, [skuDetailsTableData]);
 
   const [skuDetails, setSkuDetails] = useState([
     {
@@ -500,86 +510,6 @@ export const BuyerOrder = () => {
     }
   };
 
-  // const handleInputChange = (e) => {
-  //   const { name, value, checked } = e.target;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-  //   const alphaNumericRegex = /^[A-Za-z0-9]*$/;
-  //   const numericRegex = /^[0-9]*$/;
-  //   const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
-  //   const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-
-  //   let errorMessage = '';
-
-  //   switch (name) {
-  //     case 'id':
-  //     case 'shortName':
-  //       if (!nameRegex.test(value)) {
-  //         errorMessage = 'Only alphabetic characters are allowed';
-  //       }
-  //       break;
-  //     case 'pan':
-  //       if (!alphaNumericRegex.test(value)) {
-  //         errorMessage = 'Only alphanumeric characters are allowed';
-  //       } else if (value.length > 10) {
-  //         errorMessage = 'Invalid Format';
-  //       }
-  //       break;
-  //     case 'branchName':
-  //       if (!branchNameRegex.test(value)) {
-  //         errorMessage = 'Only alphanumeric characters and @, _, -, * are allowed';
-  //       }
-  //       break;
-  //     case 'mobile':
-  //       if (!numericRegex.test(value)) {
-  //         errorMessage = 'Only numeric characters are allowed';
-  //       } else if (value.length > 10) {
-  //         errorMessage = 'Invalid Format';
-  //       }
-  //       break;
-  //     default:
-  //       break;
-  //   }
-
-  //   if (errorMessage) {
-  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-  //   } else {
-  //     if (name === 'active') {
-  //       setFormData({ ...formData, [name]: checked });
-  //     } else if (name === 'buyerShortName') {
-  //       const selectedBuyer = buyerList?.find((row) => row.buyerShortName === value);
-  //       if (selectedBuyer) {
-  //         setFormData((prevData) => ({
-  //           ...prevData,
-  //           buyerShortName: value,
-  //           buyer: selectedBuyer.buyer
-  //         }));
-  //       }
-  //     } else if (name === 'billto') {
-  //       const selectedBuyer = buyerList?.find((row) => row.buyerShortName === value);
-  //       if (selectedBuyer) {
-  //         setFormData((prevData) => ({
-  //           ...prevData,
-  //           billto: value,
-  //           billtoFullName: selectedBuyer.buyer
-  //         }));
-  //       }
-  //     } else if (name === 'shipTo') {
-  //       const selectedBuyer = buyerList?.find((row) => row.buyerShortName === value);
-  //       if (selectedBuyer) {
-  //         setFormData((prevData) => ({
-  //           ...prevData,
-  //           shipTo: value,
-  //           shipToFullName: selectedBuyer.buyer
-  //         }));
-  //       }
-  //     } else {
-  //       setFormData({ ...formData, [name]: value.toUpperCase() });
-  //     }
-
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-  // };
-
   const handleInputChange = (e) => {
     const { name, value, checked, selectionStart, selectionEnd } = e.target;
 
@@ -782,6 +712,7 @@ export const BuyerOrder = () => {
     const errors = {};
     let firstInvalidFieldRef = null;
 
+    // Validate main form fields
     if (!formData.orderNo) {
       errors.orderNo = 'Order No is required';
     }
@@ -804,99 +735,101 @@ export const BuyerOrder = () => {
       errors.shipTo = 'Ship To is required';
     }
 
+    // Validate table data
     let skuDetailsTableDataValid = true;
     const newTableErrors = skuDetailsTableData.map((row, index) => {
       const rowErrors = {};
       if (!row.partNo) {
         rowErrors.partNo = 'Part No is required';
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index]?.partNo;
         skuDetailsTableDataValid = false;
       }
       if (!row.batchNo) {
         rowErrors.batchNo = 'Batch No is required';
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index]?.batchNo;
         skuDetailsTableDataValid = false;
       }
       if (!row.qty) {
         rowErrors.qty = 'Qty is required';
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].qty;
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index]?.qty;
         skuDetailsTableDataValid = false;
       }
-
       return rowErrors;
     });
-    // setFieldErrors(errors);
 
+    // Update state with errors
+    setSkuDetailsTableErrors(newTableErrors);
+    setFieldErrors(errors);
+
+    // Log validation errors for debugging
+    console.log('Validation Errors:', errors);
+    console.log('Table Validation Errors:', newTableErrors);
+
+    // Block save operation if there are any errors
     if (!skuDetailsTableDataValid || Object.keys(errors).length > 0) {
       // Focus on the first invalid field
       if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
         firstInvalidFieldRef.current.focus();
       }
-    } else {
-      // Proceed with form submission
+      return; // Stop execution if validation fails
     }
 
-    setSkuDetailsTableErrors(newTableErrors);
+    // Proceed with form submission only if all validations pass
+    setIsLoading(true);
+    const buyerOrderDetailsDTO = skuDetailsTableData.map((row) => ({
+      ...(editId && { id: row.id }),
+      partNo: row.partNo,
+      partDesc: row.partDesc,
+      sku: row.sku,
+      batchNo: row.batchNo,
+      availQty: row.availQty,
+      qty: row.qty,
+      remarks: '',
+      expDate: row.expDate
+    }));
 
-    if (Object.keys(errors).length === 0) {
-      setIsLoading(true);
-      const buyerOrderDetailsDTO = skuDetailsTableData.map((row) => ({
-        ...(editId && { id: row.id }),
-        partNo: row.partNo,
-        partDesc: row.partDesc,
-        sku: row.sku,
-        batchNo: row.batchNo,
-        availQty: row.availQty,
-        qty: row.qty,
-        // EXTRA FIELDS
-        remarks: '',
-        expDate: row.expDate
-      }));
+    const saveFormData = {
+      ...(editId && { id: editId }),
+      billToName: formData.billtoFullName,
+      billToShortName: formData.billto,
+      branch: loginBranch,
+      branchCode: loginBranchCode,
+      buyer: formData.buyerFullName,
+      buyerOrderDetailsDTO: buyerOrderDetailsDTO,
+      buyerShortName: formData.buyerShortName,
+      client: loginClient,
+      createdBy: loginUserName,
+      customer: loginCustomer,
+      finYear: loginFinYear,
+      invoiceDate: formData.invoiceDate,
+      invoiceNo: formData.invoiceNo,
+      orderDate: formData.orderDate,
+      orderNo: formData.orderNo,
+      orgId: parseInt(orgId),
+      refDate: formData.refDate,
+      refNo: formData.refNo,
+      shipToName: formData.shipTo,
+      shipToShortName: formData.shipToFullName,
+      warehouse: loginWarehouse
+    };
 
-      const saveFormData = {
-        ...(editId && { id: editId }),
-        billToName: formData.billtoFullName,
-        billToShortName: formData.billto,
-        branch: loginBranch,
-        branchCode: loginBranchCode,
-        buyer: formData.buyerFullName,
-        buyerOrderDetailsDTO: buyerOrderDetailsDTO,
-        buyerShortName: formData.buyerShortName,
-        client: loginClient,
-        createdBy: loginUserName,
-        customer: loginCustomer,
-        finYear: loginFinYear,
-        invoiceDate: formData.invoiceDate,
-        invoiceNo: formData.invoiceNo,
-        orderDate: formData.orderDate,
-        orderNo: formData.orderNo,
-        orgId: parseInt(orgId),
-        refDate: formData.refDate,
-        refNo: formData.refNo,
-        shipToName: formData.shipTo,
-        shipToShortName: formData.shipToFullName,
-        warehouse: loginWarehouse
-      };
-      console.log('DATA TO SAVE IS:', saveFormData);
-      try {
-        const response = await apiCalls('put', `buyerOrder/createUpdateBuyerOrder`, saveFormData);
-        if (response.status === true) {
-          console.log('Response:', response);
-          handleClear();
-          getAllBuyerOrders();
-          showToast('success', editId ? ' Buyer Order Updated Successfully' : 'Buyer Order created successfully');
-          setIsLoading(false);
-        } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Buyer Order creation failed');
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        showToast('error', 'Buyer Order creation failed');
-        setIsLoading(false);
+    console.log('DATA TO SAVE IS:', saveFormData);
+
+    try {
+      const response = await apiCalls('put', `buyerOrder/createUpdateBuyerOrder`, saveFormData);
+      console.log('API Response:', response);
+      if (response.status === true) {
+        handleClear();
+        getAllBuyerOrders();
+        showToast('success', editId ? 'Buyer Order Updated Successfully' : 'Buyer Order created successfully');
+      } else {
+        showToast('error', response.paramObjectsMap.errorMessage || 'Buyer Order creation failed');
       }
-    } else {
-      setFieldErrors(errors);
+    } catch (error) {
+      console.error('Error:', error);
+      showToast('error', 'Buyer Order creation failed');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -1246,7 +1179,7 @@ export const BuyerOrder = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <select
-                                        ref={lrNoDetailsRefs.current[index].partNo}
+                                        ref={lrNoDetailsRefs.current[index]?.partNo}
                                         value={row.partNo}
                                         onChange={(e) => {
                                           const value = e.target.value;
@@ -1304,7 +1237,7 @@ export const BuyerOrder = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <select
-                                        ref={lrNoDetailsRefs.current[index].batchNo}
+                                        ref={lrNoDetailsRefs.current[index]?.batchNo}
                                         value={row.batchNo}
                                         // onChange={(e) => {
                                         //   const value = e.target.value;
@@ -1357,7 +1290,7 @@ export const BuyerOrder = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].qty}
+                                        ref={lrNoDetailsRefs.current[index]?.qty}
                                         style={{ width: '150px' }}
                                         type="text"
                                         value={row.qty}
