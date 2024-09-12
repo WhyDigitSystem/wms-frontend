@@ -3,6 +3,7 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import React from 'react';
 import StockConsolidation from './StockConsolidation';
+import StockConsolidationBinWise from './StockConsolidationBinWise';
 
 const ReportMain = () => {
   const [value, setValue] = React.useState(0);
@@ -16,9 +17,11 @@ const ReportMain = () => {
         <Box sx={{ width: '100%' }}>
           <Tabs value={value} onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="secondary tabs example">
             <Tab value={0} label="Stock Consolidation" />
+            <Tab value={1} label="Stock Consolidation BinWise" />
           </Tabs>
         </Box>
         <Box sx={{ padding: 2 }}>{value === 0 && <StockConsolidation />}</Box>
+        <Box sx={{ padding: 2 }}>{value === 1 && <StockConsolidationBinWise />}</Box>
       </div>
     </>
   );
