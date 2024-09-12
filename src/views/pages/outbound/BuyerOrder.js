@@ -30,6 +30,9 @@ import { getAllActiveBranches, getAllActiveBuyer } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import React, { useRef } from 'react';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
+import sampleFile from '../../../assets/sample-files/sample_data_buyerorder.xls';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 function PaperComponent(props) {
   return (
@@ -59,6 +62,7 @@ export const BuyerOrder = () => {
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
   const [loginFinYear, setLoginFinYear] = useState(2024);
   const [partNoList, setPartNoList] = useState([]);
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     avilQty: 10,
@@ -78,15 +82,15 @@ export const BuyerOrder = () => {
     docDate: dayjs(),
     exRate: 1,
     freeze: true,
-    invoiceDate: null,
+    invoiceDate: dayjs(),
     invoiceNo: '',
     // location: '',
-    orderDate: null,
+    orderDate: dayjs(),
     orderNo: '',
     orderQty: '',
     orgId: orgId,
     reMarks: '',
-    refDate: null,
+    refDate: dayjs(),
     refNo: '',
     shipTo: '',
     shipToFullName: '',
@@ -394,8 +398,8 @@ export const BuyerOrder = () => {
           exRate: particularBuyerOrder.exRate,
           billto: particularBuyerOrder.billToShortName,
           billtoFullName: particularBuyerOrder.billToName,
-          shipTo: particularBuyerOrder.shipToName,
-          shipToFullName: particularBuyerOrder.shipToShortName,
+          shipTo: particularBuyerOrder.shipToShortName,
+          shipToFullName: particularBuyerOrder.shipToName,
           refNo: particularBuyerOrder.refNo,
           refDate: particularBuyerOrder.refDate,
           reMarks: particularBuyerOrder.remarks
@@ -665,14 +669,14 @@ export const BuyerOrder = () => {
       exRate: '',
       finYear: '',
       freeze: true,
-      invoiceDate: null,
+      invoiceDate: dayjs(),
       invoiceNo: '',
       location: '',
-      orderDate: null,
+      orderDate: dayjs(),
       orderNo: '',
       orgId: orgId,
       reMarks: '',
-      refDate: null,
+      refDate: dayjs(),
       refNo: '',
       shipTo: '',
       shipToFullName: ''
@@ -856,6 +860,22 @@ export const BuyerOrder = () => {
       active: true
     });
   };
+  const handleBulkUploadOpen = () => {
+    setUploadOpen(true); // Open dialog
+  };
+
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false); // Close dialog
+  };
+
+  const handleFileUpload = (event) => {
+    console.log(event.target.files[0]);
+  };
+
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
 
   return (
     <>
@@ -866,9 +886,23 @@ export const BuyerOrder = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} />
+            <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} />
           </div>
         </div>
+        {uploadOpen && (
+          <CommonBulkUpload
+            open={uploadOpen}
+            handleClose={handleBulkUploadClose}
+            title="Upload Files"
+            uploadText="Upload file"
+            downloadText="Sample File"
+            onSubmit={handleSubmit}
+            sampleFileDownload={sampleFile}
+            handleFileUpload={handleFileUpload}
+            apiUrl={`buyerOrder/ExcelUploadForBuyerOrder?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&createdBy=${loginUserName}&customer=${loginCustomer}&finYear=${loginFinYear}&orgId=${orgId}&type=DOC&warehouse=${loginWarehouse}`}
+          ></CommonBulkUpload>
+        )}
         {listView ? (
           <div className="mt-4">
             <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getBuyerOrderById} />
