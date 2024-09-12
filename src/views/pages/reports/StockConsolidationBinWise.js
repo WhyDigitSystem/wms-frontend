@@ -31,24 +31,24 @@ export const StockConsolidationBinWise = () => {
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
   const [partList, setPartList] = useState([]);
-  //   const [formData, setFormData] = useState({
-  //     selectedDate: null,
-  //     partNo: ''
-  //   });
+  const [binList, setBinList] = useState([]);
   const [formData, setFormData] = useState({
     selectedDate: dayjs(),
-    partNo: ''
+    partNo: '',
+    bin: ''
   });
   const [fieldErrors, setFieldErrors] = useState({
     selectedDate: '',
-    partNo: ''
+    partNo: '',
+    bin: ''
   });
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
   const reportColumns = [
     { accessorKey: 'partNo', header: 'Part No', size: 140 },
-    { accessorKey: 'partDesc', header: 'Part Desc', size: 140 },
-    { accessorKey: 'avlQty', header: 'QTY', size: 140 }
+    { accessorKey: 'partDesc', header: 'Part Description', size: 140 },
+    { accessorKey: 'bin', header: 'Bin', size: 140 },
+    { accessorKey: 'avlQty', header: 'Avl QTY', size: 140 }
   ];
 
   useEffect(() => {
@@ -57,37 +57,60 @@ export const StockConsolidationBinWise = () => {
 
   const getAllPartNo = async () => {
     try {
-      const partData = await getAllActivePartDetails(loginBranchCode, loginClient, orgId);
-      console.log('THE PART DATA ARE:', partData);
-      setPartList(partData);
+      const response = await apiCalls(
+        'get',
+        `Reports/getPartNoForBinWise?branchCode=${loginBranchCode}&client=${loginClient}&customer=${loginCustomer}&orgId=${orgId}&warehouse=${loginWarehouse}`
+      );
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setPartList(response.paramObjectsMap.stockDetails);
+      } else {
+        console.error('API Error:', response);
+      }
     } catch (error) {
-      console.error('Error fetching part data:', error);
+      console.error('Error fetching data:', error);
+    }
+  };
+  const getAllBin = async (selectedPartNo) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `Reports/getBinNoForBinWise?branchCode=${loginBranchCode}&client=${loginClient}&customer=${loginCustomer}&orgId=${orgId}&partNo=${selectedPartNo}&warehouse=${loginWarehouse}`
+      );
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setBinList(response.paramObjectsMap.stockDetails);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
   };
 
   const handleClear = () => {
-    // setFormData({
-    //   selectedDate: null,
-    //   partNo: ''
-    // });
     setFormData({
       selectedDate: dayjs(),
-      partNo: ''
+      partNo: '',
+      bin: ''
     });
     setFieldErrors({
       selectedDate: '',
-      partNo: ''
+      partNo: '',
+      bin: ''
     });
     setListView(false);
   };
 
   const handleSearch = async () => {
     const errors = {};
-    if (!formData.selectedDate || formData.selectedDate === null) {
-      errors.selectedDate = 'Data is required';
-    }
     if (!formData.partNo) {
       errors.partNo = 'partNo is required';
+    }
+    if (!formData.bin) {
+      errors.bin = 'Bin is required';
     }
 
     if (Object.keys(errors).length === 0) {
@@ -95,8 +118,9 @@ export const StockConsolidationBinWise = () => {
       try {
         const response = await apiCalls(
           'get',
-          `Reports/getStockConsolidation?branchCode=${loginBranchCode}&client=${loginClient}&customer=${loginCustomer}&orgId=${orgId}&partNo=${formData.partNo}&warehouse=${loginWarehouse}`
+          `Reports/getStockReportBinWise?bin=${formData.bin}&branchCode=${loginBranchCode}&client=${loginClient}&customer=${loginCustomer}&orgId=${orgId}&partNo=${formData.partNo}&warehouse=${loginWarehouse}`
         );
+
         if (response.status === true) {
           console.log('Response:', response);
           setRowData(response.paramObjectsMap.stockDetails);
@@ -125,11 +149,67 @@ export const StockConsolidationBinWise = () => {
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
 
-  const handleInputChange = (fieldName) => (event, value) => {
+  // const handlePartNoChange = (fieldName) => (event, value) => {
+  //   if (value) {
+  //     // When a part number is selected, update the formData and fetch the corresponding bin list
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       [fieldName]: value.partNo,
+  //       bin: '' // Clear bin value as a new partNo is selected
+  //     }));
+  //     getAllBin(value.partNo); // Fetch bins for the selected part number
+  //   } else {
+  //     // When partNo is cleared, reset both partNo and bin, and clear the binList
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       [fieldName]: '', // Clear the partNo field
+  //       bin: '' // Clear the bin field as well
+  //     }));
+  //     setBinList([]); // Clear the binList array
+  //   }
+
+  //   setFieldErrors((prevErrors) => ({
+  //     ...prevErrors,
+  //     [fieldName]: '' // Clear any errors related to partNo
+  //   }));
+  // };
+
+  const handlePartNoChange = (fieldName) => (event, value) => {
+    if (value && typeof value === 'object') {
+      const partNo = value.partNo || '';
+
+      setFormData((prevData) => ({
+        ...prevData,
+        [fieldName]: partNo,
+        bin: '' // Clear bin when partNo changes
+      }));
+
+      if (partNo && partNo !== 'ALL') {
+        getAllBin(partNo); // Fetch bin list for selected part number
+      } else {
+        setBinList([]); // Clear bin list if 'ALL' or empty
+      }
+    } else if (value === '' || value === null) {
+      // Handle case when input is cleared
+      setFormData((prevData) => ({
+        ...prevData,
+        [fieldName]: '',
+        bin: ''
+      }));
+      setBinList([]); // Clear bin list
+    }
+
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      [fieldName]: '' // Clear errors for partNo
+    }));
+  };
+
+  const handleBinChange = (fieldName) => (event, value) => {
     if (value) {
       setFormData((prevData) => ({
         ...prevData,
-        [fieldName]: value.partno
+        [fieldName]: value.Bin
       }));
     } else {
       setFormData((prevData) => ({
@@ -137,7 +217,6 @@ export const StockConsolidationBinWise = () => {
         [fieldName]: ''
       }));
     }
-
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
       [fieldName]: ''
@@ -161,59 +240,24 @@ export const StockConsolidationBinWise = () => {
                 <DatePicker
                   label="Effective Date"
                   value={formData.selectedDate ? dayjs(formData.selectedDate, 'DD-MM-YYYY') : null}
-                  onChange={(date) => handleDateChange('selectedDate', date)}
+                  disabled
                   slotProps={{
                     textField: { size: 'small', clearable: true }
                   }}
                   format="DD/MM/YYYY"
-                  error={fieldErrors.selectedDate}
-                  helperText={fieldErrors.selectedDate && 'Required'}
                 />
               </LocalizationProvider>
             </FormControl>
           </div>
           {/* <div className="col-md-3 mb-3">
-            <FormControl fullWidth variant="filled" size="small" error={!!fieldErrors.selectedDate}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                  label="Effective Date"
-                  value={formData.selectedDate ? dayjs(formData.selectedDate, 'DD-MM-YYYY') : null}
-                  onChange={(date) => handleDateChange('selectedDate', date)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      size="small"
-                      error={!!fieldErrors.selectedDate} // Apply error styling here
-                      helperText={fieldErrors.selectedDate} // Apply helper text here
-                      InputProps={{
-                        ...params.InputProps,
-                        style: { height: 40 } // Consistent height
-                      }}
-                      sx={{
-                        '& .MuiOutlinedInput-root.Mui-error': {
-                          '& fieldset': {
-                            borderColor: 'error.main'
-                          }
-                        }
-                      }} // Custom styling for error state
-                    />
-                  )}
-                  format="DD/MM/YYYY"
-                />
-              </LocalizationProvider>
-              {fieldErrors.selectedDate && <FormHelperText error>{fieldErrors.selectedDate}</FormHelperText>}
-            </FormControl>
-          </div> */}
-
-          <div className="col-md-3 mb-3">
             <Autocomplete
               disablePortal
-              options={partList}
-              getOptionLabel={(option) => option.partno}
+              options={[{ partNo: 'ALL' }, ...partList]}
+              getOptionLabel={(option) => option.partNo}
               sx={{ width: '100%' }}
               size="small"
-              value={formData.partNo ? partList.find((p) => p.partno === formData.partNo) : null}
-              onChange={handleInputChange('partNo')}
+              value={formData.partNo ? partList.find((p) => p.partNo === formData.partNo) : 'ALL'}
+              onChange={(event, newValue) => handlePartNoChange('partNo')(event, newValue)}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -224,6 +268,58 @@ export const StockConsolidationBinWise = () => {
                     ...params.InputProps,
                     style: { height: 40 }
                   }}
+                />
+              )}
+            />
+          </div> */}
+          <div className="col-md-3 mb-3">
+            <Autocomplete
+              freeSolo
+              disablePortal
+              options={partList}
+              getOptionLabel={(option) => option.partNo || ''}
+              sx={{ width: '100%' }}
+              size="small"
+              value={partList.find((p) => p.partNo === formData.partNo) || { partNo: 'ALL' }}
+              onChange={(event, newValue) => handlePartNoChange('partNo')(event, newValue)}
+              onInputChange={(event, newInputValue) => {
+                handlePartNoChange('partNo')(event, newInputValue);
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Part No"
+                  error={!!fieldErrors.partNo}
+                  helperText={fieldErrors.partNo}
+                  InputProps={{
+                    ...params.InputProps,
+                    style: { height: 40 }
+                  }}
+                />
+              )}
+            />
+          </div>
+
+          <div className="col-md-3 mb-3">
+            <Autocomplete
+              disablePortal
+              options={binList}
+              getOptionLabel={(option) => option.Bin}
+              sx={{ width: '100%' }}
+              size="small"
+              value={formData.bin ? binList.find((p) => p.Bin === formData.bin) : null}
+              onChange={(event, newValue) => handleBinChange('bin')(event, newValue)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Bin"
+                  error={!!fieldErrors.bin}
+                  helperText={fieldErrors.bin}
+                  InputProps={{
+                    ...params.InputProps,
+                    style: { height: 40 }
+                  }}
+                  clearable={true}
                 />
               )}
             />
