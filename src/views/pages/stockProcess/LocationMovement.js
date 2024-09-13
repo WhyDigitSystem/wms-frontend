@@ -68,47 +68,21 @@ export const LocationMovement = () => {
   const [fillGridData, setFillGridData] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [childTableData, setChildTableData] = useState([
-    {
-      id: 1,
-      fromBin: '',
-      partNo: '',
-      partDesc: '',
-      sku: '',
-      grnNo: '',
-      batchNo: '',
-      avlQty: '',
-      toBin: '',
-      toBinType: '',
-      toQty: '',
-      remainQty: ''
-    }
+    // {
+    //   id: 1,
+    //   fromBin: '',
+    //   partNo: '',
+    //   partDesc: '',
+    //   sku: '',
+    //   grnNo: '',
+    //   batchNo: '',
+    //   avlQty: '',
+    //   toBin: '',
+    //   toBinType: '',
+    //   toQty: '',
+    //   remainQty: ''
+    // }
   ]);
-
-  // const lrNoDetailsRefs = useRef(
-  //   childTableData.map(() => ({
-  //     fromBin: React.createRef(),
-  //     partNo: React.createRef(),
-  //     grnNo: React.createRef(),
-  //     toBin: React.createRef(),
-  //     toQty: React.createRef()
-  //   }))
-  // );
-
-  // useEffect(() => {
-  //   // If the length of the table changes, update the refs
-  //   if (lrNoDetailsRefs.current.length !== childTableData.length) {
-  //     lrNoDetailsRefs.current = childTableData.map(
-  //       (_, index) =>
-  //         lrNoDetailsRefs.current[index] || {
-  //           fromBin: React.createRef(),
-  //           partNo: React.createRef(),
-  //           grnNo: React.createRef(),
-  //           toBin: React.createRef(),
-  //           toQty: React.createRef()
-  //         }
-  //     );
-  //   }
-  // }, [childTableData.length]);
 
   const lrNoDetailsRefs = useRef([]);
 
@@ -173,58 +147,6 @@ export const LocationMovement = () => {
       lotNo: ''
     }
   ]);
-
-  // const handleAddRow = () => {
-  //   const newRow = {
-  //     id: Date.now(),
-  //     batchDate: '',
-  //     rowBatchNoList: [],
-  //     batchNo: '',
-  //     fromBin: '',
-  //     binClass: '',
-  //     binType: '',
-  //     cellType: '',
-  //     clientCode: '',
-  //     core: '',
-  //     expDate: '',
-  //     avlQty: '',
-  //     grnDate: '',
-  //     rowGrnNoList: [],
-  //     grnNo: '',
-  //     lotNo: '',
-  //     partDesc: '',
-  //     rowPartNoList: [],
-  //     partNo: '',
-  //     pcKey: '',
-  //     qcFlag: '',
-  //     remainQty: '',
-  //     sku: '',
-  //     ssku: '',
-  //     status: '',
-  //     stockDate: '',
-  //     toBin: '',
-  //     toQty: ''
-  //   };
-  //   setChildTableData([...childTableData, newRow]);
-  //   setChildTableErrors([
-  //     ...childTableErrors,
-  //     {
-  //       batchDate: '',
-  //       batchNo: '',
-  //       fromBin: '',
-  //       fromQty: '',
-  //       grnDate: '',
-  //       grnNo: '',
-  //       lotNo: '',
-  //       partDesc: '',
-  //       partNo: '',
-  //       remainQty: '',
-  //       sku: '',
-  //       toBin: '',
-  //       toQty: ''
-  //     }
-  //   ]);
-  // };
 
   const [fieldErrors, setFieldErrors] = useState({
     docId: '',
@@ -869,10 +791,10 @@ export const LocationMovement = () => {
   const handleAddRow = () => {
     console.log('THE HANDLE ADD ROW FUNCTION IS WORKING');
 
-    // if (isLastRowEmpty(childTableData)) {
-    //   displayRowError(childTableData);
-    //   return;
-    // }
+    if (isLastRowEmpty(childTableData)) {
+      displayRowError(childTableData);
+      return;
+    }
     console.log('the ok');
 
     const newRow = {
@@ -930,7 +852,7 @@ export const LocationMovement = () => {
     if (!lastRow) return false;
 
     if (table === childTableData) {
-      return !lastRow.fromBin || !lastRow.partNo || !lastRow.grnNo || !lastRow.BatchNo || !lastRow.toBin || !lastRow.toQty;
+      return !lastRow.fromBin || !lastRow.partNo || !lastRow.grnNo || !lastRow.batchNo || !lastRow.toBin || !lastRow.toQty;
     }
     // else if (table === branchTableData) {
     //   return !lastRow.branchCode;
