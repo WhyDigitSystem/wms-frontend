@@ -43,7 +43,8 @@ export const DeKitting = () => {
   const [formData, setFormData] = useState({
     docId: docId,
     docDate: dayjs(),
-    active: true
+    active: true,
+    freeze: false
   });
   const [parentTable, setParentTable] = useState([
     {
@@ -630,7 +631,8 @@ export const DeKitting = () => {
           active: particularDekitting.active === true,
           customer: particularDekitting.customer,
           branch: particularDekitting.branch,
-          warehouse: particularDekitting.warehouse
+          warehouse: particularDekitting.warehouse,
+          freeze: particularDekitting.freeze
         });
 
         setParentTable(
@@ -739,6 +741,8 @@ export const DeKitting = () => {
   };
 
   const handleClear = () => {
+    setFormData({ docDate: dayjs() });
+    setEditId('');
     setParentTable([
       {
         id: 1,
@@ -784,6 +788,7 @@ export const DeKitting = () => {
       docId: '',
       docDate: ''
     });
+    getDocId();
   };
 
   const handleSave = async () => {
@@ -928,13 +933,15 @@ export const DeKitting = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton
-              title="Save"
-              icon={SaveIcon}
-              isLoading={isLoading}
-              onClick={!editId ? handleSave : undefined}
-              margin="0 10px 0 10px"
-            />
+            {!formData.freeze && (
+              <ActionButton
+                title="Save"
+                icon={SaveIcon}
+                isLoading={isLoading}
+                onClick={!editId ? handleSave : undefined}
+                margin="0 10px 0 10px"
+              />
+            )}
           </div>
         </div>
         {listView ? (
@@ -1309,9 +1316,7 @@ export const DeKitting = () => {
                 {value === 1 && (
                   <>
                     <div className="row d-flex ml">
-                      <div className="mb-1">
-                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow1} />
-                      </div>
+                      <div className="mb-1">{!formData.freeze && <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow1} />}</div>
 
                       <div className="row mt-2">
                         <div className="col-lg-12">
