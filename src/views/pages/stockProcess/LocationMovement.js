@@ -68,20 +68,20 @@ export const LocationMovement = () => {
   const [fillGridData, setFillGridData] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [childTableData, setChildTableData] = useState([
-    // {
-    //   id: 1,
-    //   fromBin: '',
-    //   partNo: '',
-    //   partDesc: '',
-    //   sku: '',
-    //   grnNo: '',
-    //   batchNo: '',
-    //   avlQty: '',
-    //   toBin: '',
-    //   toBinType: '',
-    //   toQty: '',
-    //   remainQty: ''
-    // }
+    {
+      id: 1,
+      fromBin: '',
+      partNo: '',
+      partDesc: '',
+      sku: '',
+      grnNo: '',
+      batchNo: '',
+      avlQty: '',
+      toBin: '',
+      toBinType: '',
+      toQty: '',
+      remainQty: ''
+    }
   ]);
 
   const lrNoDetailsRefs = useRef([]);
