@@ -102,21 +102,21 @@ export const SalesReturn = () => {
 
   const [value, setValue] = useState(0);
   const [detailTableData, setDetailTableData] = useState([
-    // {
-    //   lrNo: '',
-    //   invNo: '',
-    //   partNo: '',
-    //   partDesc: '',
-    //   pickQty: '',
-    //   returnQty: '',
-    //   damageQty: '',
-    //   batchNo: '',
-    //   batchDate: null,
-    //   expDate: null,
-    //   noOfBin: '',
-    //   binQty: '',
-    //   remarks: ''
-    // }
+    {
+      lrNo: '',
+      invNo: '',
+      partNo: '',
+      partDesc: '',
+      pickQty: '',
+      returnQty: '',
+      damageQty: '',
+      batchNo: '',
+      batchDate: null,
+      expDate: null,
+      noOfBin: '',
+      binQty: '',
+      remarks: ''
+    }
   ]);
 
   // const lrNoDetailsRefs = useRef(
@@ -142,6 +142,16 @@ export const SalesReturn = () => {
   //     );
   //   }
   // }, [detailTableData.length]);
+
+  const lrNoDetailsRefs = useRef([]);
+
+  useEffect(() => {
+    lrNoDetailsRefs.current = detailTableData.map((_, index) => ({
+      lrNo: lrNoDetailsRefs.current[index]?.lrNo || React.createRef(),
+      invoiceNo: lrNoDetailsRefs.current[index]?.invoiceNo || React.createRef(),
+      binQty: lrNoDetailsRefs.current[index]?.binQty || React.createRef()
+    }));
+  }, [detailTableData]);
 
   const [detailTableErrors, setDetailTableErrors] = useState([
     {
@@ -841,14 +851,15 @@ export const SalesReturn = () => {
 
   const handleSave = async () => {
     const errors = {};
-    // let firstInvalidFieldRef = null;
+    let firstInvalidFieldRef = null;
+    let detailTableDataValid = true;
 
+    // Validate main form fields
     if (!formData.prNo) {
       errors.prNo = 'PR No is required';
     }
 
-    setFieldErrors(errors);
-    let detailTableDataValid = true;
+    // Validate table data
     if (!detailTableData || !Array.isArray(detailTableData) || detailTableData.length === 0) {
       detailTableDataValid = false;
       setDetailTableErrors([{ general: 'Table Data is required' }]);
@@ -856,124 +867,116 @@ export const SalesReturn = () => {
       const newTableErrors = detailTableData.map((row, index) => {
         const rowErrors = {};
 
-        // if (!row.lrNo) {
-        //   rowErrors.lrNo = 'LR No is required';
-        //   if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].lrNo;
-        // }
-        // if (!row.partNo) {
-        //   rowErrors.partNo = 'Part No is required';
-        //   if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
-        // }
-        // if (!row.invNo) {
-        //   rowErrors.invNo = 'Invoice No is required';
-        //   if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].invNo;
-        // }
-        // if (!row.batchNo) {
-        //   rowErrors.batchNo = 'Batch No is required';
-        //   if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
-        // }
-        if (!row.lrNo) rowErrors.lrNo = 'LR No is required';
-        if (!row.partNo) rowErrors.partNo = 'Part No is required';
-        if (!row.invoiceNo) rowErrors.invoiceNo = 'Invoice No is required';
-        if (!row.binQty) rowErrors.binQty = 'Bin Qty is required';
-
-        if (Object.keys(rowErrors).length > 0) detailTableDataValid = false;
+        // Validate individual row fields
+        if (!row.lrNo) {
+          rowErrors.lrNo = 'LR No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index]?.lrNo;
+          detailTableDataValid = false;
+        }
+        if (!row.invoiceNo) {
+          rowErrors.invoiceNo = 'Invoice No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index]?.invoiceNo;
+          detailTableDataValid = false;
+        }
+        if (!row.binQty) {
+          rowErrors.binQty = 'Bin Qty is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index]?.binQty;
+          detailTableDataValid = false;
+        }
 
         return rowErrors;
       });
 
-      // if (!detailTableDataValid || Object.keys(errors).length > 0) {
-      //   // Focus on the first invalid field
-      //   if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
-      //     firstInvalidFieldRef.current.focus();
-      //   }
-      // } else {
-      //   // Proceed with form submission
-      // }
-
+      // Update table errors state
       setDetailTableErrors(newTableErrors);
     }
 
-    if (Object.keys(errors).length === 0 && detailTableDataValid) {
-      setIsLoading(true);
-      const salesReturnVo = detailTableData.map((row) => ({
-        ...(editId && { id: row.id }),
-        lrno: row.lrNo,
-        invoiceNo: row.invoiceNo,
-        partNo: row.partNo,
-        partDesc: row.partDesc,
-        sku: row.sku,
-        pickQty: row.pickQty,
-        retQty: row.returnQty,
-        damageQty: row.damageQty,
-        batchNo: row.batchNo,
-        batchDate: row.batchDate,
-        expDate: row.expDate,
-        binQty: row.binQty,
-        noOfBin: row.noOfBin,
-        remarks: row.remarks,
-        //EXTRA FIELDS
-        qcFlag: ''
-      }));
+    // Update form errors state
+    setFieldErrors(errors);
 
-      const saveFormData = {
-        ...(editId && { id: editId }),
-        boDate: formData.boDate,
-        boNo: formData.boNo,
-        branch: loginBranch,
-        branchCode: loginBranchCode,
-        briefDescOfGoods: formData.goodsDesc,
-        buyerName: formData.buyerName,
-        buyerType: formData.buyerType,
-        carrier: formData.carrier,
-        client: loginClient,
-        contact: formData.contact,
-        createdBy: loginUserName,
-        customer: loginCustomer,
-        driverName: formData.driver,
-        entryDate: formData.entryDate,
-        entryNo: formData.entryNo,
-        finYear: loginFinYear,
-        // freeze:formData.--------,
-        // id:formData.--------,
-        modeOfShipment: formData.modeOfShipment,
-        orgId: orgId,
-        prDate: formData.prDate,
-        prNo: formData.prNo,
-        // qcFlag:formData.------,
-        salesReturnDetailsDTO: salesReturnVo,
-        securityPersonName: formData.securityPerson,
-        supplier: formData.supplier,
-        timeIn: formData.timeIn,
-        timeOut: formData.timeOut,
-        totalReturnQty: formData.totalReturnQty,
-        // transactionType:formData.----------,
-        vehicleNo: formData.vehicleNo,
-        vehicleType: formData.vehicleType,
-        warehouse: loginWarehouse
-      };
-
-      console.log('DATA TO SAVE IS:', saveFormData);
-
-      try {
-        const response = await apiCalls('put', `salesReturn/createUpdateSalesReturn`, saveFormData);
-        if (response.status === true) {
-          console.log('Response:', response);
-          handleClear();
-          showToast('success', editId ? ' Sales Return Updated Successfully' : 'Sales Return created successfully');
-          setIsLoading(false);
-          // getAllSalesReturn();
-        } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Sales Return creation failed');
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        showToast('error', 'Sales Return creation failed');
-        setIsLoading(false);
+    // Block save operation if there are any errors
+    if (!detailTableDataValid || Object.keys(errors).length > 0) {
+      // Focus on the first invalid field
+      if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+        firstInvalidFieldRef.current.focus();
       }
-    } else {
-      setFieldErrors(errors);
+      return; // Stop execution if validation fails
+    }
+
+    // Proceed with form submission only if all validations pass
+    setIsLoading(true);
+
+    // Prepare data for submission
+    const salesReturnVo = detailTableData.map((row) => ({
+      ...(editId && { id: row.id }),
+      lrno: row.lrNo,
+      invoiceNo: row.invNo,
+      partNo: row.partNo,
+      partDesc: row.partDesc,
+      sku: row.sku,
+      pickQty: row.pickQty,
+      retQty: row.returnQty,
+      damageQty: row.damageQty,
+      batchNo: row.batchNo,
+      batchDate: row.batchDate,
+      expDate: row.expDate,
+      binQty: row.binQty,
+      noOfBin: row.noOfBin,
+      remarks: row.remarks,
+      qcFlag: '' // Add additional fields if necessary
+    }));
+
+    const saveFormData = {
+      ...(editId && { id: editId }),
+      boDate: formData.boDate,
+      boNo: formData.boNo,
+      branch: loginBranch,
+      branchCode: loginBranchCode,
+      briefDescOfGoods: formData.goodsDesc,
+      buyerName: formData.buyerName,
+      buyerType: formData.buyerType,
+      carrier: formData.carrier,
+      client: loginClient,
+      contact: formData.contact,
+      createdBy: loginUserName,
+      customer: loginCustomer,
+      driverName: formData.driver,
+      entryDate: formData.entryDate,
+      entryNo: formData.entryNo,
+      finYear: loginFinYear,
+      modeOfShipment: formData.modeOfShipment,
+      orgId: orgId,
+      prDate: formData.prDate,
+      prNo: formData.prNo,
+      salesReturnDetailsDTO: salesReturnVo,
+      securityPersonName: formData.securityPerson,
+      supplier: formData.supplier,
+      timeIn: formData.timeIn,
+      timeOut: formData.timeOut,
+      totalReturnQty: formData.totalReturnQty,
+      vehicleNo: formData.vehicleNo,
+      vehicleType: formData.vehicleType,
+      warehouse: loginWarehouse
+    };
+
+    console.log('DATA TO SAVE IS:', saveFormData);
+
+    try {
+      const response = await apiCalls('put', `salesReturn/createUpdateSalesReturn`, saveFormData);
+      if (response.status === true) {
+        console.log('Response:', response);
+        handleClear();
+        showToast('success', editId ? 'Sales Return Updated Successfully' : 'Sales Return created successfully');
+        getAllSalesReturns();
+        // Optionally refresh data or call relevant methods
+      } else {
+        showToast('error', response.paramObjectsMap.errorMessage || 'Sales Return creation failed');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showToast('error', 'Sales Return creation failed');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -1422,6 +1425,7 @@ export const SalesReturn = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
+                                          ref={lrNoDetailsRefs.current[index]?.lrNo}
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.lrNo}
@@ -1444,6 +1448,7 @@ export const SalesReturn = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
+                                          ref={lrNoDetailsRefs.current[index]?.invoiceNo}
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.invoiceNo}
@@ -1731,6 +1736,7 @@ export const SalesReturn = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
+                                          ref={lrNoDetailsRefs.current[index]?.binQty}
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.binQty}
