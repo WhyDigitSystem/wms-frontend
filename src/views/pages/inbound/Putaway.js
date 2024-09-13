@@ -356,10 +356,10 @@ export const Putaway = () => {
   };
 
   const handleAddRow = () => {
-    if (isLastRowEmpty(putAwayDetailsTableData)) {
-      displayRowError(putAwayDetailsTableData);
-      return;
-    }
+    // if (isLastRowEmpty(putAwayDetailsTableData)) {
+    //   displayRowError(putAwayDetailsTableData);
+    //   return;
+    // }
     const newRow = {
       id: Date.now(),
       batchNo: '',

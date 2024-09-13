@@ -75,27 +75,17 @@ export const Kitting = () => {
     }
   ]);
 
-  const lrNoDetailsRefs = useRef(
-    childTableData.map(() => ({
-      partNo: React.createRef(),
-      bin: React.createRef(),
-      qty: React.createRef()
-    }))
-  );
+  const lrNoDetailsRefs = useRef([]);
 
   useEffect(() => {
-    // If the length of the table changes, update the refs
-    if (lrNoDetailsRefs.current.length !== childTableData.length) {
-      lrNoDetailsRefs.current = childTableData.map(
-        (_, index) =>
-          lrNoDetailsRefs.current[index] || {
-            partNo: React.createRef(),
-            bin: React.createRef(),
-            qty: React.createRef()
-          }
-      );
-    }
-  }, [childTableData.length]);
+    lrNoDetailsRefs.current = childTableData.map((_, index) => ({
+      partNo: lrNoDetailsRefs.current[index]?.partNo || React.createRef(),
+      grnNo: lrNoDetailsRefs.current[index]?.grnNo || React.createRef(),
+      batchNo: lrNoDetailsRefs.current[index]?.batchNo || React.createRef(),
+      bin: lrNoDetailsRefs.current[index]?.bin || React.createRef(),
+      qty: lrNoDetailsRefs.current[index]?.qty || React.createRef()
+    }));
+  }, [childTableData]);
 
   const [parentTableData, setParentTableData] = useState([
     {
@@ -880,6 +870,16 @@ export const Kitting = () => {
         if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
         childTableDataValid = false;
       }
+      if (!row.grnNo) {
+        rowErrors.grnNo = 'Grn No is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].grnNo;
+        childTableDataValid = false;
+      }
+      if (!row.batchNo) {
+        rowErrors.batchNo = 'Batch No is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
+        childTableDataValid = false;
+      }
       if (!row.bin) {
         rowErrors.bin = 'Bin is required';
         if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
@@ -1214,7 +1214,7 @@ export const Kitting = () => {
 
                                     <td className="border px-2 py-2">
                                       <select
-                                        ref={lrNoDetailsRefs.current[index].partNo}
+                                        ref={lrNoDetailsRefs.current[index]?.partNo}
                                         value={row.partNo}
                                         style={{ width: '130px' }}
                                         onChange={(e) => {
@@ -1324,6 +1324,7 @@ export const Kitting = () => {
 
                                     <td className="border px-2 py-2">
                                       <select
+                                        ref={lrNoDetailsRefs.current[index]?.grnNo}
                                         value={row.grnNo}
                                         style={{ width: '130px' }}
                                         onChange={(e) => {
@@ -1400,6 +1401,7 @@ export const Kitting = () => {
 
                                     <td className="border px-2 py-2">
                                       <select
+                                        ref={lrNoDetailsRefs.current[index]?.batchNo}
                                         value={row.batchNo}
                                         style={{ width: '130px' }}
                                         onChange={(e) => handleBatchNoChange(row, index, e)}
@@ -1421,7 +1423,7 @@ export const Kitting = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <select
-                                        ref={lrNoDetailsRefs.current[index].bin}
+                                        ref={lrNoDetailsRefs.current[index]?.bin}
                                         value={row.bin}
                                         style={{ width: '130px' }}
                                         onChange={(e) => handleBinChange(row, index, e)}
@@ -1546,7 +1548,7 @@ export const Kitting = () => {
 
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].qty}
+                                        ref={lrNoDetailsRefs.current[index]?.qty}
                                         type="text"
                                         value={row.qty}
                                         style={{ width: '100px' }}

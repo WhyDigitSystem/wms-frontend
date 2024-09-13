@@ -68,25 +68,34 @@ export const DeKitting = () => {
     }
   ]);
 
-  const lrNoDetailsRefs = useRef(
-    parentTable.map(() => ({
-      partNo: React.createRef(),
-      qty: React.createRef()
-    }))
-  );
+  // const lrNoDetailsRefs = useRef(
+  //   parentTable.map(() => ({
+  //     partNo: React.createRef(),
+  //     qty: React.createRef()
+  //   }))
+  // );
+
+  // useEffect(() => {
+  //   // If the length of the table changes, update the refs
+  //   if (lrNoDetailsRefs.current.length !== parentTable.length) {
+  //     lrNoDetailsRefs.current = parentTable.map(
+  //       (_, index) =>
+  //         lrNoDetailsRefs.current[index] || {
+  //           partNo: React.createRef(),
+  //           qty: React.createRef()
+  //         }
+  //     );
+  //   }
+  // }, [parentTable.length]);
+
+  const lrNoDetailsRefs = useRef([]);
 
   useEffect(() => {
-    // If the length of the table changes, update the refs
-    if (lrNoDetailsRefs.current.length !== parentTable.length) {
-      lrNoDetailsRefs.current = parentTable.map(
-        (_, index) =>
-          lrNoDetailsRefs.current[index] || {
-            partNo: React.createRef(),
-            qty: React.createRef()
-          }
-      );
-    }
-  }, [parentTable.length]);
+    lrNoDetailsRefs.current = parentTable.map((_, index) => ({
+      partNo: lrNoDetailsRefs.current[index]?.partNo || React.createRef(),
+      qty: lrNoDetailsRefs.current[index]?.qty || React.createRef()
+    }));
+  }, [parentTable]);
 
   const [childTable, setChildTable] = useState([
     {
@@ -1040,7 +1049,7 @@ export const DeKitting = () => {
 
                                       <td className="border px-2 py-2">
                                         <select
-                                          ref={lrNoDetailsRefs.current[index].partNo}
+                                          ref={lrNoDetailsRefs.current[index]?.partNo}
                                           value={row.partNo}
                                           style={{ width: '200px' }}
                                           onChange={(e) => handlePartNoChange(row, index, e)}
@@ -1243,7 +1252,7 @@ export const DeKitting = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          ref={lrNoDetailsRefs.current[index].qty}
+                                          ref={lrNoDetailsRefs.current[index]?.qty}
                                           type="text"
                                           value={row.qty}
                                           style={{ width: '100px' }}

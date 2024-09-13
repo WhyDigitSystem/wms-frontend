@@ -486,11 +486,19 @@ export const VasPutaway = () => {
     getVasPutawayDocId();
   };
 
-  const lrNoDetailsRefs = useRef(
-    lrNoDetailsTable.map(() => ({
-      toBin: React.createRef()
-    }))
-  );
+  // const lrNoDetailsRefs = useRef(
+  //   lrNoDetailsTable.map(() => ({
+  //     toBin: React.createRef()
+  //   }))
+  // );
+
+  const lrNoDetailsRefs = useRef([]);
+
+  useEffect(() => {
+    lrNoDetailsRefs.current = lrNoDetailsTable.map((_, index) => ({
+      toBin: lrNoDetailsRefs.current[index]?.toBin || React.createRef()
+    }));
+  }, [lrNoDetailsTable]);
 
   const handleSave = async () => {
     console.log('save');
