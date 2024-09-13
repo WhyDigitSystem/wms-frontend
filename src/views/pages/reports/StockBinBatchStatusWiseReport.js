@@ -154,6 +154,9 @@ export const StockBinBatchStatusWiseReport = () => {
       bin: '',
       status: ''
     });
+    setBatchList([]);
+    setBinList([]);
+    setStatusList([]);
     setListView(false);
   };
 
