@@ -852,7 +852,7 @@ export const LocationMovement = () => {
     if (!lastRow) return false;
 
     if (table === childTableData) {
-      return !lastRow.fromBin || !lastRow.partNo || !lastRow.grnNo || !lastRow.batchNo || !lastRow.toBin || !lastRow.toQty;
+      return !lastRow.fromBin || !lastRow.partNo || !lastRow.grnNo || !lastRow.BatchNo || !lastRow.toBin || !lastRow.toQty;
     }
     // else if (table === branchTableData) {
     //   return !lastRow.branchCode;
