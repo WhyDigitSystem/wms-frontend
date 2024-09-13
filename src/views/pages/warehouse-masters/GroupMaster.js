@@ -29,7 +29,6 @@ export const GroupMaster = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     active: true,
-
     groupName: ''
   });
   const [editId, setEditId] = useState('');
@@ -58,8 +57,8 @@ export const GroupMaster = () => {
 
   const getAllGroups = async () => {
     try {
-      const result = await apiCalls('get', `commonmaster/country?orgid=1000000001`);
-      setListViewData(result.paramObjectsMap.countryVO);
+      const result = await apiCalls('get', `warehousemastercontroller/group?orgid=${orgId}`);
+      setListViewData(result.paramObjectsMap.groupVO);
       console.log('Test', result);
     } catch (err) {
       console.log('error', err);
@@ -70,7 +69,7 @@ export const GroupMaster = () => {
     console.log('THE SELECTED Group ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `commonmaster/group/${row.original.id}`);
+      const response = await apiCalls('get', `warehousemastercontroller/group/${row.original.id}`);
 
       if (response.status === true) {
         const particularGroup = response.paramObjectsMap.group;
@@ -129,7 +128,6 @@ export const GroupMaster = () => {
   const handleClear = () => {
     setFormData({
       groupName: '',
-
       active: true
     });
     setFieldErrors({
@@ -156,7 +154,7 @@ export const GroupMaster = () => {
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const result = await apiCalls('post', `commonmaster/createUpdateCountry`, saveFormData);
+        const result = await apiCalls('put', `warehousemastercontroller/createUpdateGroup`, saveFormData);
 
         if (result.status === true) {
           console.log('Response:', result);
@@ -185,7 +183,7 @@ export const GroupMaster = () => {
   const handleClose = () => {
     setEditMode(false);
     setFormData({
-      country: ''
+      groupName: ''
     });
   };
 
