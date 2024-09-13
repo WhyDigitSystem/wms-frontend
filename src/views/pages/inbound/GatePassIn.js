@@ -175,17 +175,19 @@ export const GatePassIn = () => {
     }
   ]);
 
-  const lrNoDetailsRefs = useRef(
-    lrNoDetailsTable.map(() => ({
-      irNoHaw: React.createRef(),
-      invoiceNo: React.createRef(),
-      partNo: React.createRef(),
-      batchNo: React.createRef(),
-      invQty: React.createRef(),
-      recQty: React.createRef(),
-      damageQty: React.createRef()
-    }))
-  );
+  const lrNoDetailsRefs = useRef([]);
+
+  useEffect(() => {
+    lrNoDetailsRefs.current = lrNoDetailsTable.map((_, index) => ({
+      irNoHaw: lrNoDetailsRefs.current[index]?.irNoHaw || React.createRef(),
+      invoiceNo: lrNoDetailsRefs.current[index]?.invoiceNo || React.createRef(),
+      partNo: lrNoDetailsRefs.current[index]?.partNo || React.createRef(),
+      batchNo: lrNoDetailsRefs.current[index]?.batchNo || React.createRef(),
+      invQty: lrNoDetailsRefs.current[index]?.invQty || React.createRef(),
+      recQty: lrNoDetailsRefs.current[index]?.recQty || React.createRef(),
+      damageQty: lrNoDetailsRefs.current[index]?.damageQty || React.createRef()
+    }));
+  }, [lrNoDetailsTable]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -648,24 +650,6 @@ export const GatePassIn = () => {
     });
     getGatePassDocId();
   };
-
-  useEffect(() => {
-    // If the length of the table changes, update the refs
-    if (lrNoDetailsRefs.current.length !== lrNoDetailsTable.length) {
-      lrNoDetailsRefs.current = lrNoDetailsTable.map(
-        (_, index) =>
-          lrNoDetailsRefs.current[index] || {
-            irNoHaw: React.createRef(),
-            invoiceNo: React.createRef(),
-            partNo: React.createRef(),
-            batchNo: React.createRef(),
-            invQty: React.createRef(),
-            recQty: React.createRef(),
-            damageQty: React.createRef()
-          }
-      );
-    }
-  }, [lrNoDetailsTable.length]);
 
   const handleSave = async () => {
     const errors = {};
@@ -1153,7 +1137,7 @@ export const GatePassIn = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].irNoHaw}
+                                        ref={lrNoDetailsRefs.current[index]?.irNoHaw}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.irNoHaw}
@@ -1180,7 +1164,7 @@ export const GatePassIn = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].invoiceNo}
+                                        ref={lrNoDetailsRefs.current[index]?.invoiceNo}
                                         type="text"
                                         style={{ width: '100px' }}
                                         disabled={formData.freeze}
@@ -1206,7 +1190,7 @@ export const GatePassIn = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <select
-                                        ref={lrNoDetailsRefs.current[index].partNo}
+                                        ref={lrNoDetailsRefs.current[index]?.partNo}
                                         value={row.partNo}
                                         style={{ width: '100px' }}
                                         disabled={formData.freeze}
@@ -1269,7 +1253,7 @@ export const GatePassIn = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].batchNo}
+                                        ref={lrNoDetailsRefs.current[index]?.batchNo}
                                         type="text"
                                         style={{ width: '100px' }}
                                         disabled={formData.freeze}
@@ -1296,7 +1280,6 @@ export const GatePassIn = () => {
 
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].batchDate}
                                         type="date"
                                         style={{ width: '200px' }}
                                         disabled={formData.freeze}
@@ -1323,7 +1306,6 @@ export const GatePassIn = () => {
 
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].expDate}
                                         type="date"
                                         style={{ width: '200px' }}
                                         disabled={formData.freeze}
@@ -1351,7 +1333,7 @@ export const GatePassIn = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].invQty}
+                                        ref={lrNoDetailsRefs.current[index]?.invQty}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.invQty}
@@ -1389,7 +1371,7 @@ export const GatePassIn = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].recQty}
+                                        ref={lrNoDetailsRefs.current[index]?.recQty}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.recQty}
@@ -1452,7 +1434,7 @@ export const GatePassIn = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].damageQty}
+                                        ref={lrNoDetailsRefs.current[index]?.damageQty}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.damageQty}

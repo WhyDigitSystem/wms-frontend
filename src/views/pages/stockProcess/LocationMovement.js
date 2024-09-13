@@ -84,31 +84,44 @@ export const LocationMovement = () => {
     }
   ]);
 
-  const lrNoDetailsRefs = useRef(
-    childTableData.map(() => ({
-      fromBin: React.createRef(),
-      partNo: React.createRef(),
-      grnNo: React.createRef(),
-      toBin: React.createRef(),
-      toQty: React.createRef()
-    }))
-  );
+  // const lrNoDetailsRefs = useRef(
+  //   childTableData.map(() => ({
+  //     fromBin: React.createRef(),
+  //     partNo: React.createRef(),
+  //     grnNo: React.createRef(),
+  //     toBin: React.createRef(),
+  //     toQty: React.createRef()
+  //   }))
+  // );
+
+  // useEffect(() => {
+  //   // If the length of the table changes, update the refs
+  //   if (lrNoDetailsRefs.current.length !== childTableData.length) {
+  //     lrNoDetailsRefs.current = childTableData.map(
+  //       (_, index) =>
+  //         lrNoDetailsRefs.current[index] || {
+  //           fromBin: React.createRef(),
+  //           partNo: React.createRef(),
+  //           grnNo: React.createRef(),
+  //           toBin: React.createRef(),
+  //           toQty: React.createRef()
+  //         }
+  //     );
+  //   }
+  // }, [childTableData.length]);
+
+  const lrNoDetailsRefs = useRef([]);
 
   useEffect(() => {
-    // If the length of the table changes, update the refs
-    if (lrNoDetailsRefs.current.length !== childTableData.length) {
-      lrNoDetailsRefs.current = childTableData.map(
-        (_, index) =>
-          lrNoDetailsRefs.current[index] || {
-            fromBin: React.createRef(),
-            partNo: React.createRef(),
-            grnNo: React.createRef(),
-            toBin: React.createRef(),
-            toQty: React.createRef()
-          }
-      );
-    }
-  }, [childTableData.length]);
+    lrNoDetailsRefs.current = childTableData.map((_, index) => ({
+      fromBin: lrNoDetailsRefs.current[index]?.fromBin || React.createRef(),
+      partNo: lrNoDetailsRefs.current[index]?.partNo || React.createRef(),
+      grnNo: lrNoDetailsRefs.current[index]?.grnNo || React.createRef(),
+      batchNo: lrNoDetailsRefs.current[index]?.batchNo || React.createRef(),
+      toBin: lrNoDetailsRefs.current[index]?.toBin || React.createRef(),
+      toQty: lrNoDetailsRefs.current[index]?.toQty || React.createRef()
+    }));
+  }, [childTableData]);
 
   const [childTableErrors, setChildTableErrors] = useState([]);
 
@@ -856,10 +869,10 @@ export const LocationMovement = () => {
   const handleAddRow = () => {
     console.log('THE HANDLE ADD ROW FUNCTION IS WORKING');
 
-    if (isLastRowEmpty(childTableData)) {
-      displayRowError(childTableData);
-      return;
-    }
+    // if (isLastRowEmpty(childTableData)) {
+    //   displayRowError(childTableData);
+    //   return;
+    // }
     console.log('the ok');
 
     const newRow = {
@@ -1004,8 +1017,8 @@ export const LocationMovement = () => {
           if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].grnNo;
         }
         if (!row.batchNo) {
-          rowErrors.batchNo = 'Batch No is required';
           if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
+          rowErrors.batchNo = 'Batch No is required';
         }
         if (!row.toBin) {
           rowErrors.toBin = 'To Bin is required';
@@ -1318,7 +1331,7 @@ export const LocationMovement = () => {
                                           </td>
                                           <td className="border px-2 py-2">
                                             <select
-                                              ref={lrNoDetailsRefs.current[index].fromBin}
+                                              ref={lrNoDetailsRefs.current[index]?.fromBin}
                                               value={row.fromBin}
                                               style={{ width: '130px' }}
                                               onChange={(e) => handleFromBinChange(row, index, e)}
@@ -1341,7 +1354,7 @@ export const LocationMovement = () => {
                                           </td>
                                           <td className="border px-2 py-2">
                                             <select
-                                              ref={lrNoDetailsRefs.current[index].partNo}
+                                              ref={lrNoDetailsRefs.current[index]?.partNo}
                                               value={row.partNo}
                                               style={{ width: '130px' }}
                                               onChange={(e) => handlePartNoChange(row, index, e)}
@@ -1387,7 +1400,7 @@ export const LocationMovement = () => {
                                           </td>
                                           <td className="border px-2 py-2">
                                             <select
-                                              ref={lrNoDetailsRefs.current[index].grnNo}
+                                              ref={lrNoDetailsRefs.current[index]?.grnNo}
                                               value={row.grnNo}
                                               style={{ width: '225px' }}
                                               onChange={(e) => handleGrnNoChange(row, index, e)}
@@ -1414,7 +1427,7 @@ export const LocationMovement = () => {
                                           </td>
                                           <td className="border px-2 py-2">
                                             <select
-                                              ref={lrNoDetailsRefs.current[index].batchNo}
+                                              ref={lrNoDetailsRefs.current[index]?.batchNo}
                                               value={row.batchNo}
                                               style={{ width: '200px' }}
                                               onChange={(e) => handleBatchNoChange(row, index, e)}
@@ -1450,7 +1463,7 @@ export const LocationMovement = () => {
                                           </td>
                                           <td className="border px-2 py-2">
                                             <select
-                                              ref={lrNoDetailsRefs.current[index].toBin}
+                                              ref={lrNoDetailsRefs.current[index]?.toBin}
                                               value={row.toBin}
                                               style={{ width: '200px' }}
                                               onChange={(e) => handleToBinChange(row, index, e)}
@@ -1480,7 +1493,7 @@ export const LocationMovement = () => {
                                           </td>
                                           <td className="border px-2 py-2">
                                             <input
-                                              ref={lrNoDetailsRefs.current[index].toQty}
+                                              ref={lrNoDetailsRefs.current[index]?.toQty}
                                               style={{ width: '150px' }}
                                               type="text"
                                               value={row.toQty}

@@ -25,6 +25,7 @@ import { getAllActivePartDetails } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import React, { useRef } from 'react';
+import { ToastContainer } from 'react-toastify';
 
 function PaperComponent(props) {
   return (
@@ -79,29 +80,40 @@ export const CycleCount = () => {
     }
   ]);
 
-  const lrNoDetailsRefs = useRef(
-    detailTableData.map(() => ({
-      partNo: React.createRef(),
-      grnNo: React.createRef(),
-      batchNo: React.createRef(),
-      bin: React.createRef()
-    }))
-  );
+  // const lrNoDetailsRefs = useRef(
+  //   detailTableData.map(() => ({
+  //     partNo: React.createRef(),
+  //     grnNo: React.createRef(),
+  //     batchNo: React.createRef(),
+  //     bin: React.createRef()
+  //   }))
+  // );
+
+  // useEffect(() => {
+  //   // If the length of the table changes, update the refs
+  //   if (lrNoDetailsRefs.current.length !== detailTableData.length) {
+  //     lrNoDetailsRefs.current = detailTableData.map(
+  //       (_, index) =>
+  //         lrNoDetailsRefs.current[index] || {
+  //           partNo: React.createRef(),
+  //           grnNo: React.createRef(),
+  //           batchNo: React.createRef(),
+  //           bin: React.createRef()
+  //         }
+  //     );
+  //   }
+  // }, [detailTableData.length]);
+
+  const lrNoDetailsRefs = useRef([]);
 
   useEffect(() => {
-    // If the length of the table changes, update the refs
-    if (lrNoDetailsRefs.current.length !== detailTableData.length) {
-      lrNoDetailsRefs.current = detailTableData.map(
-        (_, index) =>
-          lrNoDetailsRefs.current[index] || {
-            partNo: React.createRef(),
-            grnNo: React.createRef(),
-            batchNo: React.createRef(),
-            bin: React.createRef()
-          }
-      );
-    }
-  }, [detailTableData.length]);
+    lrNoDetailsRefs.current = detailTableData.map((_, index) => ({
+      partNo: lrNoDetailsRefs.current[index]?.partNo || React.createRef(),
+      grnNo: lrNoDetailsRefs.current[index]?.grnNo || React.createRef(),
+      batchNo: lrNoDetailsRefs.current[index]?.batchNo || React.createRef(),
+      bin: lrNoDetailsRefs.current[index]?.bin || React.createRef()
+    }));
+  }, [detailTableData]);
 
   const [detailTableErrors, setDetailTableErrors] = useState([]);
   const [modalTableData, setModalTableData] = useState([
@@ -519,8 +531,8 @@ export const CycleCount = () => {
           partNo: !table[table.length - 1].partNo ? 'Part No is required' : '',
           grnNo: !table[table.length - 1].grnNo ? 'GRN No is required' : '',
           batchNo: !table[table.length - 1].batchNo ? 'Batch No is required' : '',
-          bin: !table[table.length - 1].bin ? 'Bin is required' : ''
-          // actualQty: !table[table.length - 1].actualQty ? 'Actual QTY is required' : ''
+          bin: !table[table.length - 1].bin ? 'Bin is required' : '',
+          actualQty: !table[table.length - 1].actualQty ? 'Actual QTY is required' : ''
         };
         return newErrors;
       });
@@ -557,6 +569,120 @@ export const CycleCount = () => {
     }
   };
 
+  // const handleSave = async () => {
+  //   console.log('first');
+
+  //   const errors = {};
+  //   let firstInvalidFieldRef = null;
+
+  //   console.log('detailTableData is:', detailTableData);
+
+  //   let detailTableDataValid = true;
+  //   if (!detailTableData || !Array.isArray(detailTableData) || detailTableData.length === 0) {
+  //     detailTableDataValid = false;
+  //     setDetailTableErrors([{ general: 'Detail Table Data is required' }]); // Assuming you want to handle general errors too
+  //   } else {
+  //     const newTableErrors = detailTableData.map((row, index) => {
+  //       const rowErrors = {};
+
+  //       if (!row.partNo) {
+  //         rowErrors.partNo = 'Part No is required';
+  //         if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
+  //       }
+  //       if (!row.grnNo) {
+  //         rowErrors.grnNo = 'Grn No is required';
+  //         if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].grnNo;
+  //       }
+  //       if (!row.batchNo) {
+  //         rowErrors.batchNo = 'Batch No is required';
+  //         if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
+  //       }
+  //       if (!row.bin) {
+  //         rowErrors.bin = 'To Bin is required';
+  //         if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
+  //       }
+  //       // if (!row.avlQty) rowErrors.avlQty = 'To QTY is required';
+  //       // if (!row.actualQty) rowErrors.actualQty = 'Actual QTY is required';
+
+  //       if (Object.keys(rowErrors).length > 0) detailTableDataValid = false;
+
+  //       return rowErrors;
+  //     });
+
+  //     if (!detailTableDataValid || Object.keys(errors).length > 0) {
+  //       // Focus on the first invalid field
+  //       if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+  //         firstInvalidFieldRef.current.focus();
+  //       }
+  //     } else {
+  //       // Proceed with form submission
+  //     }
+
+  //     setDetailTableErrors(newTableErrors);
+  //   }
+
+  //   if (detailTableDataValid) {
+  //     setIsLoading(true);
+
+  //     const cycleCountVo = detailTableData.map((row) => ({
+  //       ...(viewId && { id: row.id }),
+  //       partNo: row.partNo,
+  //       partDescription: row.partDesc,
+  //       sku: row.sku,
+  //       grnNo: row.grnNo,
+  //       grnDate: row.grnDate,
+  //       batchNo: row.batchNo,
+  //       batchDate: row.batchDate,
+  //       expDate: row.expDate,
+  //       bin: row.bin,
+  //       binType: row.binType,
+  //       binClass: row.binClass,
+  //       cellType: row.cellType,
+  //       core: row.core,
+  //       // lotNo: row.lotNo,
+  //       qcFlag: row.qcFlag,
+  //       status: row.status,
+  //       avlQty: parseInt(row.avlQty, 10),
+  //       actualQty: parseInt(row.actualQty, 10)
+  //     }));
+
+  //     const saveFormData = {
+  //       ...(viewId && { id: viewId }),
+  //       branch: loginBranch,
+  //       branchCode: loginBranchCode,
+  //       client: loginClient,
+  //       customer: loginCustomer,
+  //       warehouse: loginWarehouse,
+  //       finYear: loginFinYear,
+  //       orgId: parseInt(orgId, 10),
+  //       createdBy: loginUserName,
+  //       cycleCountDetailsDTO: cycleCountVo
+  //     };
+
+  //     console.log('DATA TO SAVE IS:', saveFormData);
+
+  //     try {
+  //       const response = await apiCalls('put', `cycleCount/createUpdateCycleCount`, saveFormData);
+
+  //       if (response.status === true) {
+  //         console.log('Response:', response);
+  //         handleClear();
+  //         showToast('success', viewId ? 'Cycle Count Updated Successfully' : 'Cycle Count created successfully');
+  //         getAllCycleCount();
+  //       } else {
+  //         showToast('error', response.paramObjectsMap?.errorMessage || 'Cycle Count creation failed');
+  //       }
+  //     } catch (error) {
+  //       console.error('Error:', error);
+  //       showToast('error', 'Cycle Count creation failed');
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   } else {
+  //     setFieldErrors(errors);
+  //   }
+  // };
+
   const handleSave = async () => {
     console.log('first');
 
@@ -568,7 +694,7 @@ export const CycleCount = () => {
     let detailTableDataValid = true;
     if (!detailTableData || !Array.isArray(detailTableData) || detailTableData.length === 0) {
       detailTableDataValid = false;
-      setDetailTableErrors([{ general: 'Detail Table Data is required' }]); // Assuming you want to handle general errors too
+      setDetailTableErrors([{ general: 'Detail Table Data is required' }]);
     } else {
       const newTableErrors = detailTableData.map((row, index) => {
         const rowErrors = {};
@@ -589,8 +715,10 @@ export const CycleCount = () => {
           rowErrors.bin = 'To Bin is required';
           if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
         }
-        // if (!row.avlQty) rowErrors.avlQty = 'To QTY is required';
-        // if (!row.actualQty) rowErrors.actualQty = 'Actual QTY is required';
+        if (!row.actualQty) {
+          rowErrors.actualQty = 'Actual Qty is required';
+          // if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
+        }
 
         if (Object.keys(rowErrors).length > 0) detailTableDataValid = false;
 
@@ -598,6 +726,14 @@ export const CycleCount = () => {
       });
 
       setDetailTableErrors(newTableErrors);
+
+      if (!detailTableDataValid || Object.keys(errors).length > 0) {
+        // Focus on the first invalid field
+        if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+          firstInvalidFieldRef.current.focus();
+        }
+        return; // Exit early if validation fails
+      }
     }
 
     if (detailTableDataValid) {
@@ -618,7 +754,6 @@ export const CycleCount = () => {
         binClass: row.binClass,
         cellType: row.cellType,
         core: row.core,
-        // lotNo: row.lotNo,
         qcFlag: row.qcFlag,
         status: row.status,
         avlQty: parseInt(row.avlQty, 10),
@@ -644,11 +779,12 @@ export const CycleCount = () => {
         const response = await apiCalls('put', `cycleCount/createUpdateCycleCount`, saveFormData);
 
         if (response.status === true) {
-          console.log('Response:', response);
+          console.log('Success path reached');
           handleClear();
           showToast('success', viewId ? 'Cycle Count Updated Successfully' : 'Cycle Count created successfully');
           getAllCycleCount();
         } else {
+          console.log('Error path reached');
           showToast('error', response.paramObjectsMap?.errorMessage || 'Cycle Count creation failed');
         }
       } catch (error) {
@@ -1166,7 +1302,7 @@ export const CycleCount = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
-                                                ref={lrNoDetailsRefs.current[index].partNo}
+                                                ref={lrNoDetailsRefs.current[index]?.partNo}
                                                 value={row.partNo}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handlePartNoChange(row, index, e)}
@@ -1205,7 +1341,7 @@ export const CycleCount = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
-                                                ref={lrNoDetailsRefs.current[index].grnNo}
+                                                ref={lrNoDetailsRefs.current[index]?.grnNo}
                                                 value={row.grnNo}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handleGrnNoChange(row, index, e)}
@@ -1232,7 +1368,7 @@ export const CycleCount = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
-                                                ref={lrNoDetailsRefs.current[index].batchNo}
+                                                ref={lrNoDetailsRefs.current[index]?.batchNo}
                                                 value={row.batchNo}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handleBatchNoChange(row, index, e)}
@@ -1298,7 +1434,7 @@ export const CycleCount = () => {
 
                                             <td className="border px-2 py-2">
                                               <select
-                                                ref={lrNoDetailsRefs.current[index].bin}
+                                                ref={lrNoDetailsRefs.current[index]?.bin}
                                                 value={row.bin}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handleBinChange(row, index, e)}
@@ -1583,6 +1719,7 @@ export const CycleCount = () => {
           </>
         )}
       </div>
+      <ToastContainer />
     </>
   );
 };

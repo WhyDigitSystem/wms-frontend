@@ -17,7 +17,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Draggable from 'react-draggable';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -25,6 +25,7 @@ import ActionButton from 'utils/ActionButton';
 import { getAllActiveCpartNo } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import React, { useRef } from 'react';
 
 function PaperComponent(props) {
   return (
@@ -155,7 +156,25 @@ export const CodeConversion = () => {
   ];
 
   const [listViewData, setListViewData] = useState([]);
-  const [codeConversionDetailsTable, setCodeConversionDetailsTable] = useState([]);
+  const [codeConversionDetailsTable, setCodeConversionDetailsTable] = useState([
+    {
+      partNo: '',
+      partDescription: '',
+      sku: '',
+      grnNo: '',
+      binType: '',
+      batchNo: '',
+      bin: '',
+      qty: '',
+      actualQty: '',
+      convertQty: '',
+      cpartNo: '',
+      cpartDesc: '',
+      csku: '',
+      cbin: '',
+      remarks: ''
+    }
+  ]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -614,8 +633,24 @@ export const CodeConversion = () => {
   //   }));
   // }, [codeConversionDetailsTable]);
 
+  useEffect(() => {
+    lrNoDetailsRefs.current = codeConversionDetailsTable.map((_, index) => ({
+      partNo: lrNoDetailsRefs.current[index]?.partNo || React.createRef(),
+      grnNo: lrNoDetailsRefs.current[index]?.grnNo || React.createRef(),
+      binType: lrNoDetailsRefs.current[index]?.binType || React.createRef(),
+      batchNo: lrNoDetailsRefs.current[index]?.batchNo || React.createRef(),
+      bin: lrNoDetailsRefs.current[index]?.bin || React.createRef(),
+      actualQty: lrNoDetailsRefs.current[index]?.actualQty || React.createRef(),
+      convertQty: lrNoDetailsRefs.current[index]?.convertQty || React.createRef(),
+      cpartNo: lrNoDetailsRefs.current[index]?.cpartNo || React.createRef(),
+      cbin: lrNoDetailsRefs.current[index]?.cbin || React.createRef()
+    }));
+  }, [codeConversionDetailsTable]);
+
   const handleSave = async () => {
     const errors = {};
+    let firstInvalidFieldRef = null;
+
     let codeConversionDetailsTableValid = true;
     if (!codeConversionDetailsTable || !Array.isArray(codeConversionDetailsTable) || codeConversionDetailsTable.length === 0) {
       codeConversionDetailsTableValid = false;
@@ -623,27 +658,63 @@ export const CodeConversion = () => {
     } else {
       const newTableErrors = codeConversionDetailsTable.map((row, index) => {
         const rowErrors = {};
-        if (!row.partNo) rowErrors.partNo = 'Part No is required';
+        if (!row.partNo) {
+          rowErrors.partNo = 'Part No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
+        }
 
-        if (!row.grnNo) rowErrors.grnNo = 'GRN No is required';
+        if (!row.grnNo) {
+          rowErrors.grnNo = 'GRN No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].grnNo;
+        }
 
-        if (!row.binType) rowErrors.binType = 'Bin Type is required';
+        if (!row.binType) {
+          rowErrors.binType = 'Bin Type is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].binType;
+        }
 
-        if (!row.batchNo) rowErrors.batchNo = 'Batch No is required';
+        if (!row.batchNo) {
+          rowErrors.batchNo = 'Batch No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
+        }
 
-        if (!row.bin) rowErrors.bin = 'Bin is required';
+        if (!row.bin) {
+          rowErrors.bin = 'Bin is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
+        }
 
-        if (!row.actualQty) rowErrors.actualQty = 'Actual Qty is required';
+        if (!row.actualQty) {
+          rowErrors.actualQty = 'Actual Qty is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].actualQty;
+        }
 
-        if (!row.convertQty) rowErrors.convertQty = 'Convert Qty is required';
+        if (!row.convertQty) {
+          rowErrors.convertQty = 'Convert Qty is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].convertQty;
+        }
 
-        if (!row.cpartNo) rowErrors.cpartNo = 'Cpart No is required';
+        if (!row.cpartNo) {
+          rowErrors.cpartNo = 'Cpart No is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].cpartNo;
+        }
 
-        if (!row.cbin) rowErrors.cbin = 'C Bin is required';
+        if (!row.cbin) {
+          rowErrors.cbin = 'C Bin is required';
+          if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].cbin;
+        }
 
         if (Object.keys(rowErrors).length > 0) codeConversionDetailsTableValid = false;
         return rowErrors;
       });
+
+      if (!codeConversionDetailsTableValid || Object.keys(errors).length > 0) {
+        // Focus on the first invalid field
+        if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+          firstInvalidFieldRef.current.focus();
+        }
+      } else {
+        // Proceed with form submission
+      }
 
       setCodeConversionDetailsError(newTableErrors);
     }

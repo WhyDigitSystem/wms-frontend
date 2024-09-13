@@ -89,33 +89,46 @@ export const StockRestate = () => {
     }
   ]);
 
-  const lrNoDetailsRefs = useRef(
-    detailTableData.map(() => ({
-      fromBin: React.createRef(),
-      partNo: React.createRef(),
-      grnNo: React.createRef(),
-      batchNo: React.createRef(),
-      toBin: React.createRef(),
-      toQty: React.createRef()
-    }))
-  );
+  // const lrNoDetailsRefs = useRef(
+  //   detailTableData.map(() => ({
+  //     fromBin: React.createRef(),
+  //     partNo: React.createRef(),
+  //     grnNo: React.createRef(),
+  //     batchNo: React.createRef(),
+  //     toBin: React.createRef(),
+  //     toQty: React.createRef()
+  //   }))
+  // );
+
+  // useEffect(() => {
+  //   // If the length of the table changes, update the refs
+  //   if (lrNoDetailsRefs.current.length !== detailTableData.length) {
+  //     lrNoDetailsRefs.current = detailTableData.map(
+  //       (_, index) =>
+  //         lrNoDetailsRefs.current[index] || {
+  //           fromBin: React.createRef(),
+  //           partNo: React.createRef(),
+  //           grnNo: React.createRef(),
+  //           batchNo: React.createRef(),
+  //           toBin: React.createRef(),
+  //           toQty: React.createRef()
+  //         }
+  //     );
+  //   }
+  // }, [detailTableData.length]);
+
+  const lrNoDetailsRefs = useRef([]);
 
   useEffect(() => {
-    // If the length of the table changes, update the refs
-    if (lrNoDetailsRefs.current.length !== detailTableData.length) {
-      lrNoDetailsRefs.current = detailTableData.map(
-        (_, index) =>
-          lrNoDetailsRefs.current[index] || {
-            fromBin: React.createRef(),
-            partNo: React.createRef(),
-            grnNo: React.createRef(),
-            batchNo: React.createRef(),
-            toBin: React.createRef(),
-            toQty: React.createRef()
-          }
-      );
-    }
-  }, [detailTableData.length]);
+    lrNoDetailsRefs.current = detailTableData.map((_, index) => ({
+      fromBin: lrNoDetailsRefs.current[index]?.fromBin || React.createRef(),
+      partNo: lrNoDetailsRefs.current[index]?.partNo || React.createRef(),
+      grnNo: lrNoDetailsRefs.current[index]?.grnNo || React.createRef(),
+      batchNo: lrNoDetailsRefs.current[index]?.batchNo || React.createRef(),
+      toBin: lrNoDetailsRefs.current[index]?.toBin || React.createRef(),
+      toQty: lrNoDetailsRefs.current[index]?.toQty || React.createRef()
+    }));
+  }, [detailTableData]);
 
   const [detailTableErrors, setDetailTableErrors] = useState([]);
   const [modalTableData, setModalTableData] = useState([
@@ -745,7 +758,7 @@ export const StockRestate = () => {
           console.log('Response:', response);
           handleClear();
           showToast('success', viewId ? ' Stock Restate Updated Successfully' : 'Stock Restate created successfully');
-          // getAllStockRestate();
+          getAllStockRestate();
           setIsLoading(false);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Stock Restate creation failed');
@@ -1356,7 +1369,7 @@ export const StockRestate = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
-                                                ref={lrNoDetailsRefs.current[index].fromBin}
+                                                ref={lrNoDetailsRefs.current[index]?.fromBin}
                                                 value={row.fromBin}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handleFromBinChange(row, index, e)}
@@ -1386,7 +1399,7 @@ export const StockRestate = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
-                                                ref={lrNoDetailsRefs.current[index].partNo}
+                                                ref={lrNoDetailsRefs.current[index]?.partNo}
                                                 value={row.partNo || ''}
                                                 onChange={(e) => handlePartNoChange(row, index, e)}
                                                 className={`form-control ${detailTableErrors[index]?.partNo ? 'error' : ''}`}
@@ -1431,7 +1444,7 @@ export const StockRestate = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
-                                                ref={lrNoDetailsRefs.current[index].grnNo}
+                                                ref={lrNoDetailsRefs.current[index]?.grnNo}
                                                 value={row.grnNo}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handleGrnNoChange(row, index, e)}
@@ -1452,7 +1465,7 @@ export const StockRestate = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
-                                                ref={lrNoDetailsRefs.current[index].batchNo}
+                                                ref={lrNoDetailsRefs.current[index]?.batchNo}
                                                 value={row.batchNo}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handleBatchNoChange(row, index, e)}
@@ -1473,7 +1486,7 @@ export const StockRestate = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
-                                                ref={lrNoDetailsRefs.current[index].toBin}
+                                                ref={lrNoDetailsRefs.current[index]?.toBin}
                                                 value={row.toBin}
                                                 style={{ width: '200px' }}
                                                 onChange={(e) => handleToBinChange(row, index, e)}
@@ -1512,7 +1525,7 @@ export const StockRestate = () => {
                                             </td>
                                             <td className="border px-2 py-2">
                                               <input
-                                                ref={lrNoDetailsRefs.current[index].toQty}
+                                                ref={lrNoDetailsRefs.current[index]?.toQty}
                                                 style={{ width: '150px' }}
                                                 type="text"
                                                 value={row.toQty}

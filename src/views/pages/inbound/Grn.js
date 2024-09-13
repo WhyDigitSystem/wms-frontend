@@ -204,34 +204,6 @@ export const Grn = () => {
     }
   ]);
 
-  // const lrNoDetailsRefs = useRef(
-  //   lrTableData.map(() => ({
-  //     lr_Hawb_Hbl_No: React.createRef(),
-  //     invNo: React.createRef(),
-  //     partNo: React.createRef(),
-  //     invQty: React.createRef(),
-  //     palletQty: React.createRef(),
-  //     noOfPallets: React.createRef()
-  //   }))
-  // );
-
-  // useEffect(() => {
-  //   // If the length of the table changes, update the refs
-  //   if (lrNoDetailsRefs.current.length !== lrTableData.length) {
-  //     lrNoDetailsRefs.current = lrTableData.map(
-  //       (_, index) =>
-  //         lrNoDetailsRefs.current[index] || {
-  //           lr_Hawb_Hbl_No: React.createRef(),
-  //           invNo: React.createRef(),
-  //           partNo: React.createRef(),
-  //           invQty: React.createRef(),
-  //           palletQty: React.createRef(),
-  //           noOfPallets: React.createRef()
-  //         }
-  //     );
-  //   }
-  // }, [lrTableData.length]);
-
   const lrNoDetailsRefs = useRef([]);
 
   useEffect(() => {
@@ -1014,7 +986,7 @@ export const Grn = () => {
       }
       if (!row.grnQty) {
         rowErrors.grnQty = 'GRN QTY is required';
-        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].grnQty;
+        // if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].grnQty;
         lrTableDataValid = false;
       }
       if (!row.palletQty) {
