@@ -1,5 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import GridOnIcon from '@mui/icons-material/GridOn';
@@ -21,18 +22,16 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Draggable from 'react-draggable';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
 import { getAllActiveBranches, getAllActiveBuyer } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import React, { useRef } from 'react';
-import CommonBulkUpload from 'utils/CommonBulkUpload';
 import sampleFile from '../../../assets/sample-files/sample_data_buyerorder.xls';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 function PaperComponent(props) {
   return (
@@ -81,7 +80,7 @@ export const BuyerOrder = () => {
     docId: '',
     docDate: dayjs(),
     exRate: 1,
-    freeze: true,
+    freeze: false,
     invoiceDate: dayjs(),
     invoiceNo: '',
     // location: '',
@@ -273,7 +272,7 @@ export const BuyerOrder = () => {
     docDate: new Date(),
     exRate: '',
     finYear: '',
-    freeze: true,
+    freeze: false,
     invoiceDate: '',
     invoiceNo: '',
     location: '',
@@ -402,8 +401,10 @@ export const BuyerOrder = () => {
           shipToFullName: particularBuyerOrder.shipToName,
           refNo: particularBuyerOrder.refNo,
           refDate: particularBuyerOrder.refDate,
-          reMarks: particularBuyerOrder.remarks
+          reMarks: particularBuyerOrder.remarks,
+          freeze: particularBuyerOrder.freeze
         });
+
         particularBuyerOrder.buyerOrderDetailsVO.forEach((bo) => {
           getBatchNo(bo.partNo, bo); // Fetch batch numbers for each part
         });
@@ -668,7 +669,7 @@ export const BuyerOrder = () => {
       docDate: dayjs(),
       exRate: '',
       finYear: '',
-      freeze: true,
+      freeze: false,
       invoiceDate: dayjs(),
       invoiceNo: '',
       location: '',
@@ -696,7 +697,7 @@ export const BuyerOrder = () => {
       docDate: null,
       exRate: '',
       finYear: '',
-      freeze: true,
+      freeze: false,
       invoiceDate: null,
       invoiceNo: '',
       location: '',
@@ -886,7 +887,7 @@ export const BuyerOrder = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} />
+            {formData.freeze ? '' : <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} />}
             <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} />
           </div>
         </div>
@@ -955,6 +956,7 @@ export const BuyerOrder = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.orderNo}
                   helperText={fieldErrors.orderNo}
+                  disabled={formData.freeze}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -967,6 +969,7 @@ export const BuyerOrder = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
+                      disabled={formData.freeze}
                       format="DD/MM/YYYY"
                       error={fieldErrors.orderDate}
                       helperText={fieldErrors.orderDate && 'Required'}
@@ -987,6 +990,7 @@ export const BuyerOrder = () => {
                   fullWidth
                   name="invoiceNo"
                   value={formData.invoiceNo}
+                  disabled={formData.freeze}
                   onChange={handleInputChange}
                   error={!!fieldErrors.invoiceNo}
                   helperText={fieldErrors.invoiceNo}
@@ -1005,6 +1009,7 @@ export const BuyerOrder = () => {
                       format="DD/MM/YYYY"
                       error={fieldErrors.invoiceDate}
                       helperText={fieldErrors.invoiceDate && 'Required'}
+                      disabled={formData.freeze}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1025,6 +1030,7 @@ export const BuyerOrder = () => {
                     label="Buyer Short Name"
                     value={formData.buyerShortName}
                     onChange={handleInputChange}
+                    disabled={formData.freeze}
                   >
                     {buyerList.length > 0 &&
                       buyerList.map((row) => (
@@ -1058,7 +1064,15 @@ export const BuyerOrder = () => {
                       </span>
                     }
                   </InputLabel>
-                  <Select labelId="billto" id="billto" name="billto" label="Bill To" value={formData.billto} onChange={handleInputChange}>
+                  <Select
+                    labelId="billto"
+                    id="billto"
+                    name="billto"
+                    label="Bill To"
+                    value={formData.billto}
+                    onChange={handleInputChange}
+                    disabled={formData.freeze}
+                  >
                     {buyerList?.map((row) => (
                       <MenuItem key={row.id} value={row.buyerShortName.toUpperCase()}>
                         {row.buyerShortName.toUpperCase()}
@@ -1087,6 +1101,7 @@ export const BuyerOrder = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
+                  disabled={formData.freeze}
                   name="refNo"
                   value={formData.refNo}
                   onChange={handleInputChange}
@@ -1107,6 +1122,7 @@ export const BuyerOrder = () => {
                       format="DD/MM/YYYY"
                       error={fieldErrors.refDate}
                       helperText={fieldErrors.refDate && 'Required'}
+                      disabled={formData.freeze}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1120,7 +1136,15 @@ export const BuyerOrder = () => {
                       </span>
                     }
                   </InputLabel>
-                  <Select labelId="shipTo" id="shipTo" name="shipTo" label="Ship To" value={formData.shipTo} onChange={handleInputChange}>
+                  <Select
+                    labelId="shipTo"
+                    id="shipTo"
+                    name="shipTo"
+                    label="Ship To"
+                    value={formData.shipTo}
+                    onChange={handleInputChange}
+                    disabled={formData.freeze}
+                  >
                     {buyerList?.map((row) => (
                       <MenuItem key={row.id} value={row.buyerShortName.toUpperCase()}>
                         {row.buyerShortName.toUpperCase()}
@@ -1154,6 +1178,7 @@ export const BuyerOrder = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.reMarks}
                   helperText={fieldErrors.reMarks}
+                  disabled={formData.freeze}
                 />
               </div>
             </div>
@@ -1215,6 +1240,7 @@ export const BuyerOrder = () => {
                                       <select
                                         ref={lrNoDetailsRefs.current[index]?.partNo}
                                         value={row.partNo}
+                                        disabled={formData.freeze}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           const selectedPartNo = partNoList.find((p) => p.partNo === value);
@@ -1273,6 +1299,7 @@ export const BuyerOrder = () => {
                                       <select
                                         ref={lrNoDetailsRefs.current[index]?.batchNo}
                                         value={row.batchNo}
+                                        disabled={formData.freeze}
                                         // onChange={(e) => {
                                         //   const value = e.target.value;
                                         //   setSkuDetailsTableData((prev) =>
@@ -1327,6 +1354,7 @@ export const BuyerOrder = () => {
                                         ref={lrNoDetailsRefs.current[index]?.qty}
                                         style={{ width: '150px' }}
                                         type="text"
+                                        disabled={formData.freeze}
                                         value={row.qty}
                                         onChange={(e) => {
                                           const value = e.target.value;

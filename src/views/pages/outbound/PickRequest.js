@@ -76,7 +76,8 @@ export const PickRequest = () => {
     invoiceNo: '',
     clientShortName: '',
     pickOrder: 'FIFO',
-    buyerOrderDate: null
+    buyerOrderDate: null,
+    freeze: false
   });
 
   const [value, setValue] = useState(0);
@@ -273,7 +274,8 @@ export const PickRequest = () => {
           buyersReference: data.buyersReference,
           invoiceNo: data.invoiceNo,
           clientShortName: data.clientShortName,
-          pickOrder: data.pickOrder
+          pickOrder: data.pickOrder,
+          freeze: data.freeze
           // Add other fields here as needed
         });
 
@@ -691,7 +693,8 @@ export const PickRequest = () => {
       bchk: '',
       status: '',
       barcode: '',
-      active: true
+      active: true,
+      freeze: false
     });
   };
 
@@ -775,7 +778,11 @@ export const PickRequest = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            {formData.freeze ? (
+              ''
+            ) : (
+              <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            )}
           </div>
         </div>
         {listView ? (
@@ -839,6 +846,7 @@ export const PickRequest = () => {
                     label="Buyer Order Ref No"
                     value={formData.buyerRefNo}
                     onChange={handleInputChange}
+                    disabled={formData.freeze}
                   >
                     {/* Default option */}
                     {buyerOrderNoList.length === 0 && (
@@ -1059,6 +1067,7 @@ export const PickRequest = () => {
                     label="Pick Order"
                     value={formData.pickOrder}
                     onChange={handleInputChange}
+                    disabled={formData.freeze}
                   >
                     <MenuItem value="FIFO">FIFO</MenuItem>
                     <MenuItem value="LILO">LIFO</MenuItem>
@@ -1076,6 +1085,7 @@ export const PickRequest = () => {
                     name="status"
                     label="Status"
                     value={formData.status}
+                    disabled={formData.freeze}
                     onChange={handleInputChange}
                   >
                     <MenuItem value="Edit">EDIT</MenuItem>
@@ -1406,6 +1416,7 @@ export const PickRequest = () => {
                             onChange={handleInputChange}
                             error={!!fieldErrors.totalOrderQty}
                             helperText={fieldErrors.totalOrderQty}
+                            disabled
                           />
                         </div>
 
@@ -1415,6 +1426,7 @@ export const PickRequest = () => {
                             variant="outlined"
                             size="small"
                             fullWidth
+                            disabled
                             name="totalPickedQty"
                             value={formData.totalPickedQty}
                             onChange={handleInputChange}

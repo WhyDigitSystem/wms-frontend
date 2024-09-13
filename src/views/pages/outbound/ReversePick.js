@@ -1,4 +1,3 @@
-import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
@@ -75,7 +74,8 @@ export const ReversePick = () => {
     pickRequestDocDate: '',
     boAmendment: 'No',
     buyerOrderDate: null,
-    pickRequestDocId: ''
+    pickRequestDocId: '',
+    freeze: false
   });
 
   const [value, setValue] = useState(0);
@@ -341,7 +341,8 @@ export const ReversePick = () => {
           pickOrder: data.pickOrder,
           boAmendment: data.boAmendment,
           pickRequestDocDate: data.pickRequestDocDate,
-          pickRequestDocId: data.pickRequestDocId
+          pickRequestDocId: data.pickRequestDocId,
+          freeze: data.freeze
           // Add other fields here as needed
         });
 
@@ -895,6 +896,7 @@ export const ReversePick = () => {
                     label="Pick Request Id"
                     value={formData.pickRequestDocId}
                     onChange={handleInputChange}
+                    disabled={formData.freeze}
                   >
                     {buyerOrderNoList.length === 0 && (
                       <MenuItem value="">
@@ -926,6 +928,7 @@ export const ReversePick = () => {
                       format="YYYY-MM-DD"
                       error={fieldErrors.pickRequestDocDate}
                       helperText={fieldErrors.pickRequestDocDate && 'Required'}
+                      disabled
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -946,6 +949,7 @@ export const ReversePick = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.buyerRefNo}
                   helperText={fieldErrors.buyerRefNo}
+                  disabled
                 />
               </div>
 
@@ -962,6 +966,7 @@ export const ReversePick = () => {
                       format="YYYY-MM-DD"
                       error={fieldErrors.buyerRefDate}
                       helperText={fieldErrors.buyerRefDate && 'Required'}
+                      disabled
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -977,6 +982,7 @@ export const ReversePick = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.buyerOrderNo}
                   helperText={fieldErrors.buyerOrderNo}
+                  disabled
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -989,6 +995,7 @@ export const ReversePick = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
+                      disabled
                       format="YYYY-MM-DD"
                       error={fieldErrors.buyerOrderDate}
                       helperText={fieldErrors.buyerOrderDate && 'Required'}
@@ -1007,6 +1014,7 @@ export const ReversePick = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.buyersReference}
                   helperText={fieldErrors.buyersReference}
+                  disabled
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -1020,6 +1028,7 @@ export const ReversePick = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.invoiceNo}
                   helperText={fieldErrors.invoiceNo}
+                  disabled
                 />
               </div>
 
@@ -1034,6 +1043,7 @@ export const ReversePick = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.clientName}
                   helperText={fieldErrors.clientName}
+                  disabled
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -1046,6 +1056,7 @@ export const ReversePick = () => {
                   value={formData.clientShortName}
                   onChange={handleInputChange}
                   error={!!fieldErrors.clientShortName}
+                  disabled
                   helperText={fieldErrors.clientShortName}
                 />
               </div>
@@ -1060,6 +1071,7 @@ export const ReversePick = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.clientAddress}
                   helperText={fieldErrors.clientAddress}
+                  disabled
                 />
               </div>
               {/* <div className="col-md-3 mb-3">
@@ -1086,6 +1098,7 @@ export const ReversePick = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.customerName}
                   helperText={fieldErrors.customerName}
+                  disabled
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -1099,6 +1112,7 @@ export const ReversePick = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.customerAddress}
                   helperText={fieldErrors.customerAddress}
+                  disabled
                 />
               </div>
 
@@ -1158,6 +1172,7 @@ export const ReversePick = () => {
                     label="Status"
                     value={formData.status}
                     onChange={handleInputChange}
+                    disabled={formData.freeze}
                   >
                     <MenuItem value="Edit">EDIT</MenuItem>
                     <MenuItem value="Confirm">CONFIRM</MenuItem>
@@ -1190,6 +1205,7 @@ export const ReversePick = () => {
                     label="BO Amentment"
                     value={formData.boAmendment}
                     onChange={handleInputChange}
+                    disabled={formData.freeze}
                   >
                     <MenuItem value="Yes">Yes</MenuItem>
                     <MenuItem value="No">No</MenuItem>
@@ -1294,6 +1310,7 @@ export const ReversePick = () => {
                                           type="text"
                                           style={{ width: '100px' }}
                                           value={row.partNo}
+                                          disabled
                                           onChange={(e) => handleInputChange(e, index, 'partNo')}
                                           className={itemTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
                                         />
@@ -1310,6 +1327,7 @@ export const ReversePick = () => {
                                           type="text"
                                           style={{ width: '100px' }}
                                           value={row.partDesc}
+                                          disabled
                                           onChange={(e) => handleInputChange(e, index, 'partDesc')}
                                           className={itemTableErrors[index]?.partDesc ? 'error form-control' : 'form-control'}
                                         />
@@ -1324,6 +1342,7 @@ export const ReversePick = () => {
                                           type="text"
                                           style={{ width: '100px' }}
                                           value={row.core}
+                                          disabled
                                           onChange={(e) => handleInputChange(e, index, 'core')}
                                           className={itemTableErrors[index]?.core ? 'error form-control' : 'form-control'}
                                         />
@@ -1338,6 +1357,7 @@ export const ReversePick = () => {
                                           type="text"
                                           style={{ width: '100px' }}
                                           value={row.bin}
+                                          disabled
                                           onChange={(e) => handleInputChange(e, index, 'bin')}
                                           className={itemTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
                                         />
@@ -1353,6 +1373,7 @@ export const ReversePick = () => {
                                         <input
                                           type="text"
                                           value={row.sku}
+                                          disabled
                                           style={{ width: '100px' }}
                                           onChange={(e) => handleInputChange(e, index, 'sku')}
                                           className={itemTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
@@ -1371,6 +1392,7 @@ export const ReversePick = () => {
                                         <input
                                           type="text"
                                           value={row.batchNo}
+                                          disabled
                                           style={{ width: '100px' }}
                                           onChange={(e) => handleInputChange(e, index, 'batchNo')}
                                           className={itemTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
@@ -1386,6 +1408,7 @@ export const ReversePick = () => {
                                         <input
                                           type="text"
                                           value={row.batchDate}
+                                          disabled
                                           style={{ width: '100px' }}
                                           onChange={(e) => handleInputChange(e, index, 'batchDate')}
                                           className={itemTableErrors[index]?.batchDate ? 'error form-control' : 'form-control'}
@@ -1401,6 +1424,7 @@ export const ReversePick = () => {
                                         <input
                                           type="text"
                                           value={row.orderQty}
+                                          disabled
                                           style={{ width: '100px' }}
                                           onChange={(e) => handleInputChange(e, index, 'orderQty')}
                                           className={itemTableErrors[index]?.orderQty ? 'error form-control' : 'form-control'}
@@ -1417,6 +1441,7 @@ export const ReversePick = () => {
                                           type="number"
                                           value={Math.abs(row.pickQty)} // Ensure the value is always positive
                                           style={{ width: '100px' }}
+                                          disabled
                                           onChange={(e) => {
                                             const value = Math.abs(parseInt(e.target.value) || 0); // Convert to positive integer
 
@@ -1438,6 +1463,7 @@ export const ReversePick = () => {
                                           type="text"
                                           value={row.revisedQty || ''}
                                           style={{ width: '100px' }}
+                                          disabled={formData.freeze}
                                           onChange={(e) => handleInputChangeGrid(e, index, 'revisedQty')}
                                           className={itemTableErrors[index]?.revisedQty ? 'error form-control' : 'form-control'}
                                         />
@@ -1493,6 +1519,7 @@ export const ReversePick = () => {
                             value={formData.totalOrderQty}
                             onChange={handleInputChange}
                             error={!!fieldErrors.totalOrderQty}
+                            disabled={formData.freeze}
                             helperText={fieldErrors.totalOrderQty}
                           />
                         </div>
@@ -1506,6 +1533,7 @@ export const ReversePick = () => {
                             name="totalPickedQty"
                             value={formData.totalPickedQty}
                             onChange={handleInputChange}
+                            disabled={formData.freeze}
                             error={!!fieldErrors.totalPickedQty}
                             helperText={fieldErrors.totalPickedQty}
                           />
