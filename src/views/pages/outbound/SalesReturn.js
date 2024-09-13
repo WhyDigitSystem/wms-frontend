@@ -97,7 +97,8 @@ export const SalesReturn = () => {
     timeIn: '',
     timeOut: '',
     goodsDesc: '',
-    totalReturnQty: ''
+    totalReturnQty: '',
+    freeze: false
   });
 
   const [value, setValue] = useState(0);
@@ -577,7 +578,8 @@ export const SalesReturn = () => {
           timeIn: particularItem.timeIn,
           timeOut: particularItem.timeOut,
           goodsDesc: particularItem.goodsDesc,
-          totalReturnQty: particularItem.totalReturnQty
+          totalReturnQty: particularItem.totalReturnQty,
+          freeze: particularItem.freeze
         });
 
         setDetailTableData(
@@ -1081,7 +1083,9 @@ export const SalesReturn = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            {!formData.freeze && (
+              <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            )}
           </div>
         </div>
         {listView ? (
@@ -1129,7 +1133,15 @@ export const SalesReturn = () => {
                       </span>
                     }
                   </InputLabel>
-                  <Select labelId="prNo-label" id="prNo *" name="prNo" label="PR No" value={formData.prNo} onChange={handleInputChange}>
+                  <Select
+                    labelId="prNo-label"
+                    id="prNo *"
+                    name="prNo"
+                    label="PR No"
+                    value={formData.prNo}
+                    onChange={handleInputChange}
+                    disabled={formData.freeze}
+                  >
                     {prNoList.length === 0 && (
                       <MenuItem value="">
                         <em>None</em>
@@ -1157,6 +1169,7 @@ export const SalesReturn = () => {
                       format="DD/MM/YYYY"
                       error={fieldErrors.prDate}
                       helperText={fieldErrors.prDate && 'Required'}
+                      disabled={formData.freeze}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1172,6 +1185,7 @@ export const SalesReturn = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.boNo}
                   helperText={fieldErrors.boNo}
+                  disabled={formData.freeze}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -1187,6 +1201,7 @@ export const SalesReturn = () => {
                       format="DD/MM/YYYY"
                       error={fieldErrors.boDate}
                       helperText={fieldErrors.boDate && 'Required'}
+                      disabled={formData.freeze}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1202,6 +1217,7 @@ export const SalesReturn = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.entryNo}
                   helperText={fieldErrors.entryNo}
+                  disabled={formData.freeze}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -1217,6 +1233,7 @@ export const SalesReturn = () => {
                       format="DD/MM/YYYY"
                       error={fieldErrors.entryDate}
                       helperText={fieldErrors.entryDate && 'Required'}
+                      disabled={formData.freeze}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1260,6 +1277,7 @@ export const SalesReturn = () => {
                     label="Supplier Short Name *"
                     value={formData.supplierShortName}
                     onChange={handleInputChange}
+                    disabled={formData.freeze}
                   >
                     <MenuItem value="">
                       <em>None</em>
@@ -1297,6 +1315,7 @@ export const SalesReturn = () => {
                     onChange={handleInputChange}
                     name="modeOfShipment"
                     required
+                    disabled={formData.freeze}
                   >
                     {modeOfShipmentList?.map((row, index) => (
                       <MenuItem key={index} value={row.shipmentMode.toUpperCase()}>
@@ -1317,6 +1336,7 @@ export const SalesReturn = () => {
                     onChange={handleInputChange}
                     name="carrier"
                     required
+                    disabled={formData.freeze}
                   >
                     {carrierList?.map((row) => (
                       <MenuItem key={row.id} value={row.carrier.toUpperCase()}>
@@ -1348,8 +1368,12 @@ export const SalesReturn = () => {
                   <>
                     <div className="row d-flex ml">
                       <div className="mb-1">
-                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={getFillGridDetails} />
-                        <ActionButton title="Clear" icon={ClearIcon} onClick={() => setDetailTableData([])} />
+                        {!formData.freeze && (
+                          <>
+                            <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={getFillGridDetails} />
+                            <ActionButton title="Clear" icon={ClearIcon} onClick={() => setDetailTableData([])} />
+                          </>
+                        )}
                       </div>
                       <div className="row mt-2">
                         <div className="col-lg-12">
@@ -1357,9 +1381,11 @@ export const SalesReturn = () => {
                             <table className="table table-bordered" style={{ width: '100%' }}>
                               <thead>
                                 <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                    Action
-                                  </th>
+                                  {!formData.freeze && (
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                      Action
+                                    </th>
+                                  )}
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
@@ -1417,9 +1443,11 @@ export const SalesReturn = () => {
                                 ) : (
                                   detailTableData.map((row, index) => (
                                     <tr key={row.id}>
-                                      <td className="border px-2 py-2 text-center">
-                                        <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(index)} />
-                                      </td>
+                                      {!formData.freeze && (
+                                        <td className="border px-2 py-2 text-center">
+                                          <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(index)} />
+                                        </td>
+                                      )}
                                       <td className="text-center">
                                         <div className="pt-2">{index + 1}</div>
                                       </td>
@@ -1429,6 +1457,7 @@ export const SalesReturn = () => {
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.lrNo}
+                                          disabled={formData.freeze}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             setDetailTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, lrNo: value } : r)));
@@ -1452,6 +1481,7 @@ export const SalesReturn = () => {
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.invoiceNo}
+                                          disabled={formData.freeze}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             setDetailTableData((prev) =>
@@ -1511,6 +1541,7 @@ export const SalesReturn = () => {
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.returnQty}
+                                          disabled={formData.freeze}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             const pickQty = row.pickQty;
@@ -1587,6 +1618,7 @@ export const SalesReturn = () => {
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.damageQty}
+                                          disabled={formData.freeze}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             const returnQty = row.returnQty;
@@ -1664,6 +1696,7 @@ export const SalesReturn = () => {
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.batchNo}
+                                          disabled={formData.freeze}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             setDetailTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, batchNo: value } : r)));
@@ -1688,6 +1721,7 @@ export const SalesReturn = () => {
                                         <input
                                           type="date"
                                           value={row.batchDate}
+                                          disabled={formData.freeze}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             setDetailTableData((prev) =>
@@ -1714,6 +1748,7 @@ export const SalesReturn = () => {
                                         <input
                                           type="date"
                                           value={row.expDate}
+                                          disabled={formData.freeze}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             setDetailTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, expDate: value } : r)));
@@ -1740,6 +1775,7 @@ export const SalesReturn = () => {
                                           style={{ width: '150px' }}
                                           type="text"
                                           value={row.binQty}
+                                          disabled={formData.freeze}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             const maxBinQty = (row.returnQty || 0) - (row.damageQty || 0); // Calculate maxBinQty
@@ -1812,6 +1848,7 @@ export const SalesReturn = () => {
                                           style={{ width: '300px' }}
                                           type="text"
                                           value={row.remarks}
+                                          disabled={formData.freeze}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             setDetailTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, remarks: value } : r)));
@@ -1869,6 +1906,7 @@ export const SalesReturn = () => {
                             onChange={handleInputChange}
                             error={!!fieldErrors.totalReturnQty}
                             helperText={fieldErrors.totalReturnQty}
+                            disabled={formData.freeze}
                           />
                         </div>
                       </div>
@@ -1890,6 +1928,7 @@ export const SalesReturn = () => {
                             onChange={handleInputChange}
                             error={!!fieldErrors.vehicleType}
                             helperText={fieldErrors.vehicleType}
+                            disabled={formData.freeze}
                           />
                         </div>
                         <div className="col-md-3 mb-3">
@@ -1903,6 +1942,7 @@ export const SalesReturn = () => {
                             onChange={handleInputChange}
                             error={!!fieldErrors.vehicleNo}
                             helperText={fieldErrors.vehicleNo}
+                            disabled={formData.freeze}
                           />
                         </div>
 
@@ -1917,6 +1957,7 @@ export const SalesReturn = () => {
                             onChange={handleInputChange}
                             error={!!fieldErrors.contact}
                             helperText={fieldErrors.contact}
+                            disabled={formData.freeze}
                           />
                         </div>
 
@@ -1931,6 +1972,7 @@ export const SalesReturn = () => {
                             onChange={handleInputChange}
                             error={!!fieldErrors.securityPerson}
                             helperText={fieldErrors.securityPerson}
+                            disabled={formData.freeze}
                           />
                         </div>
                         <div className="col-md-3 mb-3">
@@ -1974,6 +2016,7 @@ export const SalesReturn = () => {
                             onChange={handleInputChange}
                             error={!!fieldErrors.goodsDesc}
                             helperText={fieldErrors.goodsDesc}
+                            disabled={formData.freeze}
                           />
                         </div>
                       </div>
