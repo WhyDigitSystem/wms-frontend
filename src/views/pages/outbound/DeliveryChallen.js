@@ -89,7 +89,8 @@ export const DeliveryChallen = () => {
     packingSlipNo: '',
     bin: '',
     taxType: '',
-    remarks: ''
+    remarks: '',
+    freeze: false
   });
   const [value, setValue] = useState(0);
 
@@ -469,7 +470,8 @@ export const DeliveryChallen = () => {
           packingSlipNo: particularDeliveryChallan.packingSlipNo,
           bin: particularDeliveryChallan.bin,
           taxType: particularDeliveryChallan.taxType,
-          remarks: particularDeliveryChallan.remarks
+          remarks: particularDeliveryChallan.remarks,
+          freeze: particularDeliveryChallan.freeze
           // active: particularDeliveryChallan.active === 'Active' ? true : false
         });
         setLrNoDetailsTable(
@@ -719,7 +721,8 @@ export const DeliveryChallen = () => {
       packingSlipNo: '',
       bin: '',
       taxType: '',
-      remarks: ''
+      remarks: '',
+      freeze: false
     });
     setLrNoDetailsTable([
       {
@@ -1161,6 +1164,7 @@ export const DeliveryChallen = () => {
                       value={formData.buyerOrderNo}
                       onChange={handleBuyerOrderChange}
                       name="buyerOrderNo"
+                      disabled={formData.freeze}
                     >
                       {buyerOrderList.length === 0 && (
                         <MenuItem value="">
@@ -1222,6 +1226,7 @@ export const DeliveryChallen = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.containerNO}
                   helperText={fieldErrors.containerNO}
+                  disabled={formData.freeze}
                 />
               </div>
 
@@ -1240,6 +1245,7 @@ export const DeliveryChallen = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.vechileNo}
                   helperText={fieldErrors.vechileNo}
+                  disabled={formData.freeze}
                 />
               </div>
 
@@ -1258,6 +1264,7 @@ export const DeliveryChallen = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.exciseInvoiceNo}
                   helperText={fieldErrors.exciseInvoiceNo}
+                  disabled={formData.freeze}
                 />
               </div>
 
@@ -1276,7 +1283,7 @@ export const DeliveryChallen = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.commercialInvoiceNo}
                   helperText={fieldErrors.commercialInvoiceNo}
-                  // disabled
+                  disabled={formData.freeze}
                 />
               </div>
 
@@ -1325,6 +1332,7 @@ export const DeliveryChallen = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.deliveryTerms}
                   helperText={fieldErrors.deliveryTerms}
+                  disabled={formData.freeze}
                 />
               </div>
 
@@ -1343,6 +1351,7 @@ export const DeliveryChallen = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.payTerms}
                   helperText={fieldErrors.payTerms}
+                  disabled={formData.freeze}
                 />
               </div>
 
@@ -1361,6 +1370,7 @@ export const DeliveryChallen = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.grWaiverNo}
                   helperText={fieldErrors.grWaiverNo}
+                  disabled={formData.freeze}
                 />
               </div>
 
@@ -1377,6 +1387,7 @@ export const DeliveryChallen = () => {
                       format="DD/MM/YYYY"
                       error={fieldErrors.grWaiverDate}
                       helperText={fieldErrors.grWaiverDate && 'Required'}
+                      disabled={formData.freeze}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1397,6 +1408,7 @@ export const DeliveryChallen = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.bankName}
                   helperText={fieldErrors.bankName}
+                  disabled={formData.freeze}
                 />
               </div>
 
@@ -1413,6 +1425,7 @@ export const DeliveryChallen = () => {
                       format="DD/MM/YYYY"
                       error={fieldErrors.grWaiverClosureDate}
                       helperText={fieldErrors.grWaiverClosureDate && 'Required'}
+                      disabled={formData.freeze}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1433,6 +1446,7 @@ export const DeliveryChallen = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.gatePassNo}
                   helperText={fieldErrors.gatePassNo}
+                  disabled={formData.freeze}
                 />
               </div>
 
@@ -1449,6 +1463,7 @@ export const DeliveryChallen = () => {
                       format="DD/MM/YYYY"
                       error={fieldErrors.gatePassDate}
                       helperText={fieldErrors.gatePassDate && 'Required'}
+                      disabled={formData.freeze}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1469,6 +1484,7 @@ export const DeliveryChallen = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.insuranceNo}
                   helperText={fieldErrors.insuranceNo}
+                  disabled={formData.freeze}
                 />
               </div>
 
@@ -1648,6 +1664,7 @@ export const DeliveryChallen = () => {
                                             });
                                           }
                                         }}
+                                        disabled={formData.freeze}
                                         className={lrNoDetailsError[index]?.outBoundBin ? 'error form-control' : 'form-control'}
                                       />
                                       {lrNoDetailsError[index]?.outBoundBin && (
@@ -1695,6 +1712,7 @@ export const DeliveryChallen = () => {
                                             });
                                           }
                                         }}
+                                        disabled={formData.freeze}
                                         className={lrNoDetailsError[index]?.unitRate ? 'error form-control' : 'form-control'}
                                       />
                                       {lrNoDetailsError[index]?.unitRate && (
@@ -1734,6 +1752,7 @@ export const DeliveryChallen = () => {
                                             });
                                           }
                                         }}
+                                        disabled={formData.freeze}
                                         className={lrNoDetailsError[index]?.skuValue ? 'error form-control' : 'form-control'}
                                       />
                                       {lrNoDetailsError[index]?.skuValue && (
@@ -1770,6 +1789,7 @@ export const DeliveryChallen = () => {
                                             });
                                           }
                                         }}
+                                        disabled={formData.freeze}
                                         className={lrNoDetailsError[index]?.discount ? 'error form-control' : 'form-control'}
                                       />
                                       {lrNoDetailsError[index]?.discount && (
@@ -1806,6 +1826,7 @@ export const DeliveryChallen = () => {
                                             });
                                           }
                                         }}
+                                        disabled={formData.freeze}
                                         className={lrNoDetailsError[index]?.tax ? 'error form-control' : 'form-control'}
                                       />
                                       {lrNoDetailsError[index]?.tax && (
@@ -1847,6 +1868,7 @@ export const DeliveryChallen = () => {
                                             });
                                           }
                                         }}
+                                        disabled={formData.freeze}
                                         className={lrNoDetailsError[index]?.gstTax ? 'error form-control' : 'form-control'}
                                       />
                                       {lrNoDetailsError[index]?.gstTax && (
@@ -1887,6 +1909,7 @@ export const DeliveryChallen = () => {
                                             });
                                           }
                                         }}
+                                        disabled={formData.freeze}
                                         className={lrNoDetailsError[index]?.amount ? 'error form-control' : 'form-control'}
                                       />
                                       {lrNoDetailsError[index]?.amount && (
@@ -1926,6 +1949,7 @@ export const DeliveryChallen = () => {
                                             });
                                           }
                                         }}
+                                        disabled={formData.freeze}
                                         className={lrNoDetailsError[index]?.sgst ? 'error form-control' : 'form-control'}
                                       />
                                       {lrNoDetailsError[index]?.sgst && (
@@ -1966,6 +1990,7 @@ export const DeliveryChallen = () => {
                                             });
                                           }
                                         }}
+                                        disabled={formData.freeze}
                                         className={lrNoDetailsError[index]?.cgst ? 'error form-control' : 'form-control'}
                                       />
                                       {lrNoDetailsError[index]?.cgst && (
@@ -2005,6 +2030,7 @@ export const DeliveryChallen = () => {
                                             });
                                           }
                                         }}
+                                        disabled={formData.freeze}
                                         className={lrNoDetailsError[index]?.igst ? 'error form-control' : 'form-control'}
                                       />
                                       {lrNoDetailsError[index]?.igst && (
@@ -2041,6 +2067,7 @@ export const DeliveryChallen = () => {
                                             });
                                           }
                                         }}
+                                        disabled={formData.freeze}
                                         className={lrNoDetailsError[index]?.totalGst ? 'error form-control' : 'form-control'}
                                       />
                                       {lrNoDetailsError[index]?.totalGst && (
@@ -2080,6 +2107,7 @@ export const DeliveryChallen = () => {
                                             });
                                           }
                                         }}
+                                        disabled={formData.freeze}
                                         className={lrNoDetailsError[index]?.billAmount ? 'error form-control' : 'form-control'}
                                       />
                                       {lrNoDetailsError[index]?.billAmount && (
@@ -2102,6 +2130,7 @@ export const DeliveryChallen = () => {
                                         }}
                                         onKeyDown={(e) => handleKeyDown(e, row)}
                                         className="form-control"
+                                        disabled={formData.freeze}
                                       />
                                     </td>
                                   </tr>
@@ -2128,6 +2157,7 @@ export const DeliveryChallen = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.automailerGroup}
                           helperText={fieldErrors.automailerGroup}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2142,6 +2172,7 @@ export const DeliveryChallen = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.docketNo}
                           helperText={fieldErrors.docketNo}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2156,6 +2187,7 @@ export const DeliveryChallen = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.noOfBoxes}
                           helperText={fieldErrors.noOfBoxes}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2170,6 +2202,7 @@ export const DeliveryChallen = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.pkgUom}
                           helperText={fieldErrors.pkgUom}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2184,6 +2217,7 @@ export const DeliveryChallen = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.grossWeight}
                           helperText={fieldErrors.grossWeight}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2198,6 +2232,7 @@ export const DeliveryChallen = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.gwtUom}
                           helperText={fieldErrors.gwtUom}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2212,6 +2247,7 @@ export const DeliveryChallen = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.transportName}
                           helperText={fieldErrors.transportName}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2228,6 +2264,7 @@ export const DeliveryChallen = () => {
                               format="DD/MM/YYYY"
                               error={fieldErrors.transporterDate}
                               helperText={fieldErrors.transporterDate && 'Required'}
+                              disabled={formData.freeze}
                             />
                           </LocalizationProvider>
                         </FormControl>
@@ -2244,6 +2281,7 @@ export const DeliveryChallen = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.packingSlipNo}
                           helperText={fieldErrors.packingSlipNo}
+                          disabled={formData.freeze}
                         />
                       </div>
                       <div className="col-md-3 mb-3">
@@ -2257,6 +2295,7 @@ export const DeliveryChallen = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.bin}
                           helperText={fieldErrors.bin}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2271,6 +2310,7 @@ export const DeliveryChallen = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.taxType}
                           helperText={fieldErrors.taxType}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2285,6 +2325,7 @@ export const DeliveryChallen = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.remarks}
                           helperText={fieldErrors.remarks}
+                          disabled={formData.freeze}
                         />
                       </div>
                     </div>

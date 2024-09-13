@@ -52,7 +52,8 @@ export const VasPutaway = () => {
     vasPickNo: '',
     status: '',
     totalGrnQty: '',
-    totalPutawayQty: ''
+    totalPutawayQty: '',
+    freeze: false
   });
   const [value, setValue] = useState(0);
 
@@ -342,7 +343,8 @@ export const VasPutaway = () => {
           vasPickNo: particularVasPutaway.vasPickNo,
           status: particularVasPutaway.status,
           totalGrnQty: particularVasPutaway.totalGrnQty,
-          totalPutawayQty: particularVasPutaway.totalPutawayQty
+          totalPutawayQty: particularVasPutaway.totalPutawayQty,
+          freeze: particularVasPutaway.freeze
         });
 
         setLrNoDetailsTable(
@@ -457,7 +459,8 @@ export const VasPutaway = () => {
       vasPickNo: '',
       status: '',
       totalGrnQty: '',
-      totalPutawayQty: ''
+      totalPutawayQty: '',
+      freeze: false
     });
     setLrNoDetailsTable([
       {
@@ -637,7 +640,9 @@ export const VasPutaway = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            {!formData.freeze && (
+              <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            )}
           </div>
         </div>
         {listView ? (
@@ -733,7 +738,14 @@ export const VasPutaway = () => {
                       </span>
                     }
                   </InputLabel>
-                  <Select labelId="status" label="Status *" value={formData.status} onChange={handleInputChange} name="status">
+                  <Select
+                    labelId="status"
+                    label="Status *"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                    name="status"
+                    disabled={formData.freeze}
+                  >
                     <MenuItem value="Edit">EDIT</MenuItem>
                     <MenuItem value="Confirm">CONFIRM</MenuItem>
                   </Select>
@@ -765,9 +777,7 @@ export const VasPutaway = () => {
                 {value === 0 && (
                   <>
                     <div className="row d-flex ml">
-                      <div className="mb-1">
-                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                      </div>
+                      <div className="mb-1">{!formData.freeze && <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />}</div>
                       {/* Table */}
                       <div className="row mt-2">
                         <div className="col-lg-12">
@@ -775,9 +785,11 @@ export const VasPutaway = () => {
                             <table className="table table-bordered">
                               <thead>
                                 <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                    Action
-                                  </th>
+                                  {!formData.freeze && (
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                      Action
+                                    </th>
+                                  )}
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
@@ -796,9 +808,11 @@ export const VasPutaway = () => {
                                 {lrNoDetailsTable.length > 0 ? (
                                   lrNoDetailsTable.map((row, index) => (
                                     <tr key={row.id}>
-                                      <td className="border px-2 py-2 text-center">
-                                        <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
-                                      </td>
+                                      {!formData.freeze && (
+                                        <td className="border px-2 py-2 text-center">
+                                          <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+                                        </td>
+                                      )}
                                       <td className="text-center">
                                         <div className="pt-2">{index + 1}</div>
                                       </td>
@@ -883,6 +897,7 @@ export const VasPutaway = () => {
                                           //   });
                                           // }}
                                           className={lrNoDetailsError[index]?.toBin ? 'error form-control' : 'form-control'}
+                                          disabled={formData.freeze}
                                         >
                                           <option value="">--Select--</option>
                                           {row.binList && row.binList.length > 0 ? (
@@ -925,6 +940,7 @@ export const VasPutaway = () => {
                                           }}
                                           onKeyDown={(e) => handleKeyDown(e, row)}
                                           className="form-control"
+                                          disabled={formData.freeze}
                                         />
                                       </td>
                                     </tr>
