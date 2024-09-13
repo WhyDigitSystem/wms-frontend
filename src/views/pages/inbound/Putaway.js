@@ -32,7 +32,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Draggable from 'react-draggable';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -41,7 +41,6 @@ import { initCaps } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import GeneratePdfTemp from './PutawayPdf';
-import React, { useRef } from 'react';
 
 function PaperComponent(props) {
   return (
@@ -109,7 +108,8 @@ export const Putaway = () => {
     totalGrnQty: '',
     vehicleType: '',
     vehicleNo: '',
-    warehouse: loginWarehouse
+    warehouse: loginWarehouse,
+    freeze: false
   });
 
   const [putAwayDetailsTableData, setPutAwayDetailsTableData] = useState([
@@ -1149,7 +1149,11 @@ export const Putaway = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            {formData.freeze ? (
+              ''
+            ) : (
+              <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            )}
           </div>
         </div>
         {listView ? (
@@ -1288,6 +1292,7 @@ export const Putaway = () => {
                     label="Core"
                     variant="outlined"
                     size="small"
+                    disabled={formData.freeze}
                     fullWidth
                     name="core"
                     value={formData.core}
@@ -1299,7 +1304,15 @@ export const Putaway = () => {
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.core}>
                     <InputLabel id="core">Core</InputLabel>
-                    <Select labelId="core" id="core" name="core" label="Core" value={formData.core} onChange={handleInputChange}>
+                    <Select
+                      labelId="core"
+                      id="core"
+                      name="core"
+                      label="Core"
+                      value={formData.core}
+                      disabled={formData.freeze}
+                      onChange={handleInputChange}
+                    >
                       <MenuItem value="">Select Option</MenuItem>
                       <MenuItem value="Multi">MULTI</MenuItem>
                       <MenuItem value="Single">SINGLE</MenuItem>
@@ -1442,6 +1455,7 @@ export const Putaway = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.enteredPerson}
                   helperText={fieldErrors.enteredPerson}
+                  disabled={formData.freeze}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -1472,6 +1486,7 @@ export const Putaway = () => {
                     id="binType"
                     name="binType"
                     label="Bin Type"
+                    disabled={formData.freeze}
                     value={formData.binType}
                     onChange={handleInputChange}
                   >
@@ -1493,7 +1508,15 @@ export const Putaway = () => {
                       </span>
                     }
                   </InputLabel>
-                  <Select labelId="status" id="status" name="status" label="Status" value={formData.status} onChange={handleInputChange}>
+                  <Select
+                    labelId="status"
+                    id="status"
+                    name="status"
+                    label="Status"
+                    disabled={formData.freeze}
+                    value={formData.status}
+                    onChange={handleInputChange}
+                  >
                     <MenuItem value="Edit">EDIT</MenuItem>
                     <MenuItem value="Confirm">CONFIRM</MenuItem>
                   </Select>
@@ -1508,6 +1531,7 @@ export const Putaway = () => {
                     aria-labelledby="demo-radio-buttons-group-label"
                     defaultValue="fixed"
                     name="binClass"
+                    disabled={formData.freeze}
                     value={formData.binClass}
                     onChange={handleInputChange}
                   >
@@ -1525,6 +1549,7 @@ export const Putaway = () => {
                     defaultValue="Empty"
                     name="binPick"
                     value={formData.binPick}
+                    disabled={formData.freeze}
                     onChange={handleInputChange}
                   >
                     <FormControlLabel value="Empty" control={<Radio size="small" />} label="Empty" />
@@ -1542,6 +1567,7 @@ export const Putaway = () => {
                   textColor="secondary"
                   indicatorColor="secondary"
                   aria-label="secondary tabs example"
+                  disabled={formData.freeze}
                 >
                   <Tab value={0} label="LR NO. Details" />
                   <Tab value={1} label="Summary" />
@@ -1647,6 +1673,7 @@ export const Putaway = () => {
                                         type="text"
                                         value={row.batchNo}
                                         style={{ width: '130px' }}
+                                        disabled={formData.freeze}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setPutAwayDetailsTableData((prev) =>
@@ -1728,6 +1755,7 @@ export const Putaway = () => {
                                         ref={lrNoDetailsRefs.current[index]?.sku}
                                         value={row.sku}
                                         style={{ width: '130px' }}
+                                        disabled={formData.freeze}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setPutAwayDetailsTableData((prev) =>
@@ -1833,6 +1861,7 @@ export const Putaway = () => {
                                       <input
                                         type="text"
                                         value={row.pQty}
+                                        disabled={formData.freeze}
                                         style={{ width: '110px' }}
                                         onChange={(e) => {
                                           const value = e.target.value;
@@ -1859,6 +1888,7 @@ export const Putaway = () => {
 
                                         ref={lrNoDetailsRefs.current[index]?.bin}
                                         value={row.bin}
+                                        disabled={formData.freeze}
                                         style={{ width: '130px' }}
                                         onChange={(e) => {
                                           const value = e.target.value;
@@ -1895,6 +1925,7 @@ export const Putaway = () => {
                                       <input
                                         type="text"
                                         value={row.remarks}
+                                        disabled={formData.freeze}
                                         style={{ width: '110px' }}
                                         onKeyDown={(e) => handleKeyDown(e, row)}
                                         onChange={(e) => {

@@ -94,7 +94,8 @@ export const Grn = () => {
     invoiceNo: '',
     noOfPacks: '',
     totAmt: '',
-    totGrnQty: ''
+    totGrnQty: '',
+    freeze: false
   });
   const [fieldErrors, setFieldErrors] = useState({
     docId: '',
@@ -450,7 +451,8 @@ export const Grn = () => {
           invoiceNo: particularGrn.invoiceNo,
           noOfPacks: particularGrn.noOfPacks,
           totAmt: particularGrn.totAmt,
-          totGrnQty: particularGrn.totalGrnQty
+          totGrnQty: particularGrn.totalGrnQty,
+          freeze: particularGrn.freeze
         });
         getAllCarriers(particularGrn.modeOfShipment);
         setFormData((prevData) => ({
@@ -1180,7 +1182,7 @@ export const Grn = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />
+            {formData.freeze ? '' : <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />}
             <ActionButton title="Upload" icon={CloudUploadIcon} />
           </div>
         </div>
@@ -1214,7 +1216,14 @@ export const Grn = () => {
                   <div className="col-md-3 mb-3">
                     <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.grnType}>
                       <InputLabel id="grnType-label">GRN Type</InputLabel>
-                      <Select labelId="grnType-label" label="GRN Type" value={formData.grnType} onChange={handleInputChange} name="grnType">
+                      <Select
+                        labelId="grnType-label"
+                        label="GRN Type"
+                        value={formData.grnType}
+                        onChange={handleInputChange}
+                        name="grnType"
+                        disabled={formData.freeze}
+                      >
                         <MenuItem value="GET PASS">GATE PASS</MenuItem>
                         <MenuItem value="GRN">GRN</MenuItem>
                       </Select>
@@ -1235,7 +1244,7 @@ export const Grn = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.entrySlNo}
                   helperText={fieldErrors.entrySlNo}
-                  disabled={formData.grnType === 'GRN'}
+                  disabled={formData.grnType === 'GRN' || formData.freeze}
                 />
               </div>
 
@@ -1253,7 +1262,7 @@ export const Grn = () => {
                       format="DD/MM/YYYY"
                       error={fieldErrors.date}
                       helperText={fieldErrors.date && 'Required'}
-                      disabled={formData.grnType === 'GRN'}
+                      disabled={formData.grnType === 'GRN' || formData.freeze}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1284,7 +1293,7 @@ export const Grn = () => {
                         labelId="gatePassId-label"
                         label="Gate Pass No"
                         value={formData.gatePassId}
-                        disabled={formData.grnType === 'GRN'}
+                        disabled={formData.grnType === 'GRN' || formData.freeze}
                         onChange={handleInputChange}
                         name="gatePassId"
                       >
@@ -1339,6 +1348,7 @@ export const Grn = () => {
                       error={fieldErrors.grnDate}
                       helperText={fieldErrors.grnDate && 'Required'}
                       // disabled={editId ? true : false}
+                      disabled={formData.freeze}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1356,7 +1366,7 @@ export const Grn = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.customerPo}
                   helperText={fieldErrors.customerPo}
-                  disabled={editId ? true : false}
+                  disabled={editId || formData.freeze}
                 />
               </div>
 
@@ -1376,7 +1386,7 @@ export const Grn = () => {
                     value={formData.supplierShortName}
                     onChange={handleInputChange}
                     name="supplierShortName"
-                    disabled={editId ? true : false}
+                    disabled={editId || formData.freeze}
                   >
                     {supplierList?.map((row) => (
                       <MenuItem key={row.id} value={row.supplierShortName.toUpperCase()}>
@@ -1409,7 +1419,7 @@ export const Grn = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.billOfEntry}
                   helperText={fieldErrors.billOfEntry}
-                  disabled={editId ? true : false}
+                  disabled={editId || formData.freeze}
                 />
               </div>
 
@@ -1430,7 +1440,7 @@ export const Grn = () => {
                     onChange={handleInputChange}
                     name="modeOfShipment"
                     required
-                    disabled={editId ? true : false}
+                    disabled={editId || formData.freeze}
                   >
                     {modeOfShipmentList?.map((row, index) => (
                       <MenuItem key={index} value={row.shipmentMode.toUpperCase()}>
@@ -1457,7 +1467,7 @@ export const Grn = () => {
                     onChange={handleInputChange}
                     name="carrier"
                     required
-                    disabled={editId ? true : false}
+                    disabled={editId || formData.freeze}
                   >
                     {carrierList?.map((row) => (
                       <MenuItem key={row.id} value={row.carrier.toUpperCase()}>
@@ -1584,6 +1594,7 @@ export const Grn = () => {
                                             style={{ width: '150px' }}
                                             type="text"
                                             value={row.qrCode}
+                                            disabled={formData.freeze}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, qrCode: value } : r)));
@@ -1605,6 +1616,7 @@ export const Grn = () => {
                                           <input
                                             style={{ width: '150px' }}
                                             type="text"
+                                            disabled={formData.freeze}
                                             ref={lrNoDetailsRefs.current[index]?.lr_Hawb_Hbl_No}
                                             value={row.lr_Hawb_Hbl_No}
                                             onChange={(e) => {
@@ -1635,6 +1647,7 @@ export const Grn = () => {
                                             type="text"
                                             ref={lrNoDetailsRefs.current[index]?.invNo}
                                             value={row.invNo}
+                                            disabled={formData.freeze}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, invNo: value } : r)));
@@ -1657,6 +1670,7 @@ export const Grn = () => {
                                             style={{ width: '150px' }}
                                             type="text"
                                             value={row.shipmentNo}
+                                            disabled={formData.freeze}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setLrTableData((prev) =>
@@ -1683,6 +1697,7 @@ export const Grn = () => {
                                           <input
                                             type="date"
                                             value={row.invDate}
+                                            disabled={formData.freeze}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, invDate: value } : r)));
@@ -1707,6 +1722,7 @@ export const Grn = () => {
                                           <select
                                             ref={lrNoDetailsRefs.current[index]?.partNo}
                                             value={row.partNo}
+                                            disabled={formData.freeze}
                                             style={{ width: '200px' }}
                                             onChange={(e) => handlePartNoChange(row, index, e)}
                                             className={lrTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
@@ -1746,6 +1762,7 @@ export const Grn = () => {
                                           <input
                                             style={{ width: '150px' }}
                                             type="text"
+                                            disabled={formData.freeze}
                                             ref={lrNoDetailsRefs.current[index]?.invQty}
                                             value={row.invQty}
                                             onChange={(e) => {
@@ -1850,7 +1867,7 @@ export const Grn = () => {
                                               }
                                             }}
                                             className={lrTableErrors[index]?.recQty ? 'error form-control' : 'form-control'}
-                                            disabled={!row.invQty}
+                                            disabled={!row.invQty || formData.freeze}
                                           />
                                           {row.invQty && lrTableErrors[index]?.recQty && (
                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1921,7 +1938,7 @@ export const Grn = () => {
                                               }
                                             }}
                                             className={lrTableErrors[index]?.recQty ? 'error form-control' : 'form-control'}
-                                            disabled={!row.recQty}
+                                            disabled={!row.recQty || formData.freeze}
                                           />
                                           {row.recQty && lrTableErrors[index]?.damageQty && (
                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1944,6 +1961,7 @@ export const Grn = () => {
                                             style={{ width: '150px' }}
                                             type="text"
                                             value={row.batch_PalletNo}
+                                            disabled={formData.freeze}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const alphaNumericPattern = /^[a-zA-Z0-9]*$/;
@@ -1991,6 +2009,7 @@ export const Grn = () => {
                                           <input
                                             type="date"
                                             value={row.batchDate}
+                                            disabled={formData.freeze}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, batchDate: value } : r)));
@@ -2015,6 +2034,7 @@ export const Grn = () => {
                                           <input
                                             type="date"
                                             value={row.expDate}
+                                            disabled={formData.freeze}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, expDate: value } : r)));
@@ -2092,6 +2112,7 @@ export const Grn = () => {
                                             type="text"
                                             ref={lrNoDetailsRefs.current[index]?.palletQty}
                                             value={row.palletQty}
+                                            disabled={formData.freeze}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const maxPalletQty = (row.grnQty || 0) - (row.damageQty || 0); // Calculate maxPalletQty
@@ -2161,6 +2182,7 @@ export const Grn = () => {
                                           <input
                                             style={{ width: '150px' }}
                                             type="text"
+                                            disabled={formData.freeze}
                                             ref={lrNoDetailsRefs.current[index]?.noOfPallets}
                                             value={row.noOfPallets}
                                             onChange={(e) => {
@@ -2213,6 +2235,7 @@ export const Grn = () => {
                                             style={{ width: '400px' }}
                                             type="text"
                                             value={row.remarks}
+                                            disabled={formData.freeze}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, remarks: value } : r)));
@@ -2373,6 +2396,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.vehicleType}
                           helperText={fieldErrors.vehicleType}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2388,6 +2412,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.contact}
                           helperText={fieldErrors.contact}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2403,6 +2428,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.sealNo}
                           helperText={fieldErrors.sealNo}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2418,6 +2444,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.lrNo}
                           helperText={fieldErrors.lrNo}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2433,6 +2460,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.driverName}
                           helperText={fieldErrors.driverName}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2448,6 +2476,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.securityName}
                           helperText={fieldErrors.securityName}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2463,6 +2492,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.containerNo}
                           helperText={fieldErrors.containerNo}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2480,6 +2510,7 @@ export const Grn = () => {
                               format="DD/MM/YYYY"
                               error={fieldErrors.lrDate}
                               helperText={fieldErrors.lrDate && 'Required'}
+                              disabled={formData.freeze}
                             />
                           </LocalizationProvider>
                         </FormControl>
@@ -2497,6 +2528,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.goodsDesc}
                           helperText={fieldErrors.goodsDesc}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2512,6 +2544,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.vehicleNo}
                           helperText={fieldErrors.vehicleNo}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2527,6 +2560,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.vesselDetails}
                           helperText={fieldErrors.vesselDetails}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2542,6 +2576,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.lotNo}
                           helperText={fieldErrors.lotNo}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2557,6 +2592,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.destinationFrom}
                           helperText={fieldErrors.destinationFrom}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2572,6 +2608,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.destinationTo}
                           helperText={fieldErrors.destinationTo}
+                          disabled={formData.freeze}
                         />
                       </div>
                       <div className="col-md-3 mb-3">
@@ -2585,6 +2622,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.hsnNo}
                           helperText={fieldErrors.hsnNo}
+                          disabled={formData.freeze}
                         />
                       </div>
                       <div className="col-md-3 mb-3">
@@ -2598,6 +2636,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.capacity}
                           helperText={fieldErrors.capacity}
+                          disabled={formData.freeze}
                         />
                       </div>
                       <div className="col-md-3 mb-3">
@@ -2611,6 +2650,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.vesselNo}
                           helperText={fieldErrors.vesselNo}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2625,6 +2665,7 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.noOfPallets}
                           helperText={fieldErrors.noOfPallets}
+                          disabled={formData.freeze}
                         />
                       </div>
 
@@ -2639,11 +2680,20 @@ export const Grn = () => {
                           onChange={handleInputChange}
                           error={!!fieldErrors.invoiceNo}
                           helperText={fieldErrors.invoiceNo}
+                          disabled={formData.freeze}
                         />
                       </div>
                       <div className="col-md-3 mb-3">
                         <FormControlLabel
-                          control={<Checkbox checked={formData.active} onChange={handleInputChange} name="vas" color="primary" />}
+                          control={
+                            <Checkbox
+                              checked={formData.active}
+                              onChange={handleInputChange}
+                              name="vas"
+                              color="primary"
+                              disabled={formData.freeze}
+                            />
+                          }
                           label="VAS"
                         />
                       </div>
