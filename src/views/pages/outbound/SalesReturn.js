@@ -102,21 +102,21 @@ export const SalesReturn = () => {
 
   const [value, setValue] = useState(0);
   const [detailTableData, setDetailTableData] = useState([
-    {
-      lrNo: '',
-      invNo: '',
-      partNo: '',
-      partDesc: '',
-      pickQty: '',
-      returnQty: '',
-      damageQty: '',
-      batchNo: '',
-      batchDate: null,
-      expDate: null,
-      noOfBin: '',
-      binQty: '',
-      remarks: ''
-    }
+    // {
+    //   lrNo: '',
+    //   invNo: '',
+    //   partNo: '',
+    //   partDesc: '',
+    //   pickQty: '',
+    //   returnQty: '',
+    //   damageQty: '',
+    //   batchNo: '',
+    //   batchDate: null,
+    //   expDate: null,
+    //   noOfBin: '',
+    //   binQty: '',
+    //   remarks: ''
+    // }
   ]);
 
   // const lrNoDetailsRefs = useRef(
