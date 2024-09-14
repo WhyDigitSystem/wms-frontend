@@ -925,7 +925,7 @@ export const ReversePick = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="YYYY-MM-DD"
+                      format="DD/MM/YYYY"
                       error={fieldErrors.pickRequestDocDate}
                       helperText={fieldErrors.pickRequestDocDate && 'Required'}
                       disabled
@@ -963,7 +963,7 @@ export const ReversePick = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="YYYY-MM-DD"
+                      format="DD/MM/YYYY"
                       error={fieldErrors.buyerRefDate}
                       helperText={fieldErrors.buyerRefDate && 'Required'}
                       disabled
@@ -996,7 +996,7 @@ export const ReversePick = () => {
                         textField: { size: 'small', clearable: true }
                       }}
                       disabled
-                      format="YYYY-MM-DD"
+                      format="DD/MM/YYYY"
                       error={fieldErrors.buyerOrderDate}
                       helperText={fieldErrors.buyerOrderDate && 'Required'}
                     />

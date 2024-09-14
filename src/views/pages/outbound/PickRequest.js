@@ -877,7 +877,7 @@ export const PickRequest = () => {
                         textField: { size: 'small', clearable: true }
                       }}
                       disabled
-                      format="DD-MM-YYYY"
+                      format="DD/MM/YYYY"
                       error={fieldErrors.buyerRefDate}
                       helperText={fieldErrors.buyerRefDate && 'Required'}
                     />
@@ -909,7 +909,7 @@ export const PickRequest = () => {
                         textField: { size: 'small', clearable: true }
                       }}
                       disabled
-                      format="DD-MM-YYYY"
+                      format="DD/MM/YYYY"
                       error={fieldErrors.buyerOrderDate}
                       helperText={fieldErrors.buyerOrderDate && 'Required'}
                     />
