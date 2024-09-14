@@ -53,32 +53,6 @@ const CommonBulkUpload = ({
     if (selectedFile) {
       const formData = new FormData();
       formData.append('files', selectedFile);
-
-      // try {
-      //   const headers = {
-      //     'Content-Type': 'multipart/form-data'
-      //   };
-      //   const response = await apiCalls('post', `${apiUrl}`, formData, {}, headers);
-      //   if (response.status === true) {
-      //     console.log('File uploaded successfully:', response);
-      //     const { message, successfulUploads } = response.paramObjectsMap;
-      //     setSuccessMessage(message);
-      //     setSuccessfulUploads(successfulUploads);
-      //     setSuccessDialogOpen(true);
-      //     setSelectedFile(null);
-      //     showToast('success', ' Buyer Order Bulk Uploaded Successfully');
-      //   } else {
-      //     const errorMessage = response.paramObjectsMap.errorMessage || 'Error uploading file';
-      //     setErrorMessage(errorMessage);
-      //     setErrorDialogOpen(true);
-      //   }
-      // } catch (error) {
-      //   console.error('Error uploading file:', error);
-      //   // const errorMessage = error.response?.data?.paramObjectsMap?.errorMessage || error.response?.data?.message || 'Error uploading file';
-      //   setErrorMessage(errorMessage);
-      //   setErrorDialogOpen(true);
-      // }
-
       try {
         const headers = {
           'Content-Type': 'multipart/form-data'
