@@ -124,6 +124,18 @@ export const Kitting = () => {
   //   }
   // }, [parentTableData.length]);
 
+  const lrNoParentDetailsRefs = useRef([]);
+
+  useEffect(() => {
+    lrNoParentDetailsRefs.current = parentTableData.map((_, index) => ({
+      partNo: lrNoParentDetailsRefs.current[index]?.partNo || React.createRef(),
+      grnNo: lrNoParentDetailsRefs.current[index]?.grnNo || React.createRef(),
+      batchNo: lrNoParentDetailsRefs.current[index]?.batchNo || React.createRef(),
+      bin: lrNoParentDetailsRefs.current[index]?.bin || React.createRef(),
+      qty: lrNoParentDetailsRefs.current[index]?.qty || React.createRef()
+    }));
+  }, [parentTableData]);
+
   const handleAddRow = () => {
     const newRow = {
       id: Date.now(),
@@ -704,7 +716,7 @@ export const Kitting = () => {
   // };
 
   const handleInputChange = (e) => {
-    const { name, value, checked, selectionStart, selectionEnd } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
 
     // Capture the cursor position before the update
     const cursorPosition = { start: selectionStart, end: selectionEnd };
@@ -845,16 +857,201 @@ export const Kitting = () => {
     getDocId();
   };
 
+  // const handleSave = async () => {
+  //   const errors = {};
+  //   let firstInvalidFieldRef = null;
+
+  //   if (!formData.docId) {
+  //     errors.docId = 'Doc Id is required';
+  //   }
+  //   // if (!formData.docDate) {
+  //   //   errors.docDate = ' DocDate is required';
+  //   // }
+  //   if (!formData.refNo) {
+  //     errors.refNo = 'Ref Id is required';
+  //   }
+  //   if (!formData.refDate) {
+  //     errors.refDate = 'Ref Date is required';
+  //   }
+
+  //   let childTableDataValid = true;
+  //   const newTableErrors = childTableData.map((row, index) => {
+  //     const rowErrors = {};
+  //     if (!row.partNo) {
+  //       rowErrors.partNo = 'PartNo is required';
+  //       if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
+  //       childTableDataValid = false;
+  //     }
+  //     if (!row.grnNo) {
+  //       rowErrors.grnNo = 'Grn No is required';
+  //       if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].grnNo;
+  //       childTableDataValid = false;
+  //     }
+  //     if (!row.batchNo) {
+  //       rowErrors.batchNo = 'Batch No is required';
+  //       if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
+  //       childTableDataValid = false;
+  //     }
+  //     if (!row.bin) {
+  //       rowErrors.bin = 'Bin is required';
+  //       if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
+  //       childTableDataValid = false;
+  //     }
+  //     if (!row.qty) {
+  //       rowErrors.qty = 'qty Type is required';
+  //       if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].qty;
+  //       childTableDataValid = false;
+  //     }
+  //     return rowErrors;
+  //   });
+  //   // setFieldErrors(errors);
+
+  //   setChildTableErrors(newTableErrors);
+
+  //   if (!childTableDataValid || Object.keys(errors).length > 0) {
+  //     // Focus on the first invalid field
+  //     if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+  //       firstInvalidFieldRef.current.focus();
+  //     }
+  //   } else {
+  //     // Proceed with form submission
+  //   }
+
+  //   let parentTableDataValid = true;
+  //   const newTableErrors1 = parentTableData.map((row, index) => {
+  //     const rowErrors = {};
+  //     if (!row.partNo) {
+  //       rowErrors.partNo = 'P PartNo is required';
+  //       if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoParentDetailsRefs.current[index].partNo;
+  //       parentTableDataValid = false;
+  //     }
+  //     if (!row.grnNo) {
+  //       rowErrors.grnNo = 'P Grn No is required';
+  //       if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoParentDetailsRefs.current[index].grnNo;
+  //       parentTableDataValid = false;
+  //     }
+  //     if (!row.batchNo) {
+  //       rowErrors.batchNo = 'P Batch No is required';
+  //       if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoParentDetailsRefs.current[index].batchNo;
+  //       parentTableDataValid = false;
+  //     }
+  //     if (!row.bin) {
+  //       rowErrors.bin = 'P Bin is required';
+  //       if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoParentDetailsRefs.current[index].bin;
+  //       parentTableDataValid = false;
+  //     }
+  //     if (!row.qty) {
+  //       rowErrors.qty = 'P qty Type is required';
+  //       if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoParentDetailsRefs.current[index].qty;
+  //       parentTableDataValid = false;
+  //     }
+  //     return rowErrors;
+  //   });
+  //   setFieldErrors(errors);
+
+  //   if (!parentTableDataValid || Object.keys(errors).length > 0) {
+  //     // Focus on the first invalid field
+  //     if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
+  //       firstInvalidFieldRef.current.focus();
+  //     }
+  //   } else {
+  //     // Proceed with form submission
+  //   }
+
+  //   setParentTableErrors(newTableErrors1);
+
+  //   if (Object.keys(errors).length === 0 && childTableDataValid && parentTableDataValid) {
+  //     setIsLoading(true);
+  //     const childVO = childTableData.map((row) => ({
+  //       bin: row.bin,
+  //       partNo: row.partNo,
+  //       partDescription: row.partDescription,
+  //       batchNo: row.batchNo,
+  //       expDate: row.expDate,
+  //       batchDate: row.batchDate,
+  //       lotNo: row.lotNo,
+  //       grnNo: row.grnNo,
+  //       binType: row.binType,
+  //       binClass: row.binClass,
+  //       cellType: row.cellType,
+  //       core: row.core,
+  //       grnDate: row.grnDate,
+  //       sku: row.sku,
+  //       avlQty: parseInt(row.avlQty),
+  //       qty: parseInt(row.qty),
+  //       unitRate: parseInt(row.unitRate),
+  //       amount: parseInt(row.amount),
+  //       qQcflag: true
+  //     }));
+  //     const ParentVO = parentTableData.map((row) => ({
+  //       ppartNo: row.partNo,
+  //       ppartDescription: row.partDescription,
+  //       pbatchNo: row.batchNo,
+  //       pbatchDate: row.batchDate,
+  //       plotNo: row.lotNo,
+
+  //       psku: row.sku,
+  //       pqty: parseInt(row.qty),
+  //       pbin: row.bin,
+  //       pgrnNo: row.grnNo,
+  //       pgrnDate: row.grnDate,
+  //       pexpDate: row.expDate,
+  //       pqcflag: true,
+  //       pbinType: row.binType,
+  //       pbinClass: row.binClass,
+  //       pcellType: row.cellType,
+  //       pcore: row.core
+  //     }));
+
+  //     const saveFormData = {
+  //       ...(editId && { id: editId }),
+  //       // docId: formData.docId,
+  //       docDate: formData.docDate,
+  //       refNo: formData.refNo,
+  //       refDate: formData.refDate,
+  //       kittingDetails1DTO: childVO,
+  //       kittingDetails2DTO: ParentVO,
+  //       orgId: orgId,
+  //       createdBy: loginUserName,
+  //       branch: branch,
+  //       branchCode: branchCode,
+  //       client: client,
+  //       customer: customer,
+  //       finYear: finYear,
+  //       warehouse: warehouse
+  //     };
+
+  //     console.log('DATA TO SAVE IS:', saveFormData);
+  //     try {
+  //       const response = await apiCalls('put', `kitting/createUpdateKitting`, saveFormData);
+  //       if (response.status === true) {
+  //         console.log('Response:', response);
+  //         handleClear();
+  //         showToast('success', editId ? ' Kitting Updated Successfully' : 'Kitting created successfully');
+  //         getAllKitting();
+  //         setIsLoading(false);
+  //       } else {
+  //         showToast('error', response.paramObjectsMap.errorMessage || 'Kitting creation failed');
+  //         setIsLoading(false);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error:', error);
+  //       showToast('error', 'Kitting creation failed');
+  //       setIsLoading(false);
+  //     }
+  //   } else {
+  //     setFieldErrors(errors);
+  //   }
+  // };
+
   const handleSave = async () => {
     const errors = {};
     let firstInvalidFieldRef = null;
 
+    // Validate form fields
     if (!formData.docId) {
       errors.docId = 'Doc Id is required';
     }
-    // if (!formData.docDate) {
-    //   errors.docDate = ' DocDate is required';
-    // }
     if (!formData.refNo) {
       errors.refNo = 'Ref Id is required';
     }
@@ -862,6 +1059,7 @@ export const Kitting = () => {
       errors.refDate = 'Ref Date is required';
     }
 
+    // Validate child table data
     let childTableDataValid = true;
     const newTableErrors = childTableData.map((row, index) => {
       const rowErrors = {};
@@ -892,34 +1090,54 @@ export const Kitting = () => {
       }
       return rowErrors;
     });
-    // setFieldErrors(errors);
-
     setChildTableErrors(newTableErrors);
 
-    if (!childTableDataValid || Object.keys(errors).length > 0) {
+    // Reset firstInvalidFieldRef before validating parent table data
+    let parentTableDataValid = true;
+    const newTableErrors1 = parentTableData.map((row, index) => {
+      const rowErrors = {};
+      if (!row.partNo) {
+        rowErrors.partNo = 'P PartNo is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoParentDetailsRefs.current[index].partNo;
+        parentTableDataValid = false;
+      }
+      if (!row.grnNo) {
+        rowErrors.grnNo = 'P Grn No is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoParentDetailsRefs.current[index].grnNo;
+        parentTableDataValid = false;
+      }
+      if (!row.batchNo) {
+        rowErrors.batchNo = 'P Batch No is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoParentDetailsRefs.current[index].batchNo;
+        parentTableDataValid = false;
+      }
+      if (!row.bin) {
+        rowErrors.bin = 'P Bin is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoParentDetailsRefs.current[index].bin;
+        parentTableDataValid = false;
+      }
+      if (!row.qty) {
+        rowErrors.qty = 'P qty Type is required';
+        if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoParentDetailsRefs.current[index].qty;
+        parentTableDataValid = false;
+      }
+      return rowErrors;
+    });
+    setParentTableErrors(newTableErrors1);
+
+    // Set general form errors
+    setFieldErrors(errors);
+
+    if (!childTableDataValid || !parentTableDataValid || Object.keys(errors).length > 0) {
       // Focus on the first invalid field
       if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
         firstInvalidFieldRef.current.focus();
       }
     } else {
       // Proceed with form submission
-    }
-
-    let parentTableDataValid = true;
-    const newTableErrors1 = parentTableData.map((row) => {
-      const rowErrors = {};
-      if (!row.partNo) {
-        rowErrors.partNo = 'PartNo is required';
-        parentTableDataValid = false;
-      }
-      return rowErrors;
-    });
-    setFieldErrors(errors);
-
-    setParentTableErrors(newTableErrors1);
-
-    if (Object.keys(errors).length === 0 && childTableDataValid && parentTableDataValid) {
       setIsLoading(true);
+
+      // Mapping child table data for the API
       const childVO = childTableData.map((row) => ({
         bin: row.bin,
         partNo: row.partNo,
@@ -941,13 +1159,14 @@ export const Kitting = () => {
         amount: parseInt(row.amount),
         qQcflag: true
       }));
+
+      // Mapping parent table data for the API
       const ParentVO = parentTableData.map((row) => ({
         ppartNo: row.partNo,
         ppartDescription: row.partDescription,
         pbatchNo: row.batchNo,
         pbatchDate: row.batchDate,
         plotNo: row.lotNo,
-
         psku: row.sku,
         pqty: parseInt(row.qty),
         pbin: row.bin,
@@ -961,9 +1180,9 @@ export const Kitting = () => {
         pcore: row.core
       }));
 
+      // Data to save
       const saveFormData = {
         ...(editId && { id: editId }),
-        // docId: formData.docId,
         docDate: formData.docDate,
         refNo: formData.refNo,
         refDate: formData.refDate,
@@ -980,12 +1199,13 @@ export const Kitting = () => {
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
+
       try {
         const response = await apiCalls('put', `kitting/createUpdateKitting`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
-          showToast('success', editId ? ' Kitting Updated Successfully' : 'Kitting created successfully');
+          showToast('success', editId ? 'Kitting Updated Successfully' : 'Kitting created successfully');
           getAllKitting();
           setIsLoading(false);
         } else {
@@ -997,8 +1217,6 @@ export const Kitting = () => {
         showToast('error', 'Kitting creation failed');
         setIsLoading(false);
       }
-    } else {
-      setFieldErrors(errors);
     }
   };
 
@@ -1670,6 +1888,7 @@ export const Kitting = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <select
+                                        ref={lrNoParentDetailsRefs.current[index]?.partNo}
                                         value={row.partNo}
                                         style={{ width: '100px' }}
                                         onChange={(e) => {
@@ -1763,6 +1982,7 @@ export const Kitting = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
+                                        ref={lrNoParentDetailsRefs.current[index]?.grnNo}
                                         type="text"
                                         value={row.grnNo}
                                         disabled
@@ -1804,6 +2024,7 @@ export const Kitting = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
+                                        ref={lrNoParentDetailsRefs.current[index]?.batchNo}
                                         type="text"
                                         value={row.batchNo}
                                         style={{ width: '100px' }}
@@ -1863,6 +2084,7 @@ export const Kitting = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <select
+                                        ref={lrNoParentDetailsRefs.current[index]?.bin}
                                         value={row.bin}
                                         style={{ width: '130px' }}
                                         onChange={(e) => {
@@ -1917,6 +2139,7 @@ export const Kitting = () => {
 
                                     <td className="border px-2 py-2">
                                       <input
+                                        ref={lrNoParentDetailsRefs.current[index]?.qty}
                                         type="number"
                                         value={row.qty}
                                         style={{ width: '100px' }}
