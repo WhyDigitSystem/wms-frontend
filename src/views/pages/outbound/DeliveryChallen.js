@@ -604,27 +604,27 @@ export const DeliveryChallen = () => {
 
     // Define regex patterns for validation
     const patterns = {
-      vechileNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
-      containerNO: /^[a-zA-Z]*$/, // Allow alphabets only
-      exciseInvoiceNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
-      commercialInvoiceNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
-      deliveryTerms: /^[a-zA-Z]*$/, // Allow alphabets only
-      payTerms: /^[a-zA-Z]*$/, // Allow alphabets only
-      grWaiverNo: /^[a-zA-Z]*$/, // Allow alphabets only
-      bankName: /^[a-zA-Z]*$/, // Allow alphabets only
-      gatePassNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
-      insuranceNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
-      automailerGroup: /^[a-zA-Z]*$/, // Allow alphabets only
-      docketNo: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
-      noOfBoxes: /^[0-9]*$/, // Allow numbers only
-      pkgUom: /^[a-zA-Z]*$/, // Allow alphabets only
-      grossWeight: /^[0-9]*$/, // Allow numbers only
-      gwtUom: /^[a-zA-Z]*$/, // Allow alphabets only
-      transportName: /^[a-zA-Z]*$/, // Allow alphabets only
-      packingSlipNo: /^[0-9]*$/, // Allow numbers only
-      bin: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
-      taxType: /^[a-zA-Z0-9]*$/, // Allow alphabets and numbers only
-      remarks: /^[a-zA-Z0-9]*$/ // Allow alphabets and numbers only
+      vechileNo: /^[a-zA-Z0-9\s]*$/, // Allow alphabets, numbers, and spaces
+      containerNO: /^[a-zA-Z\s]*$/, // Allow alphabets and spaces
+      exciseInvoiceNo: /^[a-zA-Z0-9\s]*$/, // Allow alphabets, numbers, and spaces
+      commercialInvoiceNo: /^[a-zA-Z0-9\s]*$/, // Allow alphabets, numbers, and spaces
+      deliveryTerms: /^[a-zA-Z\s]*$/, // Allow alphabets and spaces
+      payTerms: /^[a-zA-Z\s]*$/, // Allow alphabets and spaces
+      grWaiverNo: /^[a-zA-Z\s]*$/, // Allow alphabets and spaces
+      bankName: /^[a-zA-Z\s]*$/, // Allow alphabets and spaces
+      gatePassNo: /^[a-zA-Z0-9\s]*$/, // Allow alphabets, numbers, and spaces
+      insuranceNo: /^[a-zA-Z0-9\s]*$/, // Allow alphabets, numbers, and spaces
+      automailerGroup: /^[a-zA-Z\s]*$/, // Allow alphabets and spaces
+      docketNo: /^[a-zA-Z0-9\s]*$/, // Allow alphabets, numbers, and spaces
+      noOfBoxes: /^[0-9\s]*$/, // Allow numbers and spaces
+      pkgUom: /^[a-zA-Z\s]*$/, // Allow alphabets and spaces
+      grossWeight: /^[0-9\s]*$/, // Allow numbers and spaces
+      gwtUom: /^[a-zA-Z\s]*$/, // Allow alphabets and spaces
+      transportName: /^[a-zA-Z\s]*$/, // Allow alphabets and spaces
+      packingSlipNo: /^[0-9\s]*$/, // Allow numbers and spaces
+      bin: /^[a-zA-Z0-9\s]*$/, // Allow alphabets, numbers, and spaces
+      taxType: /^[a-zA-Z0-9\s]*$/, // Allow alphabets, numbers, and spaces
+      remarks: /^[a-zA-Z0-9\s]*$/ // Allow alphabets, numbers, and spaces
     };
 
     // Determine the error message based on the field and validation pattern

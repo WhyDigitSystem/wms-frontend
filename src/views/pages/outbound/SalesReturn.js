@@ -542,6 +542,72 @@ export const SalesReturn = () => {
       console.log('error', err);
     }
   };
+  // const getSalesReturnById = async (row) => {
+  //   console.log('THE SELECTED ITEM ID IS:', row.original.id);
+  //   setEditId(row.original.id);
+  //   try {
+  //     const response = await apiCalls('get', `salesReturn/getSalesReturnById?id=${row.original.id}`);
+  //     console.log('API Response:', response);
+
+  //     if (response.status === true) {
+  //       setListView(false);
+  //       const particularItem = response.paramObjectsMap.salesReturnVO;
+  //       // const selectedBranch = branchList.find((br) => br.branch === particularItem.branch);
+  //       console.log('THE SELECTED ITEM IS:', particularItem);
+
+  //       setFormData({
+  //         docId: particularItem.docId,
+  //         docDate: particularItem.docDate,
+  //         prNo: particularItem.prNo,
+  //         prDate: particularItem.prDate,
+  //         boNo: particularItem.boNo,
+  //         boDate: particularItem.boDate,
+  //         entryNo: particularItem.entryNo,
+  //         entryDate: particularItem.entryDate,
+  //         buyerName: particularItem.buyerName,
+  //         buyerType: particularItem.buyerType,
+  //         supplierShortName: particularItem.supplierShortName,
+  //         supplier: particularItem.supplier,
+  //         modeOfShipment: particularItem.modeOfShipment,
+  //         carrier: particularItem.carrier,
+  //         driver: particularItem.driver,
+  //         vehicleType: particularItem.vehicleType,
+  //         vehicleNo: particularItem.vehicleNo,
+  //         contact: particularItem.contact,
+  //         securityPerson: particularItem.securityPerson,
+  //         timeIn: particularItem.timeIn,
+  //         timeOut: particularItem.timeOut,
+  //         goodsDesc: particularItem.goodsDesc,
+  //         totalReturnQty: particularItem.totalReturnQty,
+  //         freeze: particularItem.freeze
+  //       });
+
+  //       setDetailTableData(
+  //         particularItem.salesReturnDetailsVO.map((detail) => ({
+  //           lrNo: detail.lrno,
+  //           invoiceNo: detail.invoiceNo,
+  //           partNo: detail.partNo,
+  //           partDesc: detail.partDesc,
+  //           sku: detail.sku,
+  //           pickQty: detail.pickQty,
+  //           returnQty: detail.retQty,
+  //           damageQty: detail.damageQty,
+  //           batchNo: detail.batchNo,
+  //           batchDate: detail.batchDate,
+  //           expDate: detail.expDate,
+  //           noOfBin: detail.noOfBin,
+  //           binQty: detail.binQty,
+  //           remarks: detail.remarks
+  //         }))
+  //       );
+  //     } else {
+  //       console.error('API Error:', response);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
+
   const getSalesReturnById = async (row) => {
     console.log('THE SELECTED ITEM ID IS:', row.original.id);
     setEditId(row.original.id);
@@ -552,9 +618,17 @@ export const SalesReturn = () => {
       if (response.status === true) {
         setListView(false);
         const particularItem = response.paramObjectsMap.salesReturnVO;
-        // const selectedBranch = branchList.find((br) => br.branch === particularItem.branch);
-        console.log('THE SELECTED ITEM IS:', particularItem);
 
+        // Calculate the totalReturnQty by summing up the retQty from salesReturnDetailsVO
+        const totalReturnQty = particularItem.salesReturnDetailsVO.reduce(
+          (sum, detail) => sum + (detail.retQty || 0), // Sum up all return quantities (retQty)
+          0
+        );
+
+        // Log the total return quantity for debugging
+        console.log('Total Return Qty:', totalReturnQty);
+
+        // Set formData with calculated totalReturnQty and other fields
         setFormData({
           docId: particularItem.docId,
           docDate: particularItem.docDate,
@@ -578,10 +652,11 @@ export const SalesReturn = () => {
           timeIn: particularItem.timeIn,
           timeOut: particularItem.timeOut,
           goodsDesc: particularItem.goodsDesc,
-          totalReturnQty: particularItem.totalReturnQty,
+          totalReturnQty, // Set the calculated totalReturnQty
           freeze: particularItem.freeze
         });
 
+        // Set detail table data from salesReturnDetailsVO array
         setDetailTableData(
           particularItem.salesReturnDetailsVO.map((detail) => ({
             lrNo: detail.lrno,
@@ -798,7 +873,8 @@ export const SalesReturn = () => {
       securityPerson: '',
       timeIn: '',
       out: '',
-      goodsDesc: ''
+      goodsDesc: '',
+      totalReturnQty: ''
     });
     setDetailTableData([
       // {
@@ -1536,7 +1612,7 @@ export const SalesReturn = () => {
                                           disabled
                                         />
                                       </td>
-                                      <td className="border px-2 py-2">
+                                      {/* <td className="border px-2 py-2">
                                         <input
                                           style={{ width: '150px' }}
                                           type="text"
@@ -1612,7 +1688,92 @@ export const SalesReturn = () => {
                                             {detailTableErrors[index].returnQty}
                                           </div>
                                         )}
+                                      </td> */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          style={{ width: '150px' }}
+                                          type="text"
+                                          value={row.returnQty}
+                                          disabled={formData.freeze}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            const pickQty = row.pickQty;
+                                            const intPattern = /^\d*$/; // Allow empty string or digits
+
+                                            if (value === '') {
+                                              // Allow empty input
+                                              setDetailTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, returnQty: value } : r))
+                                              );
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], returnQty: '' };
+                                                return newErrors;
+                                              });
+                                            } else if (!intPattern.test(value)) {
+                                              // If input is not a number, show an error
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], returnQty: 'Only numbers are allowed' };
+                                                return newErrors;
+                                              });
+                                            } else if (Number(value) <= 0) {
+                                              // If input is zero or negative, show an error
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  returnQty: 'Return Qty must be greater than zero'
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else if (Number(value) > pickQty) {
+                                              // If input exceeds pickQty, show an error
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  returnQty: `Return Qty cannot exceed Pick Qty (${pickQty})`
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else {
+                                              // Update state if input is valid
+                                              setDetailTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, returnQty: value } : r))
+                                              );
+                                              setDetailTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], returnQty: '' };
+                                                return newErrors;
+                                              });
+
+                                              // Calculate the total returnQty after the change
+                                              const newDetailTableData = detailTableData.map((r) =>
+                                                r.id === row.id ? { ...r, returnQty: value } : r
+                                              );
+
+                                              // Sum up all valid returnQty values
+                                              const totalReturnQty = newDetailTableData.reduce((sum, r) => {
+                                                return sum + (Number(r.returnQty) || 0);
+                                              }, 0);
+
+                                              // Update the formData with the new totalReturnQty
+                                              setFormData((prevData) => ({
+                                                ...prevData,
+                                                totalReturnQty: totalReturnQty
+                                              }));
+                                            }
+                                          }}
+                                          className={detailTableErrors[index]?.returnQty ? 'error form-control' : 'form-control'}
+                                        />
+                                        {detailTableErrors[index]?.returnQty && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailTableErrors[index].returnQty}
+                                          </div>
+                                        )}
                                       </td>
+
                                       <td className="border px-2 py-2">
                                         <input
                                           style={{ width: '150px' }}

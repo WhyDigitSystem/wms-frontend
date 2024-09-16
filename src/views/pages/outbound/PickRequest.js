@@ -135,7 +135,7 @@ export const PickRequest = () => {
   });
   const listViewColumns = [
     { accessorKey: 'docId', header: 'Doc Id', size: 140 },
-    { accessorKey: 'buyerOrderNo', header: 'Buyer Oreder No', size: 140 },
+    { accessorKey: 'buyerOrderNo', header: 'Buyer Order No', size: 140 },
     { accessorKey: 'buyerRefNo', header: 'Buyer order RefNo', size: 140 },
 
     { accessorKey: 'status', header: 'Status', size: 140 }
@@ -244,6 +244,77 @@ export const PickRequest = () => {
   //     console.log('error', err);
   //   }
   // };
+  // const getAllItemById = async (row) => {
+  //   console.log('THE SELECTED ITEM ID IS:', row.original.id);
+  //   setEditId(row.original.id);
+
+  //   try {
+  //     const response = await apiCalls('get', `pickrequest/getPickRequestById?id=${row.original.id}`);
+  //     console.log('API Response:', response);
+
+  //     if (response.status === true) {
+  //       setListView(false);
+  //       const data = response.paramObjectsMap.pickRequestVO;
+
+  //       // Set formData from main response data
+  //       setFormData({
+  //         docId: data.docId,
+  //         docDate: data.docDate,
+  //         buyerOrderNo: data.buyerOrderNo,
+  //         buyerRefNo: data.buyerRefNo,
+  //         buyerRefDate: data.buyerRefDate,
+  //         clientName: data.clientName,
+  //         customerName: data.customerName,
+  //         customerShortName: data.customerShortName,
+  //         outTime: data.outTime,
+  //         buyerOrderDate: data.buyerOrderDate,
+  //         clientAddress: data.clientAddress,
+  //         customerAddress: data.customerAddress,
+  //         status: data.status,
+  //         buyersReference: data.buyersReference,
+  //         invoiceNo: data.invoiceNo,
+  //         clientShortName: data.clientShortName,
+  //         pickOrder: data.pickOrder,
+  //         freeze: data.freeze
+  //         // Add other fields here as needed
+  //       });
+
+  //       // Set itemTableData from pickRequestDetailsVO array
+  //       setItemTableData(
+  //         data.pickRequestDetailsVO.map((detail) => ({
+  //           availQty: detail.availQty,
+  //           batchDate: detail.batchDate || '', // Map or set default value
+  //           batchNo: detail.batchNo || '',
+  //           binClass: detail.binClass || '',
+  //           binType: detail.binType || '',
+  //           cellType: detail.cellType || '',
+  //           clientCode: detail.clientCode || '',
+  //           core: detail.core || '',
+  //           bin: detail.bin || '',
+  //           orderQty: detail.orderQty || '',
+  //           partDesc: detail.partDesc || '',
+  //           partNo: detail.partNo || '',
+  //           pcKey: detail.pcKey || '',
+  //           pickQty: detail.pickQty || '',
+  //           remainQty: detail.remainQty || '',
+  //           sku: detail.sku || '',
+  //           ssku: detail.ssku || '',
+  //           status: detail.status || '',
+  //           grnNo: detail.grnNo || '',
+  //           grnDate: detail.grnDate || '',
+  //           stockDate: detail.stockDate || '',
+  //           expDate: detail.expDate || '',
+  //           qcFlag: detail.qcFlag || ''
+  //         }))
+  //       );
+  //     } else {
+  //       console.error('API Error:', response);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
+
   const getAllItemById = async (row) => {
     console.log('THE SELECTED ITEM ID IS:', row.original.id);
     setEditId(row.original.id);
@@ -256,7 +327,22 @@ export const PickRequest = () => {
         setListView(false);
         const data = response.paramObjectsMap.pickRequestVO;
 
-        // Set formData from main response data
+        // Calculate totalOrderQty and totalPickedQty from pickRequestDetailsVO
+        const totalOrderQty = data.pickRequestDetailsVO.reduce(
+          (sum, detail) => sum + (detail.orderQty || 0), // Sum orderQty
+          0
+        );
+
+        const totalPickedQty = data.pickRequestDetailsVO.reduce(
+          (sum, detail) => sum + (detail.pickQty || 0), // Sum pickQty
+          0
+        );
+
+        // Log totals for debugging
+        console.log('Total Order Qty:', totalOrderQty);
+        console.log('Total Picked Qty:', totalPickedQty);
+
+        // Set formData from main response data and calculated totals
         setFormData({
           docId: data.docId,
           docDate: data.docDate,
@@ -275,7 +361,9 @@ export const PickRequest = () => {
           invoiceNo: data.invoiceNo,
           clientShortName: data.clientShortName,
           pickOrder: data.pickOrder,
-          freeze: data.freeze
+          freeze: data.freeze,
+          totalOrderQty, // Set the calculated totalOrderQty
+          totalPickedQty // Set the calculated totalPickedQty
           // Add other fields here as needed
         });
 
@@ -704,6 +792,34 @@ export const PickRequest = () => {
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
 
+  // const getAllFillGrid = async () => {
+  //   const errors = {};
+  //   if (!formData.buyerRefNo) {
+  //     errors.buyerRefNo = 'Buyer Order Ref No is required';
+  //   }
+  //   if (Object.keys(errors).length === 0) {
+  //     setModalOpen(true);
+  //     try {
+  //       const response = await apiCalls(
+  //         'get',
+  //         `pickrequest/getFillGridDetailsForPickRequest?orgId=${orgId}&branchCode=${branchCode}&client=${client}&buyerOrderDocId=${formData.buyerOrderNo}&pickStatus=${formData.status}`
+  //       );
+  //       console.log('API Response:', response);
+
+  //       if (response.status === true) {
+  //         setFillGridData(response.paramObjectsMap.fillGridDetails);
+  //         setItemTableErrors([{ general: '' }]);
+  //       } else {
+  //         console.error('API Error:', response);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching data:', error);
+  //     }
+  //   } else {
+  //     setFieldErrors(errors);
+  //   }
+  // };
+
   const getAllFillGrid = async () => {
     const errors = {};
     if (!formData.buyerRefNo) {
@@ -719,7 +835,30 @@ export const PickRequest = () => {
         console.log('API Response:', response);
 
         if (response.status === true) {
-          setFillGridData(response.paramObjectsMap.fillGridDetails);
+          const fillGridDetails = response.paramObjectsMap.fillGridDetails;
+
+          // Calculate the totalOrderQty and totalPickedQty
+          const totalOrderQty = fillGridDetails.reduce(
+            (sum, item) => sum + (item.orderQty || 0), // Assuming each item has an orderQty field
+            0
+          );
+
+          const totalPickedQty = fillGridDetails.reduce(
+            (sum, item) => sum + (item.pickQty || 0), // Assuming each item has a pickQty field
+            0
+          );
+
+          // Log the calculated totals to the console for debugging
+          console.log('Total Order Qty:', totalOrderQty);
+          console.log('Total Picked Qty:', totalPickedQty);
+
+          // Update the state with the calculated totals
+          setFillGridData(fillGridDetails);
+          setFormData((prevState) => ({
+            ...prevState,
+            totalOrderQty, // Set the calculated totalOrderQty
+            totalPickedQty // Set the calculated totalPickedQty
+          }));
           setItemTableErrors([{ general: '' }]);
         } else {
           console.error('API Error:', response);
@@ -1413,7 +1552,7 @@ export const PickRequest = () => {
                             size="small"
                             fullWidth
                             name="totalOrderQty"
-                            value={formData.totalOrderQty}
+                            value={formData.totalOrderQty || ''} // Make sure it's using the correct formData key
                             onChange={handleInputChange}
                             error={!!fieldErrors.totalOrderQty}
                             helperText={fieldErrors.totalOrderQty}
@@ -1429,7 +1568,7 @@ export const PickRequest = () => {
                             fullWidth
                             disabled
                             name="totalPickedQty"
-                            value={formData.totalPickedQty}
+                            value={formData.totalPickedQty || ''} // Make sure it's using the correct formData key
                             onChange={handleInputChange}
                             error={!!fieldErrors.totalPickedQty}
                             helperText={fieldErrors.totalPickedQty}
