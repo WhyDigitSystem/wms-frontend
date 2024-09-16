@@ -852,7 +852,7 @@ export const LocationMovement = () => {
     if (!lastRow) return false;
 
     if (table === childTableData) {
-      return !lastRow.fromBin || !lastRow.partNo || !lastRow.grnNo || !lastRow.batchNo || !lastRow.toBin || !lastRow.toQty;
+      return !lastRow.fromBin || !lastRow.partNo || !lastRow.grnNo || !lastRow.BatchNo || !lastRow.toBin || !lastRow.toQty;
     }
     // else if (table === branchTableData) {
     //   return !lastRow.branchCode;
@@ -871,7 +871,7 @@ export const LocationMovement = () => {
           fromBin: !table[table.length - 1].fromBin ? 'fromBin is required' : '',
           partNo: !table[table.length - 1].partNo ? 'Part No is required' : '',
           grnNo: !table[table.length - 1].grnNo ? 'GRN No is required' : '',
-          batchNo: !table[table.length - 1].batchNo ? 'Batch No is required' : '',
+          batchNo: !table[table.length - 1].BatchNo ? 'Batch No is required' : '',
           toBin: !table[table.length - 1].toBin ? 'To Bin is required' : '',
           toQty: !table[table.length - 1].toQty ? 'To Qty is required' : ''
         };

@@ -81,13 +81,13 @@ const screenMappings = {
   },
   state: {
     id: 'stateMaster',
-    title: 'State Master',
+    title: 'State',
     type: 'item',
     url: '/basicmasters/statemaster'
   },
   city: {
     id: 'cityMaster',
-    title: 'City Master',
+    title: 'City',
     type: 'item',
     url: '/basicmasters/citymaster'
   },
