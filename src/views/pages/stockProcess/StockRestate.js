@@ -72,50 +72,22 @@ export const StockRestate = () => {
   });
   const [value, setValue] = useState(0);
   const [detailTableData, setDetailTableData] = useState([
-    {
-      id: 1,
-      fromBin: '',
-      fromBinType: '',
-      partNo: '',
-      partDesc: '',
-      sku: '',
-      grnNo: '',
-      batchNo: '',
-      toBin: '',
-      toBinType: '',
-      fromQty: '',
-      toQty: '',
-      remainQty: ''
-    }
+    // {
+    //   id: 1,
+    //   fromBin: '',
+    //   fromBinType: '',
+    //   partNo: '',
+    //   partDesc: '',
+    //   sku: '',
+    //   grnNo: '',
+    //   batchNo: '',
+    //   toBin: '',
+    //   toBinType: '',
+    //   fromQty: '',
+    //   toQty: '',
+    //   remainQty: ''
+    // }
   ]);
-
-  // const lrNoDetailsRefs = useRef(
-  //   detailTableData.map(() => ({
-  //     fromBin: React.createRef(),
-  //     partNo: React.createRef(),
-  //     grnNo: React.createRef(),
-  //     batchNo: React.createRef(),
-  //     toBin: React.createRef(),
-  //     toQty: React.createRef()
-  //   }))
-  // );
-
-  // useEffect(() => {
-  //   // If the length of the table changes, update the refs
-  //   if (lrNoDetailsRefs.current.length !== detailTableData.length) {
-  //     lrNoDetailsRefs.current = detailTableData.map(
-  //       (_, index) =>
-  //         lrNoDetailsRefs.current[index] || {
-  //           fromBin: React.createRef(),
-  //           partNo: React.createRef(),
-  //           grnNo: React.createRef(),
-  //           batchNo: React.createRef(),
-  //           toBin: React.createRef(),
-  //           toQty: React.createRef()
-  //         }
-  //     );
-  //   }
-  // }, [detailTableData.length]);
 
   const lrNoDetailsRefs = useRef([]);
 
@@ -176,6 +148,11 @@ export const StockRestate = () => {
   ];
 
   const [listViewData, setListViewData] = useState([]);
+  const [transferType, setTransferType] = useState([
+    { name: 'HOLD', value: 'HOLD' },
+    { name: 'DEFECTIVE', value: 'DEFECTIVE' },
+    { name: 'RELEASE', value: 'RELEASE' }
+  ]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -512,6 +489,10 @@ export const StockRestate = () => {
         inputElement.setSelectionRange(selectionStart, selectionEnd);
       }
     }, 0);
+  };
+  const getAvailableTransferTo = (transferFrom) => {
+    const selectedTransferFrom = transferFrom;
+    return transferType.filter((i) => !selectedTransferFrom.includes(i.value));
   };
 
   const handleKeyDown = (e, row, table) => {
@@ -1242,9 +1223,11 @@ export const StockRestate = () => {
                     onChange={handleInputChange}
                     disabled={viewId ? true : false}
                   >
-                    <MenuItem value="DEFECTIVE">DEFECTIVE</MenuItem>
-                    <MenuItem value="HOLD">HOLD</MenuItem>
-                    <MenuItem value="RELEASE">RELEASE</MenuItem>
+                    {transferType?.map((row, index) => (
+                      <MenuItem key={row.index} value={row.value.toUpperCase()}>
+                        {row.value.toUpperCase()}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.transferFrom && <FormHelperText error>{fieldErrors.transferFrom}</FormHelperText>}
                 </FormControl>
@@ -1267,9 +1250,11 @@ export const StockRestate = () => {
                     onChange={handleInputChange}
                     disabled={viewId ? true : false}
                   >
-                    <MenuItem value="DEFECTIVE">DEFECTIVE</MenuItem>
-                    <MenuItem value="HOLD">HOLD</MenuItem>
-                    <MenuItem value="RELEASE">RELEASE</MenuItem>
+                    {getAvailableTransferTo(formData.transferFrom).map((row, index) => (
+                      <MenuItem key={index} value={row.value}>
+                        {row.value}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.transferTo && <FormHelperText error>{fieldErrors.transferTo}</FormHelperText>}
                 </FormControl>

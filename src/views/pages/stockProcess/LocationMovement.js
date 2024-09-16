@@ -68,20 +68,20 @@ export const LocationMovement = () => {
   const [fillGridData, setFillGridData] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [childTableData, setChildTableData] = useState([
-    {
-      id: 1,
-      fromBin: '',
-      partNo: '',
-      partDesc: '',
-      sku: '',
-      grnNo: '',
-      batchNo: '',
-      avlQty: '',
-      toBin: '',
-      toBinType: '',
-      toQty: '',
-      remainQty: ''
-    }
+    // {
+    //   id: 1,
+    //   fromBin: '',
+    //   partNo: '',
+    //   partDesc: '',
+    //   sku: '',
+    //   grnNo: '',
+    //   batchNo: '',
+    //   avlQty: '',
+    //   toBin: '',
+    //   toBinType: '',
+    //   toQty: '',
+    //   remainQty: ''
+    // }
   ]);
 
   const lrNoDetailsRefs = useRef([]);
@@ -852,7 +852,7 @@ export const LocationMovement = () => {
     if (!lastRow) return false;
 
     if (table === childTableData) {
-      return !lastRow.fromBin || !lastRow.partNo || !lastRow.grnNo || !lastRow.BatchNo || !lastRow.toBin || !lastRow.toQty;
+      return !lastRow.fromBin || !lastRow.partNo || !lastRow.grnNo || !lastRow.batchNo || !lastRow.toBin || !lastRow.toQty;
     }
     // else if (table === branchTableData) {
     //   return !lastRow.branchCode;
@@ -1204,16 +1204,16 @@ export const LocationMovement = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">From Bin</th>
-                                  <th className="px-2 py-2 text-white text-center">Part No</th>
+                                  <th className="px-2 py-2 text-white text-center">From Bin *</th>
+                                  <th className="px-2 py-2 text-white text-center">Part No *</th>
                                   <th className="px-2 py-2 text-white text-center">Part Desc</th>
                                   <th className="px-2 py-2 text-white text-center">SKU</th>
-                                  <th className="px-2 py-2 text-white text-center">GRN No</th>
-                                  <th className="px-2 py-2 text-white text-center">Batch No</th>
+                                  <th className="px-2 py-2 text-white text-center">GRN No *</th>
+                                  <th className="px-2 py-2 text-white text-center">Batch No *</th>
                                   <th className="px-2 py-2 text-white text-center">Avl Qty</th>
-                                  <th className="px-2 py-2 text-white text-center">To Bin</th>
+                                  <th className="px-2 py-2 text-white text-center">To Bin *</th>
                                   <th className="px-2 py-2 text-white text-center">To Bin Type</th>
-                                  <th className="px-2 py-2 text-white text-center">To Qty</th>
+                                  <th className="px-2 py-2 text-white text-center">To Qty *</th>
                                   <th className="px-2 py-2 text-white text-center">Remaining Qty</th>
                                 </tr>
                               </thead>
