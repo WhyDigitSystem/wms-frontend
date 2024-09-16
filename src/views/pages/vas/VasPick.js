@@ -125,8 +125,7 @@ export const VasPick = () => {
     { accessorKey: 'docDate', header: 'Document Date', size: 140 },
     { accessorKey: 'picBin', header: 'Picked Bin', size: 140 },
     { accessorKey: 'status', header: 'Status', size: 140 },
-    { accessorKey: 'pickedQty', header: 'Picked QTY', size: 140 },
-    { accessorKey: 'freeze', header: 'freeze', size: 140 }
+    { accessorKey: 'pickedQty', header: 'Picked QTY', size: 140 }
   ];
 
   useEffect(() => {
@@ -137,7 +136,6 @@ export const VasPick = () => {
 
   useEffect(() => {
     const totalQty = vasPickGridTableData.reduce((sum, row) => sum + (parseInt(row.pickQty, 10) || 0), 0);
-
     setFormData((prevFormData) => ({
       ...prevFormData,
       totalPickedQty: totalQty
@@ -352,8 +350,14 @@ export const VasPick = () => {
     }
   };
 
-  const handleDeleteRow = (id, table, setTable) => {
-    setTable(table.filter((row) => row.id !== id));
+  const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
+    const rowIndex = table.findIndex((row) => row.id === id);
+    if (rowIndex !== -1) {
+      const updatedData = table.filter((row) => row.id !== id);
+      const updatedErrors = errorTable.filter((_, index) => index !== rowIndex);
+      setTable(updatedData);
+      setErrorTable(updatedErrors);
+    }
   };
 
   const handleView = () => {
@@ -393,22 +397,26 @@ export const VasPick = () => {
     if (!formData.status) errors.status = 'Status is required';
 
     let vasPickGridTableDataValid = true;
-    const newTableErrors = vasPickGridTableData.map((row) => {
-      const rowErrors = {};
-      if (!row.partNo) {
-        rowErrors.partNo = 'Part No is required';
-        vasPickGridTableDataValid = false;
-      }
-      if (!row.pickQty) {
-        rowErrors.pickQty = 'Pick QTY is required';
-        vasPickGridTableDataValid = false;
-      }
-      return rowErrors;
-    });
+    if (!vasPickGridTableData || !Array.isArray(vasPickGridTableData) || vasPickGridTableData.length === 0) {
+      vasPickGridTableDataValid = false;
+      setVasPickGridTableErrors([{ general: 'Table Data is required' }]);
+    } else {
+      const newTableErrors = vasPickGridTableData.map((row, index) => {
+        const rowErrors = {};
 
-    setFieldErrors(errors);
+        if (!row.partNo) rowErrors.partNo = 'Part No is required';
 
-    setVasPickGridTableErrors(newTableErrors);
+        if (!row.pickQty) rowErrors.pickQty = 'Pick QTY is required';
+
+        if (Object.keys(rowErrors).length > 0) vasPickGridTableDataValid = false;
+
+        return rowErrors;
+      });
+
+      setVasPickGridTableErrors(newTableErrors);
+      setFieldErrors(errors);
+    }
+
     if (Object.keys(errors).length === 0 && vasPickGridTableDataValid) {
       setIsLoading(true);
       const gridVo = vasPickGridTableData.map((row) => ({
@@ -474,6 +482,57 @@ export const VasPick = () => {
   const handleTabChange = (event, newValue) => {
     setValue(newValue);
   };
+
+  const handlePickQtyChange = (e, row, index) => {
+    const value = e.target.value;
+    const intPattern = /^\d*$/;
+
+    if (intPattern.test(value) || value === '') {
+      const numericValue = parseInt(value, 10);
+      const numericAvlQty = parseInt(row.avlQty, 10) || 0;
+
+      if (value === '' || numericValue <= numericAvlQty) {
+        setVasPickGridTableData((prev) => {
+          const updatedData = prev.map((r) => {
+            const updatedPickQty = numericValue || 0;
+            return r.id === row.id
+              ? {
+                  ...r,
+                  pickQty: value,
+                  remainingQty: !value ? '' : numericAvlQty - updatedPickQty
+                }
+              : r;
+          });
+          return updatedData;
+        });
+
+        setVasPickGridTableErrors((prev) => {
+          const newErrors = [...prev];
+          newErrors[index] = {
+            ...newErrors[index],
+            pickQty: !value ? 'Pick QTY is required' : ''
+          };
+          return newErrors;
+        });
+      } else {
+        setVasPickGridTableErrors((prev) => {
+          const newErrors = [...prev];
+          newErrors[index] = {
+            ...newErrors[index],
+            pickQty: 'Pick QTY cannot be greater than Inv QTY'
+          };
+          return newErrors;
+        });
+      }
+    } else {
+      setVasPickGridTableErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = { ...newErrors[index], pickQty: 'Invalid value' };
+        return newErrors;
+      });
+    }
+  };
+
   const handleSelectAll = () => {
     if (selectAll) {
       setSelectedRows([]);
@@ -483,13 +542,32 @@ export const VasPick = () => {
     setSelectAll(!selectAll);
   };
 
-  const handleSubmitSelectedRows = () => {
+  const handleSubmitSelectedRows = async () => {
     const selectedData = selectedRows.map((index) => modalTableData[index]);
     setVasPickGridTableData([...vasPickGridTableData, ...selectedData]);
-    console.log('data', selectedData);
+
+    console.log('Data selected:', selectedData);
+
     setSelectedRows([]);
     setSelectAll(false);
     handleCloseModal();
+
+    try {
+      await Promise.all(
+        selectedData.map(async (data, idx) => {
+          const simulatedEvent = {
+            target: {
+              value: data.avlQty
+            }
+          };
+
+          // await getPartNo(data.fromBin, formData.transferFromFlag, data);
+          handlePickQtyChange(simulatedEvent, data, vasPickGridTableData.length + idx);
+        })
+      );
+    } catch (error) {
+      console.error('Error processing selected data:', error);
+    }
   };
   const handleFullGrid = () => {
     getFillGridDetails();
@@ -675,102 +753,67 @@ export const VasPick = () => {
                                   <th className="table-header">GRN No</th>
                                   <th className="table-header">Avl QTY</th>
                                   <th className="table-header">Pick QTY</th>
-                                  <th className="table-header">Remaining QTY</th>
+                                  <th className="table-header">Remain QTY</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {vasPickGridTableData.map((row, index) => (
-                                  <tr key={row.id}>
-                                    {!formData.freeze && (
-                                      <td className="border px-2 py-2 text-center">
-                                        <ActionButton
-                                          title="Delete"
-                                          icon={DeleteIcon}
-                                          onClick={() => handleDeleteRow(row.id, vasPickGridTableData, setVasPickGridTableData)}
-                                        />
+                                {vasPickGridTableData.length === 0 ? (
+                                  <tr>
+                                    <td colSpan="18" className="text-center py-2">
+                                      No Data Found
+                                    </td>
+                                  </tr>
+                                ) : (
+                                  vasPickGridTableData.map((row, index) => (
+                                    <tr key={row.id}>
+                                      {!formData.freeze && (
+                                        <td className="border px-2 py-2 text-center">
+                                          <ActionButton
+                                            title="Delete"
+                                            icon={DeleteIcon}
+                                            onClick={() =>
+                                              handleDeleteRow(
+                                                row.id,
+                                                vasPickGridTableData,
+                                                setVasPickGridTableData,
+                                                vasPickGridTableErrors,
+                                                setVasPickGridTableErrors
+                                              )
+                                            }
+                                          />
+                                        </td>
+                                      )}
+                                      <td className="text-center">
+                                        <div className="pt-2">{index + 1}</div>
                                       </td>
-                                    )}
-                                    <td className="text-center">
-                                      <div className="pt-2">{index + 1}</div>
-                                    </td>
-                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                      {row.partNo}
-                                    </td>
-                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                      {row.partDesc}
-                                    </td>
-                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                      {row.sku}
-                                    </td>
-                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                      {row.grnNo}
-                                    </td>
-                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                      {row.batchNo}
-                                    </td>
-                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                      {row.bin}
-                                    </td>
-                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                      {row.avlQty}
-                                    </td>
-                                    {!formData.freeze ? (
-                                      <>
+                                      <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.partNo}
+                                      </td>
+                                      <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.partDesc}
+                                      </td>
+                                      <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.sku}
+                                      </td>
+                                      <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.grnNo}
+                                      </td>
+                                      <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.batchNo}
+                                      </td>
+                                      <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.bin}
+                                      </td>
+                                      <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.avlQty}
+                                      </td>
+                                      {!formData.freeze ? (
                                         <td className="border px-2 py-2">
                                           <input
                                             style={{ width: '150px' }}
                                             type="text"
                                             value={row.pickQty}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              const intPattern = /^\d*$/;
-
-                                              if (intPattern.test(value) || value === '') {
-                                                // Allow empty values for clearing
-                                                const numericValue = parseInt(value, 10);
-                                                const numericAvlQty = parseInt(row.avlQty, 10) || 0;
-
-                                                if (value === '' || numericValue <= numericAvlQty) {
-                                                  setVasPickGridTableData((prev) => {
-                                                    const updatedData = prev.map((r) => {
-                                                      const updatedPickQty = numericValue || 0;
-                                                      return r.id === row.id
-                                                        ? {
-                                                            ...r,
-                                                            pickQty: value,
-                                                            remainingQty: !value ? '' : numericAvlQty - updatedPickQty
-                                                          }
-                                                        : r;
-                                                    });
-                                                    return updatedData;
-                                                  });
-                                                  setVasPickGridTableErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      pickQty: !value ? 'Pick QTY is required' : ''
-                                                      // pickQty: !value ? '' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                } else {
-                                                  setVasPickGridTableErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      pickQty: 'Pick QTY cannot be greater than Inv QTY'
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }
-                                              } else {
-                                                setVasPickGridTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = { ...newErrors[index], pickQty: 'Invalid value' };
-                                                  return newErrors;
-                                                });
-                                              }
-                                            }}
+                                            onChange={(e) => handlePickQtyChange(e, row, index)}
                                             className={vasPickGridTableErrors[index]?.pickQty ? 'error form-control' : 'form-control'}
                                             disabled={!row.avlQty}
                                           />
@@ -780,20 +823,29 @@ export const VasPick = () => {
                                             </div>
                                           )}
                                         </td>
-                                      </>
-                                    ) : (
-                                      <>
+                                      ) : (
                                         <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
                                           {row.pickQty}
                                         </td>
-                                      </>
-                                    )}
-                                    <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                      {row.remainingQty}
+                                      )}
+                                      <td className="border px-2 py-3 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.remainingQty}
+                                      </td>
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                              {Array.isArray(vasPickGridTableErrors) && vasPickGridTableErrors.some((error) => error.general) && (
+                                <tfoot>
+                                  <tr>
+                                    <td colSpan={14} className="error-message">
+                                      <div style={{ color: 'red', fontSize: '14px', textAlign: 'center' }}>
+                                        {vasPickGridTableErrors.find((error) => error.general)?.general}
+                                      </div>
                                     </td>
                                   </tr>
-                                ))}
-                              </tbody>
+                                </tfoot>
+                              )}
                             </table>
                           </div>
                         </div>
