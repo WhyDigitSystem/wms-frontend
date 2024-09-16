@@ -397,6 +397,7 @@ export const PickRequest = () => {
           clientName: selectedOrder.billToName || '',
           clientShortName: selectedOrder.billToShortName || '',
           customerName: selectedOrder.buyer || '',
+          customerAddress: selectedOrder.buyerAddress || '',
           clientAddress: selectedOrder.billToAddress || '',
           buyerOrderNo: selectedOrder.docId || '',
           buyersReference: selectedOrder.refNo || '',
