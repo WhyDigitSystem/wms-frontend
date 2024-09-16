@@ -305,7 +305,7 @@ export const Kitting = () => {
 
       if (response.status === true) {
         const options = response.paramObjectsMap.kittingVO.map((item) => ({
-          value: item.partNo,
+          partNo: item.partNo,
           partDescription: item.partDesc, // Ensure these fields exist in the response
           sku: item.Sku // Ensure these fields exist in the response
         }));
@@ -317,6 +317,17 @@ export const Kitting = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
     }
+  };
+  const getAvailablePartNos = (currentRowId) => {
+    // Get all selected part numbers, excluding the current row
+    const selectedPartNos = childTableData
+      .filter((row) => row.id !== currentRowId && row.partNo) // Exclude current row and empty partNos
+      .map((row) => row.partNo);
+
+    console.log('THE SELECTED PART NOS:', selectedPartNos);
+
+    // Filter out selected part numbers from the available options
+    return partNoOptions.filter((partDetail) => !selectedPartNos.includes(partDetail.partNo));
   };
 
   const getAllParentPart = async () => {
@@ -1413,11 +1424,8 @@ export const Kitting = () => {
                                   <th className="px-2 py-2 text-white text-center">Batch No</th>
                                   {/* <th className="px-2 py-2 text-white text-center">Lot No</th> */}
                                   <th className="px-2 py-2 text-white text-center">Bin</th>
-
                                   <th className="px-2 py-2 text-white text-center">Avl Qty</th>
                                   <th className="px-2 py-2 text-white text-center">Qty</th>
-                                  {/* <th className="px-2 py-2 text-white text-center">Unit Rate</th>
-                                  <th className="px-2 py-2 text-white text-center">Amount</th> */}
                                 </tr>
                               </thead>
                               <tbody>
@@ -1429,7 +1437,6 @@ export const Kitting = () => {
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
-
                                     <td className="border px-2 py-2">
                                       <select
                                         ref={lrNoDetailsRefs.current[index]?.partNo}
@@ -1439,12 +1446,12 @@ export const Kitting = () => {
                                           const value = e.target.value;
                                           console.log('Selected Part No:', value);
 
-                                          const selectedPart = partNoOptions.find((option) => String(option.value) === String(value));
+                                          const selectedPart = partNoOptions.find((option) => option.partNo === value);
                                           console.log('Selected Part Details:', selectedPart);
 
                                           if (selectedPart) {
-                                            setChildTableData((prev) => {
-                                              return prev.map((r) =>
+                                            setChildTableData((prev) =>
+                                              prev.map((r) =>
                                                 r.id === row.id
                                                   ? {
                                                       ...r,
@@ -1453,11 +1460,10 @@ export const Kitting = () => {
                                                       sku: selectedPart.sku
                                                     }
                                                   : r
-                                              );
-                                            });
+                                              )
+                                            );
                                             getAllChildGRnNo(selectedPart, value);
                                           }
-
                                           setChildTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
@@ -1472,12 +1478,11 @@ export const Kitting = () => {
                                         className={childTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select Part No</option>
-                                        {partNoOptions &&
-                                          partNoOptions.map((option) => (
-                                            <option key={option.value} value={option.value}>
-                                              {option.value}
-                                            </option>
-                                          ))}
+                                        {getAvailablePartNos(row.id).map((part, idx) => (
+                                          <option key={idx} value={part.partNo}>
+                                            {part.partNo}
+                                          </option>
+                                        ))}
                                       </select>
 
                                       {childTableErrors[index]?.partNo && (
@@ -1661,89 +1666,10 @@ export const Kitting = () => {
                                         </div>
                                       )}
                                     </td>
-
-                                    {/* <td className="border px-2 py-2">
-                                      <select
-                                        value={row.bin}
-                                        style={{ width: '130px' }}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          console.log('Selected Bin No:', value);
-
-                                          const selectedBin = binOptions.find((option) => String(option.bin) === String(value));
-                                          console.log('Selected Bin Details:', selectedBin);
-
-                                          if (selectedBin) {
-                                            setChildTableData((prev) => {
-                                              return prev.map((r) =>
-                                                r.id === row.id
-                                                  ? {
-                                                      ...r,
-                                                      bin: selectedBin.bin,
-                                                      core: selectedBin.core,
-                                                      cellType: selectedBin.cellType,
-                                                      binType: selectedBin.binType,
-                                                      binClass: selectedBin.binClass
-                                                    }
-                                                  : r
-                                              );
-                                            });
-                                            getAllAvlQty(row, value);
-                                          }
-
-                                          setChildTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              bin: !value ? 'Bin is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={childTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">Select bin</option>
-                                        {binOptions &&
-                                          binOptions.map((option) => (
-                                            <option key={option.bin} value={option.bin}>
-                                              {option.bin}
-                                            </option>
-                                          ))}
-                                      </select>
-                                      {childTableErrors[index]?.bin && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {childTableErrors[index].bin}
-                                        </div>
-                                      )}
-                                    </td> */}
-
-                                    {/* <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.lotNo}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setChildTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, lotNo: value } : r)));
-                                          setChildTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], lotNo: !value ? 'Lot No is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={childTableErrors[index]?.lotNo ? 'error form-control' : 'form-control'}
-                                      />
-                                      {childTableErrors[index]?.lotNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {childTableErrors[index].lotNo}
-                                        </div>
-                                      )}
-                                    </td> */}
-
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.avlQty} // The value comes from the updated childTableData state
+                                        value={row.avlQty}
                                         disabled
                                         style={{ width: '100px' }}
                                         onChange={(e) => {
@@ -1787,52 +1713,6 @@ export const Kitting = () => {
                                         </div>
                                       )}
                                     </td>
-
-                                    {/* <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.unitRate}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setChildTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, unitRate: value } : r)));
-                                          setChildTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], unitRate: !value ? 'Unit Rate is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={childTableErrors[index]?.unitRate ? 'error form-control' : 'form-control'}
-                                      />
-                                      {childTableErrors[index]?.unitRate && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {childTableErrors[index].unitRate}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.amount}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setChildTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, amount: value } : r)));
-                                          setChildTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], amount: !value ? 'Amount is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={childTableErrors[index]?.amount ? 'error form-control' : 'form-control'}
-                                      />
-                                      {childTableErrors[index]?.amount && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {childTableErrors[index].amount}
-                                        </div>
-                                      )}
-                                    </td> */}
                                   </tr>
                                 ))}
                               </tbody>
@@ -2158,47 +2038,6 @@ export const Kitting = () => {
                                         className={parentTableErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                       />
                                     </td>
-                                    {/* <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.unitRate}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setParentTableData((prev) => prev.map((r, i) => (i === index ? { ...r, unitRate: value } : r)));
-                                          setParentTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              unitRate: !value ? 'Unit Rate is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={parentTableErrors[index]?.unitRate ? 'error form-control' : 'form-control'}
-                                      />
-                                    </td> */}
-                                    {/* <td className="border px-2 py-2">
-                                      <input
-                                        type="number"
-                                        value={row.amount}
-                                        style={{ width: '100px' }}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setParentTableData((prev) => prev.map((r, i) => (i === index ? { ...r, amount: value } : r)));
-                                          setParentTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              amount: !value ? 'Amount is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={parentTableErrors[index]?.amount ? 'error form-control' : 'form-control'}
-                                      />
-                                    </td> */}
-
                                     <td className="border px-2 py-2">
                                       <input
                                         type="date"
