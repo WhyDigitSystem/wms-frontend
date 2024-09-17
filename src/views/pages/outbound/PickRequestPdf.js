@@ -248,7 +248,7 @@ const GeneratePdfTempPick = ({ row, callBackFunction }) => {
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleDownloadPdf} color="primary" variant="contained" startIcon={<DownloadIcon />}>
+        <Button onClick={handleDownloadPdf} color="secondary" variant="contained" startIcon={<DownloadIcon />}>
           PDF
         </Button>
         <Button onClick={handleClose} color="secondary">

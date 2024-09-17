@@ -1381,7 +1381,7 @@ export const Grn = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.billOfEntry}
                   helperText={fieldErrors.billOfEntry}
-                  disabled={editId || formData.freeze}
+                  disabled={formData.freeze}
                 />
               </div>
 

@@ -562,15 +562,34 @@ export const BuyerOrder = () => {
     } else {
       if (name === 'active') {
         setFormData((prevData) => ({ ...prevData, [name]: checked }));
-      } else if (name === 'buyerShortName' || name === 'billto' || name === 'shipTo') {
+      } else if (name === 'buyerShortName') {
         const selectedBuyer = buyerList?.find((row) => row.buyerShortName === value);
         console.log('buyer', selectedBuyer);
         if (selectedBuyer) {
           setFormData((prevData) => ({
             ...prevData,
-            [name]: value,
-            [`${name}FullName`]: selectedBuyer.buyer,
+            buyerShortName: value,
             buyerFullName: selectedBuyer.buyer
+          }));
+        }
+      } else if (name === 'billto') {
+        const selectedBillTo = buyerList?.find((row) => row.buyerShortName === value);
+        console.log('buyer', selectedBillTo);
+        if (selectedBillTo) {
+          setFormData((prevData) => ({
+            ...prevData,
+            billto: value,
+            billtoFullName: selectedBillTo.buyer
+          }));
+        }
+      } else if (name === 'shipTo') {
+        const selectedShipTo = buyerList?.find((row) => row.buyerShortName === value);
+        console.log('buyer', selectedShipTo);
+        if (selectedShipTo) {
+          setFormData((prevData) => ({
+            ...prevData,
+            shipTo: value,
+            shipToFullName: selectedShipTo.buyer
           }));
         }
       } else {
@@ -842,8 +861,8 @@ export const BuyerOrder = () => {
       orgId: parseInt(orgId),
       refDate: formData.refDate,
       refNo: formData.refNo,
-      shipToName: formData.shipTo,
-      shipToShortName: formData.shipToFullName,
+      shipToName: formData.shipToFullName,
+      shipToShortName: formData.shipTo,
       warehouse: loginWarehouse
     };
 
