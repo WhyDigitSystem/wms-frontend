@@ -5,7 +5,7 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormHelperText } from '@mui/material';
 import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import Paper from '@mui/material/Paper';
@@ -26,6 +26,9 @@ import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import React, { useRef } from 'react';
 import { ToastContainer } from 'react-toastify';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 
 function PaperComponent(props) {
   return (
@@ -61,7 +64,9 @@ export const CycleCount = () => {
 
   const [formData, setFormData] = useState({
     docId: '',
-    docDate: dayjs()
+    docDate: dayjs(),
+    stockStatus: '',
+    stockStatusFlag: ''
   });
   const [value, setValue] = useState(0);
   const [detailTableData, setDetailTableData] = useState([
@@ -79,30 +84,6 @@ export const CycleCount = () => {
       actualQty: ''
     }
   ]);
-
-  // const lrNoDetailsRefs = useRef(
-  //   detailTableData.map(() => ({
-  //     partNo: React.createRef(),
-  //     grnNo: React.createRef(),
-  //     batchNo: React.createRef(),
-  //     bin: React.createRef()
-  //   }))
-  // );
-
-  // useEffect(() => {
-  //   // If the length of the table changes, update the refs
-  //   if (lrNoDetailsRefs.current.length !== detailTableData.length) {
-  //     lrNoDetailsRefs.current = detailTableData.map(
-  //       (_, index) =>
-  //         lrNoDetailsRefs.current[index] || {
-  //           partNo: React.createRef(),
-  //           grnNo: React.createRef(),
-  //           batchNo: React.createRef(),
-  //           bin: React.createRef()
-  //         }
-  //     );
-  //   }
-  // }, [detailTableData.length]);
 
   const lrNoDetailsRefs = useRef([]);
 
@@ -142,7 +123,9 @@ export const CycleCount = () => {
 
   const [fieldErrors, setFieldErrors] = useState({
     docId: '',
-    docDate: null
+    docDate: null,
+    stockStatus: '',
+    stockStatusFlag: ''
   });
   const listViewColumns = [
     { accessorKey: 'docId', header: 'Cycle Count ID', size: 140 },
@@ -183,7 +166,7 @@ export const CycleCount = () => {
     try {
       const response = await apiCalls(
         'get',
-        `cycleCount/getCycleCountGridDetails?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&warehouse=${loginWarehouse}`
+        `cycleCount/getCycleCountGridDetails?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&status=${formData.stockStatusFlag}&warehouse=${loginWarehouse}`
       );
       console.log('THE VAS PICK GRID DETAILS IS:', response);
       if (response.status === true) {
@@ -246,20 +229,30 @@ export const CycleCount = () => {
       console.error('Error fetching employee data:', error);
     }
   };
-  const getPartNo = async () => {
+
+  const getPartNo = async (stockStatusFlag) => {
     try {
-      const partData = await getAllActivePartDetails(loginBranchCode, loginClient, orgId);
-      console.log('THE PART NO LIST IS:', partData);
-      setPartNoList(partData);
+      const response = await apiCalls(
+        'get',
+        `cycleCount/getPartNoByCycleCount?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&status=${stockStatusFlag}&warehouse=${loginWarehouse}`
+      );
+      console.log('Response from cycleCount API:', response);
+
+      if (response.status === true) {
+        setPartNoList(response.paramObjectsMap.cycleCountPartNo);
+      } else {
+        console.error('Error: Unable to fetch part numbers:', response.message);
+      }
     } catch (error) {
-      console.error('Error fetching employee data:', error);
+      console.error('Error fetching part numbers:', error);
     }
   };
+
   const getGrnNo = async (selectedRowPartNo, row) => {
     try {
       const response = await apiCalls(
         'get',
-        `cycleCount/getGrnNoByCycleCount?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&partNo=${selectedRowPartNo}&warehouse=${loginWarehouse}`
+        `cycleCount/getGrnNoByCycleCount?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&partNo=${selectedRowPartNo}&status=${formData.stockStatusFlag}&warehouse=${loginWarehouse}`
       );
       console.log('THE FROM GRN NO LIST IS:', response);
       if (response.status === true) {
@@ -282,7 +275,7 @@ export const CycleCount = () => {
     try {
       const response = await apiCalls(
         'get',
-        `cycleCount/getBatchByCycleCount?branchCode=${loginBranchCode}&client=${loginClient}&grnNO=${selectedGrnNo}&orgId=${orgId}&partNo=${selectedPartNo}&warehouse=${loginWarehouse}`
+        `cycleCount/getBatchByCycleCount?branchCode=${loginBranchCode}&client=${loginClient}&grnNO=${selectedGrnNo}&orgId=${orgId}&partNo=${selectedPartNo}&status=${formData.stockStatusFlag}&warehouse=${loginWarehouse}`
       );
       console.log('THE FROM BIN LIST IS:', response);
       if (response.status === true) {
@@ -305,7 +298,7 @@ export const CycleCount = () => {
     try {
       const response = await apiCalls(
         'get',
-        `cycleCount/getBinDetailsByCycleCount?batch=${selectedBatchNo}&branchCode=${loginBranchCode}&client=${loginClient}&grnNO=${selectedGrnNo}&orgId=${orgId}&partNo=${selectedPartNo}&warehouse=${loginWarehouse}`
+        `cycleCount/getBinDetailsByCycleCount?batch=${selectedBatchNo}&branchCode=${loginBranchCode}&client=${loginClient}&grnNO=${selectedGrnNo}&orgId=${orgId}&partNo=${selectedPartNo}&status=${formData.stockStatusFlag}&warehouse=${loginWarehouse}`
       );
       console.log('THE TO BIN LIST ARE:', response);
       if (response.status === true) {
@@ -328,7 +321,7 @@ export const CycleCount = () => {
     try {
       const response = await apiCalls(
         'get',
-        `cycleCount/getAvlQtyByCycleCount?batch=${selectedBatchNo}&bin=${selectedBin}&branchCode=${loginBranchCode}&client=${loginClient}&grnNO=${selectedGrnNo}&orgId=${orgId}&partNo=${selectedPartNo}&warehouse=${loginWarehouse}`
+        `cycleCount/getAvlQtyByCycleCount?batch=${selectedBatchNo}&bin=${selectedBin}&branchCode=${loginBranchCode}&client=${loginClient}&grnNO=${selectedGrnNo}&orgId=${orgId}&partNo=${selectedPartNo}&status=${formData.stockStatusFlag}&warehouse=${loginWarehouse}`
       );
       console.log('THE ROW. TO BIN IS IS:', selectedPartNo);
 
@@ -337,7 +330,7 @@ export const CycleCount = () => {
           r.id === row.id
             ? {
                 ...r,
-                avlQty: response.paramObjectsMap.avlQty[0]?.avlQty || r.avlQty,
+                avlQty: response.paramObjectsMap.avlQty[0]?.avlQty || 0,
                 status: response.paramObjectsMap.avlQty[0]?.status || r.status
               }
             : r
@@ -360,7 +353,9 @@ export const CycleCount = () => {
         const particularCycleCount = response.paramObjectsMap.cycleCountVO;
         setFormData({
           docId: particularCycleCount.docId,
-          docDate: particularCycleCount.docDate
+          docDate: particularCycleCount.docDate,
+          statusFlag: particularCycleCount.statusFlag,
+          stockStatus: particularCycleCount.stockStatus
         });
 
         setDetailTableData(
@@ -415,10 +410,11 @@ export const CycleCount = () => {
     } else {
       let updatedData = { ...formData, [name]: value.toUpperCase() };
 
-      if (name === 'transferFrom') {
-        updatedData.transferFromFlag = value === 'DEFECTIVE' ? 'D' : value === 'HOLD' ? 'H' : value === 'RELEASE' ? 'R' : '';
-        setFromBinList([]);
-        getFromBin(updatedData.transferFromFlag);
+      if (name === 'stockStatus') {
+        updatedData.stockStatusFlag =
+          value === 'DEFECTIVE' ? 'D' : value === 'HOLD' ? 'H' : value === 'RELEASE' ? 'R' : value === 'VAS' ? 'V' : '';
+        setPartNoList([]);
+        getPartNo(updatedData.stockStatusFlag);
         // getToBinDetails(updatedData.transferFromFlag);
       } else if (name === 'transferTo') {
         updatedData.transferToFlag = value === 'DEFECTIVE' ? 'D' : value === 'HOLD' ? 'H' : value === 'RELEASE' ? 'R' : '';
@@ -546,18 +542,29 @@ export const CycleCount = () => {
   const handleClear = () => {
     setFormData({
       docDate: dayjs(),
-      transferFrom: '',
-      transferto: '',
-      entryNo: ''
+      stockStatus: '',
+      stockStatusFlag: ''
     });
     setFieldErrors({
-      docId: '',
       docDate: null,
-      transferFrom: '',
-      transferto: '',
-      entryNo: ''
+      stockStatus: '',
+      stockStatusFlag: ''
     });
-    setDetailTableData([]);
+    setDetailTableData([
+      {
+        id: 1,
+        partNo: '',
+        partDesc: '',
+        sku: '',
+        grnNo: '',
+        batchNo: '',
+        bin: '',
+        binType: '',
+        core: '',
+        avlQty: '',
+        actualQty: ''
+      }
+    ]);
     setDetailTableErrors([]);
     setViewId('');
     getNewCycleCountDocId();
@@ -568,120 +575,6 @@ export const CycleCount = () => {
       setDetailTableErrors([]);
     }
   };
-
-  // const handleSave = async () => {
-  //   console.log('first');
-
-  //   const errors = {};
-  //   let firstInvalidFieldRef = null;
-
-  //   console.log('detailTableData is:', detailTableData);
-
-  //   let detailTableDataValid = true;
-  //   if (!detailTableData || !Array.isArray(detailTableData) || detailTableData.length === 0) {
-  //     detailTableDataValid = false;
-  //     setDetailTableErrors([{ general: 'Detail Table Data is required' }]); // Assuming you want to handle general errors too
-  //   } else {
-  //     const newTableErrors = detailTableData.map((row, index) => {
-  //       const rowErrors = {};
-
-  //       if (!row.partNo) {
-  //         rowErrors.partNo = 'Part No is required';
-  //         if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].partNo;
-  //       }
-  //       if (!row.grnNo) {
-  //         rowErrors.grnNo = 'Grn No is required';
-  //         if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].grnNo;
-  //       }
-  //       if (!row.batchNo) {
-  //         rowErrors.batchNo = 'Batch No is required';
-  //         if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].batchNo;
-  //       }
-  //       if (!row.bin) {
-  //         rowErrors.bin = 'To Bin is required';
-  //         if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].bin;
-  //       }
-  //       // if (!row.avlQty) rowErrors.avlQty = 'To QTY is required';
-  //       // if (!row.actualQty) rowErrors.actualQty = 'Actual QTY is required';
-
-  //       if (Object.keys(rowErrors).length > 0) detailTableDataValid = false;
-
-  //       return rowErrors;
-  //     });
-
-  //     if (!detailTableDataValid || Object.keys(errors).length > 0) {
-  //       // Focus on the first invalid field
-  //       if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
-  //         firstInvalidFieldRef.current.focus();
-  //       }
-  //     } else {
-  //       // Proceed with form submission
-  //     }
-
-  //     setDetailTableErrors(newTableErrors);
-  //   }
-
-  //   if (detailTableDataValid) {
-  //     setIsLoading(true);
-
-  //     const cycleCountVo = detailTableData.map((row) => ({
-  //       ...(viewId && { id: row.id }),
-  //       partNo: row.partNo,
-  //       partDescription: row.partDesc,
-  //       sku: row.sku,
-  //       grnNo: row.grnNo,
-  //       grnDate: row.grnDate,
-  //       batchNo: row.batchNo,
-  //       batchDate: row.batchDate,
-  //       expDate: row.expDate,
-  //       bin: row.bin,
-  //       binType: row.binType,
-  //       binClass: row.binClass,
-  //       cellType: row.cellType,
-  //       core: row.core,
-  //       // lotNo: row.lotNo,
-  //       qcFlag: row.qcFlag,
-  //       status: row.status,
-  //       avlQty: parseInt(row.avlQty, 10),
-  //       actualQty: parseInt(row.actualQty, 10)
-  //     }));
-
-  //     const saveFormData = {
-  //       ...(viewId && { id: viewId }),
-  //       branch: loginBranch,
-  //       branchCode: loginBranchCode,
-  //       client: loginClient,
-  //       customer: loginCustomer,
-  //       warehouse: loginWarehouse,
-  //       finYear: loginFinYear,
-  //       orgId: parseInt(orgId, 10),
-  //       createdBy: loginUserName,
-  //       cycleCountDetailsDTO: cycleCountVo
-  //     };
-
-  //     console.log('DATA TO SAVE IS:', saveFormData);
-
-  //     try {
-  //       const response = await apiCalls('put', `cycleCount/createUpdateCycleCount`, saveFormData);
-
-  //       if (response.status === true) {
-  //         console.log('Response:', response);
-  //         handleClear();
-  //         showToast('success', viewId ? 'Cycle Count Updated Successfully' : 'Cycle Count created successfully');
-  //         getAllCycleCount();
-  //       } else {
-  //         showToast('error', response.paramObjectsMap?.errorMessage || 'Cycle Count creation failed');
-  //       }
-  //     } catch (error) {
-  //       console.error('Error:', error);
-  //       showToast('error', 'Cycle Count creation failed');
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   } else {
-  //     setFieldErrors(errors);
-  //   }
-  // };
 
   const handleSave = async () => {
     console.log('first');
@@ -770,7 +663,9 @@ export const CycleCount = () => {
         finYear: loginFinYear,
         orgId: parseInt(orgId, 10),
         createdBy: loginUserName,
-        cycleCountDetailsDTO: cycleCountVo
+        cycleCountDetailsDTO: cycleCountVo,
+        statusFlag: formData.stockStatusFlag,
+        stockStatus: formData.stockStatus
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -844,35 +739,28 @@ export const CycleCount = () => {
 
   const handlePartNoChange = (row, index, event) => {
     const value = event.target.value;
-
-    // Find the selected part number from the row's partNoList
-    const selectedFromPartNo = partNoList.find((b) => b.partno === value);
-
-    // Update the detail table data
+    const selectedFromPartNo = partNoList.find((b) => b.partNo === value);
     setDetailTableData((prev) =>
       prev.map((r) =>
         r.id === row.id
           ? {
               ...r,
-              partNo: selectedFromPartNo ? selectedFromPartNo.partno : '', // Safeguard for undefined
-              partDesc: selectedFromPartNo ? selectedFromPartNo.partDesc : '', // Safeguard for undefined
-              sku: selectedFromPartNo ? selectedFromPartNo.sku : '' // Safeguard for undefined
+              partNo: selectedFromPartNo ? selectedFromPartNo.partNo : '',
+              partDesc: selectedFromPartNo ? selectedFromPartNo.partDesc : '',
+              sku: selectedFromPartNo ? selectedFromPartNo.sku : ''
             }
           : r
       )
     );
-
-    // Update validation errors
     setDetailTableErrors((prev) => {
       const newErrors = [...prev];
       newErrors[index] = {
         ...newErrors[index],
-        partNo: !value ? 'Part number is required' : '' // Set error if partNo is empty
+        partNo: !value ? 'Part number is required' : ''
       };
       return newErrors;
     });
 
-    // Call getGrnNo only if value is not empty
     if (value) {
       getGrnNo(value, row);
     }
@@ -957,7 +845,6 @@ export const CycleCount = () => {
       return newErrors;
     });
     getAvlQty(row.batchNo, value, row.grnNo, row.partNo, row);
-    // const getAvlQty = async (selectedBatchNo, selectedBin, selectedGrnNo, selectedPartNo, row) => {
   };
 
   const getAvailableBins = (currentRowId, row) => {
@@ -980,100 +867,100 @@ export const CycleCount = () => {
     return row.rowBinList.filter((bin) => !selectedBins.includes(bin.bin));
   };
 
-  const handleFromQtyChange = (row, index, event) => {
-    const value = event.target.value;
-    // const selectedToBin = toBinList.find((row) => row.toBin === value);
-    setDetailTableData((prev) =>
-      prev.map((r) =>
-        r.id === row.id
-          ? {
-              ...r,
-              fromQty: value
-              // toBinType: selectedToBin ? selectedToBin.tobinType : '',
-              // toBinClass: selectedToBin ? selectedToBin.toBinClass : '',
-              // toCellType: selectedToBin ? selectedToBin.toCellType : '',
-              // toCore: selectedToBin ? selectedToBin.toCore : ''
-            }
-          : r
-      )
-    );
-    setDetailTableErrors((prev) => {
-      const newErrors = [...prev];
-      newErrors[index] = {
-        ...newErrors[index],
-        fromQty: !value ? 'GRN No is required' : ''
-      };
-      return newErrors;
-    });
-    // getBatchNo(row.fromBin, row.partNo, value);
-  };
-  const handleToQtyChange = (e, row, index) => {
-    const value = e.target.value;
-    const numericValue = isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10); // Ensure value is a number
-    const numericFromQty = isNaN(parseInt(row.fromQty, 10)) ? 0 : parseInt(row.fromQty, 10); // Ensure fromQty is a number
-    const intPattern = /^\d*$/;
+  // const handleFromQtyChange = (row, index, event) => {
+  //   const value = event.target.value;
+  //   // const selectedToBin = toBinList.find((row) => row.toBin === value);
+  //   setDetailTableData((prev) =>
+  //     prev.map((r) =>
+  //       r.id === row.id
+  //         ? {
+  //             ...r,
+  //             fromQty: value
+  //             // toBinType: selectedToBin ? selectedToBin.tobinType : '',
+  //             // toBinClass: selectedToBin ? selectedToBin.toBinClass : '',
+  //             // toCellType: selectedToBin ? selectedToBin.toCellType : '',
+  //             // toCore: selectedToBin ? selectedToBin.toCore : ''
+  //           }
+  //         : r
+  //     )
+  //   );
+  //   setDetailTableErrors((prev) => {
+  //     const newErrors = [...prev];
+  //     newErrors[index] = {
+  //       ...newErrors[index],
+  //       fromQty: !value ? 'GRN No is required' : ''
+  //     };
+  //     return newErrors;
+  //   });
+  //   // getBatchNo(row.fromBin, row.partNo, value);
+  // };
+  // const handleToQtyChange = (e, row, index) => {
+  //   const value = e.target.value;
+  //   const numericValue = isNaN(parseInt(value, 10)) ? 0 : parseInt(value, 10); // Ensure value is a number
+  //   const numericFromQty = isNaN(parseInt(row.fromQty, 10)) ? 0 : parseInt(row.fromQty, 10); // Ensure fromQty is a number
+  //   const intPattern = /^\d*$/;
 
-    if (intPattern.test(value) || value === '') {
-      setDetailTableData((prev) => {
-        const updatedData = prev.map((r) => {
-          if (r.id === row.id) {
-            let newRemainQty = numericFromQty - numericValue; // Initial remainQty calculation
+  //   if (intPattern.test(value) || value === '') {
+  //     setDetailTableData((prev) => {
+  //       const updatedData = prev.map((r) => {
+  //         if (r.id === row.id) {
+  //           let newRemainQty = numericFromQty - numericValue; // Initial remainQty calculation
 
-            // Calculate the cumulative toQty for all rows with the same partNo
-            const cumulativeToQty = prev.reduce((total, item) => {
-              if (
-                item.fromBin === r.fromBin &&
-                item.partNo === r.partNo &&
-                item.grnNo === r.grnNo &&
-                item.batchNo === r.batchNo &&
-                item.id !== r.id
-              ) {
-                return total + (isNaN(parseInt(item.toQty, 10)) ? 0 : parseInt(item.toQty, 10));
-              }
-              return total;
-            }, numericValue); // Include the current row's toQty in the cumulative total
+  //           // Calculate the cumulative toQty for all rows with the same partNo
+  //           const cumulativeToQty = prev.reduce((total, item) => {
+  //             if (
+  //               item.fromBin === r.fromBin &&
+  //               item.partNo === r.partNo &&
+  //               item.grnNo === r.grnNo &&
+  //               item.batchNo === r.batchNo &&
+  //               item.id !== r.id
+  //             ) {
+  //               return total + (isNaN(parseInt(item.toQty, 10)) ? 0 : parseInt(item.toQty, 10));
+  //             }
+  //             return total;
+  //           }, numericValue); // Include the current row's toQty in the cumulative total
 
-            // Subtract cumulativeToQty from fromQty to get new remainQty
-            newRemainQty = numericFromQty - cumulativeToQty;
+  //           // Subtract cumulativeToQty from fromQty to get new remainQty
+  //           newRemainQty = numericFromQty - cumulativeToQty;
 
-            // Ensure remainQty is non-negative
-            newRemainQty = Math.max(newRemainQty, 0);
+  //           // Ensure remainQty is non-negative
+  //           newRemainQty = Math.max(newRemainQty, 0);
 
-            console.log(`Updated remainQty for row ${r.id}: ${newRemainQty}`); // Debugging line
+  //           console.log(`Updated remainQty for row ${r.id}: ${newRemainQty}`); // Debugging line
 
-            return {
-              ...r,
-              toQty: value,
-              remainQty: newRemainQty
-            };
-          }
-          return r;
-        });
+  //           return {
+  //             ...r,
+  //             toQty: value,
+  //             remainQty: newRemainQty
+  //           };
+  //         }
+  //         return r;
+  //       });
 
-        return updatedData;
-      });
+  //       return updatedData;
+  //     });
 
-      // Clear the error if input is valid
-      setDetailTableErrors((prev) => {
-        const newErrors = [...prev];
-        newErrors[index] = {
-          ...newErrors[index],
-          toQty: ''
-        };
-        return newErrors;
-      });
-    } else {
-      // Set error if input is invalid
-      setDetailTableErrors((prev) => {
-        const newErrors = [...prev];
-        newErrors[index] = {
-          ...newErrors[index],
-          toQty: 'Only numbers are allowed'
-        };
-        return newErrors;
-      });
-    }
-  };
+  //     // Clear the error if input is valid
+  //     setDetailTableErrors((prev) => {
+  //       const newErrors = [...prev];
+  //       newErrors[index] = {
+  //         ...newErrors[index],
+  //         toQty: ''
+  //       };
+  //       return newErrors;
+  //     });
+  //   } else {
+  //     // Set error if input is invalid
+  //     setDetailTableErrors((prev) => {
+  //       const newErrors = [...prev];
+  //       newErrors[index] = {
+  //         ...newErrors[index],
+  //         toQty: 'Only numbers are allowed'
+  //       };
+  //       return newErrors;
+  //     });
+  //   }
+  // };
 
   const handleSelectAll = () => {
     if (selectAll) {
@@ -1086,12 +973,8 @@ export const CycleCount = () => {
 
   const handleSubmitSelectedRows = async () => {
     const selectedData = selectedRows.map((index) => modalTableData[index]);
-
-    // Adding selected data to the existing table data
     setDetailTableData([...detailTableData, ...selectedData]);
-
     console.log('Data selected:', selectedData);
-
     setSelectedRows([]);
     setSelectAll(false);
     handleCloseModal();
@@ -1099,10 +982,9 @@ export const CycleCount = () => {
     try {
       await Promise.all(
         selectedData.map(async (data, idx) => {
-          // Simulate the event object for handleToQtyChange
           const simulatedEvent = {
             target: {
-              value: data.toQty // Assuming you have a toQty field in your data
+              value: data.toQty
             }
           };
 
@@ -1148,14 +1030,7 @@ export const CycleCount = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable
-              data={listViewData}
-              columns={listViewColumns}
-              blockEdit={true}
-              // disableEditIcon={true}
-              // viewIcon={true}
-              toEdit={getCycleCountById}
-            />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getCycleCountById} />
           </div>
         ) : (
           <>
@@ -1178,58 +1053,26 @@ export const CycleCount = () => {
                   </LocalizationProvider>
                 </FormControl>
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.transferFrom}>
-                  <InputLabel id="transferFrom-label">Transfer From</InputLabel>
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.stockStatus}>
+                  <InputLabel id="stockStatus-label">Stock Status *</InputLabel>
                   <Select
-                    labelId="transferFrom-label"
-                    id="transferFrom"
-                    name="transferFrom"
-                    label="Transfer From"
-                    value={formData.transferFrom}
+                    labelId="stockStatus-label"
+                    id="stockStatus *"
+                    name="stockStatus"
+                    label="Stock Status"
+                    value={formData.stockStatus}
                     onChange={handleInputChange}
                     disabled={viewId ? true : false}
                   >
                     <MenuItem value="DEFECTIVE">DEFECTIVE</MenuItem>
                     <MenuItem value="HOLD">HOLD</MenuItem>
                     <MenuItem value="RELEASE">RELEASE</MenuItem>
+                    <MenuItem value="VAS">VAS</MenuItem>
                   </Select>
                   {fieldErrors.transferFrom && <FormHelperText error>{fieldErrors.transferFrom}</FormHelperText>}
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.transferTo}>
-                  <InputLabel id="transferTo-label">Transfer To</InputLabel>
-                  <Select
-                    labelId="transferTo-label"
-                    id="transferTo"
-                    name="transferTo"
-                    label="Transfer To"
-                    value={formData.transferTo}
-                    onChange={handleInputChange}
-                    disabled={viewId ? true : false}
-                  >
-                    <MenuItem value="DEFECTIVE">DEFECTIVE</MenuItem>
-                    <MenuItem value="HOLD">HOLD</MenuItem>
-                    <MenuItem value="RELEASE">RELEASE</MenuItem>
-                  </Select>
-                  {fieldErrors.transferTo && <FormHelperText error>{fieldErrors.transferTo}</FormHelperText>}
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Entry No"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="entryNo"
-                  value={formData.entryNo}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.entryNo}
-                  helperText={fieldErrors.entryNo}
-                  disabled={viewId && true}
-                />
-              </div> */}
             </div>
 
             <div className="row ">
@@ -1310,8 +1153,8 @@ export const CycleCount = () => {
                                               >
                                                 <option value="">-- Select --</option>
                                                 {partNoList?.map((row, index) => (
-                                                  <option key={index} value={row.partno}>
-                                                    {row.partno}
+                                                  <option key={index} value={row.partNo}>
+                                                    {row.partNo}
                                                   </option>
                                                 ))}
                                               </select>
@@ -1403,35 +1246,6 @@ export const CycleCount = () => {
                                                 </div>
                                               )}
                                             </td>
-                                            {/* <td className="border px-2 py-2">
-                                              <select
-                                                value={row.bin}
-                                                style={{ width: '200px' }}
-                                                onChange={(e) => handleBinChange(row, index, e)}
-                                                className={detailTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
-                                              >
-                                                <option value="">--Select--</option>
-                                                {Array.isArray(row.rowBinList) && row.rowBinList.length > 0 ? (
-                                                  row.rowBinList.map((g) =>
-                                                    g && g.bin ? (
-                                                      <option key={g.bin} value={g.bin}>
-                                                        {g.bin}
-                                                      </option>
-                                                    ) : null
-                                                  )
-                                                ) : (
-                                                  <option value="" disabled>
-                                                    No bins available
-                                                  </option>
-                                                )}
-                                              </select>
-                                              {detailTableErrors[index]?.bin && (
-                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                  {detailTableErrors[index].bin}
-                                                </div>
-                                              )}
-                                            </td> */}
-
                                             <td className="border px-2 py-2">
                                               <select
                                                 ref={lrNoDetailsRefs.current[index]?.bin}
@@ -1442,7 +1256,6 @@ export const CycleCount = () => {
                                               >
                                                 <option value="">--Select--</option>
                                                 {Array.isArray(row.rowBinList) && row.rowBinList.length > 0 ? (
-                                                  // Use getAvailableBins to filter bins
                                                   getAvailableBins(row.id, row).map((g) =>
                                                     g && g.bin ? (
                                                       <option key={g.bin} value={g.bin}>
@@ -1497,15 +1310,11 @@ export const CycleCount = () => {
                                                 value={row.actualQty}
                                                 onChange={(e) => {
                                                   const value = e.target.value;
-                                                  const intPattern = /^\d*$/; // Pattern to match only whole numbers
+                                                  const intPattern = /^\d*$/;
 
                                                   if (intPattern.test(value) || value === '') {
-                                                    // Allow empty values for clearing
                                                     const numericValue = parseInt(value, 10);
                                                     const numericAvlQty = parseInt(row.avlQty, 10) || 0;
-
-                                                    // if (value === '' || numericValue <= numericAvlQty) {
-                                                    // if (value === '') {
                                                     setDetailTableData((prev) => {
                                                       const updatedData = prev.map((r) => {
                                                         const updatedActualQty = numericValue || 0;
@@ -1526,16 +1335,6 @@ export const CycleCount = () => {
                                                       };
                                                       return newErrors;
                                                     });
-                                                    // } else {
-                                                    //   setDetailTableErrors((prev) => {
-                                                    //     const newErrors = [...prev];
-                                                    //     newErrors[index] = {
-                                                    //       ...newErrors[index],
-                                                    //       actualQty: 'Rec QTY cannot be greater than Inv QTY'
-                                                    //     };
-                                                    //     return newErrors;
-                                                    //   });
-                                                    // }
                                                   } else {
                                                     setDetailTableErrors((prev) => {
                                                       const newErrors = [...prev];
@@ -1545,9 +1344,14 @@ export const CycleCount = () => {
                                                   }
                                                 }}
                                                 className={detailTableErrors[index]?.actualQty ? 'error form-control' : 'form-control'}
-                                                disabled={!row.avlQty}
+                                                // disabled={!row.avlQty}
                                               />
-                                              {row.avlQty && detailTableErrors[index]?.actualQty && (
+                                              {/* {row.avlQty && detailTableErrors[index]?.actualQty && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {detailTableErrors[index].actualQty}
+                                                </div>
+                                              )} */}
+                                              {detailTableErrors[index]?.actualQty && (
                                                 <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                                   {detailTableErrors[index].actualQty}
                                                 </div>
