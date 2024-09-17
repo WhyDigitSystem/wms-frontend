@@ -404,6 +404,7 @@ export const Putaway = () => {
   // };
   const handleCloseModal = () => {
     setModalOpen(false);
+    setCheckAll(false);
   };
 
   const getAllLocationTypes = async () => {
@@ -496,7 +497,7 @@ export const Putaway = () => {
   };
 
   const getPutAwayById = async (row) => {
-    console.log('THE SELECTED PUTAWAY ID IS:', row.original.id);
+    console.log('THE SELECTED PUTAWAY ID IS:', row);
     setEditId(row.original.id);
 
     try {
@@ -523,7 +524,7 @@ export const Putaway = () => {
           carrier: particularPutaway.carrier,
           binType: particularPutaway.binType,
           contact: particularPutaway.contact,
-          status: particularPutaway.status,
+          status: particularPutaway.status === 'Edit' ? 'EDIT' : 'CONFIRM' || 'Confirm' ? 'CONFIRM' : 'EDIT',
           lotNo: particularPutaway.lotNo,
           enteredPerson: particularPutaway.enteredPerson,
           binClass: particularPutaway.binClass,
@@ -831,7 +832,7 @@ export const Putaway = () => {
       warehouse: loginWarehouse
     });
     getPutAwayDocId();
-    setEditId('');
+    // setEditId('');
   };
 
   const handleSave = async () => {
@@ -952,6 +953,7 @@ export const Putaway = () => {
           showToast('success', editId ? ' Put Away Updated Successfully' : 'Put Away created successfully');
           setIsLoading(false);
           getAllPutAway();
+          getGrnForPutaway();
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Put Away creation failed');
           setIsLoading(false);
@@ -1377,61 +1379,6 @@ export const Putaway = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Vehicle Type"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="vehicleType"
-                  value={formData.vehicleType}
-                  error={!!fieldErrors.vehicleType}
-                  helperText={fieldErrors.vehicleType}
-                  disabled
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Vehicle No"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="vehicleNo"
-                  value={formData.vehicleNo}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.vehicleNo}
-                  helperText={fieldErrors.vehicleNo}
-                  disabled
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Security Person Name"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="securityName"
-                  value={formData.securityName}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.securityName}
-                  helperText={fieldErrors.securityName}
-                  disabled
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Driver Name"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="driverName"
-                  value={formData.driverName}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.driverName}
-                  helperText={fieldErrors.driverName}
-                  disabled
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
                   label="Brief Desc. of the Goods"
                   variant="outlined"
                   size="small"
@@ -1500,28 +1447,56 @@ export const Putaway = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                  <InputLabel id="status">
-                    {
-                      <span>
-                        Status <span className="asterisk">*</span>
-                      </span>
-                    }
-                  </InputLabel>
-                  <Select
-                    labelId="status"
-                    id="status"
-                    name="status"
-                    label="Status"
-                    disabled={formData.freeze}
-                    value={formData.status}
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="Edit">EDIT</MenuItem>
-                    <MenuItem value="Confirm">CONFIRM</MenuItem>
-                  </Select>
-                  {fieldErrors.status && <FormHelperText error>{fieldErrors.status}</FormHelperText>}
-                </FormControl>
+                {editId ? (
+                  <>
+                    <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
+                      <InputLabel id="status">
+                        {
+                          <span>
+                            Status <span className="asterisk">*</span>
+                          </span>
+                        }
+                      </InputLabel>
+                      <Select
+                        labelId="status"
+                        id="status"
+                        name="status"
+                        label="Status"
+                        disabled={formData.freeze}
+                        value={formData.status}
+                        onChange={handleInputChange}
+                      >
+                        <MenuItem value="Edit">EDIT</MenuItem>
+                        <MenuItem value="Confirm">CONFIRM</MenuItem>
+                      </Select>
+                      {fieldErrors.status && <FormHelperText error>{fieldErrors.status}</FormHelperText>}
+                    </FormControl>
+                  </>
+                ) : (
+                  <>
+                    <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
+                      <InputLabel id="status">
+                        {
+                          <span>
+                            Status <span className="asterisk">*</span>
+                          </span>
+                        }
+                      </InputLabel>
+                      <Select
+                        labelId="status"
+                        id="status"
+                        name="status"
+                        label="Status"
+                        disabled={formData.freeze}
+                        value={formData.status}
+                        onChange={handleInputChange}
+                      >
+                        <MenuItem value="Edit">EDIT</MenuItem>
+                      </Select>
+                      {fieldErrors.status && <FormHelperText error>{fieldErrors.status}</FormHelperText>}
+                    </FormControl>
+                  </>
+                )}
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl className="ps-2">
@@ -1571,6 +1546,7 @@ export const Putaway = () => {
                 >
                   <Tab value={0} label="LR NO. Details" />
                   <Tab value={1} label="Summary" />
+                  <Tab value={2} label="Others" />
                 </Tabs>
               </Box>
               <Box sx={{ padding: 2 }}>
@@ -1594,7 +1570,7 @@ export const Putaway = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center">INVOICE No</th>
+                                  {/* <th className="px-2 py-2 text-white text-center">INVOICE No</th> */}
                                   <th className="px-2 py-2 text-white text-center">Part No</th>
                                   <th className="px-2 py-2 text-white text-center">Batch</th>
                                   <th className="px-2 py-2 text-white text-center">Part Description</th>
@@ -1617,7 +1593,7 @@ export const Putaway = () => {
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
 
-                                    <td className="border px-2 py-2">
+                                    {/* <td className="border px-2 py-2">
                                       <input
                                         type="text"
                                         value={row.invNo}
@@ -1641,7 +1617,7 @@ export const Putaway = () => {
                                           {putAwayTableErrors[index].invNo}
                                         </div>
                                       )}
-                                    </td>
+                                    </td> */}
 
                                     <td className="border px-2 py-2">
                                       <input
@@ -1765,7 +1741,7 @@ export const Putaway = () => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              sku: !value ? 'Part No is required' : ''
+                                              sku: !value ? 'Sku is required' : ''
                                             };
                                             return newErrors;
                                           });
@@ -1979,6 +1955,67 @@ export const Putaway = () => {
                           fullWidth
                           name="totalPutawayQty"
                           value={formData.totalPutawayQty}
+                          disabled
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+                {value === 2 && (
+                  <>
+                    <div className="row">
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Vehicle Type"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="vehicleType"
+                          value={formData.vehicleType}
+                          error={!!fieldErrors.vehicleType}
+                          helperText={fieldErrors.vehicleType}
+                          disabled
+                        />
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Vehicle No"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="vehicleNo"
+                          value={formData.vehicleNo}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.vehicleNo}
+                          helperText={fieldErrors.vehicleNo}
+                          disabled
+                        />
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Security Person Name"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="securityName"
+                          value={formData.securityName}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.securityName}
+                          helperText={fieldErrors.securityName}
+                          disabled
+                        />
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <TextField
+                          label="Driver Name"
+                          variant="outlined"
+                          size="small"
+                          fullWidth
+                          name="driverName"
+                          value={formData.driverName}
+                          onChange={handleInputChange}
+                          error={!!fieldErrors.driverName}
+                          helperText={fieldErrors.driverName}
                           disabled
                         />
                       </div>
