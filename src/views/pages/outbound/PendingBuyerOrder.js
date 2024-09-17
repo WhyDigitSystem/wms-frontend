@@ -63,6 +63,11 @@ export const PendingBuyerOrder = () => {
     setSelectedRows(selectedRowsData);
     console.log('selectedRowsData', selectedRowsData);
 
+    if (selectedRows.length === 0) {
+      showToast('error', 'Please select at least one order');
+      return;
+    }
+
     const errors = {};
     if (!loginBranch) {
       errors.loginBranch = 'Branch is required';

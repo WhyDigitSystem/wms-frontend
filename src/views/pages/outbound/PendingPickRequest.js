@@ -22,13 +22,13 @@ export const PendingPickRequest = () => {
 
   const reportColumns = [
     { accessorKey: 'sno', header: 'S No', size: 140 },
-    { accessorKey: 'invoiceNo', header: 'Invoice No', size: 140 },
-    { accessorKey: 'buyerOrderDate', header: 'Buyer Order Date', size: 140 },
     { accessorKey: 'buyerOrderNo', header: 'Buyer Order No', size: 140 },
+    { accessorKey: 'buyerOrderDate', header: 'Buyer Order Date', size: 140 },
     { accessorKey: 'buyerRefDate', header: 'Buyer Ref Date', size: 140 },
     { accessorKey: 'buyerRefNo', header: 'Buyer Ref No', size: 140 },
     { accessorKey: 'buyersReference', header: 'Buyers Reference', size: 140 },
     { accessorKey: 'buyersReferenceDate', header: 'Buyers Reference Date', size: 250 },
+    { accessorKey: 'invoiceNo', header: 'Invoice No', size: 140 },
     { accessorKey: 'clientName', header: 'Client Name', size: 140 },
     { accessorKey: 'clientShortName', header: 'Client Short Name', size: 140 },
     { accessorKey: 'customerName', header: 'Customer Name', size: 140 },
@@ -64,6 +64,11 @@ export const PendingPickRequest = () => {
     const selectedRowsData = selectedRows.map((row) => row.original);
     setSelectedRows(selectedRowsData);
     console.log('selectedRowsData', selectedRowsData);
+
+    if (selectedRows.length === 0) {
+      showToast('error', 'Please select at least one order');
+      return;
+    }
 
     const errors = {};
     if (!loginBranch) {
