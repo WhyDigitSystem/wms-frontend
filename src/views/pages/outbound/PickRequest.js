@@ -1229,7 +1229,7 @@ export const PickRequest = () => {
                     onChange={handleInputChange}
                   >
                     <MenuItem value="Edit">EDIT</MenuItem>
-                    <MenuItem value="Confirm">CONFIRM</MenuItem>
+                    {editId && <MenuItem value="Confirm">CONFIRM</MenuItem>}
                   </Select>
                   {fieldErrors.status && <FormHelperText error>{fieldErrors.status}</FormHelperText>}
                 </FormControl>

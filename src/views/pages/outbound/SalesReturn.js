@@ -2064,10 +2064,7 @@ export const SalesReturn = () => {
                             fullWidth
                             name="totalReturnQty"
                             value={formData.totalReturnQty}
-                            onChange={handleInputChange}
-                            error={!!fieldErrors.totalReturnQty}
-                            helperText={fieldErrors.totalReturnQty}
-                            disabled={formData.freeze}
+                            disabled
                           />
                         </div>
                       </div>

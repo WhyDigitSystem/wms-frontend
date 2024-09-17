@@ -414,6 +414,7 @@ export const BuyerOrder = () => {
             id: bo.id,
             partNo: bo.partNo,
             partDesc: bo.partDesc,
+            sku: bo.sku,
             batchNo: bo.batchNo, // This may be empty initially
             qty: bo.qty,
             availQty: bo.availQty,
@@ -644,13 +645,41 @@ export const BuyerOrder = () => {
     setSelectAll(!selectAll);
   };
 
-  const handleSaveSelectedRows = () => {
+  const handleSaveSelectedRows1 = () => {
     const selectedData = selectedRows.map((index) => skuDetails[index]);
     setSkuDetailsTableData([...selectedData]);
     console.log('data', selectedData);
     setSelectedRows([]);
     setSelectAll(false);
     handleCloseModal();
+  };
+
+  const handleSaveSelectedRows = async () => {
+    const selectedData = selectedRows.map((index) => skuDetails[index]);
+
+    setSkuDetailsTableData((prev) => [...selectedData]);
+
+    console.log('Data selected:', selectedData);
+
+    setSelectedRows([]);
+    setSelectAll(false);
+    handleCloseModal();
+
+    try {
+      await Promise.all(
+        selectedData.map(async (data, idx) => {
+          const simulatedEvent = {
+            target: {
+              value: data.batchNo
+            }
+          };
+
+          await getBatchNo(data.partNo, data);
+        })
+      );
+    } catch (error) {
+      console.error('Error processing selected data:', error);
+    }
   };
 
   const handleClear = () => {
@@ -1218,6 +1247,7 @@ export const BuyerOrder = () => {
                                   </th>
                                   <th className="px-2 py-2 text-white text-center">Part No *</th>
                                   <th className="px-2 py-2 text-white text-center">Part Desc</th>
+                                  <th className="px-2 py-2 text-white text-center">SKU</th>
                                   <th className="px-2 py-2 text-white text-center">Batch No</th>
                                   <th className="px-2 py-2 text-white text-center">Avl QTY</th>
                                   <th className="px-2 py-2 text-white text-center">QTY *</th>
@@ -1292,6 +1322,19 @@ export const BuyerOrder = () => {
                                       {skuDetailsTableErrors[index]?.partDesc && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                           {skuDetailsTableErrors[index].partDesc}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.sku}
+                                        disabled
+                                        className={skuDetailsTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
+                                      />
+                                      {skuDetailsTableErrors[index]?.sku && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {skuDetailsTableErrors[index].sku}
                                         </div>
                                       )}
                                     </td>
@@ -1495,6 +1538,7 @@ export const BuyerOrder = () => {
                               </th>
                               <th className="px-2 py-2 text-white text-center">Part No *</th>
                               <th className="px-2 py-2 text-white text-center">Part Desc</th>
+                              <th className="px-2 py-2 text-white text-center">SKU</th>
                               <th className="px-2 py-2 text-white text-center">Batch No</th>
                               {/* <th className="px-2 py-2 text-white text-center">Qty *</th> */}
                               <th className="px-2 py-2 text-white text-center">Avl. Qty</th>
@@ -1520,6 +1564,9 @@ export const BuyerOrder = () => {
                                 </td>
                                 <td className="border text-center pb-0 ps-0 pe-0" style={{ paddingTop: 12 }}>
                                   {row.partDesc}
+                                </td>
+                                <td className="border text-center pb-0 ps-0 pe-0" style={{ paddingTop: 12 }}>
+                                  {row.sku}
                                 </td>
                                 <td className="border text-center pb-0 ps-0 pe-0" style={{ paddingTop: 12 }}>
                                   {row.batchNo}

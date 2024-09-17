@@ -700,7 +700,7 @@ export const VasPick = () => {
                     disabled={formData.freeze}
                   >
                     <MenuItem value="Edit">EDIT</MenuItem>
-                    <MenuItem value="Confirm">CONFIRM</MenuItem>
+                    {editId && <MenuItem value="Confirm">CONFIRM</MenuItem>}
                   </Select>
                   {fieldErrors.status && <FormHelperText>{fieldErrors.status}</FormHelperText>}
                 </FormControl>
