@@ -1129,7 +1129,7 @@ export const DeliveryChallen = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       disabled
                     />
                   </LocalizationProvider>
@@ -1191,7 +1191,7 @@ export const DeliveryChallen = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       disabled
                     />
                   </LocalizationProvider>
@@ -1297,7 +1297,7 @@ export const DeliveryChallen = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       disabled
                     />
                   </LocalizationProvider>
@@ -1384,7 +1384,7 @@ export const DeliveryChallen = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.grWaiverDate}
                       helperText={fieldErrors.grWaiverDate && 'Required'}
                       disabled={formData.freeze}
@@ -1422,7 +1422,7 @@ export const DeliveryChallen = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.grWaiverClosureDate}
                       helperText={fieldErrors.grWaiverClosureDate && 'Required'}
                       disabled={formData.freeze}
@@ -1460,7 +1460,7 @@ export const DeliveryChallen = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.gatePassDate}
                       helperText={fieldErrors.gatePassDate && 'Required'}
                       disabled={formData.freeze}
@@ -1601,7 +1601,7 @@ export const DeliveryChallen = () => {
                                           slotProps={{
                                             textField: { size: 'small', clearable: true, style: { width: '200px' }, disabled: true } // Disable the DatePicker
                                           }}
-                                          format="DD/MM/YYYY"
+                                          format="DD-MM-YYYY"
                                         />
                                       </LocalizationProvider>
                                     </td>
@@ -2261,7 +2261,7 @@ export const DeliveryChallen = () => {
                               slotProps={{
                                 textField: { size: 'small', clearable: true }
                               }}
-                              format="DD/MM/YYYY"
+                              format="DD-MM-YYYY"
                               error={fieldErrors.transporterDate}
                               helperText={fieldErrors.transporterDate && 'Required'}
                               disabled={formData.freeze}

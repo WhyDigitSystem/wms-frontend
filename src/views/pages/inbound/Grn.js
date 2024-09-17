@@ -1155,7 +1155,7 @@ export const Grn = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       disabled
                     />
                   </LocalizationProvider>
@@ -1213,7 +1213,7 @@ export const Grn = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.date}
                       helperText={fieldErrors.date && 'Required'}
                       disabled={formData.grnType === 'GRN' || formData.freeze}
@@ -1280,7 +1280,7 @@ export const Grn = () => {
                           slotProps={{
                             textField: { size: 'small', clearable: true }
                           }}
-                          format="DD/MM/YYYY"
+                          format="DD-MM-YYYY"
                           error={fieldErrors.gatePassDate}
                           helperText={fieldErrors.gatePassDate && 'Required'}
                           disabled
@@ -1306,7 +1306,7 @@ export const Grn = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.grnDate}
                       helperText={fieldErrors.grnDate && 'Required'}
                       // disabled={editId ? true : false}
@@ -1659,7 +1659,7 @@ export const Grn = () => {
                                                 type="date"
                                                 value={row.invDate}
                                                 disabled={formData.freeze}
-                                                format="DD/MM/YYYY"
+                                                format="DD-MM-YYYY"
                                                 onChange={(e) => {
                                                   const value = e.target.value;
                                                   setLrTableData((prev) =>
@@ -2469,7 +2469,7 @@ export const Grn = () => {
                               slotProps={{
                                 textField: { size: 'small', clearable: true }
                               }}
-                              format="DD/MM/YYYY"
+                              format="DD-MM-YYYY"
                               error={fieldErrors.lrDate}
                               helperText={fieldErrors.lrDate && 'Required'}
                               disabled={formData.freeze}

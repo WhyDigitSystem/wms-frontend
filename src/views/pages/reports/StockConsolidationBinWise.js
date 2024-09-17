@@ -244,7 +244,7 @@ export const StockConsolidationBinWise = () => {
                   slotProps={{
                     textField: { size: 'small', clearable: true }
                   }}
-                  format="DD/MM/YYYY"
+                  format="DD-MM-YYYY"
                 />
               </LocalizationProvider>
             </FormControl>

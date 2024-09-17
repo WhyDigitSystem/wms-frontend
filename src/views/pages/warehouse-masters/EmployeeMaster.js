@@ -423,7 +423,7 @@ export const EmployeeMaster = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.dob}
                       helperText={fieldErrors.dob && 'Required'}
                     />
@@ -440,7 +440,7 @@ export const EmployeeMaster = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.doj}
                       helperText={fieldErrors.doj && 'Required'}
                     />

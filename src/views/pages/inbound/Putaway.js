@@ -1195,7 +1195,7 @@ export const Putaway = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       disabled
                     />
                   </LocalizationProvider>
@@ -1247,7 +1247,7 @@ export const Putaway = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.grnDate}
                       helperText={fieldErrors.grnDate && 'Required'}
                       disabled
@@ -1280,7 +1280,7 @@ export const Putaway = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.entryDate}
                       helperText={fieldErrors.entryDate && 'Required'}
                       disabled

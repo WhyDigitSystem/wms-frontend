@@ -921,7 +921,7 @@ export const GatePassIn = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       disabled
                     />
                   </LocalizationProvider>
@@ -953,7 +953,7 @@ export const GatePassIn = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.entryDate}
                       helperText={fieldErrors.entryDate && 'Required'}
                     />

@@ -982,7 +982,7 @@ export const BuyerOrder = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       disabled
                     />
                   </LocalizationProvider>
@@ -1018,7 +1018,7 @@ export const BuyerOrder = () => {
                         textField: { size: 'small', clearable: true }
                       }}
                       disabled={formData.freeze}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.orderDate}
                       helperText={fieldErrors.orderDate && 'Required'}
                     />
@@ -1054,7 +1054,7 @@ export const BuyerOrder = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.invoiceDate}
                       helperText={fieldErrors.invoiceDate && 'Required'}
                       disabled={formData.freeze}
@@ -1167,7 +1167,7 @@ export const BuyerOrder = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.refDate}
                       helperText={fieldErrors.refDate && 'Required'}
                       disabled={formData.freeze}

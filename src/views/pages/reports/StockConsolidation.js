@@ -165,7 +165,7 @@ export const StockConsolidation = () => {
                   slotProps={{
                     textField: { size: 'small', clearable: true }
                   }}
-                  format="DD/MM/YYYY"
+                  format="DD-MM-YYYY"
                   error={fieldErrors.selectedDate}
                   helperText={fieldErrors.selectedDate && 'Required'}
                 />
@@ -198,7 +198,7 @@ export const StockConsolidation = () => {
                       }} // Custom styling for error state
                     />
                   )}
-                  format="DD/MM/YYYY"
+                  format="DD-MM-YYYY"
                 />
               </LocalizationProvider>
               {fieldErrors.selectedDate && <FormHelperText error>{fieldErrors.selectedDate}</FormHelperText>}

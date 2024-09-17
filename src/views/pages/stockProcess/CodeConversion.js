@@ -964,7 +964,7 @@ export const CodeConversion = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       disabled
                     />
                   </LocalizationProvider>
@@ -1474,7 +1474,7 @@ export const CodeConversion = () => {
                                                 slotProps={{
                                                   textField: { size: 'small', clearable: true, style: { width: '200px' }, disabled: true } // Disable the DatePicker
                                                 }}
-                                                format="DD/MM/YYYY"
+                                                format="DD-MM-YYYY"
                                               />
                                             </LocalizationProvider>
                                           </td> */}

@@ -1334,7 +1334,7 @@ export const Kitting = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.docDate}
                       helperText={fieldErrors.docDate && 'Required'}
                     />
@@ -1369,7 +1369,7 @@ export const Kitting = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      format="DD/MM/YYYY"
+                      format="DD-MM-YYYY"
                       error={fieldErrors.refDate}
                       helperText={fieldErrors.refDate}
                     />
