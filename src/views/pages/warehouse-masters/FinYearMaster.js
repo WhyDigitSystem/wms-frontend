@@ -27,11 +27,11 @@ const FinYearMaster = () => {
   const [showFields, setShowFields] = useState(true);
 
   const [formData, setFormData] = useState({
-    finYear: '',
+    finYear: dayjs(),
     finYearIdentifier: '',
     finYearId: '',
-    startDate: null,
-    endDate: null,
+    startDate: dayjs(),
+    endDate: dayjs(),
     currentFinYear: false,
     // sno: '',
     active: true,
@@ -51,11 +51,11 @@ const FinYearMaster = () => {
 
   const handleClear = () => {
     setFormData({
-      finYear: '',
+      finYear: dayjs(),
       finYearId: '',
       finYearIdentifier: '',
-      startDate: '',
-      endDate: '',
+      startDate: dayjs(),
+      endDate: dayjs(),
       currentFinYear: false
       // sno: ''
     });
@@ -85,7 +85,7 @@ const FinYearMaster = () => {
     getFinYear();
   }, []);
 
-  const handleInputChange = (e) => {
+  const handleInputChange1 = (e) => {
     const { name, value, checked } = e.target;
     let newValue = value;
 
@@ -99,6 +99,33 @@ const FinYearMaster = () => {
 
     setFormData({ ...formData, [name]: newValue });
     setFieldErrors({ ...fieldErrors, [name]: false });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const nameRegex = /^[A-Za-z ]*$/;
+    const numericRegex = /^[0-9]*$/;
+
+    if (name === 'finYearId' && !numericRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: name === 'active' || name === 'currentFinYear' ? checked : value.toUpperCase()
+      });
+      setFieldErrors({ ...fieldErrors, [name]: '' });
+
+      // Update the cursor position after the input change
+      if (type === 'text' || type === 'textarea') {
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
+      }
+    }
   };
 
   const handleList = () => {
@@ -166,14 +193,15 @@ const FinYearMaster = () => {
         setFieldErrors(errors);
         return; // Prevent API call if there are errors
       }
-
+      const formatedFinYear = formData.finYear ? dayjs(formData.finYear).format('YYYY') : null;
       // Format startDate, endDate, and convert finYear to integer before making the API call
       const formattedData = {
         startDate: formData.startDate ? dayjs(formData.startDate).format('YYYY-MM-DD') : null,
         endDate: formData.endDate ? dayjs(formData.endDate).format('YYYY-MM-DD') : null,
-        finYear: formData.finYear ? parseInt(formData.finYear, 10) : null,
+        // finYear: formData.finYear ? parseInt(formData.finYear, 10) : null,
+        finYear: parseInt(formatedFinYear),
+        finYearId: parseInt(formData.finYearId),
         finYearIdentifier: formData.finYearIdentifier,
-        finYearId: formData.finYearId,
         currentFinYear: false,
         active: formData.active,
         createdBy: localStorage.getItem('userName'),
@@ -212,7 +240,9 @@ const FinYearMaster = () => {
         const particularFin = response.paramObjectsMap.financialYearVOs;
 
         setFormData({
-          finYear: particularFin.finYear,
+          // finYear: particularFin.finYear ? dayjs(particularFin.finYear).format('YYYY') : null,
+          finYear: particularFin.finYear ? dayjs().year(particularFin.finYear).format('YYYY') : null,
+          finYearId: particularFin.finYearId,
           finYearIdentifier: particularFin.finYearIdentifier,
           currentFinYear: particularFin.currentFinYear,
           startDate: particularFin.startDate,
@@ -244,7 +274,7 @@ const FinYearMaster = () => {
         </div>
         {showFields ? (
           <div className="row d-flex">
-            <div className="col-md-3 mb-3">
+            {/* <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="finYear"
@@ -258,6 +288,24 @@ const FinYearMaster = () => {
                   helperText={<span style={{ color: 'red' }}>{fieldErrors.finYear ? 'This field is required' : ''}</span>}
                 />
               </FormControl>
+            </div> */}
+            <div className="col-md-3 mb-3">
+              <FormControl fullWidth variant="filled" size="small" sx={{ minWidth: '120px' }}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    label="Fin Year"
+                    value={formData.finYear ? dayjs(formData.finYear) : null}
+                    views={['year']}
+                    onChange={(date) => handleDateChange('finYear', date)}
+                    slotProps={{
+                      textField: { size: 'small', clearable: true }
+                    }}
+                    format="YYYY"
+                    error={fieldErrors.finYear}
+                    helperText={fieldErrors.finYear ? 'This field is required' : ''}
+                  />
+                </LocalizationProvider>
+              </FormControl>
             </div>
             <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
@@ -270,6 +318,7 @@ const FinYearMaster = () => {
                   name="finYearId"
                   onChange={handleInputChange}
                   inputProps={{ maxLength: 30 }}
+                  error={fieldErrors.finYearId}
                   helperText={<span style={{ color: 'red' }}>{fieldErrors.finYearId ? 'Fin Year Id required' : ''}</span>}
                 />
               </FormControl>
@@ -299,6 +348,7 @@ const FinYearMaster = () => {
                     slotProps={{
                       textField: { size: 'small', clearable: true }
                     }}
+                    format="DD-MM-YYYY"
                     error={fieldErrors.startDate}
                     helperText={fieldErrors.startDate ? 'This field is required' : ''}
                   />
@@ -315,6 +365,7 @@ const FinYearMaster = () => {
                     slotProps={{
                       textField: { size: 'small', clearable: true }
                     }}
+                    format="DD-MM-YYYY"
                     error={fieldErrors.endDate}
                     helperText={fieldErrors.endDate ? 'This field is required' : ''}
                   />

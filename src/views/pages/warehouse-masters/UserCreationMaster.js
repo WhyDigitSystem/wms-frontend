@@ -1016,7 +1016,7 @@ export const UserCreationMaster = () => {
                                               return newErrors;
                                             });
                                           }}
-                                          dateFormat="dd/MM/yyyy"
+                                          dateFormat="dd-MM-yyyy"
                                           minDate={new Date()}
                                           onKeyDown={(e) => handleKeyDown(e, row, roleTableData)}
                                         />
@@ -1042,7 +1042,7 @@ export const UserCreationMaster = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        dateFormat="dd/MM/yyyy"
+                                        dateFormat="dd-MM-yyyy"
                                         minDate={row.startDate || new Date()}
                                         disabled={!row.startDate}
                                       />

@@ -707,11 +707,12 @@ export const ItemMaster = () => {
                     value={formData.groupName}
                     onChange={handleInputChange}
                   >
-                    {groupList?.map((row) => (
-                      <MenuItem key={row.id} value={row.groupName.toUpperCase()}>
-                        {row.groupName.toUpperCase()}
-                      </MenuItem>
-                    ))}
+                    {groupList.length > 0 &&
+                      groupList.map((row) => (
+                        <MenuItem key={row.id} value={row.groupName.toUpperCase()}>
+                          {row.groupName.toUpperCase()}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.groupName && <FormHelperText error>{fieldErrors.groupName}</FormHelperText>}
                 </FormControl>
@@ -753,11 +754,12 @@ export const ItemMaster = () => {
                     value={formData.purchaseUnit}
                     onChange={handleInputChange}
                   >
-                    {unitList?.map((row) => (
-                      <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
-                        {row.unitName.toUpperCase()}
-                      </MenuItem>
-                    ))}
+                    {unitList.length > 0 &&
+                      unitList.map((row) => (
+                        <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
+                          {row.unitName.toUpperCase()}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.purchaseUnit && <FormHelperText error>{fieldErrors.purchaseUnit}</FormHelperText>}
                 </FormControl>
@@ -773,11 +775,12 @@ export const ItemMaster = () => {
                     value={formData.storageUnit}
                     onChange={handleInputChange}
                   >
-                    {unitList?.map((row) => (
-                      <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
-                        {row.unitName.toUpperCase()}
-                      </MenuItem>
-                    ))}
+                    {unitList.length > 0 &&
+                      unitList.map((row) => (
+                        <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
+                          {row.unitName.toUpperCase()}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.storageUnit && <FormHelperText error>{fieldErrors.storageUnit}</FormHelperText>}
                 </FormControl>
@@ -792,11 +795,12 @@ export const ItemMaster = () => {
                     }
                   </InputLabel>
                   <Select labelId="sku-label" id="sku" name="sku" label="SKU *" value={formData.sku} onChange={handleInputChange}>
-                    {unitList?.map((row) => (
-                      <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
-                        {row.unitName.toUpperCase()}
-                      </MenuItem>
-                    ))}
+                    {unitList.length > 0 &&
+                      unitList?.map((row) => (
+                        <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
+                          {row.unitName.toUpperCase()}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.sku && <FormHelperText error>{fieldErrors.sku}</FormHelperText>}
                 </FormControl>
@@ -811,11 +815,12 @@ export const ItemMaster = () => {
                     }
                   </InputLabel>
                   <Select labelId="sku-label" id="ssku" name="ssku" label="SSKU *" value={formData.ssku} onChange={handleInputChange}>
-                    {unitList?.map((row) => (
-                      <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
-                        {row.unitName.toUpperCase()}
-                      </MenuItem>
-                    ))}
+                    {unitList.length > 0 &&
+                      unitList.map((row) => (
+                        <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
+                          {row.unitName.toUpperCase()}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.ssku && <FormHelperText error>{fieldErrors.ssku}</FormHelperText>}
                 </FormControl>
@@ -1066,7 +1071,7 @@ export const ItemMaster = () => {
                                               return newErrors;
                                             });
                                           }}
-                                          dateFormat="dd/MM/yyyy"
+                                          dateFormat="dd-MM-yyyy"
                                           minDate={new Date()}
                                         />
                                         {itemTableErrors[index]?.fDate && (
@@ -1092,7 +1097,7 @@ export const ItemMaster = () => {
                                             return newErrors;
                                           });
                                         }}
-                                        dateFormat="dd/MM/yyyy"
+                                        dateFormat="dd-MM-yyyy"
                                         minDate={row.fDate || new Date()} // Set minDate for tDate to be fDate or today's date
                                         disabled={!row.fDate} // Disable tDate picker if fDate is not selected
                                       />
@@ -1167,11 +1172,12 @@ export const ItemMaster = () => {
                               value={formData.saleUnit}
                               onChange={handleInputChange}
                             >
-                              {unitList?.map((row) => (
-                                <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
-                                  {row.unitName.toUpperCase()}
-                                </MenuItem>
-                              ))}
+                              {unitList.length > 0 &&
+                                unitList.map((row) => (
+                                  <MenuItem key={row.id} value={row.unitName.toUpperCase()}>
+                                    {row.unitName.toUpperCase()}
+                                  </MenuItem>
+                                ))}
                             </Select>
                             {fieldErrors.saleUnit && <FormHelperText error>{fieldErrors.saleUnit}</FormHelperText>}
                           </FormControl>
