@@ -872,7 +872,8 @@ export const Grn = () => {
       invoiceNo: '',
       noOfPacks: '',
       totAmt: '',
-      totGrnQty: ''
+      totGrnQty: '',
+      remarks: ''
     });
     setFieldErrors({
       docDate: '',
@@ -911,7 +912,8 @@ export const Grn = () => {
       invoiceNo: '',
       noOfPacks: '',
       totAmt: '',
-      totGrnQty: ''
+      totGrnQty: '',
+      remarks: ''
     });
     getNewGrnDocId();
     setEditId('');

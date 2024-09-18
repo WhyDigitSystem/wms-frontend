@@ -952,8 +952,9 @@ export const ItemMaster = () => {
                     value={formData.movingType}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="FASTMOVING">Fast Moving</MenuItem>
-                    <MenuItem value="SLOWMOVING">Slow Moving</MenuItem>
+                    <MenuItem value="FAST">Fast </MenuItem>
+                    <MenuItem value="MEDIUM">MEDIUM </MenuItem>
+                    <MenuItem value="SLOW">Slow </MenuItem>
                   </Select>
                   {fieldErrors.movingType && <FormHelperText error>{fieldErrors.movingType}</FormHelperText>}
                 </FormControl>

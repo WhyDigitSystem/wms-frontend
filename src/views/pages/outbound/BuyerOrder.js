@@ -950,6 +950,7 @@ export const BuyerOrder = () => {
             sampleFileDownload={sampleFile}
             handleFileUpload={handleFileUpload}
             apiUrl={`buyerOrder/ExcelUploadForBuyerOrder?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&createdBy=${loginUserName}&customer=${loginCustomer}&finYear=${loginFinYear}&orgId=${orgId}&type=DOC&warehouse=${loginWarehouse}`}
+            screen="Buyer Order"
           ></CommonBulkUpload>
         )}
         {listView ? (

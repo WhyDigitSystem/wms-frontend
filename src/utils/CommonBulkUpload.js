@@ -18,7 +18,8 @@ const CommonBulkUpload = ({
   sampleFileDownload,
   handleFileUpload,
   onOpenClick,
-  apiUrl
+  apiUrl,
+  screen
 }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -68,7 +69,8 @@ const CommonBulkUpload = ({
           setSelectedFile(null);
           showToast('success', message);
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Buyer Order Bulk Uploaded failed');
+          showToast('error', response.paramObjectsMap.errorMessage || `${screen} Bulk Uploaded failed`);
+          // showToast('error', response.paramObjectsMap.errorMessage || 'Buyer Order Bulk Uploaded failed');
           setErrorMessage(response.paramObjectsMap.errorMessage);
           setErrorDialogOpen(true);
         }
@@ -93,7 +95,7 @@ const CommonBulkUpload = ({
       <Dialog fullWidth={true} maxWidth="xs" open={open} onClose={handleClose}>
         <div className="d-flex justify-content-between align-items-center p-1">
           <DialogTitle>{dialogTitle}</DialogTitle>
-          <IconButton onClick={handleClose} style={{ color: '#f44336' }}>
+          <IconButton onClick={handleClose} color="secondary">
             <IoMdClose style={{ fontSize: '1.5rem' }} />
           </IconButton>
         </div>
@@ -103,6 +105,7 @@ const CommonBulkUpload = ({
             <Button
               component="label"
               variant="contained"
+              color="secondary"
               startIcon={<FaCloudUploadAlt />}
               style={{ textTransform: 'none', padding: '6px 12px' }}
             >
@@ -128,24 +131,42 @@ const CommonBulkUpload = ({
               </Button>
             </div>
           )}
+          {/* <div className="d-flex justify-content-center mb-2">
+            <Button
+              size="small"
+              component="a"
+              href={sampleFileDownload}
+              variant="outlined"
+              color="secondary"
+              startIcon={<FiDownload />}
+              style={{ textTransform: 'none', padding: '4px 8px' }}
+            >
+              {downloadText}
+            </Button>
+          </div> */}
           <div className="d-flex justify-content-center mb-2">
             <Button
               size="small"
               component="a"
               href={sampleFileDownload}
               variant="outlined"
+              color="secondary"
               startIcon={<FiDownload />}
-              style={{ textTransform: 'none', padding: '4px 8px' }}
+              style={{
+                textTransform: 'none',
+                padding: '4px 8px',
+                color: '#9CA4AF'
+              }}
             >
               {downloadText}
             </Button>
           </div>
         </DialogContent>
         <DialogActions className="d-flex justify-content-between p-2">
-          <Button onClick={handleClose} style={{ textTransform: 'none', padding: '4px 8px' }}>
+          <Button onClick={handleClose} color="secondary" style={{ textTransform: 'none', padding: '4px 8px' }}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} variant="contained" style={{ textTransform: 'none', padding: '4px 8px' }}>
+          <Button onClick={handleSubmit} color="secondary" variant="contained" style={{ textTransform: 'none', padding: '4px 8px' }}>
             Submit
           </Button>
         </DialogActions>

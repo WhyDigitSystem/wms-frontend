@@ -59,6 +59,7 @@ export const LocationMovement = () => {
   const [formData, setFormData] = useState({
     docId: docId,
     docDate: dayjs(),
+    entryNo: '',
     movedQty: ''
   });
   const [value, setValue] = useState(0);
@@ -150,12 +151,14 @@ export const LocationMovement = () => {
 
   const [fieldErrors, setFieldErrors] = useState({
     docId: '',
-    docDate: ''
+    docDate: '',
+    entryNo: ''
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
     { accessorKey: 'docId', header: 'Document No', size: 140 },
-    { accessorKey: 'docDate', header: 'Document Date', size: 140 }
+    { accessorKey: 'docDate', header: 'Document Date', size: 140 },
+    { accessorKey: 'entryNo', header: 'Entry No', size: 140 }
   ];
 
   const [listViewData, setListViewData] = useState([]);
@@ -229,7 +232,7 @@ export const LocationMovement = () => {
     try {
       const response = await apiCalls(
         'get',
-        `locationMovement/getAllForLocationMovementDetailsFillGrid?orgId=${orgId}&branchCode=${branchCode}&branch=${branch}&client=${client}`
+        `locationMovement/getAllForLocationMovementDetailsFillGrid?orgId=${orgId}&branchCode=${branchCode}&branch=${branch}&client=${client}&entryNo=${formData.entryNo}`
       );
       console.log('API Response:', response);
 
@@ -679,6 +682,7 @@ export const LocationMovement = () => {
         setFormData({
           docId: particularLocationMovement.docId,
           docDate: particularLocationMovement.docDate ? dayjs(particularLocationMovement.docDate) : dayjs(),
+          entryNo: particularLocationMovement.entryNo,
           movedQty: particularLocationMovement.movedQty
         });
         setChildTableData(
@@ -896,14 +900,16 @@ export const LocationMovement = () => {
       docDate: dayjs(),
       refNo: '',
       refDate: '',
-      active: true
+      active: true,
+      entryNo: ''
     });
     setChildTableData([]);
     setChildTableErrors([]);
 
     setFieldErrors({
       docId: '',
-      docDate: ''
+      docDate: '',
+      entryNo: ''
     });
     setViewId('');
     getDocId();
@@ -1003,6 +1009,7 @@ export const LocationMovement = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         docDate: formData.docDate,
+        entryNo: formData.entryNo,
         movedQty: formData.movedQty,
         locationMovementDetailsDTO: childVO,
         orgId: orgId,
@@ -1099,13 +1106,7 @@ export const LocationMovement = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton
-              title="Save"
-              icon={SaveIcon}
-              isLoading={isLoading}
-              onClick={!viewId ? handleSave : undefined}
-              margin="0 10px 0 10px"
-            />
+            {!viewId && <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />}
           </div>
         </div>
         {listView ? (
@@ -1146,6 +1147,20 @@ export const LocationMovement = () => {
                     />
                   </LocalizationProvider>
                 </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label={<span>Entry No</span>}
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="entryNo"
+                  value={formData.entryNo}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.entryNo}
+                  helperText={fieldErrors.entryNo}
+                  disabled={viewId && true}
+                />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField

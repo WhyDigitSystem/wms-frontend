@@ -13,6 +13,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import { FormControl, FormHelperText, InputLabel, MenuItem, Select } from '@mui/material';
+import { initCaps } from 'utils/CommonFunctions';
 
 export const LocationTypeMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -21,7 +23,8 @@ export const LocationTypeMaster = () => {
 
   const [formData, setFormData] = useState({
     active: true,
-    binType: ''
+    binType: '',
+    core: ''
   });
   const [editId, setEditId] = useState('');
 
@@ -29,12 +32,14 @@ export const LocationTypeMaster = () => {
   const anchorRef = useRef(null);
   const inputRef = useRef(null);
   const [fieldErrors, setFieldErrors] = useState({
-    binType: ''
+    binType: '',
+    core: ''
   });
   const [listView, setListView] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
     { accessorKey: 'binType', header: 'Bin Type', size: 140 },
+    { accessorKey: 'core', header: 'Core', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
   const [listViewData, setListViewData] = useState([]);
@@ -72,6 +77,7 @@ export const LocationTypeMaster = () => {
 
         setFormData({
           binType: particularLocationType.binType,
+          core: particularLocationType.core.toUpperCase(),
           active: particularLocationType.active === 'Active' ? true : false
         });
       } else {
@@ -113,29 +119,56 @@ export const LocationTypeMaster = () => {
   //   }
   // };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, selectionStart, selectionEnd } = e.target;
+
+  //   const nameRegex = /^[A-Za-z0-9 ]*$/;
+  //   let errorMessage = '';
+
+  //   switch (name) {
+  //     case 'binType':
+  //       if (!nameRegex.test(value)) {
+  //         errorMessage = 'Only Alphanumeric characters are allowed';
+  //       }
+  //       break;
+
+  //     default:
+  //       break;
+  //   }
+
+  //   if (errorMessage) {
+  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
+  //   } else {
+  //     if (name === 'core') {
+  //       setFormData({ ...formData, [name]: initCaps(value) });
+  //     }
+  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+  //     const upperCaseValue = value.toUpperCase();
+  //     setFormData((prevData) => ({ ...prevData, [name]: upperCaseValue }));
+  //     setTimeout(() => {
+  //       const inputElement = document.getElementsByName(name)[0];
+  //       if (inputElement) {
+  //         inputElement.setSelectionRange(selectionStart, selectionEnd);
+  //       }
+  //     }, 0);
+  //   }
+  // };
   const handleInputChange = (e) => {
-    const { name, value, selectionStart, selectionEnd } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const nameRegex = /^[A-Za-z ]*$/;
 
-    const nameRegex = /^[A-Za-z0-9 ]*$/;
-    let errorMessage = '';
-
-    switch (name) {
-      case 'binType':
-        if (!nameRegex.test(value)) {
-          errorMessage = 'Only Alphanumeric characters are allowed';
-        }
-        break;
-
-      default:
-        break;
-    }
-
-    if (errorMessage) {
-      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
+    if (name === 'cityCode' && !codeRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else {
-      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
-      const upperCaseValue = value.toUpperCase();
-      setFormData((prevData) => ({ ...prevData, [name]: upperCaseValue }));
+      setFormData({
+        ...formData,
+        [name]: name === 'active' ? checked : value.toUpperCase()
+      });
+      setFieldErrors({ ...fieldErrors, [name]: '' });
+    }
+    // Update the cursor position after the input change
+    if (type === 'text' || type === 'textarea') {
       setTimeout(() => {
         const inputElement = document.getElementsByName(name)[0];
         if (inputElement) {
@@ -143,24 +176,26 @@ export const LocationTypeMaster = () => {
         }
       }, 0);
     }
+    // }
   };
 
   const handleClear = () => {
     setEditId('');
     setFormData({
       binType: '',
+      core: '',
       active: true
     });
     setFieldErrors({
-      binType: ''
+      binType: '',
+      core: ''
     });
   };
 
   const handleSave = async () => {
     const errors = {};
-    if (!formData.binType) {
-      errors.binType = 'Bin Type is required';
-    }
+    if (!formData.binType) errors.binType = 'Bin Type is required';
+    if (!formData.core) errors.core = 'Core is required';
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
@@ -168,6 +203,7 @@ export const LocationTypeMaster = () => {
         ...(editId && { id: editId }),
         active: formData.active,
         binType: formData.binType,
+        core: initCaps(formData.core),
         orgId: orgId,
         createdBy: loginUserName
       };
@@ -257,6 +293,16 @@ export const LocationTypeMaster = () => {
                   helperText={fieldErrors.binType}
                   inputRef={inputRef}
                 />
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.core}>
+                  <InputLabel id="movingType-label">Core</InputLabel>
+                  <Select labelId="core-label" id="core" name="core" label="Core" value={formData.core} onChange={handleInputChange}>
+                    <MenuItem value="SINGLE">SINGLE </MenuItem>
+                    <MenuItem value="MULTI">MULTI </MenuItem>
+                  </Select>
+                  {fieldErrors.core && <FormHelperText error>{fieldErrors.core}</FormHelperText>}
+                </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControlLabel
