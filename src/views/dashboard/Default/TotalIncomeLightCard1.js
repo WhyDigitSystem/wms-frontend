@@ -42,8 +42,12 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 // ==============================|| DASHBOARD - TOTAL INCOME LIGHT CARD ||============================== //
 
-const TotalIncomeLightCard1 = ({ isLoading }) => {
+const TotalIncomeLightCard1 = ({ isLoading, data, pickRequestData }) => {
   const theme = useTheme();
+
+  const orderCount = data[0]?.orderCount || 0;
+
+  const pickCount = pickRequestData?.orderCount || 0;
 
   return (
     <>
@@ -76,7 +80,7 @@ const TotalIncomeLightCard1 = ({ isLoading }) => {
                   }}
                   primary={
                     <Typography variant="h4" sx={{ color: '#fff' }}>
-                      256
+                      {orderCount}
                     </Typography>
                   }
                   secondary={
@@ -120,7 +124,7 @@ const TotalIncomeLightCard1 = ({ isLoading }) => {
                   }}
                   primary={
                     <Typography variant="h4" sx={{ color: '#fff' }}>
-                      110
+                      {pickCount}
                     </Typography>
                   }
                   secondary={

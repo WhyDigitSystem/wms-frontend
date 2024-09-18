@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // material-ui
 import { Avatar, Box, Button, Grid, Typography } from '@mui/material';
@@ -12,12 +12,13 @@ import Chart from 'react-apexcharts';
 import MainCard from 'ui-component/cards/MainCard';
 import SkeletonTotalOrderCard from 'ui-component/cards/Skeleton/EarningCard';
 
+import { IconArrowDownFromArc } from '@tabler/icons-react';
 import ChartDataMonth from './chart-data/total-order-month-line-chart';
 import ChartDataYear from './chart-data/total-order-year-line-chart';
 
 // assets
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
+import apiCalls from 'apicall';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
   backgroundColor: theme.palette.primary.dark,
@@ -66,9 +67,57 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 const TotalOrderLineChartCard = ({ isLoading }) => {
   const theme = useTheme();
 
-  const [timeValue, setTimeValue] = useState(false);
+  const [timeValue, setTimeValue] = useState(true);
   const handleChangeTime = (event, newValue) => {
     setTimeValue(newValue);
+  };
+
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [warehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
+  const [client, setClient] = useState(localStorage.getItem('client'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+
+  const [monthData, setMonthData] = useState('');
+  const [yearData, setYearData] = useState('');
+
+  useEffect(() => {
+    getOutboundMonth();
+    getOutboundYear();
+  }, []);
+
+  const getOutboundMonth = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `dashboardController/getOutBoundOrderPerMonth?orgId=${orgId}&branchCode=${branchCode}&warehouse=${warehouse}&client=${client}&finYear=${finYear}`
+      );
+
+      if (response.status === true) {
+        setMonthData(response.paramObjectsMap.buyerorderVO[0].count);
+      } else {
+        console.error('Failed to fetch warehouse client data:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching warehouse client data:', error);
+    }
+  };
+
+  const getOutboundYear = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `dashboardController/getOutBoundOrderPerYear?orgId=${orgId}&branchCode=${branchCode}&warehouse=${warehouse}&client=${client}&finYear=${finYear}`
+      );
+
+      if (response.status === true) {
+        setYearData(response.paramObjectsMap.buyerorderVO[0].count);
+      } else {
+        console.error('Failed to fetch warehouse client data:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching warehouse client data:', error);
+    }
   };
 
   return (
@@ -92,7 +141,7 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                         mt: 1
                       }}
                     >
-                      <LocalMallOutlinedIcon fontSize="inherit" />
+                      <IconArrowDownFromArc fontSize="inherit" />
                     </Avatar>
                   </Grid>
                   <Grid item>
@@ -123,9 +172,9 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                     <Grid container alignItems="center">
                       <Grid item>
                         {timeValue ? (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>108</Typography>
+                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>{monthData}</Typography>
                         ) : (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>961</Typography>
+                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>{yearData}</Typography>
                         )}
                       </Grid>
                       <Grid item>
@@ -145,10 +194,10 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                           sx={{
                             fontSize: '1rem',
                             fontWeight: 500,
-                            color: theme.palette.primary[200]
+                            color: '#fff'
                           }}
                         >
-                          Total Order
+                          Outbound Order
                         </Typography>
                       </Grid>
                     </Grid>

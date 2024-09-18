@@ -3,7 +3,7 @@ import { styled, useTheme } from '@mui/material/styles';
 import { useState } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 import MainCard from 'ui-component/cards/MainCard';
-import TotalIncomeCard from 'ui-component/cards/Skeleton/TotalIncomeCard';
+import SkeletonEarningCard from 'ui-component/cards/Skeleton/EarningCard';
 import WarehouseDialog from './WarehouseDialog';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
@@ -53,14 +53,20 @@ const TotalIncomeDarkCard = ({ isLoading }) => {
   return (
     <>
       {isLoading ? (
-        <TotalIncomeCard />
+        <SkeletonEarningCard />
       ) : (
         <CardWrapper>
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 600, mb: 1 }}>
-              Warehouse Occupancy
-            </Typography>
-            <Box sx={{ width: '100%', height: 120 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 600 }}>
+                Warehouse Occupancy
+              </Typography>
+              <Typography variant="body2" sx={{ color: theme.palette.primary.main, cursor: 'pointer' }} onClick={handleDialogOpen}>
+                View Details
+              </Typography>
+            </Box>
+
+            <Box sx={{ width: '100%', height: 120, mt: 1 }}>
               <ResponsiveContainer>
                 <PieChart>
                   <Pie
@@ -83,14 +89,14 @@ const TotalIncomeDarkCard = ({ isLoading }) => {
                 </PieChart>
               </ResponsiveContainer>
             </Box>
-            <Box mt={0}>
-              {/* <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 500 }}>
+            {/* <Box mt={0}>
+              <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 500 }}>
                 80% Occupied
-              </Typography> */}
+              </Typography>
               <Typography variant="body2" sx={{ color: theme.palette.primary.main, cursor: 'pointer', mt: 0 }} onClick={handleDialogOpen}>
                 View Details
               </Typography>
-            </Box>
+            </Box> */}
           </Box>
           <WarehouseDialog open={dialogOpen} onClose={handleDialogClose} />
         </CardWrapper>
