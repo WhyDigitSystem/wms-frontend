@@ -581,6 +581,9 @@ export const CycleCount = () => {
 
     const errors = {};
     let firstInvalidFieldRef = null;
+    if (!formData.stockStatus) {
+      errors.stockStatus = 'Stock Status is required';
+    }
 
     console.log('detailTableData is:', detailTableData);
 
@@ -617,6 +620,7 @@ export const CycleCount = () => {
 
         return rowErrors;
       });
+      setFieldErrors(errors);
 
       setDetailTableErrors(newTableErrors);
 
@@ -1055,7 +1059,9 @@ export const CycleCount = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.stockStatus}>
-                  <InputLabel id="stockStatus-label">Stock Status *</InputLabel>
+                  <InputLabel id="stockStatus-label">
+                    Stock Status <span className="asterisk">*</span>
+                  </InputLabel>
                   <Select
                     labelId="stockStatus-label"
                     id="stockStatus *"
@@ -1070,7 +1076,7 @@ export const CycleCount = () => {
                     <MenuItem value="RELEASE">RELEASE</MenuItem>
                     <MenuItem value="VAS">VAS</MenuItem>
                   </Select>
-                  {fieldErrors.transferFrom && <FormHelperText error>{fieldErrors.transferFrom}</FormHelperText>}
+                  {fieldErrors.stockStatus && <FormHelperText error>{fieldErrors.stockStatus}</FormHelperText>}
                 </FormControl>
               </div>
             </div>
