@@ -9,7 +9,7 @@ import { StockBatchWiseReport } from './StockBatchWiseReport';
 import StockBinBatchStatusWiseReport from './StockBinBatchStatusWiseReport';
 
 const ReportMain = () => {
-  const [value, setValue] = React.useState(1);
+  const [value, setValue] = React.useState(0);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);

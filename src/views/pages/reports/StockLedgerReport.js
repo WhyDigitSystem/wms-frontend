@@ -87,7 +87,7 @@ export const StockLedgerReport = () => {
   };
 
   const handleDateChange = (field, date) => {
-    const formattedDate = dayjs(date).format('DD-MM-YYYY');
+    const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
 
@@ -131,11 +131,12 @@ export const StockLedgerReport = () => {
 
   const handleClear = () => {
     setFormData({
-      selectedDate: dayjs(),
+      startDate: dayjs(),
+      endDate: dayjs(),
       partNo: ''
     });
     setFieldErrors({
-      selectedDate: '',
+      startDate: '',
       partNo: ''
     });
     setListView(false);
@@ -179,7 +180,6 @@ export const StockLedgerReport = () => {
               )}
             />
           </div>
-
           <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled" size="small">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -190,7 +190,7 @@ export const StockLedgerReport = () => {
                   slotProps={{
                     textField: { size: 'small', clearable: true }
                   }}
-                  format="DD/MM/YYYY"
+                  format="DD-MM-YYYY"
                   error={fieldErrors.startDate}
                   helperText={fieldErrors.startDate && 'Required'}
                   maxDate={dayjs()}
