@@ -834,8 +834,16 @@ export const LocationMappingMaster = () => {
                                         </div>
                                       )}
                                     </td>
-
                                     <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.multiCore}
+                                        className={locationMappingTableErrors[index]?.multiCore ? 'error form-control' : 'form-control'}
+                                        disabled
+                                      />
+                                    </td>
+
+                                    {/* <td className="border px-2 py-2">
                                       <select
                                         value={row.multiCore}
                                         onChange={(e) => {
@@ -863,7 +871,7 @@ export const LocationMappingMaster = () => {
                                           {locationMappingTableErrors[index].multiCore}
                                         </div>
                                       )}
-                                    </td>
+                                    </td> */}
 
                                     <td className="border px-2 py-2">
                                       <select

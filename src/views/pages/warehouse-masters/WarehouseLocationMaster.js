@@ -43,6 +43,7 @@ export const WarehouseLocationMaster = () => {
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
+  const [commonCore, setCommonCore] = useState(localStorage.getItem('warehouse'));
   const [formData, setFormData] = useState({
     branch: localStorage.getItem('branch'),
     warehouse: '',
@@ -191,6 +192,7 @@ export const WarehouseLocationMaster = () => {
 
   const getAllBinDetails = async () => {
     const errors = {};
+
     if (!formData.warehouse) {
       errors.warehouse = 'Warehouse is required';
     }
@@ -203,77 +205,36 @@ export const WarehouseLocationMaster = () => {
     if (!formData.rowNo) {
       errors.rowNo = 'Row is required';
     }
+
     if (Object.keys(errors).length === 0) {
       try {
         const response = await apiCalls(
           'get',
           `warehousemastercontroller/getPalletno?endno=${formData.cellTo}&level=${formData.levelIdentity}&rowno=${formData.rowNo}&startno=${formData.cellFrom}`
         );
+
         console.log('THE WAREHOUSE IS:', response);
+
         if (response.status === true) {
           const palletDetails = response.paramObjectsMap.pallet;
           console.log('THE PALLET DETAILS ARE:', palletDetails);
+          const updatedBinTableData = palletDetails.map((plt, index) => ({
+            id: plt.id,
+            bin: plt.bin,
+            binCategory: plt.bincategory,
+            status: plt.status === 'T' ? 'True' : 'False',
+            core: commonCore
+          }));
 
-          setBinTableData(
-            palletDetails.map((plt) => ({
-              id: plt.id,
-              bin: plt.bin,
-              binCategory: plt.bincategory,
-              status: plt.status === 'T' ? 'True' : 'False',
-              core: plt.core
-            }))
-          );
+          setBinTableData(updatedBinTableData);
         }
       } catch (error) {
-        console.error('Error fetching employee data:', error);
+        console.error('Error fetching bin details:', error);
       }
     } else {
       setFieldErrors(errors);
     }
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-  //   const numericRegex = /^[0-9]*$/;
-  //   const alphanumericRegex = /^[A-Za-z0-9 ]*$/;
-  //   const specialCharsRegex = /^[A-Za-z0-9#_\-/\\]*$/;
-
-  //   let errorMessage = '';
-
-  //   switch (name) {
-  //     case 'cellFrom':
-  //     case 'cellTo':
-  //       if (!numericRegex.test(value)) {
-  //         errorMessage = 'Only Numbers are allowed';
-  //       }
-  //       break;
-  //     case 'rowNo':
-  //       if (!specialCharsRegex.test(value)) {
-  //         errorMessage = 'Only alphaNumeric and /,,-_  are allowed';
-  //       }
-  //       break;
-  //     case 'cellFrom':
-  //     case 'cellTo':
-  //       if (!numericRegex.test(value)) {
-  //         errorMessage = 'Only Numeric are allowed';
-  //       }
-  //       break;
-  //     case 'levelIdentity':
-  //       if (!alphanumericRegex.test(value)) {
-  //         errorMessage = 'Only alphaNumeric are allowed';
-  //       }
-  //       break;
-  //     default:
-  //       break;
-  //   }
-
-  //   if (errorMessage) {
-  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-  //   } else {
-  //     setFormData({ ...formData, [name]: value.toUpperCase() });
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-  // };
 
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd } = e.target;
@@ -307,9 +268,21 @@ export const WarehouseLocationMaster = () => {
     if (errorMessage) {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
+      if (name === 'locationType') {
+        const selectedLocationType = locationTypeList.find((loc) => loc.binType === value);
+        if (selectedLocationType) {
+          console.log("SELECTED BIN'S CORE IS:", selectedLocationType);
+          setCommonCore(selectedLocationType.core);
+        }
+      }
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
       const upperCaseValue = value.toUpperCase();
-      setFormData((prevData) => ({ ...prevData, [name]: upperCaseValue }));
+
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: upperCaseValue
+      }));
+
       setTimeout(() => {
         const inputElement = document.getElementsByName(name)[0];
         if (inputElement) {
@@ -854,7 +827,7 @@ export const WarehouseLocationMaster = () => {
                                             </div>
                                           )}
                                         </td>
-                                        <td className="border px-2 py-2">
+                                        {/* <td className="border px-2 py-2">
                                           <select
                                             value={row.core ? row.core : 'Multi'}
                                             onChange={(e) => {
@@ -872,7 +845,6 @@ export const WarehouseLocationMaster = () => {
                                             onKeyDown={(e) => handleKeyDown(e, row, binTableData)}
                                             className={binTableErrors[index]?.core ? 'error form-control' : 'form-control'}
                                           >
-                                            {/* <option value="">Select Option</option> */}
                                             <option value="Multi">Multi</option>
                                             <option value="Single">Single</option>
                                           </select>
@@ -881,6 +853,14 @@ export const WarehouseLocationMaster = () => {
                                               {binTableErrors[index].core}
                                             </div>
                                           )}
+                                        </td> */}
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.core}
+                                            className={binTableErrors[index]?.core ? 'error form-control' : 'form-control'}
+                                            disabled
+                                          />
                                         </td>
                                       </tr>
                                     ))}

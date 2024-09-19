@@ -154,7 +154,7 @@ export const getAllActiveLocationTypes = async (orgId) => {
     if (response.status === true) {
       const locationTypeData = response.paramObjectsMap.locationTypeVO
         .filter((row) => row.active === 'Active')
-        .map(({ id, binType }) => ({ id, binType }));
+        .map(({ id, binType, core }) => ({ id, binType, core }));
       return locationTypeData;
     } else {
       console.error('API Error:');
