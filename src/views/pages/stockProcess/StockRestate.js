@@ -28,6 +28,9 @@ import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import React, { useRef } from 'react';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
+import sampleFile from '../../../assets/sample-files/sample_Stock_Restate_.xls';
 
 function PaperComponent(props) {
   return (
@@ -60,6 +63,7 @@ export const StockRestate = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     docId: '',
@@ -151,7 +155,8 @@ export const StockRestate = () => {
   const [transferType, setTransferType] = useState([
     { name: 'HOLD', value: 'HOLD' },
     { name: 'DEFECTIVE', value: 'DEFECTIVE' },
-    { name: 'RELEASE', value: 'RELEASE' }
+    { name: 'RELEASE', value: 'RELEASE' },
+    { name: 'VAS', value: 'VAS' }
   ]);
 
   const handleChange = (event, newValue) => {
@@ -185,7 +190,7 @@ export const StockRestate = () => {
     try {
       const response = await apiCalls(
         'get',
-        `stockRestate/getFillGridDetailsForStockRestate?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&tranferFromFlag=${formData.transferFromFlag}&tranferToFlag=${formData.transferToFlag}&warehouse=${loginWarehouse}`
+        `stockRestate/getFillGridDetailsForStockRestate?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&tranferFromFlag=${formData.transferFromFlag}&tranferToFlag=${formData.transferToFlag}&warehouse=${loginWarehouse}&entryNo=${formData.entryNo}`
       );
       console.log('THE VAS PICK GRID DETAILS IS:', response);
       if (response.status === true) {
@@ -463,12 +468,14 @@ export const StockRestate = () => {
       let updatedData = { ...formData, [name]: value.toUpperCase() };
 
       if (name === 'transferFrom') {
-        updatedData.transferFromFlag = value === 'DEFECTIVE' ? 'D' : value === 'HOLD' ? 'H' : value === 'RELEASE' ? 'R' : '';
+        updatedData.transferFromFlag =
+          value === 'DEFECTIVE' ? 'D' : value === 'HOLD' ? 'H' : value === 'RELEASE' ? 'R' : value === 'VAS' ? 'V' : '';
         setFromBinList([]);
         getFromBin(updatedData.transferFromFlag);
         getToBinDetails(updatedData.transferFromFlag);
       } else if (name === 'transferTo') {
-        updatedData.transferToFlag = value === 'DEFECTIVE' ? 'D' : value === 'HOLD' ? 'H' : value === 'RELEASE' ? 'R' : '';
+        updatedData.transferToFlag =
+          value === 'DEFECTIVE' ? 'D' : value === 'HOLD' ? 'H' : value === 'RELEASE' ? 'R' : value === 'VAS' ? 'V' : '';
       }
 
       setFormData(updatedData);
@@ -722,7 +729,7 @@ export const StockRestate = () => {
         finYear: loginFinYear,
         orgId: parseInt(orgId),
         createdBy: loginUserName,
-        entryNo: formData.entryNo,
+        entryNo: formData.entryNo === '' ? null : formData.entryNo,
         transferFrom: formData.transferFrom,
         transferFromFlag: formData.transferFromFlag,
         transferTo: formData.transferTo,
@@ -1155,6 +1162,22 @@ export const StockRestate = () => {
   const handleCloseModal = () => {
     setModalOpen(false);
   };
+  const handleBulkUploadOpen = () => {
+    setUploadOpen(true); // Open dialog
+  };
+
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false); // Close dialog
+  };
+
+  const handleFileUpload = (event) => {
+    console.log(event.target.files[0]);
+  };
+
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
 
   return (
     <>
@@ -1164,15 +1187,24 @@ export const StockRestate = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton
-              title="Save"
-              icon={SaveIcon}
-              isLoading={isLoading}
-              onClick={!viewId ? handleSave : undefined}
-              margin="0 10px 0 10px"
-            />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={!viewId ? handleSave : undefined} />
+            <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} />
           </div>
         </div>
+        {uploadOpen && (
+          <CommonBulkUpload
+            open={uploadOpen}
+            handleClose={handleBulkUploadClose}
+            title="Upload Files"
+            uploadText="Upload file"
+            downloadText="Sample File"
+            onSubmit={handleSubmit}
+            sampleFileDownload={sampleFile}
+            handleFileUpload={handleFileUpload}
+            apiUrl={`stockRestate/ExcelUploadForStockRestate?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&createdBy=${loginUserName}&customer=${loginCustomer}&finYear=${loginFinYear}&orgId=${orgId}&type=DOC&warehouse=${loginWarehouse}`}
+            screen="PutAway"
+          ></CommonBulkUpload>
+        )}
         {listView ? (
           <div className="mt-4">
             <CommonListViewTable

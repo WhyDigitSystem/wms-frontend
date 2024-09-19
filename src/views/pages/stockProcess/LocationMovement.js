@@ -25,6 +25,9 @@ import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import React, { useRef } from 'react';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
+import sampleFile from '../../../assets/sample-files/sample_Location_movement.xls';
 
 function PaperComponent(props) {
   return (
@@ -55,6 +58,7 @@ export const LocationMovement = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [fromBinList, setFromBinList] = useState([]);
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     docId: docId,
@@ -1009,7 +1013,8 @@ export const LocationMovement = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         docDate: formData.docDate,
-        entryNo: formData.entryNo,
+        entryNo: formData.entryNo === '' ? null : formData.entryNo,
+        // entryNo: formData.entryNo,
         movedQty: formData.movedQty,
         locationMovementDetailsDTO: childVO,
         orgId: orgId,
@@ -1097,6 +1102,22 @@ export const LocationMovement = () => {
       console.error('Error processing selected data:', error);
     }
   };
+  const handleBulkUploadOpen = () => {
+    setUploadOpen(true); // Open dialog
+  };
+
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false); // Close dialog
+  };
+
+  const handleFileUpload = (event) => {
+    console.log(event.target.files[0]);
+  };
+
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
 
   return (
     <>
@@ -1107,8 +1128,23 @@ export const LocationMovement = () => {
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             {!viewId && <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />}
+            <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} />
           </div>
         </div>
+        {uploadOpen && (
+          <CommonBulkUpload
+            open={uploadOpen}
+            handleClose={handleBulkUploadClose}
+            title="Upload Files"
+            uploadText="Upload file"
+            downloadText="Sample File"
+            onSubmit={handleSubmit}
+            sampleFileDownload={sampleFile}
+            handleFileUpload={handleFileUpload}
+            apiUrl={`locationMovement/ExcelUploadForLocationMovement?branch=${branch}&branchCode=${branchCode}&client=${client}&createdBy=${loginUserName}&customer=${customer}&finYear=${finYear}&orgId=${orgId}&type=DOC&warehouse=${warehouse}`}
+            screen="PutAway"
+          ></CommonBulkUpload>
+        )}
         {listView ? (
           <div className="mt-4">
             <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getLocationMovementById} />
