@@ -33,9 +33,6 @@ export const GroupMaster = () => {
   });
   const [editId, setEditId] = useState('');
 
-  const theme = useTheme();
-  const anchorRef = useRef(null);
-
   const [fieldErrors, setFieldErrors] = useState({
     groupName: ''
   });
@@ -58,7 +55,7 @@ export const GroupMaster = () => {
   const getAllGroups = async () => {
     try {
       const result = await apiCalls('get', `warehousemastercontroller/group?orgid=${orgId}`);
-      setListViewData(result.paramObjectsMap.groupVO);
+      setListViewData(result.paramObjectsMap.groupVO.reverse());
       console.log('Test', result);
     } catch (err) {
       console.log('error', err);
@@ -72,7 +69,7 @@ export const GroupMaster = () => {
       const response = await apiCalls('get', `warehousemastercontroller/group/${row.original.id}`);
 
       if (response.status === true) {
-        const particularGroup = response.paramObjectsMap.group;
+        const particularGroup = response.paramObjectsMap.groupVO;
         setFormData({
           groupName: particularGroup.groupName,
           active: particularGroup.active === 'Active' ? true : false
@@ -148,7 +145,7 @@ export const GroupMaster = () => {
         active: formData.active,
         groupName: formData.groupName,
         orgId: orgId,
-        createdby: loginUserName
+        createdBy: loginUserName
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
