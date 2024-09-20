@@ -281,7 +281,8 @@ export const PickRequest = () => {
           data.pickRequestDetailsVO.map((detail) => ({
             id: detail.id,
             availQty: detail.availQty,
-            batchDate: detail.batchDate || '',
+            batchDate: detail.batchDate ? dayjs(detail.batchDate).format('DD-MM-YYYY') : null,
+            // batchDate: detail.batchDate || '',
             batchNo: detail.batchNo || '',
             binClass: detail.binClass || '',
             binType: detail.binType || '',

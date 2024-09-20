@@ -353,12 +353,13 @@ export const ReversePick = () => {
           pickRequestDocDate: data.pickRequestDocDate,
           pickRequestDocId: data.pickRequestDocId,
           freeze: data.freeze,
-          totalPickedQty: data.pickedQty
+          totalPickedQty: data.totalPickQty
           // totalRevisedQty: data.revisedQty
         });
         setItemTableData(
           data.reversePickDetailsVO.map((detail) => ({
-            batchDate: detail.batchDate || '',
+            // batchDate: detail.batchDate || '',
+            batchDate: detail.batchDate ? dayjs(detail.batchDate).format('DD-MM-YYYY') : null,
             batchNo: detail.batchNo || '',
             binClass: detail.binClass || '',
             binType: detail.binType || '',

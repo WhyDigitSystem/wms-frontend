@@ -46,7 +46,7 @@ export const Kitting = () => {
     active: true
   });
   const [value, setValue] = useState(0);
-  const [partNoOptions, setPartNoOptions] = useState([]);
+  const [childPartNoList, setChildPartNoList] = useState([]);
   const [partNoOptions1, setPartNoOptions1] = useState([]);
   const [grnOptions, setGrnOptions] = useState([]);
   const [batchOptions, setBatchOptions] = useState([]);
@@ -58,15 +58,15 @@ export const Kitting = () => {
       id: 1,
       partNo: '',
       partDescription: '',
-      rowBatchNo: [],
+      rowBatchNoList: [],
       batchNo: '',
       batchDate: null,
       expDate: null,
       lotNo: '',
+      rowGrnNoList: [],
       grnNo: '',
       grnDate: '',
       sku: '',
-      rowBatchNo: [],
       bin: '',
       avlQty: '',
       qty: '',
@@ -92,6 +92,7 @@ export const Kitting = () => {
       id: 1,
       partNo: '',
       partDescription: '',
+      rowBatchNoList: [],
       batchNo: '',
       batchDate: null,
       expDate: null,
@@ -100,29 +101,17 @@ export const Kitting = () => {
       qty: '',
       unitRate: '',
       amount: '',
+      rowGrnNoList: [],
       grnNo: '',
       grnDate: '',
-      expDate: ''
+      expDate: '',
+      bin: '',
+      core: '',
+      cellType: '',
+      binType: '',
+      binClass: ''
     }
   ]);
-
-  // const lrNoParentDetailsRefs = useRef(
-  //   parentTableData.map(() => ({
-  //     pbin: React.createRef()
-  //   }))
-  // );
-
-  // useEffect(() => {
-  //   // If the length of the table changes, update the refs
-  //   if (lrNoParentDetailsRefs.current.length !== parentTableData.length) {
-  //     lrNoParentDetailsRefs.current = parentTableData.map(
-  //       (_, index) =>
-  //         lrNoParentDetailsRefs.current[index] || {
-  //           pbin: React.createRef()
-  //         }
-  //     );
-  //   }
-  // }, [parentTableData.length]);
 
   const lrNoParentDetailsRefs = useRef([]);
 
@@ -141,15 +130,15 @@ export const Kitting = () => {
       id: Date.now(),
       partNo: '',
       partDescription: '',
-      rowBatchNo: [],
+      rowBatchNoList: [],
       batchNo: '',
       batchDate: null,
       expDate: null,
       lotNo: '',
+      rowGrnNoList: [],
       grnNo: '',
       grnDate: '',
       sku: '',
-      rowBatchNo: [],
       bin: '',
       avlQty: '',
       qty: '',
@@ -172,39 +161,6 @@ export const Kitting = () => {
         qty: '',
         unitRate: '',
         amount: ''
-      }
-    ]);
-  };
-  const handleAddRow1 = () => {
-    const newRow = {
-      id: Date.now(),
-      partNo: '',
-      partDescription: '',
-      batchNo: '',
-      lotNo: '',
-      sku: '',
-      qty: '',
-      unitRate: '',
-      amount: '',
-      grnNo: '',
-      grnDate: '',
-      expDate: ''
-    };
-    setParentTableData([...parentTableData, newRow]);
-    setParentTableErrors([
-      ...parentTableErrors,
-      {
-        partNo: '',
-        partDescription: '',
-        batchNo: '',
-        lotNo: '',
-        sku: '',
-        qty: '',
-        unitRate: '',
-        amount: '',
-        grnNo: '',
-        grnDate: '',
-        expDate: ''
       }
     ]);
   };
@@ -271,7 +227,7 @@ export const Kitting = () => {
     getAllKitting();
     getDocId();
     getAllBinDetails();
-    getAllChildPart();
+    getAllChildPartNo();
     getAllParentPart();
   }, []);
 
@@ -293,41 +249,6 @@ export const Kitting = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
     }
-  };
-
-  const getAllChildPart = async () => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `kitting/getPartNOByChild?orgId=${orgId}&branchCode=${branchCode}&client=${client}&warehouse=${warehouse}`
-      );
-      console.log('API Response:', response);
-
-      if (response.status === true) {
-        const options = response.paramObjectsMap.kittingVO.map((item) => ({
-          partNo: item.partNo,
-          partDescription: item.partDesc, // Ensure these fields exist in the response
-          sku: item.Sku // Ensure these fields exist in the response
-        }));
-        setPartNoOptions(options);
-        console.log('Mapped Part No Options:', options);
-      } else {
-        console.error('API Error:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-  const getAvailablePartNos = (currentRowId) => {
-    // Get all selected part numbers, excluding the current row
-    const selectedPartNos = childTableData
-      .filter((row) => row.id !== currentRowId && row.partNo) // Exclude current row and empty partNos
-      .map((row) => row.partNo);
-
-    console.log('THE SELECTED PART NOS:', selectedPartNos);
-
-    // Filter out selected part numbers from the available options
-    return partNoOptions.filter((partDetail) => !selectedPartNos.includes(partDetail.partNo));
   };
 
   const getAllParentPart = async () => {
@@ -371,22 +292,91 @@ export const Kitting = () => {
     console.log('parentTableData has been updated:', parentTableData);
   }, [parentTableData]);
 
-  const getAllChildGRnNo = async (selectedPart, partNo) => {
+  const getAllChildPartNo = async () => {
     try {
       const response = await apiCalls(
         'get',
-        `kitting/getGrnNOByChild?orgId=${orgId}&branchCode=${branchCode}&client=${client}&partNo=${partNo}&warehouse=${warehouse}`
+        `kitting/getPartNOByChild?orgId=${orgId}&branchCode=${branchCode}&client=${client}&warehouse=${warehouse}`
       );
       console.log('API Response:', response);
 
       if (response.status === true) {
-        // Extract data from response
+        setChildPartNoList(response.paramObjectsMap.kittingVO);
+      } else {
+        console.error('Error: Unable to fetch part numbers:', response.message);
+      }
+    } catch (error) {
+      console.error('Error fetching part numbers:', error);
+    }
+  };
 
-        const grnData = response.paramObjectsMap.kittingVO.map((item) => ({
-          grnNo: item.grnNo,
-          grnDate: item.grnDate
-        }));
-        setGrnOptions(grnData);
+  const getAvailableChildPartNos = (currentRowId) => {
+    const selectedPartNos = childTableData
+      .filter((row) => row.id !== currentRowId && row.partNo) // Exclude current row and empty partNos
+      .map((row) => row.partNo);
+
+    console.log('THE SELECTED PART NOS:', selectedPartNos);
+
+    // Filter out selected part numbers from the available options
+    return childPartNoList.filter((partDetail) => !selectedPartNos.includes(partDetail.partNo));
+  };
+
+  const handleChildPartNoChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedPartNo = childPartNoList.find((b) => b.partNo === value);
+    setChildTableData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              partNo: selectedPartNo ? selectedPartNo.partNo : '',
+              partDescription: selectedPartNo ? selectedPartNo.partDesc : '',
+              sku: selectedPartNo ? selectedPartNo.Sku : '',
+              grnNo: '',
+              rowGrnNoList: [],
+              batchNo: '',
+              rowBatchNoList: [],
+              avlQty: '',
+              remainQty: '',
+              toBin: '',
+              toBinType: ''
+            }
+          : r
+      )
+    );
+    setChildTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        partNo: !value ? 'Part number is required' : ''
+      };
+      return newErrors;
+    });
+
+    if (value) {
+      getAllChildGrnNo(value, row);
+    }
+  };
+
+  const getAllChildGrnNo = async (selectedPartNo, row) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `kitting/getGrnNOByChild?orgId=${orgId}&branchCode=${branchCode}&client=${client}&partNo=${selectedPartNo}&warehouse=${warehouse}`
+      );
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setChildTableData((prev) =>
+          prev.map((r) =>
+            r.id === row.id
+              ? {
+                  ...r,
+                  rowGrnNoList: response.paramObjectsMap.kittingVO
+                }
+              : r
+          )
+        );
       } else {
         console.error('API Error:', response);
       }
@@ -395,7 +385,38 @@ export const Kitting = () => {
     }
   };
 
-  const getBatchByChild = async (row, selectedGrnNo) => {
+  const handleChildGrnNoChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedGrnNo = row.rowGrnNoList.find((row) => row.grnNo === value);
+    setChildTableData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              grnNo: selectedGrnNo.grnNo,
+              grnDate: selectedGrnNo ? selectedGrnNo.grnDate : '',
+              batchNo: '',
+              rowBatchNoList: [],
+              toBin: '',
+              toBinType: '',
+              avlQty: '',
+              remainQty: ''
+            }
+          : r
+      )
+    );
+    setChildTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        grnNo: !value ? 'GRN No is required' : ''
+      };
+      return newErrors;
+    });
+    getAllChildBatchNo(value, row);
+  };
+
+  const getAllChildBatchNo = async (selectedGrnNo, row) => {
     try {
       const response = await apiCalls(
         'get',
@@ -404,14 +425,12 @@ export const Kitting = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        const batchData = [
-          {
-            batchNo: response.paramObjectsMap.kittingVO[0].batchNo,
-            batchDate: response.paramObjectsMap.kittingVO[0].batchDate,
-            expDate: response.paramObjectsMap.kittingVO[0].expDate
-          }
-        ];
-        setChildTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, rowBatchNo: batchData } : r)));
+        const batchData = response.paramObjectsMap.kittingVO.map((item) => ({
+          batchNo: item.batchNo,
+          batchDate: item.batchDate,
+          expDate: item.expDate
+        }));
+        setChildTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, rowBatchNoList: batchData } : r)));
       } else {
         console.error('API Error:', response);
       }
@@ -419,12 +438,43 @@ export const Kitting = () => {
       console.error('Error fetching data:', error);
     }
   };
+  const handleChildBatchNoChange = (row, index, e) => {
+    const value = e.target.value;
+    console.log('Selected Batch No:', value);
 
-  const getBinByChild = async (row, selectedBatchNo) => {
+    const selectedBatchNo = row.rowBatchNoList.find((option) => option.batchNo === value);
+    console.log('Selected Batch Details:', selectedBatchNo);
+
+    setChildTableData((prev) => {
+      return prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              batchNo: selectedBatchNo ? selectedBatchNo.batchNo : '',
+              batchDate: selectedBatchNo ? selectedBatchNo.batchDate : '',
+              expDate: selectedBatchNo ? selectedBatchNo.expDate : ''
+            }
+          : r
+      );
+    });
+
+    setChildTableErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        batchNo: ''
+      };
+      return newErrors;
+    });
+
+    getAllChildBin(row.partNo, row.grnNo, value, row);
+  };
+
+  const getAllChildBin = async (selectedPartNo, selectedGrnNo, selectedBatchNo, row) => {
     try {
       const response = await apiCalls(
         'get',
-        `kitting/getBinByChild?orgId=${orgId}&branchCode=${branchCode}&client=${client}&partNo=${row.partNo}&warehouse=${warehouse}&grnNo=${row.grnNo}&batch=${selectedBatchNo}`
+        `kitting/getBinByChild?orgId=${orgId}&branchCode=${branchCode}&client=${client}&partNo=${selectedPartNo}&warehouse=${warehouse}&grnNo=${selectedGrnNo}&batch=${selectedBatchNo}`
       );
       console.log('API Response:', response);
 
@@ -447,7 +497,7 @@ export const Kitting = () => {
     }
   };
 
-  const handleBinChange = (row, index, event) => {
+  const handleChildBinChange = (row, index, event) => {
     const value = event.target.value;
     const selectedToBin = row.rowBinList.find((row) => row.bin === value);
     setChildTableData((prev) =>
@@ -542,7 +592,7 @@ export const Kitting = () => {
           partDescription: item.partDesc, // Ensure these fields exist in the response
           sku: item.Sku // Ensure these fields exist in the response
         }));
-        setPartNoOptions(options);
+        // setPartNoOptions(options);
         console.log('Mapped Part No Options:', options);
       } else {
         console.error('API Error:', response);
@@ -583,86 +633,87 @@ export const Kitting = () => {
     }
   };
 
-  const getKittingById = async (row) => {
-    console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
-    setEditId(row.original.id);
-    try {
-      const response = await apiCalls('get', `kitting/getKittingById?id=${row.original.id}`);
-      console.log('API Response:', response);
+  // const getKittingById = async (row) => {
+  //   console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
+  //   setEditId(row.original.id);
+  //   try {
+  //     const response = await apiCalls('get', `kitting/getKittingById?id=${row.original.id}`);
+  //     console.log('API Response:', response);
 
-      if (response.status === true) {
-        setListView(false);
-        const particularCustomer = response.paramObjectsMap.kittingVO;
-        console.log('THE PARTICULAR CUSTOMER IS:', particularCustomer);
+  //     if (response.status === true) {
+  //       setListView(false);
+  //       const particularCustomer = response.paramObjectsMap.kittingVO;
+  //       console.log('THE PARTICULAR CUSTOMER IS:', particularCustomer);
 
-        // Update form data
-        setFormData({
-          docId: particularCustomer.docId,
-          docDate: particularCustomer.docDate ? dayjs(particularCustomer.docDate) : dayjs(),
-          refNo: particularCustomer.refNo || '',
-          refDate: particularCustomer.refDate ? dayjs(particularCustomer.refDate) : '',
-          active: particularCustomer.active === true,
-          customer: particularCustomer.customer,
-          branch: particularCustomer.branch,
-          warehouse: particularCustomer.warehouse
-        });
+  //       // Update form data
+  //       setFormData({
+  //         docId: particularCustomer.docId,
+  //         docDate: particularCustomer.docDate ? dayjs(particularCustomer.docDate) : dayjs(),
+  //         refNo: particularCustomer.refNo || '',
+  //         refDate: particularCustomer.refDate ? dayjs(particularCustomer.refDate) : '',
+  //         active: particularCustomer.active === true,
+  //         customer: particularCustomer.customer,
+  //         branch: particularCustomer.branch,
+  //         warehouse: particularCustomer.warehouse
+  //       });
 
-        // Update childTableData with kittingDetails1VO data
-        setChildTableData(
-          particularCustomer.kittingDetails1VO.map((detail) => ({
-            id: detail.id,
-            bin: detail.bin || '',
-            partNo: detail.partNo || '',
-            partDescription: detail.partDescription || '',
-            batchNo: detail.batchNo || '',
-            lotNo: detail.lotNo || '',
-            grnNo: detail.grnNo || '',
-            grnDate: detail.grnDate || '',
-            sku: detail.sku || '',
-            avlQty: detail.avlQty || '',
-            qty: detail.qty || '',
-            unitRate: detail.unitRate || '',
-            amount: detail.amount || ''
-          }))
-        );
+  //       // Update childTableData with kittingDetails1VO data
+  //       setChildTableData(
+  //         particularCustomer.kittingDetails1VO.map((detail) => ({
+  //           id: detail.id,
+  //           bin: detail.bin || '',
+  //           partNo: detail.partNo || '',
+  //           partDescription: detail.partDescription || '',
+  //           batchNo: detail.batchNo || '',
+  //           lotNo: detail.lotNo || '',
+  //           grnNo: detail.grnNo || '',
+  //           grnDate: detail.grnDate || '',
+  //           sku: detail.sku || '',
+  //           avlQty: detail.avlQty || '',
+  //           qty: detail.qty || '',
+  //           unitRate: detail.unitRate || '',
+  //           amount: detail.amount || ''
+  //           // getAllChildGrnNo(detail.partNo, detail)
+  //         }))
+  //       );
 
-        // Update parentTableData with kittingDetails2VO data
-        setParentTableData(
-          particularCustomer.kittingDetails2VO.map((detail) => ({
-            id: detail.id,
-            partNo: detail.ppartNo || '',
-            partDescription: detail.ppartDescription || '',
-            batchNo: detail.pbatchNo || '',
-            batchDate: detail.pbatchDate || '',
-            lotNo: detail.plotNo || '',
-            sku: detail.psku || '',
-            qty: detail.pqty || '',
-            unitRate: detail.punitRate || '',
-            amount: detail.pamount || '',
-            grnNo: detail.pgrnNo || '',
-            grnDate: detail.pgrnDate || '',
-            expDate: detail.pexpDate || ''
-          }))
-        );
+  //       // Update parentTableData with kittingDetails2VO data
+  //       setParentTableData(
+  //         particularCustomer.kittingDetails2VO.map((detail) => ({
+  //           id: detail.id,
+  //           partNo: detail.ppartNo || '',
+  //           partDescription: detail.ppartDescription || '',
+  //           batchNo: detail.pbatchNo || '',
+  //           batchDate: detail.pbatchDate || '',
+  //           lotNo: detail.plotNo || '',
+  //           sku: detail.psku || '',
+  //           qty: detail.pqty || '',
+  //           unitRate: detail.punitRate || '',
+  //           amount: detail.pamount || '',
+  //           grnNo: detail.pgrnNo || '',
+  //           grnDate: detail.pgrnDate || '',
+  //           expDate: detail.pexpDate || ''
+  //         }))
+  //       );
 
-        // Handle selected branch data
-        const alreadySelectedBranch = particularCustomer.clientBranchVO.map((br) => {
-          const foundBranch = branchList.find((branch) => branch.branchCode === br.branchCode);
-          console.log(`Searching for branch with code ${br.branchCode}:`, foundBranch);
-          return {
-            id: br.id,
-            branchCode: foundBranch ? foundBranch.branchCode : 'Not Found',
-            branch: foundBranch ? foundBranch.branch : 'Not Found'
-          };
-        });
-        setParentTableData(alreadySelectedBranch);
-      } else {
-        console.error('API Error:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
+  //       // Handle selected branch data
+  //       const alreadySelectedBranch = particularCustomer.clientBranchVO.map((br) => {
+  //         const foundBranch = branchList.find((branch) => branch.branchCode === br.branchCode);
+  //         console.log(`Searching for branch with code ${br.branchCode}:`, foundBranch);
+  //         return {
+  //           id: br.id,
+  //           branchCode: foundBranch ? foundBranch.branchCode : 'Not Found',
+  //           branch: foundBranch ? foundBranch.branch : 'Not Found'
+  //         };
+  //       });
+  //       setParentTableData(alreadySelectedBranch);
+  //     } else {
+  //       console.error('API Error:', response);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
 
   // const handleInputChange = (e) => {
   //   const { name, value, checked } = e.target;
@@ -725,6 +776,100 @@ export const Kitting = () => {
   //     setFieldErrors({ ...fieldErrors, [name]: '' });
   //   }
   // };
+
+  const getKittingById = async (row) => {
+    console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `kitting/getKittingById?id=${row.original.id}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListView(false);
+        const particularCustomer = response.paramObjectsMap.kittingVO;
+        console.log('THE PARTICULAR CUSTOMER IS:', particularCustomer);
+
+        // Update form data
+        setFormData({
+          docId: particularCustomer.docId,
+          docDate: particularCustomer.docDate ? dayjs(particularCustomer.docDate) : dayjs(),
+          refNo: particularCustomer.refNo || '',
+          refDate: particularCustomer.refDate ? dayjs(particularCustomer.refDate) : '',
+          active: particularCustomer.active === true,
+          customer: particularCustomer.customer,
+          branch: particularCustomer.branch,
+          warehouse: particularCustomer.warehouse
+        });
+
+        // Update childTableData with kittingDetails1VO data
+        const childTableDetails = particularCustomer.kittingDetails1VO.map((detail) => ({
+          id: detail.id,
+          bin: detail.bin || '',
+          partNo: detail.partNo || '',
+          partDescription: detail.partDescription || '',
+          batchNo: detail.batchNo || '',
+          lotNo: detail.lotNo || '',
+          grnNo: detail.grnNo || '',
+          grnDate: detail.grnDate || '',
+          sku: detail.sku || '',
+          avlQty: detail.avlQty || '',
+          qty: detail.qty || '',
+          unitRate: detail.unitRate || '',
+          amount: detail.amount || '',
+          rowGrnNoList: [] // Initialize with empty list
+        }));
+
+        setChildTableData(childTableDetails);
+
+        // Call getAllChildGrnNo for each part number in childTableDetails
+        const grnPromises = childTableDetails.map((row) => getAllChildGrnNo(row.partNo, row));
+        const batchPromises = childTableDetails.map((row) => getAllChildBatchNo(row.grnNo, row));
+        const binPromises = childTableDetails.map((row) => getAllChildBin(row.partNo, row.grnNo, row.batchNo, row));
+
+        // Wait for all the getAllChildGrnNo API calls to complete
+        await Promise.all(grnPromises, batchPromises, binPromises);
+
+        // Update parentTableData with kittingDetails2VO data
+        setParentTableData(
+          particularCustomer.kittingDetails2VO.map((detail) => ({
+            id: detail.id,
+            partNo: detail.ppartNo || '',
+            partDescription: detail.ppartDesc || '',
+            batchNo: detail.pbatchNo || '',
+            batchDate: detail.pbatchDate || '',
+            lotNo: detail.plotNo || '',
+            sku: detail.psku || '',
+            qty: detail.pqty || '',
+            unitRate: detail.punitRate || '',
+            amount: detail.pamount || '',
+            grnNo: detail.pgrnNo || '',
+            grnDate: detail.pgrnDate || '',
+            expDate: detail.pexpDate || '',
+            bin: detail.pbin,
+            core: detail.pcore,
+            cellType: detail.pcellType,
+            binType: detail.pbinType,
+            binClass: detail.pbinClass
+          }))
+        );
+
+        const alreadySelectedBranch = particularCustomer.clientBranchVO.map((br) => {
+          const foundBranch = branchList.find((branch) => branch.branchCode === br.branchCode);
+          console.log(`Searching for branch with code ${br.branchCode}:`, foundBranch);
+          return {
+            id: br.id,
+            branchCode: foundBranch ? foundBranch.branchCode : 'Not Found',
+            branch: foundBranch ? foundBranch.branch : 'Not Found'
+          };
+        });
+        setParentTableData(alreadySelectedBranch);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
@@ -812,12 +957,12 @@ export const Kitting = () => {
   const handleDeleteRow1 = (id) => {
     setParentTableData(parentTableData.filter((row) => row.id !== id));
   };
-  const handleKeyDown1 = (e, row) => {
-    if (e.key === 'Tab' && row.id === parentTableData[parentTableData.length - 1].id) {
-      e.preventDefault();
-      handleAddRow1();
-    }
-  };
+  // const handleKeyDown1 = (e, row) => {
+  //   if (e.key === 'Tab' && row.id === parentTableData[parentTableData.length - 1].id) {
+  //     e.preventDefault();
+  //     handleAddRow1();
+  //   }
+  // };
 
   const handleClear = () => {
     setFormData({
@@ -1258,38 +1403,6 @@ export const Kitting = () => {
     setParentTableErrors(updatedErrors);
   };
 
-  const handleBatchNoChange = (row, index, e) => {
-    const value = e.target.value;
-    console.log('Selected Batch No:', value);
-
-    const selectedBatchNo = row.rowBatchNo.find((option) => option.batchNo === value);
-    console.log('Selected Batch Details:', selectedBatchNo);
-
-    setChildTableData((prev) => {
-      return prev.map((r) =>
-        r.id === row.id
-          ? {
-              ...r,
-              batchNo: selectedBatchNo ? selectedBatchNo.batchNo : '',
-              batchDate: selectedBatchNo ? selectedBatchNo.batchDate : '',
-              expDate: selectedBatchNo ? selectedBatchNo.expDate : ''
-            }
-          : r
-      );
-    });
-
-    setChildTableErrors((prev) => {
-      const newErrors = [...prev];
-      newErrors[index] = {
-        ...newErrors[index],
-        batchNo: ''
-      };
-      return newErrors;
-    });
-
-    getBinByChild(row, value);
-  };
-
   return (
     <>
       <div>{/* <ToastContainer /> */}</div>
@@ -1437,159 +1550,65 @@ export const Kitting = () => {
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
+
                                     <td className="border px-2 py-2">
                                       <select
                                         ref={lrNoDetailsRefs.current[index]?.partNo}
                                         value={row.partNo}
-                                        style={{ width: '130px' }}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          console.log('Selected Part No:', value);
-
-                                          const selectedPart = partNoOptions.find((option) => option.partNo === value);
-                                          console.log('Selected Part Details:', selectedPart);
-
-                                          if (selectedPart) {
-                                            setChildTableData((prev) =>
-                                              prev.map((r) =>
-                                                r.id === row.id
-                                                  ? {
-                                                      ...r,
-                                                      partNo: value,
-                                                      partDescription: selectedPart.partDescription,
-                                                      sku: selectedPart.sku
-                                                    }
-                                                  : r
-                                              )
-                                            );
-                                            getAllChildGRnNo(selectedPart, value);
-                                          }
-                                          setChildTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              partNo: !value ? 'Part No is required' : '',
-                                              partDescription: !selectedPart ? 'Part Description is required' : '',
-                                              sku: !selectedPart ? 'SKU is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={childTableErrors[index]?.partNo ? 'error form-control' : 'form-control'}
+                                        style={{ width: '200px' }}
+                                        onChange={(e) => handleChildPartNoChange(row, index, e)}
+                                        className={childTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
                                       >
-                                        <option value="">Select Part No</option>
-                                        {getAvailablePartNos(row.id).map((part, idx) => (
-                                          <option key={idx} value={part.partNo}>
-                                            {part.partNo}
+                                        <option value="">-- Select --</option>
+                                        {childPartNoList?.map((row, index) => (
+                                          <option key={index} value={row.partNo}>
+                                            {row.partNo}
                                           </option>
                                         ))}
                                       </select>
-
                                       {childTableErrors[index]?.partNo && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                           {childTableErrors[index].partNo}
                                         </div>
                                       )}
                                     </td>
-
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
                                         value={row.partDescription}
                                         disabled
                                         style={{ width: '200px' }}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setChildTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, partDescription: value } : r))
-                                          );
-                                          setChildTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              partDescription: !value ? 'Part Description is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
                                         className={childTableErrors[index]?.partDescription ? 'error form-control' : 'form-control'}
                                       />
-                                      {childTableErrors[index]?.partDescription && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {childTableErrors[index].partDescription}
-                                        </div>
-                                      )}
                                     </td>
-
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
                                         value={row.sku}
                                         disabled
                                         style={{ width: '100px' }}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setChildTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, sku: value } : r)));
-                                          setChildTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], sku: !value ? 'SKU is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
                                         className={childTableErrors[index]?.sku ? 'error form-control' : 'form-control'}
                                       />
-                                      {childTableErrors[index]?.sku && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {childTableErrors[index].sku}
-                                        </div>
-                                      )}
                                     </td>
-
                                     <td className="border px-2 py-2">
                                       <select
                                         ref={lrNoDetailsRefs.current[index]?.grnNo}
                                         value={row.grnNo}
-                                        style={{ width: '130px' }}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          console.log('Selected Grn No:', value);
-
-                                          const selectedGrnNo = grnOptions.find((option) => String(option.grnNo) === String(value));
-                                          console.log('Selected Grn Details:', selectedGrnNo);
-
-                                          if (selectedGrnNo) {
-                                            setChildTableData((prev) => {
-                                              return prev.map((r) =>
-                                                r.id === row.id
-                                                  ? {
-                                                      ...r,
-                                                      grnNo: value,
-                                                      grnDate: selectedGrnNo.grnDate
-                                                    }
-                                                  : r
-                                              );
-                                            });
-                                            getBatchByChild(row, value);
-                                          }
-
-                                          setChildTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              grnNo: !value ? 'Grn No is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
+                                        style={{ width: '225px' }}
+                                        onChange={(e) => handleChildGrnNoChange(row, index, e)}
                                         className={childTableErrors[index]?.grnNo ? 'error form-control' : 'form-control'}
                                       >
-                                        <option value="">Select Grn No</option>
-                                        {grnOptions &&
-                                          grnOptions.map((option) => (
-                                            <option key={option.grnNo} value={option.grnNo}>
-                                              {option.grnNo}
-                                            </option>
-                                          ))}
+                                        <option value="">-- Select --</option>
+                                        {Array.isArray(row.rowGrnNoList) &&
+                                          row.rowGrnNoList.map(
+                                            (grn, idx) =>
+                                              grn &&
+                                              grn.grnNo && (
+                                                <option key={grn.grnNo} value={grn.grnNo}>
+                                                  {grn.grnNo}
+                                                </option>
+                                              )
+                                          )}
                                       </select>
                                       {childTableErrors[index]?.grnNo && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1597,12 +1616,10 @@ export const Kitting = () => {
                                         </div>
                                       )}
                                     </td>
-
                                     <td className="border px-2 py-2">
                                       <input
                                         type="date"
                                         value={row.grnDate}
-                                        // style={{ width: '100px' }}
                                         disabled
                                         onChange={(e) => {
                                           const value = e.target.value;
@@ -1627,12 +1644,12 @@ export const Kitting = () => {
                                         ref={lrNoDetailsRefs.current[index]?.batchNo}
                                         value={row.batchNo}
                                         style={{ width: '130px' }}
-                                        onChange={(e) => handleBatchNoChange(row, index, e)}
+                                        onChange={(e) => handleChildBatchNoChange(row, index, e)}
                                         className={childTableErrors[index]?.batchNo ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">Select batch No</option>
-                                        {Array.isArray(row.rowBatchNo) &&
-                                          row.rowBatchNo.map((batch) => (
+                                        {Array.isArray(row.rowBatchNoList) &&
+                                          row.rowBatchNoList.map((batch) => (
                                             <option key={batch.id} value={batch.batchNo}>
                                               {batch.batchNo}
                                             </option>
@@ -1649,7 +1666,7 @@ export const Kitting = () => {
                                         ref={lrNoDetailsRefs.current[index]?.bin}
                                         value={row.bin}
                                         style={{ width: '130px' }}
-                                        onChange={(e) => handleBinChange(row, index, e)}
+                                        onChange={(e) => handleChildBinChange(row, index, e)}
                                         className={childTableErrors[index]?.bin ? 'error form-control' : 'form-control'}
                                       >
                                         <option value="">--Select--</option>
@@ -1726,9 +1743,7 @@ export const Kitting = () => {
                 {value === 1 && (
                   <>
                     <div className="row d-flex ml">
-                      <div className="mb-1">
-                        {parentTableData.length > 0 ? '' : <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow1} />}
-                      </div>
+                      <div className="mb-1">{parentTableData.length > 0 ? '' : <ActionButton title="Add" icon={AddIcon} />}</div>
                       <div className="row mt-2">
                         <div className="col-lg-12">
                           <div className="table-responsive">

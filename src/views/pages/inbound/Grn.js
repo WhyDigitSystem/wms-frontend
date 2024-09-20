@@ -32,6 +32,8 @@ import dayjs from 'dayjs';
 import React, { useRef } from 'react';
 import { getAllActiveCarrier, getAllActivePartDetails, getAllActiveSupplier, getAllShipmentModes } from 'utils/CommonFunctions';
 import sampleGrnExcelFile from '../../../assets/sample-files/sample_data_grn.xls';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
+import sampleFile from '../../../assets/sample-files/sample_Putaway.xls';
 export const Grn = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
@@ -55,6 +57,7 @@ export const Grn = () => {
   const [editDocDate, setEditDocDate] = useState(dayjs());
   const [enableGatePassFields, setEnableGatePassFields] = useState(false);
   const [noDataFound, setnoDataFound] = useState(true);
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     docId: '',
@@ -443,7 +446,7 @@ export const Grn = () => {
             shipmentNo: row.shipmentNo,
             // invDate: row.invoiceDate ? dayjs(row.invoiceDate).format('YYYY-MM-DD') : null,
 
-            invDate: dayjs(row.invoiceDate).format('DD/MM/YYYY'),
+            invDate: dayjs(row.invoiceDate).format('DD-MM-YYYY'),
             partNo: row.partNo,
             partDesc: row.partDesc,
             sku: row.sku,
@@ -453,8 +456,8 @@ export const Grn = () => {
             grnQty: row.grnQty,
             subStockQty: row.subStockQty,
             batch_PalletNo: row.batchNo,
-            batchDate: dayjs(row.batchDt).format('DD/MM/YYYY'),
-            expDate: dayjs(row.expDate).format('DD/MM/YYYY'),
+            batchDate: dayjs(row.batchDt).format('DD-MM-YYYY'),
+            expDate: dayjs(row.expDate).format('DD-MM-YYYY'),
             // batchDate: row.batchDt,
             // expDate: row.expDate,
             shortQty: row.shortQty,
@@ -1125,6 +1128,23 @@ export const Grn = () => {
     document.body.removeChild(link);
   };
 
+  const handleBulkUploadOpen = () => {
+    setUploadOpen(true); // Open dialog
+  };
+
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false); // Close dialog
+  };
+
+  const handleFileUpload = (event) => {
+    console.log(event.target.files[0]);
+  };
+
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
+
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -1134,10 +1154,25 @@ export const Grn = () => {
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             {!formData.freeze && <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />}
-            <ActionButton title="Upload" icon={CloudUploadIcon} />
+            <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} />
             <ActionButton title="Download" icon={CloudDownloadIcon} onClick={handleSampleExcelDownload} />
           </div>
         </div>
+        {/* {uploadOpen && (
+          <CommonBulkUpload
+            open={uploadOpen}
+            handleClose={handleBulkUploadClose}
+            title="Upload Files"
+            uploadText="Upload file"
+            downloadText="Sample File"
+            onSubmit={handleSubmit}
+            sampleFileDownload={sampleFile}
+            handleFileUpload={handleFileUpload}
+            // apiUrl={`putaway/ExcelUploadForPutAway?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&createdBy=${loginUserName}&customer=${loginCustomer}&finYear=${loginFinYear}&orgId=${orgId}&type=DOC&warehouse=${loginWarehouse}`}
+            screen="PutAway"
+          ></CommonBulkUpload>
+        )} */}
+
         {listView ? (
           <div className="mt-4">
             <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getGrnById} />
