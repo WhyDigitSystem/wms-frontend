@@ -1,26 +1,19 @@
 import ClearIcon from '@mui/icons-material/Clear';
-import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
-import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, FormHelperText, Tooltip, TextField, Checkbox, FormControlLabel } from '@mui/material';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import { useRef, useState, useMemo, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
-import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
-import apiCalls from 'apicall';
-import { getAllActivePartDetails } from 'utils/CommonFunctions';
-import dayjs from 'dayjs';
+import { TextField } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
+import FormControl from '@mui/material/FormControl';
+import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers';
+import apiCalls from 'apicall';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
+import ActionButton from 'utils/ActionButton';
+import { getAllActivePartDetails } from 'utils/CommonFunctions';
 import CommonReportTable from 'utils/CommonReportTable';
+import { showToast } from 'utils/toast-component';
 
 export const StockConsolidation = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +52,11 @@ export const StockConsolidation = () => {
     try {
       const partData = await getAllActivePartDetails(loginBranchCode, loginClient, orgId);
       console.log('THE PART DATA ARE:', partData);
-      setPartList(partData);
+
+      // Add a default option
+      const allParts = [{ partno: 'ALL', partDesc: 'All Parts', id: null }, ...partData];
+
+      setPartList(allParts);
     } catch (error) {
       console.error('Error fetching part data:', error);
     }
@@ -212,7 +209,7 @@ export const StockConsolidation = () => {
               getOptionLabel={(option) => option.partno}
               sx={{ width: '100%' }}
               size="small"
-              value={formData.partNo ? partList.find((p) => p.partno === formData.partNo) : null}
+              value={formData.partNo ? partList.find((p) => p.partno === formData.partNo) : partList[0]} // Default to "ALL"
               onChange={handleInputChange('partNo')}
               renderInput={(params) => (
                 <TextField

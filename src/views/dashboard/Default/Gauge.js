@@ -51,7 +51,7 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
       console.log('Pending Putaway Data:', pendingPutawayData); // Add this
       setPutawayChartSeries([completedPutawayData.length, pendingPutawayData.length]);
     }
-  }, [completedGRNData, pendingGRNData]);
+  }, [completedPutawayData, pendingPutawayData]);
 
   const getAllGRNData = async () => {
     try {
@@ -255,44 +255,48 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
           </IconButton>
         </DialogTitle>
         <DialogContent>
-         {completedGRNData.length > 0 ?  <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      Entry No
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      Entry Date
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      Status
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {completedGRNData.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{item.entryNo}</TableCell>
-                    <TableCell>{dayjs(item.entryDate).format('DD-MM-YYYY')}</TableCell>
+          {completedGRNData.length > 0 ? (
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
                     <TableCell>
-                      <Chip
-                        icon={item.status === 'Complete' ? <CheckCircleOutlineIcon /> : <PendingActionsIcon />}
-                        label={item.status}
-                        color={item.status === 'Complete' ? 'success' : 'warning'}
-                      />
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                        Entry No
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                        Entry Date
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                        Status
+                      </Typography>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer> : "No data found!"}
+                </TableHead>
+                <TableBody>
+                  {completedGRNData.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{item.entryNo}</TableCell>
+                      <TableCell>{dayjs(item.entryDate).format('DD-MM-YYYY')}</TableCell>
+                      <TableCell>
+                        <Chip
+                          icon={item.status === 'Complete' ? <CheckCircleOutlineIcon /> : <PendingActionsIcon />}
+                          label={item.status}
+                          color={item.status === 'Complete' ? 'success' : 'warning'}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            'No data found!'
+          )}
         </DialogContent>
       </Dialog>
 

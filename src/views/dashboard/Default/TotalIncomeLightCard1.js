@@ -47,7 +47,7 @@ const TotalIncomeLightCard1 = ({ isLoading, data, pickRequestData }) => {
 
   const orderCount = data[0]?.orderCount || 0;
 
-  const pickCount = pickRequestData?.orderCount || 0;
+  const pickCount = pickRequestData[0]?.orderCount || 0;
 
   return (
     <>

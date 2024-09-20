@@ -1,7 +1,5 @@
-import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import ChevronRightOutlinedIcon from '@mui/icons-material/ChevronRightOutlined';
 import CloseIcon from '@mui/icons-material/Close';
-import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import {
   Button,
   Card,
@@ -51,14 +49,14 @@ const ModernCard = styled(Card)(({ theme }) => ({
   }
 }));
 
-const PopularCard = ({ isLoading }) => {
+const HoldMaterial = ({ isLoading }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [expiryData, setExpiryData] = useState([]);
   const theme = useTheme();
 
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
-  const [warehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
+  const [warehouse, setWarehouse] = useState(localStorage.getItem('warehouse'));
   const [client, setClient] = useState(localStorage.getItem('client'));
 
   useEffect(() => {
@@ -69,10 +67,10 @@ const PopularCard = ({ isLoading }) => {
     try {
       const response = await apiCalls(
         'get',
-        `dashboardController/getExpDetailsForMaterials?orgId=${orgId}&branchCode=${branchCode}&warehouse=${warehouse}&client=${client}`
+        `dashboardController/getHoldMaterialCount?orgId=${orgId}&branchCode=${branchCode}&warehouse=${warehouse}&client=${client}`
       );
       if (response.status === true) {
-        setExpiryData(response.paramObjectsMap.expDetails.reverse());
+        setExpiryData(response.paramObjectsMap.holdMaterialCount);
       }
     } catch (error) {
       console.error('Error fetching expiry details:', error);
@@ -102,7 +100,7 @@ const PopularCard = ({ isLoading }) => {
           <MainCard content={false}>
             <CardContent>
               <Typography variant="h4" gutterBottom>
-                Expiry Products
+                Hold Material
               </Typography>
               <Divider sx={{ my: 1.5 }} />
               {expiryData.slice(0, 2).map((item, index) => (
@@ -121,28 +119,23 @@ const PopularCard = ({ isLoading }) => {
                           </Grid>
                           <Grid item>
                             <Typography variant="body2" color="textSecondary" noWrap>
-                              Qty: {item.qty}
+                              Qty: {item.holdQty}
                             </Typography>
                           </Grid>
                         </Grid>
                       </Grid>
-                      <Grid item sx={{ mb: 1.5 }}>
-                        <Chip
-                          label={item.days < 0 ? 'Expired' : `${item.days} days left`}
-                          color={getColorByDays(item.days)}
-                          icon={item.days < 0 ? <ErrorOutlineOutlinedIcon /> : <CalendarTodayOutlinedIcon />}
-                          variant="outlined"
-                        />
+                      <Grid item sx={{ mb: 1 }}>
+                        <Chip label={item.bin} color={getColorByDays(item.days)} variant="outlined" sx={{ mb: 1.5 }} />
                       </Grid>
                     </Grid>
                   </Grid>
+                  <Divider sx={{ my: 1.5 }} />
                 </Grid>
               ))}
             </CardContent>
             <CardActions sx={{ p: 1.25, pt: 0, justifyContent: 'center' }}>
-              <Button size="small" disableElevation onClick={handleViewAllClick}>
+              <Button size="small" disableElevation onClick={handleViewAllClick} endIcon={<ChevronRightOutlinedIcon />}>
                 View All
-                <ChevronRightOutlinedIcon />
               </Button>
             </CardActions>
           </MainCard>
@@ -162,7 +155,7 @@ const PopularCard = ({ isLoading }) => {
             }}
           >
             <ModernDialogTitle>
-              Expiry Products
+              Hold Material
               <IconButton
                 aria-label="close"
                 onClick={handleDialogClose}
@@ -170,7 +163,7 @@ const PopularCard = ({ isLoading }) => {
                   position: 'absolute',
                   right: 16,
                   top: 16,
-                  color: (theme) => theme.palette.common.white
+                  color: theme.palette.common.white
                 }}
               >
                 <CloseIcon />
@@ -180,21 +173,15 @@ const PopularCard = ({ isLoading }) => {
             <ModernDialogContent dividers>
               <Grid container spacing={2}>
                 {expiryData.map((item, index) => (
-                  <Grid item xs={12} sm={4} key={index}>
-                    <ModernCard
-                      sx={{
-                        padding: '12px', // Reduced padding
-                        minHeight: 'auto', // Minimized height
-                        borderRadius: 2 // Slightly sharper border
-                      }}
-                    >
-                      <CardContent sx={{ paddingBottom: '4px' }}>
+                  <Grid item xs={12} sm={6} md={4} key={index}>
+                    <ModernCard>
+                      <CardContent>
                         {/* Part No and Description */}
                         <Typography variant="h6" gutterBottom noWrap>
                           {item.partNo} - {item.partDesc}
                         </Typography>
 
-                        {/* SKU */}
+                        {/* SKU and Quantity */}
                         <Grid container spacing={1} alignItems="center" justifyContent="space-between">
                           <Grid item>
                             <Typography variant="body2" color="textSecondary" noWrap>
@@ -203,7 +190,7 @@ const PopularCard = ({ isLoading }) => {
                           </Grid>
                           <Grid item>
                             <Typography variant="body2" color="textSecondary" noWrap>
-                              Qty: {item.qty}
+                              Qty: {item.holdQty}
                             </Typography>
                           </Grid>
                         </Grid>
@@ -215,12 +202,8 @@ const PopularCard = ({ isLoading }) => {
                           <strong>GRN No:</strong> {item.grnNo}
                         </Typography>
                         <Typography variant="body2" color="textSecondary" noWrap>
-                          <strong>GRN Date:</strong> {item.grnDate}
+                          <strong>GRN Date:</strong> {dayjs(item.grnDate).format('DD-MM-YYYY')}
                         </Typography>
-                        <Typography variant="body2" color="textSecondary" noWrap>
-                          <strong>Batch:</strong> {item.batch}
-                        </Typography>
-
                         <Typography variant="body2" color="textSecondary" noWrap>
                           <strong>Expiry Date:</strong> {dayjs(item.expDate).format('DD-MM-YYYY')}
                         </Typography>
@@ -228,23 +211,7 @@ const PopularCard = ({ isLoading }) => {
                         <Divider sx={{ my: 1 }} />
 
                         {/* Expiry Status */}
-                        <Grid container spacing={1} alignItems="center" justifyContent="space-between">
-                          <Chip
-                            label={item.days < 0 ? 'Expired' : `${item.days} days left`}
-                            color={getColorByDays(item.days)}
-                            icon={item.days < 0 ? <ErrorOutlineOutlinedIcon /> : <CalendarTodayOutlinedIcon />}
-                            variant="outlined"
-                            sx={{ mt: 1 }}
-                          />
-
-                          <Chip
-                            label={item.bin}
-                            color={getColorByDays(item.days)}
-                            // icon={item.days < 0 ? <ErrorOutlineOutlinedIcon /> : <CalendarTodayOutlinedIcon />}
-                            variant="outlined"
-                            sx={{ mt: 1 }}
-                          />
-                        </Grid>
+                        <Chip label={item.bin} color={getColorByDays(item.days)} variant="outlined" sx={{ mt: 1 }} />
                       </CardContent>
                     </ModernCard>
                   </Grid>
@@ -252,8 +219,8 @@ const PopularCard = ({ isLoading }) => {
               </Grid>
             </ModernDialogContent>
 
-            <DialogActions sx={{ p: 2 }}>
-              <Button onClick={handleDialogClose} color="primary" variant="contained" sx={{ borderRadius: '20px' }}>
+            <DialogActions>
+              <Button onClick={handleDialogClose} color="primary">
                 Close
               </Button>
             </DialogActions>
@@ -264,8 +231,8 @@ const PopularCard = ({ isLoading }) => {
   );
 };
 
-PopularCard.propTypes = {
-  isLoading: PropTypes.bool
+HoldMaterial.propTypes = {
+  isLoading: PropTypes.bool.isRequired
 };
 
-export default PopularCard;
+export default HoldMaterial;

@@ -157,7 +157,7 @@ const GaugeValueRangeNoSnapOut = ({ isLoading }) => {
       console.log('Pending Putaway Data:', pendingPutawayData); // Add this
       setPutawayChartSeries([completedPutawayData.length, pendingPutawayData.length]);
     }
-  }, [completedGRNData, pendingGRNData]);
+  }, [completedPutawayData, pendingPutawayData]);
 
   const getAllBuyerOrderData = async () => {
     try {
@@ -322,11 +322,7 @@ const GaugeValueRangeNoSnapOut = ({ isLoading }) => {
           Buyer Order
         </Typography>
         <Box sx={{ width: '100%', height: '100%' }}>
-          {grnChartSeries.length > 0 ? (
-            <ReactApexChart options={grnChartOptions} series={grnChartSeries} type="pie" height={200} />
-          ) : (
-            <Typography>Loading...</Typography>
-          )}
+          <ReactApexChart options={grnChartOptions} series={grnChartSeries} type="pie" height={200} />
         </Box>
       </Card>
 

@@ -1,18 +1,18 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
 import { TextField } from '@mui/material';
-import FormControl from '@mui/material/FormControl';
-import { useState, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
-import apiCalls from 'apicall';
-import dayjs from 'dayjs';
 import Autocomplete from '@mui/material/Autocomplete';
+import FormControl from '@mui/material/FormControl';
+import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers';
+import apiCalls from 'apicall';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
+import ActionButton from 'utils/ActionButton';
 import CommonReportTable from 'utils/CommonReportTable';
+import { showToast } from 'utils/toast-component';
 
 export const StockBinBatchStatusWiseReport = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -58,7 +58,9 @@ export const StockBinBatchStatusWiseReport = () => {
         'get',
         `Reports/getPartNoForStockReportBinAndBatchWise?branchCode=${loginBranchCode}&client=${loginClient}&orgId=${orgId}&warehouse=${loginWarehouse}&customer=${loginCustomer}`
       );
-      setPartList(response.paramObjectsMap.stockDetails);
+      const partData = response.paramObjectsMap.stockDetails;
+      const allParts = [{ partNo: 'ALL', partDesc: 'All Parts', id: null }, ...partData];
+      setPartList(allParts);
     } catch (err) {
       console.log('error', err);
     }

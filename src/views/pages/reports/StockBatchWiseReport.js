@@ -1,26 +1,13 @@
 import ClearIcon from '@mui/icons-material/Clear';
-import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
-import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, FormHelperText, Tooltip, TextField, Checkbox, FormControlLabel } from '@mui/material';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import { useRef, useState, useMemo, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
-import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
-import apiCalls from 'apicall';
-import { getAllActivePartDetails } from 'utils/CommonFunctions';
-import dayjs from 'dayjs';
+import { TextField } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers';
+import apiCalls from 'apicall';
+import { useEffect, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
+import ActionButton from 'utils/ActionButton';
 import CommonReportTable from 'utils/CommonReportTable';
+import { showToast } from 'utils/toast-component';
 
 export const StockBatchWiseReport = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -82,8 +69,9 @@ export const StockBatchWiseReport = () => {
         `Reports/getPartNoForBatchWiseReport?branchCode=${loginBranchCode}&client=${loginClient}&customer=${loginCustomer}&orgId=${orgId}&warehouse=${loginWarehouse}`
       );
       if (response.status === true) {
-        console.log(response.paramObjectsMap.stockDetails);
-        setPartList(response.paramObjectsMap.stockDetails);
+        const partData = response.paramObjectsMap.stockDetails;
+        const allParts = [{ partNo: 'ALL', partDesc: 'All Parts', id: null }, ...partData];
+        setPartList(allParts);
       } else {
         console.error('API Error:', response);
       }

@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react';
 
 // material-ui
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 
 // project imports
 import apiCalls from 'apicall';
 import { gridSpacing } from 'store/constant';
+import CalendarTimeComponent from './CalenderTime';
 import EarningCard from './EarningCard';
 import GaugeValueRangeNoSnap from './Gauge';
 import GaugeValueRangeNoSnapOut from './GaugeOut';
+import HoldMeterial from './HoldMeterial';
 import LowStockDashboard from './LowStockDashboard';
 import PopularCard from './PopularCard';
 import TotalIncomeDarkCard from './TotalIncomeDarkCard';
-import TotalIncomeLightCard from './TotalIncomeLightCard';
 import TotalIncomeLightCard1 from './TotalIncomeLightCard1';
 import TotalOrderLineChartCard from './TotalOrderLineChartCard';
 
@@ -76,12 +77,12 @@ const Dashboard = () => {
     try {
       const response = await apiCalls(
         'get',
-        `dashboardController/getPutAwayOrderPerDay?orgId=${orgId}&branchCode=${branchCode}&client=${client}&finYear=${finYear}&warehouse=${loginWarehouse}`
+        `dashboardController/getPickRequestOrderPerDay?orgId=${orgId}&branchCode=${branchCode}&client=${client}&finYear=${finYear}&warehouse=${loginWarehouse}`
       );
       if (response.status === true) {
         const grnData = response.paramObjectsMap.pickRequestOrderPerDay;
         setPickRequestData(grnData);
-        console.log('Data ====>:', response.paramObjectsMap.putAwayOrderPerDay);
+        console.log('Data ====>:', response.paramObjectsMap.pickRequestOrderPerDay);
       } else {
         console.error('API Error:', response);
       }
@@ -123,9 +124,20 @@ const Dashboard = () => {
             <GaugeValueRangeNoSnap />
           </Grid>
           <Grid item sm={5} xs={12} md={4} lg={5}>
-            <TotalIncomeLightCard isLoading={isLoading} />
+            {/* <TotalIncomeLightCard isLoading={isLoading} /> */}
+            <Box>
+              {' '}
+              <CalendarTimeComponent />{' '}
+            </Box>
+            <Box sx={{ mt: 2 }}>
+              {' '}
+              <TotalIncomeLightCard1 isLoading={isLoading} data={putAwayData} pickRequestData={pickRequestData} />
+            </Box>
+
             {/* <div style={{ marginTop: '7px' }}>
               {' '}
+
+              
              
               <TotalIncomeLightCard1 isLoading={isLoading} />
             </div> */}
@@ -159,7 +171,8 @@ const Dashboard = () => {
             <GaugeValueRangeNoSnapOut isLoading={isLoading} />
           </Grid>
           <Grid item sm={5} xs={12} md={4} lg={5}>
-            <TotalIncomeLightCard1 isLoading={isLoading} data={putAwayData} pickRequestData={pickRequestData} />
+            {/* <TotalIncomeLightCard1 isLoading={isLoading} data={putAwayData} pickRequestData={pickRequestData} /> */}
+            <HoldMeterial isLoading={isLoading} />
             {/* <PutAwayOrderDashboard data={putAwayData} /> */}
             {/* <div style={{ marginTop: '7px' }}>
               {' '}
