@@ -151,6 +151,15 @@ export const PickRequest = () => {
     getDocId();
   }, []);
 
+  useEffect(() => {
+    const totalQty = itemTableData.reduce((sum, row) => sum + (parseInt(row.pickQty, 10) || 0), 0);
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      totalPickedQty: totalQty
+    }));
+  }, [itemTableData]);
+
   const getDocId = async () => {
     try {
       const response = await apiCalls(
@@ -232,88 +241,6 @@ export const PickRequest = () => {
       console.error('Error fetching country data:', error);
     }
   };
-  // const getAllItems = async () => {
-  //   try {
-  //     const response = await apiCalls(
-  //       'get',
-  //       `warehousemastercontroller/material?cbranch=${loginBranchCode}&client=${loginClient}&orgid=${orgId}`
-  //     );
-  //     setListViewData(response.paramObjectsMap.materialVO);
-  //     console.log('TEST LISTVIEW DATA', response);
-  //   } catch (err) {
-  //     console.log('error', err);
-  //   }
-  // };
-  // const getAllItemById = async (row) => {
-  //   console.log('THE SELECTED ITEM ID IS:', row.original.id);
-  //   setEditId(row.original.id);
-
-  //   try {
-  //     const response = await apiCalls('get', `pickrequest/getPickRequestById?id=${row.original.id}`);
-  //     console.log('API Response:', response);
-
-  //     if (response.status === true) {
-  //       setListView(false);
-  //       const data = response.paramObjectsMap.pickRequestVO;
-
-  //       // Set formData from main response data
-  //       setFormData({
-  //         docId: data.docId,
-  //         docDate: data.docDate,
-  //         buyerOrderNo: data.buyerOrderNo,
-  //         buyerRefNo: data.buyerRefNo,
-  //         buyerRefDate: data.buyerRefDate,
-  //         clientName: data.clientName,
-  //         customerName: data.customerName,
-  //         customerShortName: data.customerShortName,
-  //         outTime: data.outTime,
-  //         buyerOrderDate: data.buyerOrderDate,
-  //         clientAddress: data.clientAddress,
-  //         customerAddress: data.customerAddress,
-  //         status: data.status,
-  //         buyersReference: data.buyersReference,
-  //         invoiceNo: data.invoiceNo,
-  //         clientShortName: data.clientShortName,
-  //         pickOrder: data.pickOrder,
-  //         freeze: data.freeze
-  //         // Add other fields here as needed
-  //       });
-
-  //       // Set itemTableData from pickRequestDetailsVO array
-  //       setItemTableData(
-  //         data.pickRequestDetailsVO.map((detail) => ({
-  //           availQty: detail.availQty,
-  //           batchDate: detail.batchDate || '', // Map or set default value
-  //           batchNo: detail.batchNo || '',
-  //           binClass: detail.binClass || '',
-  //           binType: detail.binType || '',
-  //           cellType: detail.cellType || '',
-  //           clientCode: detail.clientCode || '',
-  //           core: detail.core || '',
-  //           bin: detail.bin || '',
-  //           orderQty: detail.orderQty || '',
-  //           partDesc: detail.partDesc || '',
-  //           partNo: detail.partNo || '',
-  //           pcKey: detail.pcKey || '',
-  //           pickQty: detail.pickQty || '',
-  //           remainQty: detail.remainQty || '',
-  //           sku: detail.sku || '',
-  //           ssku: detail.ssku || '',
-  //           status: detail.status || '',
-  //           grnNo: detail.grnNo || '',
-  //           grnDate: detail.grnDate || '',
-  //           stockDate: detail.stockDate || '',
-  //           expDate: detail.expDate || '',
-  //           qcFlag: detail.qcFlag || ''
-  //         }))
-  //       );
-  //     } else {
-  //       console.error('API Error:', response);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
 
   const getAllItemById = async (row) => {
     console.log('THE SELECTED ITEM ID IS:', row.original.id);
@@ -326,23 +253,8 @@ export const PickRequest = () => {
       if (response.status === true) {
         setListView(false);
         const data = response.paramObjectsMap.pickRequestVO;
-
-        // Calculate totalOrderQty and totalPickedQty from pickRequestDetailsVO
-        const totalOrderQty = data.pickRequestDetailsVO.reduce(
-          (sum, detail) => sum + (detail.orderQty || 0), // Sum orderQty
-          0
-        );
-
-        const totalPickedQty = data.pickRequestDetailsVO.reduce(
-          (sum, detail) => sum + (detail.pickQty || 0), // Sum pickQty
-          0
-        );
-
-        // Log totals for debugging
-        console.log('Total Order Qty:', totalOrderQty);
+        const totalPickedQty = data.pickRequestDetailsVO.reduce((sum, detail) => sum + (detail.pickQty || 0), 0);
         console.log('Total Picked Qty:', totalPickedQty);
-
-        // Set formData from main response data and calculated totals
         setFormData({
           docId: data.docId,
           docDate: data.docDate,
@@ -362,16 +274,14 @@ export const PickRequest = () => {
           clientShortName: data.clientShortName,
           pickOrder: data.pickOrder,
           freeze: data.freeze,
-          totalOrderQty, // Set the calculated totalOrderQty
-          totalPickedQty // Set the calculated totalPickedQty
-          // Add other fields here as needed
+          totalPickedQty: data.totalPickQty,
+          totalOrderQty: data.totalOrderQty
         });
-
-        // Set itemTableData from pickRequestDetailsVO array
         setItemTableData(
           data.pickRequestDetailsVO.map((detail) => ({
+            id: detail.id,
             availQty: detail.availQty,
-            batchDate: detail.batchDate || '', // Map or set default value
+            batchDate: detail.batchDate || '',
             batchNo: detail.batchNo || '',
             binClass: detail.binClass || '',
             binType: detail.binType || '',
@@ -406,47 +316,6 @@ export const PickRequest = () => {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-
-  //   // Process the value based on the field name
-  //   let processedValue = value;
-
-  //   // Convert value to uppercase for fields other than 'status'
-  //   if (name !== 'status' && typeof value === 'string') {
-  //     processedValue = value.toUpperCase();
-  //   }
-
-  //   setFormData({ ...formData, [name]: processedValue });
-
-  //   if (name === 'buyerRefNo') {
-  //     // Find the selected order from the full list of orders
-  //     const selectedOrder = buyerOrderNoList.find(
-  //       (order) => order.orderNo && processedValue && order.orderNo.toLowerCase() === processedValue.toLowerCase()
-  //     );
-
-  //     if (selectedOrder) {
-  //       const refDate = selectedOrder.refDate ? dayjs(selectedOrder.refDate) : null;
-
-  //       setFormData((prevFormData) => ({
-  //         ...prevFormData,
-  //         buyerRefNo: selectedOrder.orderNo || '',
-  //         buyerRefDate: refDate, // Set as dayjs object
-  //         clientName: selectedOrder.billToName || '',
-  //         clientShortName: selectedOrder.billToShortName || '',
-  //         customerName: selectedOrder.buyer || '',
-  //         clientAddress: selectedOrder.billToAddress || '',
-  //         buyerOrderNo: selectedOrder.docId || '',
-  //         buyersReference: selectedOrder.refNo || '',
-  //         invoiceNo: selectedOrder.invoiceNo || '',
-  //         buyerOrderDate: selectedOrder.docDate || ''
-  //       }));
-  //     } else {
-  //       console.log('No matching order found for the selected value.');
-  //     }
-  //   }
-  // };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -490,7 +359,8 @@ export const PickRequest = () => {
           buyerOrderNo: selectedOrder.docId || '',
           buyersReference: selectedOrder.refNo || '',
           invoiceNo: selectedOrder.invoiceNo || '',
-          buyerOrderDate: selectedOrder.docDate || ''
+          buyerOrderDate: selectedOrder.docDate || '',
+          totalOrderQty: selectedOrder.totalOrderQty || ''
         }));
       } else {
         console.warn('No matching order found for the selected buyerRefNo.');
@@ -498,17 +368,6 @@ export const PickRequest = () => {
     }
   };
 
-  // const handleDateChange = (date, index) => {
-  //   setItemTableData((prev) => prev.map((r, idx) => (idx === index ? { ...r, fDate: date } : r)));
-  //   setItemTableErrors((prev) => {
-  //     const newErrors = [...prev];
-  //     newErrors[index] = {
-  //       ...newErrors[index],
-  //       fDate: !date ? 'Start Date is required' : ''
-  //     };
-  //     return newErrors;
-  //   });
-  // };
   const handleAddRow = () => {
     const newRow = {
       availQty: '',
@@ -792,34 +651,6 @@ export const PickRequest = () => {
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
 
-  // const getAllFillGrid = async () => {
-  //   const errors = {};
-  //   if (!formData.buyerRefNo) {
-  //     errors.buyerRefNo = 'Buyer Order Ref No is required';
-  //   }
-  //   if (Object.keys(errors).length === 0) {
-  //     setModalOpen(true);
-  //     try {
-  //       const response = await apiCalls(
-  //         'get',
-  //         `pickrequest/getFillGridDetailsForPickRequest?orgId=${orgId}&branchCode=${branchCode}&client=${client}&buyerOrderDocId=${formData.buyerOrderNo}&pickStatus=${formData.status}`
-  //       );
-  //       console.log('API Response:', response);
-
-  //       if (response.status === true) {
-  //         setFillGridData(response.paramObjectsMap.fillGridDetails);
-  //         setItemTableErrors([{ general: '' }]);
-  //       } else {
-  //         console.error('API Error:', response);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching data:', error);
-  //     }
-  //   } else {
-  //     setFieldErrors(errors);
-  //   }
-  // };
-
   const getAllFillGrid = async () => {
     const errors = {};
     if (!formData.buyerRefNo) {
@@ -836,29 +667,7 @@ export const PickRequest = () => {
 
         if (response.status === true) {
           const fillGridDetails = response.paramObjectsMap.fillGridDetails;
-
-          // Calculate the totalOrderQty and totalPickedQty
-          const totalOrderQty = fillGridDetails.reduce(
-            (sum, item) => sum + (item.orderQty || 0), // Assuming each item has an orderQty field
-            0
-          );
-
-          const totalPickedQty = fillGridDetails.reduce(
-            (sum, item) => sum + (item.pickQty || 0), // Assuming each item has a pickQty field
-            0
-          );
-
-          // Log the calculated totals to the console for debugging
-          console.log('Total Order Qty:', totalOrderQty);
-          console.log('Total Picked Qty:', totalPickedQty);
-
-          // Update the state with the calculated totals
           setFillGridData(fillGridDetails);
-          setFormData((prevState) => ({
-            ...prevState,
-            totalOrderQty, // Set the calculated totalOrderQty
-            totalPickedQty // Set the calculated totalPickedQty
-          }));
           setItemTableErrors([{ general: '' }]);
         } else {
           console.error('API Error:', response);
@@ -873,19 +682,12 @@ export const PickRequest = () => {
 
   const handleSaveSelectedRows = () => {
     const selectedData = selectedRows.map((index) => fillGridData[index]);
-
-    // Extract the bin values from the selected data
     const binValues = selectedData.map((row) => row.bin);
 
-    // Pass the bin values to the getAllPartNo function
-    // getAllPartNo(binValues);
-
-    // Add the selected data to childTableData
     setItemTableData([...itemTableData, ...selectedData]);
 
     console.log('Selected Data:', selectedData);
 
-    // Clear selections and close the modal
     setSelectedRows([]);
     setSelectAll(false);
     handleCloseModal();
@@ -1317,9 +1119,6 @@ export const PickRequest = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
                                     Pick Qty
                                   </th>
-                                  {/* <th className="px-2 py-2 text-white text-center" style={{ width: 100 }}>
-                                    Remaining Qty
-                                  </th> */}
                                 </tr>
                               </thead>
                               <tbody>
@@ -1490,15 +1289,12 @@ export const PickRequest = () => {
                                       <td className="border px-2 py-2">
                                         <input
                                           type="number"
-                                          value={Math.abs(row.pickQty)} // Ensure the value is always positive
+                                          value={Math.abs(row.pickQty)}
                                           style={{ width: '100px' }}
                                           disabled
                                           onChange={(e) => {
-                                            const value = Math.abs(parseInt(e.target.value) || 0); // Convert to positive integer
+                                            const value = Math.abs(parseInt(e.target.value) || 0);
 
-                                            // Update sQty and then recalculate remainQty for the specific row
-
-                                            // Call handleInputChange if needed for validation or other logic
                                             handleInputChange({ ...e, target: { ...e.target, value } }, index, 'pickQty');
                                           }}
                                           className={itemTableErrors[index]?.pickQty ? 'error form-control' : 'form-control'}
@@ -1509,16 +1305,6 @@ export const PickRequest = () => {
                                           </div>
                                         )}
                                       </td>
-
-                                      {/* <td className="border px-2 py-2">
-                                        <input
-                                          type="number"
-                                          value={row.trpQty}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'trpQty')}
-                                          className={itemTableErrors[index]?.trpQty ? 'error form-control' : 'form-control'}
-                                        />
-                                      </td> */}
                                     </tr>
                                   ))
                                 )}
@@ -1552,7 +1338,7 @@ export const PickRequest = () => {
                             size="small"
                             fullWidth
                             name="totalOrderQty"
-                            value={formData.totalOrderQty || ''} // Make sure it's using the correct formData key
+                            value={formData.totalOrderQty || ''}
                             onChange={handleInputChange}
                             error={!!fieldErrors.totalOrderQty}
                             helperText={fieldErrors.totalOrderQty}
@@ -1568,7 +1354,7 @@ export const PickRequest = () => {
                             fullWidth
                             disabled
                             name="totalPickedQty"
-                            value={formData.totalPickedQty || ''} // Make sure it's using the correct formData key
+                            value={formData.totalPickedQty || ''}
                             onChange={handleInputChange}
                             error={!!fieldErrors.totalPickedQty}
                             helperText={fieldErrors.totalPickedQty}
@@ -1617,7 +1403,6 @@ export const PickRequest = () => {
                             <th className="px-2 py-2 text-white text-center">Order Qty</th>
                             <th className="px-2 py-2 text-white text-center">Avl Qty</th>
                             <th className="px-2 py-2 text-white text-center">Pick Qty</th>
-                            {/* <th className="px-2 py-2 text-white text-center">Remaining Qty</th> */}
                           </tr>
                         </thead>
                         <tbody>
@@ -1635,9 +1420,6 @@ export const PickRequest = () => {
                               <td className="text-center">
                                 <div className="pt-1">{index + 1}</div>
                               </td>
-                              {/* <td className="border p-0">
-                                <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.bin || ''}</div>
-                              </td> */}
                               <td className="border p-0">
                                 <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.partNo || ''}</div>
                               </td>
@@ -1675,11 +1457,6 @@ export const PickRequest = () => {
                               <td className="border p-0">
                                 <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>{row.pickQty || ''}</div>
                               </td>
-                              {/* <td className="border p-0">
-                                <div style={{ display: 'grid', gridTemplateColumns: 'auto', padding: '5px' }}>
-                                  {row.remainOrderQty || ''}
-                                </div>
-                              </td> */}
                             </tr>
                           ))}
                         </tbody>

@@ -26,8 +26,8 @@ const OutboundMain = () => {
             <Tab value={2} label="Reverse Pick" />
             <Tab value={3} label="Sales Return" />
             <Tab value={4} label="Delivery Challan" />
-            <Tab value={5} label="Pending Buyer Order" />
-            <Tab value={6} label="Pending Pick Request" />
+            <Tab value={5} label="Multiple Buyer Order" />
+            <Tab value={6} label="Multiple Pick Request" />
           </Tabs>
         </Box>
         <Box sx={{ padding: 2 }}>

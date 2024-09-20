@@ -75,7 +75,9 @@ export const ReversePick = () => {
     boAmendment: 'No',
     buyerOrderDate: null,
     pickRequestDocId: '',
-    freeze: false
+    freeze: false,
+    totalPickedQty: '',
+    totalRevisedQty: ''
   });
 
   const [value, setValue] = useState(0);
@@ -214,6 +216,14 @@ export const ReversePick = () => {
     getAllGroups();
     getDocId();
   }, []);
+  useEffect(() => {
+    const totalRevQty = itemTableData.reduce((sum, row) => sum + (parseInt(row.revisedQty, 10) || 0), 0);
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      totalRevisedQty: totalRevQty
+    }));
+  }, [itemTableData]);
 
   const getDocId = async () => {
     try {
@@ -342,14 +352,13 @@ export const ReversePick = () => {
           boAmendment: data.boAmendment,
           pickRequestDocDate: data.pickRequestDocDate,
           pickRequestDocId: data.pickRequestDocId,
-          freeze: data.freeze
-          // Add other fields here as needed
+          freeze: data.freeze,
+          totalPickedQty: data.pickedQty
+          // totalRevisedQty: data.revisedQty
         });
-
-        // Set itemTableData from pickRequestDetailsVO array
         setItemTableData(
           data.reversePickDetailsVO.map((detail) => ({
-            batchDate: detail.batchDate || '', // Map or set default value
+            batchDate: detail.batchDate || '',
             batchNo: detail.batchNo || '',
             binClass: detail.binClass || '',
             binType: detail.binType || '',
@@ -381,52 +390,6 @@ export const ReversePick = () => {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-
-  //   // Check if the value is a string before applying toUpperCase
-  //   let processedValue = value;
-
-  //   // Convert value to uppercase for fields other than 'status'
-  //   if (name !== 'boAmendment' && typeof value === 'string') {
-  //     processedValue = value.toUpperCase();
-  //   }
-
-  //   setFormData({ ...formData, [name]: processedValue });
-
-  //   if (name === 'pickRequestDocId') {
-  //     // Find the selected order from the full list of orders
-  //     const selectedOrder = buyerOrderNoList.find(
-  //       (order) => order.docId && processedValue && order.docId.toLowerCase() === processedValue.toLowerCase()
-  //     );
-
-  //     if (selectedOrder) {
-  //       const refDate = selectedOrder.buyerRefDate ? dayjs(selectedOrder.buyerRefDate) : null;
-
-  //       setFormData((prevFormData) => ({
-  //         ...prevFormData,
-  //         buyerRefNo: selectedOrder.buyerRefNo || '',
-  //         buyerRefDate: refDate, // Set as dayjs object
-  //         clientName: selectedOrder.clientName || '',
-  //         clientShortName: selectedOrder.clientShortName || '',
-  //         customerName: selectedOrder.customerName || '',
-  //         clientAddress: selectedOrder.clientAddress || '',
-  //         customerAddress: selectedOrder.customerAddress || '',
-  //         buyerOrderNo: selectedOrder.buyerOrderNo || '',
-  //         buyerOrderDate: selectedOrder.buyerOrderDate || '',
-  //         buyersReference: selectedOrder.buyersReference || '',
-  //         invoiceNo: selectedOrder.invoiceNo || '',
-  //         pickRequestDocDate: selectedOrder.docDate || '',
-  //         pickRequestDocId: selectedOrder.docId || '',
-  //         boAmendment: selectedOrder.boAmendment || '',
-  //         inTime: formData.inTime || ''
-  //       }));
-  //     } else {
-  //       console.log('No matching order found for the selected value.');
-  //     }
-  //   }
-  // };
 
   const handleInputChangeGrid = (e, index, fieldName) => {
     const { value } = e.target;
@@ -515,25 +478,14 @@ export const ReversePick = () => {
           pickRequestDocDate: selectedOrder.docDate || '',
           pickRequestDocId: selectedOrder.docId || '',
           boAmendment: selectedOrder.boAmendment || '',
-          inTime: formData.inTime || ''
+          inTime: formData.inTime || '',
+          totalPickedQty: selectedOrder.totalPickQty || ''
         }));
       } else {
         console.log('No matching order found for the selected value.');
       }
     }
   };
-
-  // const handleDateChange = (date, index) => {
-  //   setItemTableData((prev) => prev.map((r, idx) => (idx === index ? { ...r, fDate: date } : r)));
-  //   setItemTableErrors((prev) => {
-  //     const newErrors = [...prev];
-  //     newErrors[index] = {
-  //       ...newErrors[index],
-  //       fDate: !date ? 'Start Date is required' : ''
-  //     };
-  //     return newErrors;
-  //   });
-  // };
 
   const handleDeleteRow = (id) => {
     const rowIndex = itemTableData.findIndex((row) => row.id === id);
@@ -569,7 +521,9 @@ export const ReversePick = () => {
       invoiceNo: '',
       clientShortName: '',
       pickOrder: 'FIFO',
-      pickRequestDocId: ''
+      pickRequestDocId: '',
+      totalPickedQty: '',
+      totalRevisedQty: ''
     });
     setItemTableData([]);
     setFieldErrors({
@@ -619,31 +573,29 @@ export const ReversePick = () => {
     if (!formData.status) {
       errors.status = 'Status is required';
     }
-
     setFieldErrors(errors);
+    let itemTableDataValid = true;
+    if (!itemTableData || !Array.isArray(itemTableData) || itemTableData.length === 0) {
+      itemTableDataValid = false;
+      setItemTableErrors([{ general: 'Table Data is required' }]);
+    } else {
+      const newTableErrors = itemTableData.map((row, index) => {
+        const rowErrors = {};
 
-    // let itemTableDataValid = true;
-    // if (!itemTableData || !Array.isArray(itemTableData) || itemTableData.length === 0) {
-    //   itemTableDataValid = false;
-    //   setItemTableErrors([{ general: 'Table Data is required' }]);
-    // } else {
-    //   const newTableErrors = itemTableData.map((row, index) => {
-    //     const rowErrors = {};
+        if (!row.partNo) rowErrors.partNo = 'Part No is required';
+        if (!row.grnNo) rowErrors.grnNo = 'Grn No is required';
+        if (!row.batchNo) rowErrors.batchNo = 'Batch No is required';
+        if (!row.bin) rowErrors.bin = 'Bin is required';
 
-    //     if (!row.partNo) rowErrors.partNo = 'Part No is required';
-    //     if (!row.grnNo) rowErrors.grnNo = 'Grn No is required';
-    //     if (!row.batchNo) rowErrors.batchNo = 'Batch No is required';
-    //     if (!row.bin) rowErrors.bin = 'Bin is required';
+        if (Object.keys(rowErrors).length > 0) itemTableDataValid = false;
 
-    //     if (Object.keys(rowErrors).length > 0) itemTableDataValid = false;
+        return rowErrors;
+      });
 
-    //     return rowErrors;
-    //   });
-
-    //   setItemTableErrors(newTableErrors);
-    // }
-
-    if (Object.keys(errors).length === 0) {
+      setItemTableErrors(newTableErrors);
+    }
+    if (Object.keys(errors).length === 0 && itemTableDataValid) {
+      // if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       const itemVo = itemTableData.map((row) => ({
         availQty: row.availQty,
@@ -1473,16 +1425,6 @@ export const ReversePick = () => {
                                           </div>
                                         )}
                                       </td>
-
-                                      {/* <td className="border px-2 py-2">
-                                        <input
-                                          type="number"
-                                          value={row.trpQty}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => handleInputChange(e, index, 'trpQty')}
-                                          className={itemTableErrors[index]?.trpQty ? 'error form-control' : 'form-control'}
-                                        />
-                                      </td> */}
                                     </tr>
                                   ))
                                 )}
@@ -1511,21 +1453,6 @@ export const ReversePick = () => {
                       <div className="row">
                         <div className="col-md-3 mb-3">
                           <TextField
-                            label="Total Order Qty"
-                            variant="outlined"
-                            size="small"
-                            fullWidth
-                            name="totalOrderQty"
-                            value={formData.totalOrderQty}
-                            onChange={handleInputChange}
-                            error={!!fieldErrors.totalOrderQty}
-                            disabled={formData.freeze}
-                            helperText={fieldErrors.totalOrderQty}
-                          />
-                        </div>
-
-                        <div className="col-md-3 mb-3">
-                          <TextField
                             label="Total Picked Qty"
                             variant="outlined"
                             size="small"
@@ -1533,9 +1460,23 @@ export const ReversePick = () => {
                             name="totalPickedQty"
                             value={formData.totalPickedQty}
                             onChange={handleInputChange}
-                            disabled={formData.freeze}
+                            disabled
                             error={!!fieldErrors.totalPickedQty}
                             helperText={fieldErrors.totalPickedQty}
+                          />
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <TextField
+                            label="Total Revised Qty"
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            name="totalRevisedQty"
+                            value={formData.totalRevisedQty}
+                            onChange={handleInputChange}
+                            error={!!fieldErrors.totalRevisedQty}
+                            disabled
+                            helperText={fieldErrors.totalRevisedQty}
                           />
                         </div>
                       </div>

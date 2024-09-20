@@ -51,7 +51,7 @@ export const StockLedgerReport = () => {
     { accessorKey: 'sourceScreen', header: 'Source Screen', size: 140 },
     { accessorKey: 'oQty', header: 'Opening Qty', size: 140 },
     { accessorKey: 'rQty', header: 'Received Qty', size: 140 },
-    { accessorKey: 'qQty', header: 'Dispatch Qty', size: 140 },
+    { accessorKey: 'dQty', header: 'Dispatch Qty', size: 140 },
     { accessorKey: 'cQty', header: 'Closing Qty', size: 140 }
   ];
   useEffect(() => {
@@ -208,6 +208,7 @@ export const StockLedgerReport = () => {
                   slotProps={{
                     textField: { size: 'small', clearable: true }
                   }}
+                  format="DD-MM-YYYY"
                   disabled
                 />
               </LocalizationProvider>
