@@ -1627,7 +1627,7 @@ export const DeliveryChallen = () => {
 
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].outBoundBin}
+                                        ref={lrNoDetailsRefs.current[index]?.outBoundBin}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.outBoundBin}
@@ -1685,7 +1685,7 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].unitRate}
+                                        ref={lrNoDetailsRefs.current[index]?.unitRate}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.unitRate}
@@ -1723,7 +1723,7 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].skuValue}
+                                        ref={lrNoDetailsRefs.current[index]?.skuValue}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.skuValue}
@@ -1763,7 +1763,7 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].discount}
+                                        ref={lrNoDetailsRefs.current[index]?.discount}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.discount}
@@ -1800,7 +1800,7 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].tax}
+                                        ref={lrNoDetailsRefs.current[index]?.tax}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.tax}
@@ -1838,7 +1838,7 @@ export const DeliveryChallen = () => {
 
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].gstTax}
+                                        ref={lrNoDetailsRefs.current[index]?.gstTax}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.gstTax}
@@ -1880,7 +1880,7 @@ export const DeliveryChallen = () => {
 
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].amount}
+                                        ref={lrNoDetailsRefs.current[index]?.amount}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.amount}
@@ -1920,7 +1920,7 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].sgst}
+                                        ref={lrNoDetailsRefs.current[index]?.sgst}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.sgst}
@@ -1961,7 +1961,7 @@ export const DeliveryChallen = () => {
 
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].cgst}
+                                        ref={lrNoDetailsRefs.current[index]?.cgst}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.cgst}
@@ -2001,7 +2001,7 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].igst}
+                                        ref={lrNoDetailsRefs.current[index]?.igst}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.igst}
@@ -2041,7 +2041,7 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].totalGst}
+                                        ref={lrNoDetailsRefs.current[index]?.totalGst}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.totalGst}
@@ -2078,7 +2078,7 @@ export const DeliveryChallen = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        ref={lrNoDetailsRefs.current[index].billAmount}
+                                        ref={lrNoDetailsRefs.current[index]?.billAmount}
                                         type="text"
                                         style={{ width: '100px' }}
                                         value={row.billAmount}
