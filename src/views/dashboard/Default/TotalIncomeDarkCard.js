@@ -13,10 +13,27 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
   color: theme.palette.text.primary,
   borderRadius: '12px',
   overflow: 'hidden',
-  padding: '4px',
-  width: '320px',
-  height: '190px',
-  textAlign: 'center'
+  padding: '2px', // Increase padding for better spacing on smaller screens
+  width: '100%', // Use 100% for better responsiveness
+  maxWidth: '320px', // Set max width for larger screens
+  height: 'auto', // Set height to auto for flexible sizing
+  textAlign: 'center',
+
+  // Define responsive breakpoints
+  [theme.breakpoints.up('sm')]: {
+    maxWidth: '400px', // Increase width on medium screens
+    height: '220px' // Increase height for medium screens
+  },
+
+  [theme.breakpoints.up('md')]: {
+    maxWidth: '450px', // Increase width on large screens
+    height: '240px' // Increase height for large screens
+  },
+
+  [theme.breakpoints.up('lg')]: {
+    maxWidth: '500px', // Increase width further
+    height: '190px' // Increase height for extra-large screens
+  }
 }));
 
 // Define a vibrant color palette
