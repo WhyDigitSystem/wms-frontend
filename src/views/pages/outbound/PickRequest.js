@@ -528,7 +528,8 @@ export const PickRequest = () => {
       setIsLoading(true);
       const itemVo = itemTableData.map((row) => ({
         availQty: row.availQty,
-        batchDate: row.batchDate,
+        // batchDate: row.batchDate,
+        batchDate: row.batchDate ? dayjs(row.batchDate).format('YYYY-MM-DD') : null,
         batchNo: row.batchNo,
         binClass: row.binClass,
         binType: row.binType,
