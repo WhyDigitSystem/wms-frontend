@@ -281,8 +281,8 @@ export const PickRequest = () => {
           data.pickRequestDetailsVO.map((detail) => ({
             id: detail.id,
             availQty: detail.availQty,
-            batchDate: detail.batchDate ? dayjs(detail.batchDate).format('DD-MM-YYYY') : null,
-            // batchDate: detail.batchDate || '',
+            // batchDate: detail.batchDate ? dayjs(detail.batchDate).format('DD-MM-YYYY') : null,
+            batchDate: detail.batchDate || '',
             batchNo: detail.batchNo || '',
             binClass: detail.binClass || '',
             binType: detail.binType || '',
@@ -528,8 +528,8 @@ export const PickRequest = () => {
       setIsLoading(true);
       const itemVo = itemTableData.map((row) => ({
         availQty: row.availQty,
-        // batchDate: row.batchDate,
-        batchDate: row.batchDate ? dayjs(row.batchDate).format('YYYY-MM-DD') : null,
+        batchDate: row.batchDate,
+        // batchDate: row.batchDate ? dayjs(row.batchDate).format('YYYY-MM-DD') : null,
         batchNo: row.batchNo,
         binClass: row.binClass,
         binType: row.binType,
@@ -1255,6 +1255,7 @@ export const PickRequest = () => {
                                           </div>
                                         )}
                                       </td>
+
                                       {/* Location */}
                                       <td className="border px-2 py-2">
                                         <input

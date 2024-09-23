@@ -358,8 +358,8 @@ export const ReversePick = () => {
         });
         setItemTableData(
           data.reversePickDetailsVO.map((detail) => ({
-            // batchDate: detail.batchDate || '',
-            batchDate: detail.batchDate ? dayjs(detail.batchDate).format('DD-MM-YYYY') : null,
+            batchDate: detail.batchDate || '',
+            // batchDate: detail.batchDate ? dayjs(detail.batchDate).format('DD-MM-YYYY') : null,
             batchNo: detail.batchNo || '',
             binClass: detail.binClass || '',
             binType: detail.binType || '',
@@ -587,6 +587,7 @@ export const ReversePick = () => {
         if (!row.grnNo) rowErrors.grnNo = 'Grn No is required';
         if (!row.batchNo) rowErrors.batchNo = 'Batch No is required';
         if (!row.bin) rowErrors.bin = 'Bin is required';
+        if (!row.revisedQty) rowErrors.revisedQty = 'Revised QTY is required';
 
         if (Object.keys(rowErrors).length > 0) itemTableDataValid = false;
 

@@ -1158,7 +1158,7 @@ export const Grn = () => {
             <ActionButton title="Download" icon={CloudDownloadIcon} onClick={handleSampleExcelDownload} />
           </div>
         </div>
-        {/* {uploadOpen && (
+        {uploadOpen && (
           <CommonBulkUpload
             open={uploadOpen}
             handleClose={handleBulkUploadClose}
@@ -1171,7 +1171,7 @@ export const Grn = () => {
             // apiUrl={`putaway/ExcelUploadForPutAway?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&createdBy=${loginUserName}&customer=${loginCustomer}&finYear=${loginFinYear}&orgId=${orgId}&type=DOC&warehouse=${loginWarehouse}`}
             screen="PutAway"
           ></CommonBulkUpload>
-        )} */}
+        )}
 
         {listView ? (
           <div className="mt-4">
