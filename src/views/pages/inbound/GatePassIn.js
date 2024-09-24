@@ -25,6 +25,12 @@ import ActionButton from 'utils/ActionButton';
 import { getAllActiveCarrier, getAllActiveSupplier } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import sampleGrnExcelFile from '../../../assets/sample-files/Sample_Grn_Upload.xls';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
+import sampleFile from '../../../assets/sample-files/Sample_Grn_Upload.xls';
+import GridOnIcon from '@mui/icons-material/GridOn';
 
 export const GatePassIn = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -39,8 +45,15 @@ export const GatePassIn = () => {
   const [client, setClient] = useState(localStorage.getItem('client'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [customer, setCustomer] = useState(localStorage.getItem('customer'));
-  const [finYear, setFinYear] = useState('2024');
+  // const [finYear, setFinYear] = useState('2024');
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [warehouse, setwarehouse] = useState(localStorage.getItem('warehouse'));
   const [gatePassDocId, setGatePassDocId] = useState('');
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [bulkUploadDetailList, setBulkUploadDetailList] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectAll, setSelectAll] = useState([]);
 
   const [formData, setFormData] = useState({
     docdate: dayjs(),
@@ -367,169 +380,130 @@ export const GatePassIn = () => {
     }
   };
 
-  // const handleInputChange = (event) => {
-  //   const { name, value } = event.target;
+  const getUploadDetailByEntryNo = async (selectedEntryNo) => {
+    console.log('the getUploadDetailByEntryNo is came');
 
-  //   if (name === 'vehicleNo') {
-  //     // Convert the vehicle number to uppercase
-  //     const upperCaseValue = value.toUpperCase();
+    try {
+      const response = await apiCalls(
+        'get',
+        `gatePassIn/getEntryNoDetails?branchCode=${cbranch}&client=${client}&entryNo=${selectedEntryNo}&finYear=${finYear}&orgId=${orgId}`
+      );
+      console.log('API Response:', response);
 
-  //     setFormData({
-  //       ...formData,
-  //       vehicleNo: upperCaseValue
-  //     });
-  //   } else if (name === 'driverName') {
-  //     // Convert the vehicle number to uppercase
-  //     const upperCaseValue = value.toUpperCase();
+      if (response.status === true) {
+        const bulkUploadDetails = response.paramObjectsMap.entryNoDetails[0];
+        console.log('THE BULK UPLOAD DETAILS BASED ON ENTRY NO IS:', response.paramObjectsMap.entryNoDetails[0]);
+        if (bulkUploadDetails) {
+          getAllCarrier(bulkUploadDetails.modeOfShipment);
 
-  //     setFormData({
-  //       ...formData,
-  //       driverName: upperCaseValue
-  //     });
-  //   } else if (name === 'goodsDescription') {
-  //     // Convert the vehicle number to uppercase
-  //     const upperCaseValue = value.toUpperCase();
+          setFormData({
+            ...formData,
+            entryDate: bulkUploadDetails.entryDate,
+            supplier: bulkUploadDetails ? bulkUploadDetails.supplierShortName : '',
+            supplierShortName: bulkUploadDetails ? bulkUploadDetails.supplier : '',
+            modeOfShipment: bulkUploadDetails ? bulkUploadDetails.modeOfShipment : '',
+            carrier: bulkUploadDetails ? bulkUploadDetails.carrier : ''
+          });
+          getFillGridByEntryNo(selectedEntryNo);
+        } else {
+          setFormData({
+            ...formData,
+            entryDate: dayjs(),
+            supplier: '',
+            supplierShortName: '',
+            modeOfShipment: '',
+            carrier: ''
+          });
+          setLrNoDetailsTable([
+            {
+              irNoHaw: '',
+              invoiceNo: '',
+              partNo: '',
+              partDesc: '',
+              batchNo: '',
+              batchDate: '',
+              expDate: '',
+              sku: '',
+              invQty: '',
+              recQty: '',
+              shortQty: '',
+              damageQty: '',
+              grnQty: '',
+              subUnit: '',
+              subStockShortQty: '',
+              grnPiecesQty: '',
+              remarks: ''
+            }
+          ]);
+          setLrNoDetailsError('');
+        }
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const getFillGridByEntryNo = async (selectedEntryNo) => {
+    console.log('the getUploadDetailByEntryNo is came');
 
-  //     setFormData({
-  //       ...formData,
-  //       goodsDescription: upperCaseValue
-  //     });
-  //   } else if (name === 'securityName') {
-  //     // Convert the vehicle number to uppercase
-  //     const upperCaseValue = value.toUpperCase();
+    try {
+      const response = await apiCalls(
+        'get',
+        `gatePassIn/getEntryNoFillDetails?branchCode=${cbranch}&client=${client}&entryNo=${selectedEntryNo}&finYear=${finYear}&orgId=${orgId}`
+      );
+      console.log('API Response:', response);
 
-  //     setFormData({
-  //       ...formData,
-  //       securityName: upperCaseValue
-  //     });
-  //   } else if (name === 'contact') {
-  //     const numericValue = value.replace(/\D/g, '');
-  //     let errorMessage = '';
-
-  //     if (numericValue.length > 10) {
-  //       errorMessage = 'Invalid format';
-  //     }
-
-  //     if (value.length > numericValue.length) {
-  //       errorMessage = 'Alphabet not allowed';
-  //     }
-
-  //     const truncatedValue = numericValue.slice(0, 10);
-
-  //     setFormData({
-  //       ...formData,
-  //       contact: truncatedValue
-  //     });
-
-  //     setFieldErrors({
-  //       ...fieldErrors,
-  //       contact: errorMessage
-  //     });
-  //   } else if (name === 'supplier') {
-  //     const selectedSupplier = supplierList.find((supplier) => supplier.supplierShortName === value);
-  //     setFormData({
-  //       ...formData,
-  //       supplier: value,
-  //       supplierShortName: selectedSupplier ? selectedSupplier.supplier : ''
-  //     });
-  //   } else if (name === 'modeOfShipment') {
-  //     const upperCaseValue = value.toUpperCase();
-  //     setFormData({
-  //       ...formData,
-  //       modeOfShipment: upperCaseValue
-  //     });
-  //     getAllCarrier(value);
-  //   } else {
-  //     setFormData({
-  //       ...formData,
-  //       [name]: value
-  //     });
-  //   }
-  // };
-
-  // const handleInputChange = (event) => {
-  //   const { name, value } = event.target;
-
-  //   // Store cursor position before value change
-  //   const cursorPosition = event.target.selectionStart;
-
-  //   let updatedValue = value; // Default to the current value
-  //   let errorMessage = '';
-
-  //   // Convert specific fields to uppercase
-  //   const upperCaseFields = ['vehicleNo', 'driverName', 'goodsDescription', 'securityName', 'modeOfShipment'];
-  //   if (upperCaseFields.includes(name)) {
-  //     updatedValue = value.toUpperCase();
-  //   }
-
-  //   // Handle 'contact' field for numbers only and handle errors
-  //   if (name === 'contact') {
-  //     const numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
-  //     if (value.length > numericValue.length) {
-  //       errorMessage = 'Alphabet not allowed';
-  //     } else if (numericValue.length > 10) {
-  //       errorMessage = 'Invalid format'; // If more than 10 digits
-  //     }
-  //     updatedValue = numericValue.slice(0, 10); // Limit to 10 digits
-  //   }
-
-  //   // Handle 'supplier' field and populate 'supplierShortName'
-  //   if (name === 'supplier') {
-  //     const selectedSupplier = supplierList.find((supplier) => supplier.supplierShortName === value);
-  //     setFormData({
-  //       ...formData,
-  //       supplier: value,
-  //       supplierShortName: selectedSupplier ? selectedSupplier.supplier : ''
-  //     });
-  //     return;
-  //   }
-
-  //   // Special handling for 'modeOfShipment' to trigger API
-  //   if (name === 'modeOfShipment') {
-  //     getAllCarrier(value);
-  //   }
-
-  //   // Update the form data and error messages
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     [name]: updatedValue
-  //   }));
-
-  //   if (name === 'contact') {
-  //     setFieldErrors((prevErrors) => ({
-  //       ...prevErrors,
-  //       contact: errorMessage
-  //     }));
-  //   }
-
-  //   // Restore cursor position after state update
-  //   setTimeout(() => {
-  //     const inputElement = event.target;
-  //     inputElement.setSelectionRange(cursorPosition, cursorPosition); // Restore cursor
-  //   }, 0);
-  // };
+      if (response.status === true) {
+        const bulkUploadGridDetails = response.paramObjectsMap.entryNoFillDetails;
+        console.log('THE BULK UPLOAD DETAILS BASED ON ENTRY NO IS:', response.paramObjectsMap.entryNoFillDetails);
+        if (bulkUploadGridDetails) {
+          setLrNoDetailsTable(
+            bulkUploadGridDetails.map((row) => ({
+              id: row.id,
+              irNoHaw: row.irNoHaw,
+              partNo: row.partNo,
+              partDesc: row.partDesc,
+              sku: row.sku,
+              batchNo: row.batchNo,
+              batchDate: row.batchDate,
+              expDate: row.expDate,
+              invoiceNo: row.invoiceNo,
+              invQty: row.invQty,
+              recQty: row.recQty,
+              damageQty: row.damageQty,
+              shortQty: row.shortQty,
+              grnQty: row.grnQty
+            }))
+          );
+        } else {
+          console.log('first');
+        }
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-
-    // Store cursor position before value change
     const cursorPosition = event.target.selectionStart;
 
-    let updatedValue = value.toUpperCase(); // Convert all input to uppercase
+    let updatedValue = value.toUpperCase();
     let errorMessage = '';
 
-    // Handle 'contact' field for numbers only and handle errors
     if (name === 'contact') {
-      const numericValue = updatedValue.replace(/\D/g, ''); // Remove non-numeric characters
+      const numericValue = updatedValue.replace(/\D/g, '');
       if (updatedValue.length > numericValue.length) {
         errorMessage = 'Alphabet not allowed';
       } else if (numericValue.length > 10) {
-        errorMessage = 'Invalid format'; // If more than 10 digits
+        errorMessage = 'Invalid format';
       }
-      updatedValue = numericValue.slice(0, 10); // Limit to 10 digits
+      updatedValue = numericValue.slice(0, 10);
     }
 
-    // Handle 'supplier' field and populate 'supplierShortName'
     if (name === 'supplier') {
       const selectedSupplier = supplierList.find((supplier) => supplier.supplierShortName === updatedValue);
       setFormData({
@@ -540,12 +514,9 @@ export const GatePassIn = () => {
       return;
     }
 
-    // Special handling for 'modeOfShipment' to trigger API
     if (name === 'modeOfShipment') {
       getAllCarrier(updatedValue);
     }
-
-    // Update the form data and error messages
     setFormData((prevData) => ({
       ...prevData,
       [name]: updatedValue
@@ -558,12 +529,6 @@ export const GatePassIn = () => {
       }));
     }
 
-    // Restore cursor position after state update
-    // setTimeout(() => {
-    //   const inputElement = event.target;
-    //   inputElement.setSelectionRange(cursorPosition, cursorPosition); // Restore cursor
-    // }, 0);
-
     setTimeout(() => {
       const inputElement = event.target;
 
@@ -572,6 +537,12 @@ export const GatePassIn = () => {
         inputElement.setSelectionRange(cursorPosition, cursorPosition); // Restore cursor
       }
     }, 0);
+  };
+
+  const handleEntryNoKeyDown = (event) => {
+    if (event.key === 'Tab') {
+      getUploadDetailByEntryNo(event.target.value); // Call the function with the current entryNo value
+    }
   };
 
   const handleDateChange = (field, date) => {
@@ -592,7 +563,6 @@ export const GatePassIn = () => {
   const handleClear = () => {
     setGatePassDocId('');
     setFormData({
-      // gatePassDocId: '',
       docdate: dayjs(),
       entryNo: '',
       entryDate: dayjs(),
@@ -626,9 +596,6 @@ export const GatePassIn = () => {
         subUnit: '',
         subStockShortQty: '',
         grnPiecesQty: '',
-        // weight: '',
-        // rate: '',
-        // amount: '',
         remarks: ''
       }
     ]);
@@ -669,24 +636,6 @@ export const GatePassIn = () => {
     if (!formData.carrier) {
       errors.carrier = 'Carrier Transport is required';
     }
-    // if (!formData.vehicleType) {
-    //   errors.vehicleType = 'Vehicle Type is required';
-    // }
-    // if (!formData.vehicleNo) {
-    //   errors.vehicleNo = 'Vehicle No is required';
-    // }
-    // if (!formData.driverName) {
-    //   errors.driverName = 'Driver Name is required';
-    // }
-    // if (!formData.contact) {
-    //   errors.contact = 'Contact is required';
-    // }
-    // if (!formData.goodsDescription) {
-    //   errors.goodsDescription = 'Goods Description is required';
-    // }
-    // if (!formData.securityName) {
-    //   errors.securityName = 'Security Name is required';
-    // }
 
     let lrNoDetailsTableValid = true;
     const newTableErrors = lrNoDetailsTable.map((row, index) => {
@@ -734,39 +683,12 @@ export const GatePassIn = () => {
         lrNoDetailsTableValid = false;
         if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].damageQty;
       }
-      // if (!row.subStockShortQty) {
-      //   rowErrors.subStockShortQty = 'Sub Stock Short Qty is required';
-      //   lrNoDetailsTableValid = false;
-      // }
-      // if (!row.grnPiecesQty) {
-      //   rowErrors.grnPiecesQty = 'Grn Pieces Qty is required';
-      //   lrNoDetailsTableValid = false;
-      // }
-      // if (!row.weight) {
-      //   rowErrors.weight = 'Weight is required';
-      //   lrNoDetailsTableValid = false;
-      // }
-      // if (!row.rate) {
-      //   rowErrors.rate = 'Rate is required';
-      //   lrNoDetailsTableValid = false;
-      // }
-      // if (!row.amount) {
-      //   rowErrors.amount = 'Amount is required';
-      //   lrNoDetailsTableValid = false;
-      //   if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].amount;
-      // }
-      // if (!row.remarks) {
-      //   rowErrors.remarks = 'Remarks is required';
-      //   lrNoDetailsTableValid = false;
-      // }
-
       return rowErrors;
     });
 
     setLrNoDetailsError(newTableErrors);
 
     if (!lrNoDetailsTableValid || Object.keys(errors).length > 0) {
-      // Focus on the first invalid field
       if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
         firstInvalidFieldRef.current.focus();
       }
@@ -876,6 +798,32 @@ export const GatePassIn = () => {
     });
   };
 
+  const handleSampleExcelDownload = () => {
+    const link = document.createElement('a');
+    link.href = sampleGrnExcelFile;
+    link.download = 'sample_GRN.xls';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleBulkUploadOpen = () => {
+    setUploadOpen(true); // Open dialog
+  };
+
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false); // Close dialog
+  };
+
+  const handleFileUpload = (event) => {
+    console.log(event.target.files[0]);
+  };
+
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
+
   return (
     <>
       <div>{/* <ToastContainer /> */}</div>
@@ -885,13 +833,25 @@ export const GatePassIn = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            {formData.freeze ? (
-              ''
-            ) : (
-              <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
-            )}
+            {!formData.freeze && <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />}
+            <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} />
+            <ActionButton title="Download" icon={CloudDownloadIcon} onClick={handleSampleExcelDownload} />
           </div>
         </div>
+        {uploadOpen && (
+          <CommonBulkUpload
+            open={uploadOpen}
+            handleClose={handleBulkUploadClose}
+            title="Upload Files"
+            uploadText="Upload file"
+            downloadText="Sample File"
+            onSubmit={handleSubmit}
+            sampleFileDownload={sampleFile}
+            handleFileUpload={handleFileUpload}
+            apiUrl={`grn/ExcelUploadForGrn?branch=${branch}&branchCode=${cbranch}&client=${client}&createdBy=${loginUserName}&customer=${customer}&finYear=${finYear}&orgId=${orgId}&type=DOC&warehouse=${warehouse}`}
+            screen="GatePassIn"
+          ></CommonBulkUpload>
+        )}
         {listView ? (
           <div className="mt-4">
             <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getGatePassById} />
@@ -938,6 +898,7 @@ export const GatePassIn = () => {
                   name="entryNo"
                   value={formData.entryNo}
                   onChange={handleInputChange}
+                  onKeyDown={handleEntryNoKeyDown} // Attach the key down handler here
                   error={!!fieldErrors.entryNo}
                   helperText={fieldErrors.entryNo}
                 />
@@ -1090,6 +1051,8 @@ export const GatePassIn = () => {
                     <div className="row d-flex ml">
                       <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                        {/* <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} /> */}
+                        {/* <ActionButton title="Clear" icon={ClearIcon} onClick={() => handleTableClear('childTableData')} />{' '} */}
                       </div>
                       {/* Table */}
                       <div className="row mt-2">
@@ -1108,10 +1071,10 @@ export const GatePassIn = () => {
                                   <th className="px-2 py-2 text-white text-center">Inv No *</th>
                                   <th className="px-2 py-2 text-white text-center">Part No *</th>
                                   <th className="px-2 py-2 text-white text-center">Part Desc</th>
+                                  <th className="px-2 py-2 text-white text-center">SKU</th>
                                   <th className="px-2 py-2 text-white text-center">Batch No</th>
                                   <th className="px-2 py-2 text-white text-center">Batch Date</th>
                                   <th className="px-2 py-2 text-white text-center">Exp Date</th>
-                                  <th className="px-2 py-2 text-white text-center">SKU</th>
                                   <th className="px-2 py-2 text-white text-center">Inv QTY *</th>
                                   <th className="px-2 py-2 text-white text-center">Rec QTY *</th>
                                   <th className="px-2 py-2 text-white text-center">Short QTY</th>
@@ -1252,6 +1215,9 @@ export const GatePassIn = () => {
                                       />
                                     </td>
                                     <td className="border px-2 py-2">
+                                      <input type="text" style={{ width: '100px' }} value={row.sku} disabled className="form-control" />
+                                    </td>
+                                    <td className="border px-2 py-2">
                                       <input
                                         ref={lrNoDetailsRefs.current[index]?.batchNo}
                                         type="text"
@@ -1328,9 +1294,6 @@ export const GatePassIn = () => {
                                       )}
                                     </td>
 
-                                    <td className="border px-2 py-2">
-                                      <input type="text" style={{ width: '100px' }} value={row.sku} disabled className="form-control" />
-                                    </td>
                                     <td className="border px-2 py-2">
                                       <input
                                         ref={lrNoDetailsRefs.current[index]?.invQty}
@@ -1750,6 +1713,7 @@ export const GatePassIn = () => {
           </>
         )}
       </div>
+
       <ToastContainer />
     </>
   );

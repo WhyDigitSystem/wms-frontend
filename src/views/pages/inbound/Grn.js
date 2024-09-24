@@ -26,14 +26,13 @@ import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-// import 'react-datepicker/dist/react-datepicker.css';
-// import { DatePicker } from 'react-datepicker';
 import dayjs from 'dayjs';
 import React, { useRef } from 'react';
 import { getAllActiveCarrier, getAllActivePartDetails, getAllActiveSupplier, getAllShipmentModes } from 'utils/CommonFunctions';
-import sampleGrnExcelFile from '../../../assets/sample-files/sample_data_grn.xls';
+import sampleGrnExcelFile from '../../../assets/sample-files/Sample_Grn_Upload.xls';
 import CommonBulkUpload from 'utils/CommonBulkUpload';
-import sampleFile from '../../../assets/sample-files/sample_Putaway.xls';
+import sampleFile from '../../../assets/sample-files/Sample_Grn_Upload.xls';
+
 export const Grn = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
@@ -45,8 +44,7 @@ export const Grn = () => {
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
-  // const [loginFinYear, setLoginFinYear] = useState(localStorage.getItem('finYear'));
-  const [loginFinYear, setLoginFinYear] = useState('2024');
+  const [loginFinYear, setLoginFinYear] = useState(localStorage.getItem('finYear'));
   const [supplierList, setSupplierList] = useState([]);
   const [modeOfShipmentList, setModeOfShipmentList] = useState([]);
   const [carrierList, setCarrierList] = useState([]);
@@ -143,72 +141,9 @@ export const Grn = () => {
     totGrnQty: '',
     remarks: ''
   });
-  const [lrTableData, setLrTableData] = useState([
-    // {
-    //   id: 1,
-    //   qrCode: '',
-    //   lr_Hawb_Hbl_No: '',
-    //   invNo: '',
-    //   dnNo: '',
-    //   shipmentNo: '',
-    //   invDate: null,
-    //   glDate: null,
-    //   locationType: '',
-    //   partNo: '',
-    //   partDesc: '',
-    //   sku: '',
-    //   invQty: '',
-    //   recQty: '',
-    //   shortQty: '',
-    //   damageQty: '',
-    //   grnQty: '',
-    //   subStockQty: '',
-    //   batch_PalletNo: '',
-    //   batchDate: null,
-    //   expDate: null,
-    //   palletQty: '',
-    //   noOfPallets: '',
-    //   pkgs: '',
-    //   weight: '',
-    //   mrp: '',
-    //   amt: '',
-    //   insAmt: '',
-    //   remarks: ''
-    // }
-  ]);
+  const [lrTableData, setLrTableData] = useState([]);
 
-  const [lrTableErrors, setLrTableErrors] = useState([
-    // {
-    //   qrCode: '',
-    //   lr_Hawb_Hbl_No: '',
-    //   invNo: '',
-    //   dnNo: '',
-    //   shipmentNo: '',
-    //   invDate: '',
-    //   glDate: '',
-    //   locationType: '',
-    //   partNo: '',
-    //   partDesc: '',
-    //   sku: '',
-    //   invQty: '',
-    //   recQty: '',
-    //   shortQty: '',
-    //   damageQty: '',
-    //   grnQty: '',
-    //   subStockQty: '',
-    //   batch_PalletNo: '',
-    //   batchDate: null,
-    //   expDate: null,
-    //   palletQty: '',
-    //   noOfPallets: '',
-    //   pkgs: '',
-    //   weight: '',
-    //   mrp: '',
-    //   amt: '',
-    //   insAmt: '',
-    //   remarks: ''
-    // }
-  ]);
+  const [lrTableErrors, setLrTableErrors] = useState([]);
 
   const lrNoDetailsRefs = useRef([]);
 
@@ -242,9 +177,6 @@ export const Grn = () => {
     getAllBinLocationByWarehouse();
     getAllPartNo();
     getAllGrns();
-    // getAllCarriers();
-    // getAllVehicleTypes();
-    // getAllGrns();
   }, []);
   useEffect(() => {
     const totalQty = lrTableData.reduce((sum, row) => sum + (parseInt(row.grnQty, 10) || 0), 0);
@@ -483,117 +415,120 @@ export const Grn = () => {
     }
   };
 
-  // const handleInputChange = (e) => {
-  //   const { name, value, checked } = e.target;
+  const getUploadDetailByEntryNo = async (selectedEntrySlNo) => {
+    console.log('the getUploadDetailByEntryNo is came');
 
-  //   const nameRegex = /^[A-Za-z ]*$/;
-  //   const alphaNumericRegex = /^[A-Za-z0-9]*$/;
-  //   const numericRegex = /^[0-9]*$/;
+    try {
+      const response = await apiCalls(
+        'get',
+        `gatePassIn/getEntryNoDetails?branchCode=${loginBranchCode}&client=${loginClient}&entryNo=${selectedEntrySlNo}&finYear=${loginFinYear}&orgId=${orgId}`
+      );
+      console.log('API Response:', response);
 
-  //   let errorMessage = '';
+      if (response.status === true) {
+        const bulkUploadDetails = response.paramObjectsMap.entryNoDetails[0];
+        console.log('THE BULK UPLOAD DETAILS BASED ON ENTRY NO IS:', response.paramObjectsMap.entryNoDetails[0]);
+        if (bulkUploadDetails) {
+          getAllCarriers(bulkUploadDetails.modeOfShipment);
 
-  //   switch (name) {
-  //     case 'docCode':
-  //     case 'capacity':
-  //     case 'vesselNo':
-  //     case 'hsnNo':
-  //       if (!alphaNumericRegex.test(value)) {
-  //         errorMessage = 'Only alphanumeric characters are allowed';
-  //       }
-  //       break;
-  //     case 'driverName':
-  //     case 'securityName':
-  //       if (!nameRegex.test(value)) {
-  //         errorMessage = 'Only Alphabets are allowed';
-  //       }
-  //       break;
-  //     case 'contact':
-  //       if (!numericRegex.test(value)) {
-  //         errorMessage = 'Only numeric characters are allowed';
-  //       } else if (value.length > 10) {
-  //         errorMessage = 'Invalid Mobile Format';
-  //       }
-  //       break;
-  //     case 'noOfPallets':
-  //       if (!numericRegex.test(value)) {
-  //         errorMessage = 'Only numeric characters are allowed';
-  //       }
-  //       break;
-  //     default:
-  //       break;
-  //   }
+          setFormData({
+            ...formData,
+            entryDate: bulkUploadDetails.entryDate,
+            supplierShortName: bulkUploadDetails ? bulkUploadDetails.supplierShortName : '',
+            supplier: bulkUploadDetails ? bulkUploadDetails.supplier : '',
+            modeOfShipment: bulkUploadDetails ? bulkUploadDetails.modeOfShipment : '',
+            carrier: bulkUploadDetails ? bulkUploadDetails.carrier : ''
+          });
+          getFillGridByEntryNo(selectedEntrySlNo);
+        } else {
+          setFormData({
+            ...formData,
+            entryDate: dayjs(),
+            supplier: '',
+            supplierShortName: '',
+            modeOfShipment: '',
+            carrier: ''
+          });
+          getFillGridByEntryNo(selectedEntrySlNo);
+        }
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
-  //   if (errorMessage) {
-  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
-  //   } else {
-  //     if (name === 'grnType') {
-  //       setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
-  //       // if (value === 'GATE PASS') setEnableGatePassFields(true);
-  //       {
-  //         value === 'GATE PASS' ? setEnableGatePassFields(true) : setEnableGatePassFields(false);
-  //       }
-  //     } else if (name === 'gatePassId') {
-  //       const selectedId = gatePassIdList.find((id) => id.docId === value);
-  //       const selectedGatePassId = selectedId.docId;
-  //       if (selectedId) {
-  //         setFormData((prevData) => ({
-  //           ...prevData,
-  //           gatePassId: selectedId.docId,
-  //           entrySlNo: selectedId.entryNo,
-  //           gatePassDate: dayjs(selectedId.docDate).format('YYYY-MM-DD'),
-  //           supplierShortName: selectedId.supplier,
-  //           supplier: selectedId.supplierShortName,
-  //           modeOfShipment: selectedId.modeOfShipment.toUpperCase(),
-  //           vehicleType: selectedId.vehicleType.toUpperCase(),
-  //           contact: selectedId.contact,
-  //           driverName: selectedId.driverName,
-  //           securityName: selectedId.securityName,
-  //           lrDate: dayjs(selectedId.lrDate).format('YYYY-MM-DD'),
-  //           goodsDesc: selectedId.goodsDescription,
-  //           vehicleNo: selectedId.vehicleNo,
-  //           lotNo: selectedId.lotNo
-  //         }));
-  //         getAllCarriers(selectedId.modeOfShipment);
-  //         setFormData((prevData) => ({
-  //           ...prevData,
-  //           carrier: selectedId.carrier.toUpperCase()
-  //         }));
-  //         console.log('THE SELECTED GATEPASS ID IS:', selectedGatePassId);
+  const getFillGridByEntryNo = async (selectedEntrySlNo) => {
+    console.log('the getUploadDetailByEntryNo is came');
 
-  //         getGatePassGridDetailsByGatePassId(selectedGatePassId);
-  //       }
-  //     } else if (name === 'supplierShortName') {
-  //       const selectedName = supplierList.find((supplier) => supplier.supplierShortName === value);
-  //       if (selectedName) {
-  //         setFormData((prevData) => ({
-  //           ...prevData,
-  //           supplierShortName: selectedName.supplierShortName,
-  //           supplier: selectedName.supplier
-  //         }));
-  //       }
-  //     } else if (name === 'modeOfShipment') {
-  //       setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
-  //       getAllCarriers(value);
-  //     } else if (name === 'vas') {
-  //       setFormData((prevData) => ({ ...prevData, [name]: checked }));
-  //     } else {
-  //       setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
-  //     }
+    try {
+      const response = await apiCalls(
+        'get',
+        `gatePassIn/getEntryNoFillDetails?branchCode=${loginBranchCode}&client=${loginClient}&entryNo=${selectedEntrySlNo}&finYear=${loginFinYear}&orgId=${orgId}`
+      );
+      console.log('API Response:', response);
 
-  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
-  //   }
-  // };
+      if (response.status === true) {
+        const bulkUploadGridDetails = response.paramObjectsMap.entryNoFillDetails;
+        console.log('THE BULK UPLOAD DETAILS BASED ON ENTRY NO IS:', response.paramObjectsMap.entryNoFillDetails);
+
+        if (bulkUploadGridDetails) {
+          const tableDetails = bulkUploadGridDetails.map((row) => ({
+            id: row.id,
+            lr_Hawb_Hbl_No: row.irNoHaw,
+            partNo: row.partNo,
+            partDesc: row.partDesc,
+            sku: row.sku,
+            batch_PalletNo: row.batchNo,
+            batchDate: row.batchDate,
+            expDate: row.expDate,
+            invNo: row.invoiceNo,
+            invDate: row.invoiceDate,
+            invQty: row.invQty,
+            recQty: row.recQty,
+            damageQty: row.damageQty,
+            shortQty: row.shortQty,
+            grnQty: row.grnQty,
+            palletQty: row.binQty
+          }));
+          setLrTableData(tableDetails);
+
+          tableDetails.forEach((row, index) => {
+            const dummyEvent = {
+              target: {
+                value: row.palletQty
+              }
+            };
+            // Call the handleBinQtyChange function for each row
+            handleBinQtyChange(dummyEvent, row, index);
+          });
+        } else {
+          setLrTableData([]);
+          setLrTableErrors([]);
+        }
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleEntryNoKeyDown = (event) => {
+    if (event.key === 'Tab') {
+      getUploadDetailByEntryNo(event.target.value);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value, checked, selectionStart, selectionEnd } = e.target;
-
-    // Define regex for validation
     const nameRegex = /^[A-Za-z ]*$/;
     const alphaNumericRegex = /^[A-Za-z0-9]*$/;
     const numericRegex = /^[0-9]*$/;
 
     let errorMessage = '';
-    let updatedValue = value.toUpperCase(); // Convert value to uppercase
+    let updatedValue = value.toUpperCase();
 
     switch (name) {
       case 'docCode':
@@ -614,9 +549,9 @@ export const Grn = () => {
         if (!numericRegex.test(value)) {
           errorMessage = 'Only numeric characters are allowed';
         } else if (value.length > 10) {
-          errorMessage = 'Invalid mobile format'; // Error message adjusted for consistency
+          errorMessage = 'Invalid mobile format';
         }
-        updatedValue = value.slice(0, 10); // Limit to 10 digits
+        updatedValue = value.slice(0, 10);
         break;
       case 'noOfPallets':
         if (!numericRegex.test(value)) {
@@ -709,7 +644,6 @@ export const Grn = () => {
         displayRowError(table);
       } else {
         // if (table === roleTableData) handleAddRow();
-        // else if (table === branchTableData) handleAddRow1();
         handleAddRow();
       }
     }
@@ -1144,6 +1078,53 @@ export const Grn = () => {
     console.log('Submit clicked');
     handleBulkUploadClose();
   };
+  const handleBinQtyChange = (event, row, index) => {
+    const value = event.target.value;
+    const maxPalletQty = row.grnQty || 0;
+    const intPattern = /^\d*$/;
+
+    if (value === '') {
+      setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, palletQty: value, noOfBin: '' } : r)));
+      setLrTableErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = { ...newErrors[index], palletQty: 'Bin Qty is required' };
+        return newErrors;
+      });
+    } else if (!intPattern.test(value)) {
+      setLrTableErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = { ...newErrors[index], palletQty: 'Only numbers are allowed' };
+        return newErrors;
+      });
+    } else if (Number(value) <= 0) {
+      setLrTableErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = {
+          ...newErrors[index],
+          palletQty: 'Bin Qty must be greater than zero'
+        };
+        return newErrors;
+      });
+    } else if (Number(value) > maxPalletQty) {
+      setLrTableErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = {
+          ...newErrors[index],
+          palletQty: `Pallet Qty cannot exceed ${maxPalletQty}`
+        };
+        return newErrors;
+      });
+    } else {
+      const noOfBin = Math.ceil(maxPalletQty / Number(value));
+
+      setLrTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, palletQty: value, noOfPallets: noOfBin } : r)));
+      setLrTableErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = { ...newErrors[index], palletQty: '' };
+        return newErrors;
+      });
+    }
+  };
 
   return (
     <>
@@ -1168,8 +1149,8 @@ export const Grn = () => {
             onSubmit={handleSubmit}
             sampleFileDownload={sampleFile}
             handleFileUpload={handleFileUpload}
-            // apiUrl={`putaway/ExcelUploadForPutAway?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&createdBy=${loginUserName}&customer=${loginCustomer}&finYear=${loginFinYear}&orgId=${orgId}&type=DOC&warehouse=${loginWarehouse}`}
-            screen="PutAway"
+            apiUrl={`grn/ExcelUploadForGrn?branch=${loginBranch}&branchCode=${loginBranchCode}&client=${loginClient}&createdBy=${loginUserName}&customer=${loginCustomer}&finYear=${loginFinYear}&orgId=${orgId}&type=DOC&warehouse=${loginWarehouse}`}
+            screen="GRN"
           ></CommonBulkUpload>
         )}
 
@@ -1211,7 +1192,7 @@ export const Grn = () => {
                         name="grnType"
                         disabled={formData.freeze}
                       >
-                        <MenuItem value="GET PASS">GATE PASS</MenuItem>
+                        <MenuItem value="GATE PASS">GATE PASS</MenuItem>
                         <MenuItem value="GRN">GRN</MenuItem>
                       </Select>
                       {fieldErrors.grnType && <FormHelperText>{fieldErrors.grnType}</FormHelperText>}
@@ -1220,24 +1201,23 @@ export const Grn = () => {
                 </>
               )}
               {/* Entry SL No */}
-              {formData.grnType !== 'GRN' && (
-                <>
-                  <div className="col-md-3 mb-3">
-                    <TextField
-                      label="Entry SL No"
-                      variant="outlined"
-                      size="small"
-                      fullWidth
-                      name="entrySlNo"
-                      value={formData.entrySlNo}
-                      onChange={handleInputChange}
-                      error={!!fieldErrors.entrySlNo}
-                      helperText={fieldErrors.entrySlNo}
-                      disabled={formData.grnType === 'GRN' || formData.freeze}
-                    />
-                  </div>
-                </>
-              )}
+              <>
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    label="Entry No"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="entrySlNo"
+                    value={formData.entrySlNo}
+                    onChange={handleInputChange}
+                    onKeyDown={handleEntryNoKeyDown}
+                    error={!!fieldErrors.entrySlNo}
+                    helperText={fieldErrors.entrySlNo}
+                    disabled={formData.grnType === 'GATE PASS' || formData.freeze}
+                  />
+                </div>
+              </>
 
               {/* Date */}
               <div className="col-md-3 mb-3">
@@ -1706,7 +1686,7 @@ export const Grn = () => {
                                                     const newErrors = [...prev];
                                                     newErrors[index] = {
                                                       ...newErrors[index],
-                                                      invDate: !value ? 'Invoice Date is required' : ''
+                                                      invDate: !value ? 'Inv Date is required' : ''
                                                     };
                                                     return newErrors;
                                                   });
@@ -2060,57 +2040,6 @@ export const Grn = () => {
                                                 </div>
                                               )}
                                             </td>
-                                            {/* <td className="border px-2 py-2">
-                                          <input
-                                            style={{ width: '150px' }}
-                                            type="text"
-                                            ref={lrNoDetailsRefs.current[index]?.palletQty}
-                                            value={row.palletQty}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              const intPattern = /^\d*$/;
-
-                                              if (intPattern.test(value) || value === '') {
-                                                setLrTableData((prev) => {
-                                                  const updatedData = prev.map((r) => {
-                                                    return r.id === row.id
-                                                      ? {
-                                                          ...r,
-                                                          palletQty: value
-                                                        }
-                                                      : r;
-                                                  });
-                                                  return updatedData;
-                                                });
-
-                                                setLrTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    palletQty: ''
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setLrTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    palletQty: 'only numbers are allowed'
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              }
-                                            }}
-                                            className={lrTableErrors[index]?.palletQty ? 'error form-control' : 'form-control'}
-                                          />
-                                          {lrTableErrors[index]?.palletQty && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {lrTableErrors[index].palletQty}
-                                            </div>
-                                          )}
-                                        </td> */}
-
                                             <td className="border px-2 py-2">
                                               <input
                                                 style={{ width: '150px' }}
@@ -2118,64 +2047,7 @@ export const Grn = () => {
                                                 ref={lrNoDetailsRefs.current[index]?.palletQty}
                                                 value={row.palletQty}
                                                 disabled={formData.freeze}
-                                                onChange={(e) => {
-                                                  const value = e.target.value;
-                                                  const maxPalletQty = (row.grnQty || 0) - (row.damageQty || 0); // Calculate maxPalletQty
-                                                  const intPattern = /^\d*$/;
-
-                                                  if (value === '') {
-                                                    // Allow empty input and clear noOfBin as well
-                                                    setLrTableData((prev) =>
-                                                      prev.map((r) => (r.id === row.id ? { ...r, palletQty: value, noOfBin: '' } : r))
-                                                    );
-                                                    setLrTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = { ...newErrors[index], palletQty: 'Pallet Qty is required' };
-                                                      return newErrors;
-                                                    });
-                                                  } else if (!intPattern.test(value)) {
-                                                    // Validate if only numbers are allowed
-                                                    setLrTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = { ...newErrors[index], palletQty: 'Only numbers are allowed' };
-                                                      return newErrors;
-                                                    });
-                                                  } else if (Number(value) <= 0) {
-                                                    // Validate if input is zero or negative
-                                                    setLrTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = {
-                                                        ...newErrors[index],
-                                                        palletQty: 'Pallet Qty must be greater than zero'
-                                                      };
-                                                      return newErrors;
-                                                    });
-                                                  } else if (Number(value) > maxPalletQty) {
-                                                    // Validate if palletQty exceeds maxPalletQty
-                                                    setLrTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = {
-                                                        ...newErrors[index],
-                                                        palletQty: `Pallet Qty cannot exceed ${maxPalletQty}`
-                                                      };
-                                                      return newErrors;
-                                                    });
-                                                  } else {
-                                                    // Valid input, calculate noOfBin (optional)
-                                                    const noOfBin = Math.ceil(maxPalletQty / Number(value));
-
-                                                    setLrTableData((prev) =>
-                                                      prev.map((r) =>
-                                                        r.id === row.id ? { ...r, palletQty: value, noOfPallets: noOfBin } : r
-                                                      )
-                                                    );
-                                                    setLrTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = { ...newErrors[index], palletQty: '' };
-                                                      return newErrors;
-                                                    });
-                                                  }
-                                                }}
+                                                onChange={(e) => handleBinQtyChange(e, row, index)} // Call the new function here
                                                 className={lrTableErrors[index]?.palletQty ? 'error form-control' : 'form-control'}
                                               />
                                               {lrTableErrors[index]?.palletQty && (
@@ -2189,52 +2061,11 @@ export const Grn = () => {
                                               <input
                                                 style={{ width: '150px' }}
                                                 type="text"
-                                                disabled={formData.freeze}
                                                 ref={lrNoDetailsRefs.current[index]?.noOfPallets}
                                                 value={row.noOfPallets}
-                                                onChange={(e) => {
-                                                  const value = e.target.value;
-                                                  const intPattern = /^\d*$/;
-
-                                                  if (intPattern.test(value) || value === '') {
-                                                    setLrTableData((prev) => {
-                                                      const updatedData = prev.map((r) => {
-                                                        return r.id === row.id
-                                                          ? {
-                                                              ...r,
-                                                              noOfPallets: value
-                                                            }
-                                                          : r;
-                                                      });
-                                                      return updatedData;
-                                                    });
-
-                                                    setLrTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = {
-                                                        ...newErrors[index],
-                                                        noOfPallets: ''
-                                                      };
-                                                      return newErrors;
-                                                    });
-                                                  } else {
-                                                    setLrTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = {
-                                                        ...newErrors[index],
-                                                        noOfPallets: 'only numbers are allowed'
-                                                      };
-                                                      return newErrors;
-                                                    });
-                                                  }
-                                                }}
+                                                disabled
                                                 className={lrTableErrors[index]?.noOfPallets ? 'error form-control' : 'form-control'}
                                               />
-                                              {lrTableErrors[index]?.noOfPallets && (
-                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                  {lrTableErrors[index].noOfPallets}
-                                                </div>
-                                              )}
                                             </td>
                                             <td className="border px-2 py-2">
                                               <select
