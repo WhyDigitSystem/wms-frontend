@@ -71,7 +71,9 @@ const TotalOrderLineChartCard = ({
   getOutboundMonth,
   getAllBuyerOrderData,
   getAllPickRequestData,
-  getOutboundYear
+  getOutboundYear,
+  getAllGRNData,
+  getAllPutawayData
 }) => {
   const theme = useTheme();
 
@@ -101,10 +103,10 @@ const TotalOrderLineChartCard = ({
     if (newValue) {
       // If month button clicked, open popover
       setAnchorEl(event.currentTarget);
-      getOutboundYear();
-      getAllBuyerOrderData(null);
-      getAllPickRequestData(null);
     }
+    getOutboundYear();
+    getAllBuyerOrderData(null);
+    getAllPickRequestData(null);
   };
 
   const handleClosePopover = () => {
@@ -120,6 +122,8 @@ const TotalOrderLineChartCard = ({
     getOutboundMonth(monthNumberMap[month]);
     getAllBuyerOrderData(monthNumberMap[month]);
     getAllPickRequestData(monthNumberMap[month]);
+    getAllGRNData(monthNumberMap[month]);
+    getAllPutawayData(monthNumberMap[month]);
   };
 
   const open = Boolean(anchorEl);

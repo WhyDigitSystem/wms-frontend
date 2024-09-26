@@ -205,8 +205,8 @@ const Customization = () => {
               <Tabs
                 value={selectedTab}
                 onChange={handleTabChange}
-                indicatorColor="primary"
-                textColor="primary"
+                indicatorColor="secondary"
+                textColor="secondary"
                 variant="fullWidth"
                 aria-label="Ticket Tabs"
               >
@@ -295,7 +295,7 @@ const Customization = () => {
                       </Grid> */}
 
                       <Grid item xs={12}>
-                        <Button type="submit" variant="contained" color="primary" fullWidth sx={{ textTransform: 'none' }}>
+                        <Button type="submit" variant="contained" color="secondary" fullWidth sx={{ textTransform: 'none' }}>
                           Send
                         </Button>
                       </Grid>

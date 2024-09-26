@@ -6,6 +6,7 @@ import { Box, Grid } from '@mui/material';
 // project imports
 import apiCalls from 'apicall';
 import { gridSpacing } from 'store/constant';
+import NoDataFound from 'utils/NoDataFound';
 import CalendarTimeComponent from './CalenderTime';
 import EarningCard from './EarningCard';
 import GaugeValueRangeNoSnap from './Gauge';
@@ -115,11 +116,11 @@ const Dashboard = () => {
     }
   };
 
-  const getOutboundMonth = async (month) => {
+  const getOutboundMonth = async (data) => {
     try {
       const response = await apiCalls(
         'get',
-        `dashboardController/getOutBoundOrderPerMonth?orgId=${orgId}&branchCode=${branchCode}&warehouse=${loginWarehouse}&client=${client}&finYear=${finYear}&month=${month ? month : 9}`
+        `dashboardController/getOutBoundOrderPerMonth?orgId=${orgId}&branchCode=${branchCode}&warehouse=${loginWarehouse}&client=${client}&finYear=${finYear}&month=${data ? data : month}`
       );
 
       if (response.status === true) {
@@ -266,12 +267,18 @@ const Dashboard = () => {
   //second Pie
 
   const getAllBuyerOrderData = async (data) => {
-    setLoadingg(true);
+    setLoadingg(true); // Set loading to true when API call starts
     try {
-      const response = await apiCalls(
-        'get',
-        `putaway/getPutawayForDashBoard?orgId=${orgId}&branchCode=${branchCode}&client=${client}&finYear=${finYear}&warehouse=${loginWarehouse}&month=${data ? data : month1}`
-      );
+      // Build the URL conditionally, excluding the month if it's not provided
+      let url = `putaway/getPutawayForDashBoard?orgId=${orgId}&branchCode=${branchCode}&client=${client}&finYear=${finYear}&warehouse=${loginWarehouse}`;
+
+      // Append the month parameter only if data is provided
+      if (data !== null && data !== undefined) {
+        url += `&month=${data}`;
+      }
+
+      const response = await apiCalls('get', url);
+
       if (response.status === true) {
         const grnData = response.paramObjectsMap.putawayDashboard;
         const pendingList = grnData.filter((item) => item.status === 'Pending');
@@ -280,20 +287,28 @@ const Dashboard = () => {
         setPendingGRNData1(pendingList);
         setCompletedGRNData1(completedList);
       } else {
-        console.error('API Error:', response);
+        console.error('API Error or No Data:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    } finally {
+      setLoadingg(false); // Set loading to false after the API call finishes
     }
   };
 
   const getAllPickRequestData = async (data) => {
-    setLoadingg(true);
+    setLoadingg(true); // Set loading to true when API call starts
     try {
-      const response = await apiCalls(
-        'get',
-        `pickrequest/getPicrequestDashboard?orgId=${orgId}&branchCode=${branchCode}&client=${client}&finyear=${finYear}&month=${data ? data : month1}`
-      );
+      // Build the URL conditionally, excluding the month if it's not provided
+      let url = `pickrequest/getPicrequestDashboard?orgId=${orgId}&branchCode=${branchCode}&client=${client}&finyear=${finYear}`;
+
+      // Append the month parameter only if data is provided
+      if (data !== null && data !== undefined) {
+        url += `&month=${data}`;
+      }
+
+      const response = await apiCalls('get', url);
+
       if (response.status === true) {
         const putawayData = response.paramObjectsMap.picrequestDashboard;
         const pendingList = putawayData.filter((item) => item.status === 'Pending');
@@ -302,10 +317,12 @@ const Dashboard = () => {
         setPendingPutawayData1(pendingList);
         setCompletedPutawayData1(completedList);
       } else {
-        console.error('API Error:', response);
+        console.error('API Error or No Data:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    } finally {
+      setLoadingg(false); // Set loading to false after the API call finishes
     }
   };
 
@@ -333,6 +350,8 @@ const Dashboard = () => {
               getAllBuyerOrderData={getAllBuyerOrderData}
               getAllPickRequestData={getAllPickRequestData}
               getOutboundYear={getOutboundYear}
+              getAllGRNData={getAllGRNData}
+              getAllPutawayData={getAllPutawayData}
             />
           </Grid>
           <Grid item sm={12} xs={12} md={6} lg={4}>
@@ -351,7 +370,7 @@ const Dashboard = () => {
                 completedPutawayData={completedPutawayData}
               />
             ) : (
-              <p>No data available for the selected month</p>
+              <NoDataFound message="No data available for the selected month/year" />
             )}
           </Grid>
           <Grid item sm={5} xs={12} md={4} lg={5}>
@@ -377,7 +396,7 @@ const Dashboard = () => {
                 completedPutawayData={completedPutawayData1}
               />
             ) : (
-              <p>No GRN or Putaway data available for the selected month</p>
+              <NoDataFound message="No data available for the selected month/year" />
             )}
           </Grid>
           <Grid item sm={5} xs={12} md={4} lg={5}>
