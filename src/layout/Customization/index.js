@@ -1,6 +1,6 @@
-import { Button, Drawer, Fab, Grid, IconButton, Tab, Tabs, TextField, Tooltip, Typography } from '@mui/material';
+import { Button, Drawer, Fab, Grid, IconButton, Tab, Tabs, TextField, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { IconHelp, IconXboxX } from '@tabler/icons-react';
+import { IconHelp } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import { useDispatch, useSelector } from 'react-redux';
@@ -8,7 +8,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import { SET_BORDER_RADIUS, SET_FONT_FAMILY } from 'store/actions';
 import { gridSpacing } from 'store/constant';
 import SubCard from 'ui-component/cards/SubCard';
-import QuickChat from './QuickChat';
+import EmailConfig from 'utils/EmailConfig';
+import ToastComponent, { showToast } from 'utils/toast-component';
+import TicketList from './List';
 
 function valueText(value) {
   return `${value}px`;
@@ -20,6 +22,8 @@ const Customization = () => {
   const customization = useSelector((state) => state.customization);
 
   const [open, setOpen] = useState(false);
+  const [sendMail, setSendMail] = useState(false);
+  const [newMess, setNewMess] = useState(false);
   const handleToggle = () => {
     setOpen(!open);
   };
@@ -120,6 +124,35 @@ const Customization = () => {
   const handleHelpSubmit = async (event) => {
     event.preventDefault();
     // Add your submit logic here
+
+    console.log('help', helpFormData);
+
+    // Corrected template literals
+    const newMessage = `
+      You have a new message from: ${helpFormData.name}
+      Message: ${helpFormData.message}
+      Email: ${helpFormData.email}
+    `;
+
+    // Setting the new message
+    setNewMess(newMessage);
+
+    // Logging the new message
+    console.log(newMessage);
+
+    // Indicating that an email needs to be sent
+    setSendMail(true);
+
+    // Delay the handleToggle function by 2 seconds
+    setTimeout(() => {
+      handleToggle();
+      setHelpFormData({
+        name: '',
+        email: '',
+        message: ''
+      });
+      showToast('success', 'Ticket Created Successfully');
+    }, 1000); // 2000 milliseconds = 2 seconds
   };
 
   const handleRemoveImage = () => {
@@ -129,6 +162,9 @@ const Customization = () => {
 
   return (
     <>
+      <div>
+        <ToastComponent />
+      </div>
       <Tooltip title="Help">
         <Fab
           component="div"
@@ -176,7 +212,7 @@ const Customization = () => {
               >
                 <Tab label="Ticket" />
                 <Tab label="Ticket List" />
-                <Tab label="Quick chat" />
+                {/* <Tab label="Quick chat" /> */}
               </Tabs>
               <br></br>
 
@@ -220,7 +256,7 @@ const Customization = () => {
                           required
                         />
                       </Grid>
-                      <Grid item spacing={2}>
+                      {/* <Grid item spacing={2}>
                         <Grid item xs={12}>
                           <Button variant="contained" component="label" fullWidth sx={{ textTransform: 'none' }}>
                             Attach File
@@ -256,7 +292,7 @@ const Customization = () => {
                             </IconButton>
                           </Grid>
                         )}
-                      </Grid>
+                      </Grid> */}
 
                       <Grid item xs={12}>
                         <Button type="submit" variant="contained" color="primary" fullWidth sx={{ textTransform: 'none' }}>
@@ -268,22 +304,27 @@ const Customization = () => {
                 </SubCard>
               )}
 
-              {selectedTab === 1 && (
-                <SubCard title="List of Created Tickets">
-                  {/* Render your list of created tickets here */}
-                  <Typography variant="body2">This is where the list of created tickets will be displayed.</Typography>
-                </SubCard>
-              )}
+              {selectedTab === 1 && <TicketList />}
 
-              {selectedTab === 2 && (
+              {/* {selectedTab === 2 && (
                 <Grid item xs={12}>
                   <QuickChat />
                 </Grid>
-              )}
+              )} */}
             </Grid>
           </Grid>
         </PerfectScrollbar>
       </Drawer>
+
+      {sendMail && (
+        <EmailConfig
+          updatedEmployee={'Admin'}
+          toEmail={'krishnan@whydigit.in'}
+          message={newMess}
+          title={'you have a new ticket'}
+          // description={description}
+        />
+      )}
     </>
   );
 };

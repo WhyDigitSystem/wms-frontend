@@ -1,16 +1,13 @@
 import { Box, Card, Chip, Dialog, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import apiCalls from 'apicall';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
 
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
-import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
-const GaugeValueRangeNoSnap = ({ isLoading }) => {
+const GaugeValueRangeNoSnap = ({ completedGRNData, pendingGRNData, pendingPutawayData, completedPutawayData }) => {
   const theme = useTheme();
   const [openCompletedDialog, setOpenCompletedDialog] = useState(false);
   const [openPendingDialog, setOpenPendingDialog] = useState(false);
@@ -18,22 +15,8 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
   const [openPendingDialogPutaway, setOpenPendingDialogPutaway] = useState(false);
   const [dialogTitle, setDialogTitle] = useState('');
   const [data, setData] = useState([]);
-  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
-  const [client, setClient] = useState(localStorage.getItem('client'));
-  const [finYear, setFinYear] = useState('2024');
-  const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
-  const [pendingGRNData, setPendingGRNData] = useState([]);
-  const [completedGRNData, setCompletedGRNData] = useState([]);
-  const [pendingPutawayData, setPendingPutawayData] = useState([]);
-  const [completedPutawayData, setCompletedPutawayData] = useState([]);
   const [grnChartSeries, setGrnChartSeries] = useState([0, 0]);
   const [putawayChartSeries, setPutawayChartSeries] = useState([0, 0]);
-
-  useEffect(() => {
-    getAllGRNData();
-    getAllPutawayData();
-  }, []);
 
   useEffect(() => {
     if (completedGRNData.length > 0 || pendingGRNData.length > 0) {
@@ -52,27 +35,6 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
       setPutawayChartSeries([completedPutawayData.length, pendingPutawayData.length]);
     }
   }, [completedPutawayData, pendingPutawayData]);
-
-  const getAllGRNData = async () => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `grn/getGrnStatusForDashBoard?orgId=${orgId}&branchCode=${branchCode}&client=${client}&finYear=${finYear}&warehouse=${loginWarehouse}`
-      );
-      if (response.status === true) {
-        const grnData = response.paramObjectsMap.grnDashboard;
-        const pendingList = grnData.filter((item) => item.status === 'Pending');
-        const completedList = grnData.filter((item) => item.status === 'Complete');
-
-        setPendingGRNData(pendingList);
-        setCompletedGRNData(completedList);
-      } else {
-        console.error('API Error:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
 
   const commonChartOptions = {
     chart: {
@@ -153,27 +115,6 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
     }
   };
 
-  const getAllPutawayData = async () => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `putaway/getPutawayForDashBoard?orgId=${orgId}&branchCode=${branchCode}&client=${client}&finYear=${finYear}&warehouse=${loginWarehouse}`
-      );
-      if (response.status === true) {
-        const putawayData = response.paramObjectsMap.putawayDashboard;
-        const pendingList = putawayData.filter((item) => item.status === 'Pending');
-        const completedList = putawayData.filter((item) => item.status === 'Complete');
-
-        setPendingPutawayData(pendingList);
-        setCompletedPutawayData(completedList);
-      } else {
-        console.error('API Error:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
   const handleCloseCompletedDialog = () => {
     setOpenCompletedDialog(false);
     setOpenCompletedDialogPutaway(false);
@@ -239,7 +180,7 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
         }}
       >
         <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: '600', mb: 1 }}>
-          Putaway
+          Buyer Order
         </Typography>
         <Box sx={{ width: '100%', height: '100%' }}>
           <ReactApexChart options={putawayChartOptions} series={putawayChartSeries} type="pie" height={200} />
@@ -262,17 +203,17 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
                   <TableRow>
                     <TableCell>
                       <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                        Entry No
+                        Grn No
                       </Typography>
                     </TableCell>
                     <TableCell>
                       <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                        Entry Date
+                        Grn Date
                       </Typography>
                     </TableCell>
                     <TableCell>
                       <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                        Status
+                        Qty
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -280,15 +221,16 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
                 <TableBody>
                   {completedGRNData.map((item, index) => (
                     <TableRow key={index}>
-                      <TableCell>{item.entryNo}</TableCell>
-                      <TableCell>{dayjs(item.entryDate).format('DD-MM-YYYY')}</TableCell>
-                      <TableCell>
+                      <TableCell>{item.grnNo}</TableCell>
+                      <TableCell>{dayjs(item.grnDate).format('DD-MM-YYYY')}</TableCell>
+                      <TableCell>{item.qty}</TableCell>
+                      {/* <TableCell>
                         <Chip
                           icon={item.status === 'Complete' ? <CheckCircleOutlineIcon /> : <PendingActionsIcon />}
                           label={item.status}
                           color={item.status === 'Complete' ? 'success' : 'warning'}
                         />
-                      </TableCell>
+                      </TableCell> */}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -315,17 +257,17 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
                 <TableRow>
                   <TableCell>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      Entry No
+                      Grn No
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      Entry Date
+                      Grn Date
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      Status
+                      Qty
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -333,15 +275,16 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
               <TableBody>
                 {pendingGRNData.map((item, index) => (
                   <TableRow key={index}>
-                    <TableCell>{item.entryNo}</TableCell>
-                    <TableCell>{dayjs(item.entryDate).format('DD-MM-YYYY')}</TableCell>
-                    <TableCell>
+                    <TableCell>{item.grnNo}</TableCell>
+                    <TableCell>{dayjs(item.grnDate).format('DD-MM-YYYY')}</TableCell>
+                    <TableCell>{item.qty}</TableCell>
+                    {/* <TableCell>
                       <Chip
                         icon={item.status === 'Complete' ? <CheckCircleOutlineIcon /> : <PendingActionsIcon />}
                         label={item.status}
                         color={item.status === 'Complete' ? 'success' : 'warning'}
                       />
-                    </TableCell>
+                    </TableCell> */}
                   </TableRow>
                 ))}
               </TableBody>
@@ -353,7 +296,7 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
       {/* Completed Putaway Dialog */}
       <Dialog open={openCompletedDialogPutaway} onClose={handleCloseCompletedDialog} fullWidth maxWidth="sm">
         <DialogTitle>
-          Completed Items
+          Completed Items &nbsp; &nbsp; <Chip label={completedPutawayData.length} color={'success'} />
           <IconButton onClick={handleCloseCompletedDialog} sx={{ position: 'absolute', right: 8, top: 8 }}>
             <CloseIcon />
           </IconButton>
@@ -365,17 +308,17 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
                 <TableRow>
                   <TableCell>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      Entry No
+                      Order No
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      Entry Date
+                      Order Date
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      Status
+                      Qty
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -383,15 +326,16 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
               <TableBody>
                 {completedPutawayData.map((item, index) => (
                   <TableRow key={index}>
-                    <TableCell>{item.entryNo}</TableCell>
-                    <TableCell>{dayjs(item.entryDate).format('DD-MM-YYYY')}</TableCell>
-                    <TableCell>
+                    <TableCell>{item.orderNo}</TableCell>
+                    <TableCell>{dayjs(item.orderDate).format('DD-MM-YYYY')}</TableCell>
+                    <TableCell>{item.qty}</TableCell>
+                    {/* <TableCell>
                       <Chip
                         icon={item.status === 'Complete' ? <CheckCircleOutlineIcon /> : <PendingActionsIcon />}
                         label={item.status}
                         color={item.status === 'Complete' ? 'success' : 'warning'}
                       />
-                    </TableCell>
+                    </TableCell> */}
                   </TableRow>
                 ))}
               </TableBody>
@@ -403,7 +347,7 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
       {/* Pending Putaway Dialog */}
       <Dialog open={openPendingDialogPutaway} onClose={handleClosePendingDialog} fullWidth maxWidth="sm">
         <DialogTitle>
-          Pending Items
+          Pending Items &nbsp; &nbsp; <Chip label={pendingPutawayData.length} color={'warning'} />
           <IconButton onClick={handleClosePendingDialog} sx={{ position: 'absolute', right: 8, top: 8 }}>
             <CloseIcon />
           </IconButton>
@@ -415,17 +359,17 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
                 <TableRow>
                   <TableCell>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      Entry No
+                      Order No
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      Entry Date
+                      Order Date
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      Status
+                      Qty
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -433,15 +377,16 @@ const GaugeValueRangeNoSnap = ({ isLoading }) => {
               <TableBody>
                 {pendingPutawayData.map((item, index) => (
                   <TableRow key={index}>
-                    <TableCell>{item.entryNo}</TableCell>
-                    <TableCell>{dayjs(item.entryDate).format('DD-MM-YYYY')}</TableCell>
-                    <TableCell>
+                    <TableCell>{item.orderNo}</TableCell>
+                    <TableCell>{dayjs(item.orderDate).format('DD-MM-YYYY')}</TableCell>
+                    <TableCell>{item.qty}</TableCell>
+                    {/* <TableCell>
                       <Chip
                         icon={item.status === 'Complete' ? <CheckCircleOutlineIcon /> : <PendingActionsIcon />}
                         label={item.status}
                         color={item.status === 'Complete' ? 'success' : 'warning'}
                       />
-                    </TableCell>
+                    </TableCell> */}
                   </TableRow>
                 ))}
               </TableBody>

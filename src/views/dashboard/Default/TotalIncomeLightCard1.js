@@ -91,7 +91,7 @@ const TotalIncomeLightCard1 = ({ isLoading, data, pickRequestData }) => {
                         mt: 0.5
                       }}
                     >
-                      Per Day Putaway &nbsp; &nbsp;
+                      Day Putaway &nbsp; &nbsp;
                     </Typography>
                   }
                 />
@@ -135,7 +135,7 @@ const TotalIncomeLightCard1 = ({ isLoading, data, pickRequestData }) => {
                         mt: 0.5
                       }}
                     >
-                      Per Day Pick Request
+                      Day Pick Request
                     </Typography>
                   }
                 />

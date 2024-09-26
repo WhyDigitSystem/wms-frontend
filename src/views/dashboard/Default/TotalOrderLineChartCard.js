@@ -1,24 +1,22 @@
 import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-// material-ui
-import { Avatar, Box, Button, Grid, Typography } from '@mui/material';
+// Material-UI
+import { Avatar, Box, Button, Grid, List, ListItem, Popover, Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 
-// third-party
+// Third-party
 import Chart from 'react-apexcharts';
 
-// project imports
+// Project imports
 import MainCard from 'ui-component/cards/MainCard';
 import SkeletonTotalOrderCard from 'ui-component/cards/Skeleton/EarningCard';
 
-import { IconArrowDownFromArc } from '@tabler/icons-react';
 import ChartDataMonth from './chart-data/total-order-month-line-chart';
 import ChartDataYear from './chart-data/total-order-year-line-chart';
 
-// assets
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import apiCalls from 'apicall';
+// Assets
+import { IconArrowDownToArc } from '@tabler/icons-react';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
   backgroundColor: theme.palette.primary.dark,
@@ -62,63 +60,69 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
   }
 }));
 
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 // ==============================|| DASHBOARD - TOTAL ORDER LINE CHART CARD ||============================== //
 
-const TotalOrderLineChartCard = ({ isLoading }) => {
+const TotalOrderLineChartCard = ({
+  isLoading,
+  monthData,
+  yearData,
+  getOutboundMonth,
+  getAllBuyerOrderData,
+  getAllPickRequestData,
+  getOutboundYear
+}) => {
   const theme = useTheme();
 
   const [timeValue, setTimeValue] = useState(true);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState('');
+
+  const [selectedMonthNumber, setSelectedMonthNumber] = useState(null); // New state for month number
+
+  const monthNumberMap = {
+    Jan: 1,
+    Feb: 2,
+    Mar: 3,
+    Apr: 4,
+    May: 5,
+    Jun: 6,
+    Jul: 7,
+    Aug: 8,
+    Sep: 9,
+    Oct: 10,
+    Nov: 11,
+    Dec: 12
+  };
+
   const handleChangeTime = (event, newValue) => {
     setTimeValue(newValue);
-  };
-
-  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
-  const [warehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
-  const [client, setClient] = useState(localStorage.getItem('client'));
-  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
-
-  const [monthData, setMonthData] = useState('');
-  const [yearData, setYearData] = useState('');
-
-  useEffect(() => {
-    getOutboundMonth();
-    getOutboundYear();
-  }, []);
-
-  const getOutboundMonth = async () => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `dashboardController/getOutBoundOrderPerMonth?orgId=${orgId}&branchCode=${branchCode}&warehouse=${warehouse}&client=${client}&finYear=${finYear}`
-      );
-
-      if (response.status === true) {
-        setMonthData(response.paramObjectsMap.buyerorderVO[0].count);
-      } else {
-        console.error('Failed to fetch warehouse client data:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching warehouse client data:', error);
+    if (newValue) {
+      // If month button clicked, open popover
+      setAnchorEl(event.currentTarget);
+      getOutboundYear();
+      getAllBuyerOrderData(null);
+      getAllPickRequestData(null);
     }
   };
 
-  const getOutboundYear = async () => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `dashboardController/getOutBoundOrderPerYear?orgId=${orgId}&branchCode=${branchCode}&warehouse=${warehouse}&client=${client}&finYear=${finYear}`
-      );
-
-      if (response.status === true) {
-        setYearData(response.paramObjectsMap.buyerorderVO[0].count);
-      } else {
-        console.error('Failed to fetch warehouse client data:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching warehouse client data:', error);
-    }
+  const handleClosePopover = () => {
+    setAnchorEl(null);
   };
+
+  const handleMonthSelect = (month) => {
+    setSelectedMonth(month);
+    setSelectedMonthNumber(monthNumberMap[month]);
+    handleClosePopover();
+    // Add any additional logic to update monthData based on selectedMonth if needed
+    // console.log('Month', selectedMonthNumber);
+    getOutboundMonth(monthNumberMap[month]);
+    getAllBuyerOrderData(monthNumberMap[month]);
+    getAllPickRequestData(monthNumberMap[month]);
+  };
+
+  const open = Boolean(anchorEl);
 
   return (
     <>
@@ -141,7 +145,7 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                         mt: 1
                       }}
                     >
-                      <IconArrowDownFromArc fontSize="inherit" />
+                      <IconArrowDownToArc fontSize="inherit" />
                     </Avatar>
                   </Grid>
                   <Grid item>
@@ -171,24 +175,23 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                   <Grid item xs={6}>
                     <Grid container alignItems="center">
                       <Grid item>
-                        {timeValue ? (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>{monthData}</Typography>
-                        ) : (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>{yearData}</Typography>
-                        )}
+                        <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.1 }}>
+                          {timeValue ? monthData : yearData} &nbsp;{' '}
+                          <span style={{ fontSize: '18px' }}> {selectedMonth && selectedMonth}</span>
+                        </Typography>
                       </Grid>
-                      <Grid item>
+                      {/* <Grid item>
                         <Avatar
                           sx={{
                             ...theme.typography.smallAvatar,
                             cursor: 'pointer',
-                            backgroundColor: theme.palette.primary[200],
-                            color: theme.palette.primary.dark
+                            backgroundColor: theme.palette.secondary[200],
+                            color: theme.palette.secondary.dark
                           }}
                         >
-                          <ArrowDownwardIcon fontSize="inherit" sx={{ transform: 'rotate3d(1, 1, 1, 45deg)' }} />
+                          <ArrowDownwardOutlined fontSize="inherit" sx={{ transform: 'rotate3d(1, 1, 1, 45deg)' }} />
                         </Avatar>
-                      </Grid>
+                      </Grid> */}
                       <Grid item xs={12}>
                         <Typography
                           sx={{
@@ -197,7 +200,7 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                             color: '#fff'
                           }}
                         >
-                          Outbound Order
+                          Outwards
                         </Typography>
                       </Grid>
                     </Grid>
@@ -208,6 +211,21 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                 </Grid>
               </Grid>
             </Grid>
+            <Popover
+              open={open}
+              anchorEl={anchorEl}
+              onClose={handleClosePopover}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            >
+              <List sx={{ padding: '16px' }}>
+                {months.map((month) => (
+                  <ListItem button key={month} onClick={() => handleMonthSelect(month)}>
+                    {month}
+                  </ListItem>
+                ))}
+              </List>
+            </Popover>
           </Box>
         </CardWrapper>
       )}
@@ -215,8 +233,15 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
   );
 };
 
+TotalOrderLineChartCard.defaultProps = {
+  getOutboundMonth: () => {} // No-op function as a default
+};
+
 TotalOrderLineChartCard.propTypes = {
-  isLoading: PropTypes.bool
+  isLoading: PropTypes.bool,
+  monthData: PropTypes.string, // Ensure that monthData is of type string
+  yearData: PropTypes.string,
+  getOutboundMonth: PropTypes.func.isRequired // Ensure that yearData is of type string
 };
 
 export default TotalOrderLineChartCard;
