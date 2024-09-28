@@ -14,6 +14,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
+import sampleFile from '../../../assets/sample-files/Sample_Carrier_Upload.xlsx';
 
 export const CarrierMaster = () => {
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId')));
@@ -26,6 +29,7 @@ export const CarrierMaster = () => {
   const [customer] = useState(localStorage.getItem('customer'));
   const [client] = useState(localStorage.getItem('client'));
   const [warehouse] = useState(localStorage.getItem('warehouse'));
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     carrier: '',
@@ -81,35 +85,6 @@ export const CarrierMaster = () => {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-  //   const numericRegex = /^[0-9]*$/;
-  //   const alphanumericRegex = /^[A-Za-z0-9]*$/;
-  //   const specialCharsRegex = /^[A-Za-z0-9@_\-*]*$/;
-
-  //   let errorMessage = '';
-
-  //   switch (name) {
-  //     case '  carrier':
-  //     case 'carrierShortName':
-  //       if (!nameRegex.test(value)) {
-  //         errorMessage = 'Only alphabetic characters are allowed';
-  //       }
-  //       break;
-  //     default:
-  //       break;
-  //   }
-
-  //   if (errorMessage) {
-  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-  //   } else {
-  //     const updatedValue = name === 'email' ? value : value.toUpperCase();
-  //     setFormData({ ...formData, [name]: updatedValue });
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-  // };
 
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd } = e.target;
@@ -272,6 +247,22 @@ export const CarrierMaster = () => {
       active: true
     });
   };
+  const handleBulkUploadOpen = () => {
+    setUploadOpen(true); // Open dialog
+  };
+
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false); // Close dialog
+  };
+
+  const handleFileUpload = (event) => {
+    console.log(event.target.files[0]);
+  };
+
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -280,9 +271,25 @@ export const CarrierMaster = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} />
+            <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} />
           </div>
         </div>
+        {uploadOpen && (
+          <CommonBulkUpload
+            open={uploadOpen}
+            handleClose={handleBulkUploadClose}
+            title="Upload Files"
+            uploadText="Upload file"
+            downloadText="Sample File"
+            onSubmit={handleSubmit}
+            sampleFileDownload={sampleFile}
+            handleFileUpload={handleFileUpload}
+            apiUrl={`warehousemastercontroller/CarrierlUpload?branch=${branch}&branchCode=${branchCode}&client=${client}&createdBy=${loginUserName}&customer=${customer}&orgId=${orgId}&warehouse=${warehouse}`}
+            screen="Carrier"
+          ></CommonBulkUpload>
+        )}
+
         {listView ? (
           <div className="mt-4">
             {/* <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} /> */}

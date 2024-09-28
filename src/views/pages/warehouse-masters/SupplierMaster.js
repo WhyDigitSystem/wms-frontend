@@ -16,6 +16,9 @@ import ActionButton from 'utils/ActionButton';
 import { getAllActiveCitiesByState, getAllActiveCountries, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
+import sampleFile from '../../../assets/sample-files/Sample_Carrier_Upload.xlsx';
 
 export const SupplierMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -33,6 +36,7 @@ export const SupplierMaster = () => {
   const [countryList, setCountryList] = useState([]);
   const [stateList, setStateList] = useState([]);
   const [cityList, setCityList] = useState([]);
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     supplierName: '',
@@ -459,6 +463,24 @@ export const SupplierMaster = () => {
       active: true
     });
   };
+
+  const handleBulkUploadOpen = () => {
+    setUploadOpen(true); // Open dialog
+  };
+
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false); // Close dialog
+  };
+
+  const handleFileUpload = (event) => {
+    console.log(event.target.files[0]);
+  };
+
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
+
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -467,9 +489,24 @@ export const SupplierMaster = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} />
+            <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} />
           </div>
         </div>
+        {uploadOpen && (
+          <CommonBulkUpload
+            open={uploadOpen}
+            handleClose={handleBulkUploadClose}
+            title="Upload Files"
+            uploadText="Upload file"
+            downloadText="Sample File"
+            onSubmit={handleSubmit}
+            sampleFileDownload={sampleFile}
+            handleFileUpload={handleFileUpload}
+            apiUrl={`warehousemastercontroller/SupplierUpload?branch=${branch}&branchCode=${loginBranchCode}&client=${client}&createdBy=${loginUserName}&customer=${customer}&orgId=${orgId}&warehouse=${warehouse}`}
+            screen="Supplier"
+          ></CommonBulkUpload>
+        )}
         {listView ? (
           <div className="mt-4">
             <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getSupplierById} />
