@@ -1,33 +1,30 @@
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { FormHelperText, Tooltip, FormControlLabel, Checkbox } from '@mui/material';
-import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import axios from 'axios';
-import { useRef, useState, useMemo, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Checkbox, FormControlLabel, FormHelperText } from '@mui/material';
+import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
-import 'react-datepicker/dist/react-datepicker.css';
-import DatePicker from 'react-datepicker';
-import { getAllActiveBranches, getAllActiveEmployees } from 'utils/CommonFunctions';
+import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { decryptPassword, encryptPassword } from 'views/utilities/encryptPassword';
+import { useEffect, useState } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/ActionButton';
+import { getAllActiveBranches, getAllActiveEmployees } from 'utils/CommonFunctions';
+import { showToast } from 'utils/toast-component';
+import { encryptPassword } from 'views/utilities/encryptPassword';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 export const UserCreationMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -725,7 +722,8 @@ export const UserCreationMaster = () => {
         employeeName: formData.employeeName,
         userType: formData.userType,
         email: formData.email,
-        password: encryptPassword(formData.password),
+        // password: encryptPassword(formData.password),
+        ...(!editId && { password: encryptPassword(formData.password) }),
         mobileNo: formData.mobileNo,
         nickName: formData.nickName,
         userName: formData.employeeCode,

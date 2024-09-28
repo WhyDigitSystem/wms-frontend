@@ -6,6 +6,7 @@ import ReactApexChart from 'react-apexcharts';
 
 import CloseIcon from '@mui/icons-material/Close';
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import NoDataFound from 'utils/NoDataFound';
 
 const GaugeValueRangeNoSnap = ({ completedGRNData, pendingGRNData, pendingPutawayData, completedPutawayData }) => {
   const theme = useTheme();
@@ -160,7 +161,7 @@ const GaugeValueRangeNoSnap = ({ completedGRNData, pendingGRNData, pendingPutawa
           {grnChartSeries.length > 0 ? (
             <ReactApexChart options={grnChartOptions} series={grnChartSeries} type="pie" height={200} />
           ) : (
-            <Typography>Loading...</Typography>
+            <NoDataFound message="No data available for the selected month/year" />
           )}
         </Box>
       </Card>
@@ -203,12 +204,12 @@ const GaugeValueRangeNoSnap = ({ completedGRNData, pendingGRNData, pendingPutawa
                   <TableRow>
                     <TableCell>
                       <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                        Grn No
+                        Entry No
                       </Typography>
                     </TableCell>
                     <TableCell>
                       <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                        Grn Date
+                        Entry Date
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -257,12 +258,12 @@ const GaugeValueRangeNoSnap = ({ completedGRNData, pendingGRNData, pendingPutawa
                 <TableRow>
                   <TableCell>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      Grn No
+                      Entry No
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      Grn Date
+                      Entry Date
                     </Typography>
                   </TableCell>
                   <TableCell>

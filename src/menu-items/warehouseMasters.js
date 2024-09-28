@@ -5,10 +5,10 @@
 //   IconBuildingWarehouse
 // };
 
-import { IconDatabaseStar } from '@tabler/icons-react';
+import { IconBuildingWarehouse } from '@tabler/icons-react';
 
 const icons = {
-  IconDatabaseStar
+  IconBuildingWarehouse
 };
 
 // ==============================|| EXTRA PAGES MENU ITEMS ||============================== //
@@ -306,7 +306,7 @@ const warehouseMasters = {
       id: 'warehouseMasters',
       title: 'Warehouse Masters',
       type: 'collapse',
-      icon: icons.IconKey,
+      icon: icons.IconBuildingWarehouse,
       children: filteredChildren
     }
   ]

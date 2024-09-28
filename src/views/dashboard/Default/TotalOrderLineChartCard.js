@@ -16,7 +16,7 @@ import ChartDataMonth from './chart-data/total-order-month-line-chart';
 import ChartDataYear from './chart-data/total-order-year-line-chart';
 
 // Assets
-import { IconArrowDownToArc } from '@tabler/icons-react';
+import { IconArrowDownFromArc } from '@tabler/icons-react';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
   backgroundColor: theme.palette.primary.dark,
@@ -69,10 +69,10 @@ const TotalOrderLineChartCard = ({
   monthData,
   yearData,
   getOutboundMonth,
-  getAllBuyerOrderData,
+  // getAllBuyerOrderData,
   getAllPickRequestData,
   getOutboundYear,
-  getAllGRNData,
+  // getAllGRNData,
   getAllPutawayData
 }) => {
   const theme = useTheme();
@@ -105,7 +105,8 @@ const TotalOrderLineChartCard = ({
       setAnchorEl(event.currentTarget);
     }
     getOutboundYear();
-    getAllBuyerOrderData(null);
+    // getAllBuyerOrderData(null);
+    getAllPutawayData(null);
     getAllPickRequestData(null);
   };
 
@@ -120,9 +121,9 @@ const TotalOrderLineChartCard = ({
     // Add any additional logic to update monthData based on selectedMonth if needed
     // console.log('Month', selectedMonthNumber);
     getOutboundMonth(monthNumberMap[month]);
-    getAllBuyerOrderData(monthNumberMap[month]);
+    // getAllBuyerOrderData(monthNumberMap[month]);
     getAllPickRequestData(monthNumberMap[month]);
-    getAllGRNData(monthNumberMap[month]);
+    // getAllGRNData(monthNumberMap[month]);
     getAllPutawayData(monthNumberMap[month]);
   };
 
@@ -149,7 +150,7 @@ const TotalOrderLineChartCard = ({
                         mt: 1
                       }}
                     >
-                      <IconArrowDownToArc fontSize="inherit" />
+                      <IconArrowDownFromArc fontSize="inherit" />
                     </Avatar>
                   </Grid>
                   <Grid item>

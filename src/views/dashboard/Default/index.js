@@ -51,8 +51,8 @@ const Dashboard = () => {
   useEffect(() => {
     if (month) {
       getAllGRNData(month);
-      getAllPutawayData(month);
-      getAllPickRequestData(month);
+      // getAllPutawayData(month);
+      // getAllPickRequestData(month);
       getAllBuyerOrderData(month);
       getInboundMonth(month);
     }
@@ -61,9 +61,9 @@ const Dashboard = () => {
   useEffect(() => {
     if (month1) {
       getAllPickRequestData(month1);
-      getAllBuyerOrderData(month1);
-      getAllGRNData(month);
-      getAllPutawayData(month);
+      // getAllBuyerOrderData(month1);
+      // getAllGRNData(month);
+      getAllPutawayData(month1);
     }
   }, [month1]);
 
@@ -337,7 +337,7 @@ const Dashboard = () => {
               yearData={yearData}
               getInboundMonth={getInboundMonth}
               getAllGRNData={getAllGRNData}
-              getAllPutawayData={getAllPutawayData}
+              getAllPutawayData={getAllBuyerOrderData}
               getInboundYear={getInboundYear}
             />
           </Grid>
@@ -347,10 +347,10 @@ const Dashboard = () => {
               monthData={monthData1}
               yearData={yearData1}
               getOutboundMonth={getOutboundMonth}
-              getAllBuyerOrderData={getAllBuyerOrderData}
+              // getAllBuyerOrderData={getAllBuyerOrderData}
               getAllPickRequestData={getAllPickRequestData}
               getOutboundYear={getOutboundYear}
-              getAllGRNData={getAllGRNData}
+              // getAllGRNData={getAllGRNData}
               getAllPutawayData={getAllPutawayData}
             />
           </Grid>

@@ -137,9 +137,6 @@ const Customization = () => {
     // Setting the new message
     setNewMess(newMessage);
 
-    // Logging the new message
-    console.log(newMessage);
-
     // Indicating that an email needs to be sent
     setSendMail(true);
 
