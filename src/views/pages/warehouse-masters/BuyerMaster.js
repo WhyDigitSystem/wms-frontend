@@ -20,6 +20,9 @@ import ToastComponent, { showToast } from 'utils/toast-component';
 import 'react-datepicker/dist/react-datepicker.css';
 import apiCalls from 'apicall';
 import { getAllActiveCitiesByState, getAllActiveCountries, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
+import sampleFile from '../../../assets/sample-files/Sample_Buyer_Upload.xlsx';
 
 export const BuyerMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -35,6 +38,7 @@ export const BuyerMaster = () => {
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
   const [client, setClient] = useState(localStorage.getItem('client'));
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     buyerName: '',
@@ -183,83 +187,6 @@ export const BuyerMaster = () => {
       console.error('Error fetching data:', error);
     }
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value, type, checked } = e.target;
-  //   const numericRegex = /^[0-9]*$/;
-  //   const alphanumericRegex = /^[A-Za-z0-9]*$/;
-  //   const specialCharsRegex = /^[A-Za-z0-9@_\-*]*$/;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-
-  //   let errorMessage = '';
-
-  //   if (name === 'active') {
-  //     setFormData({ ...formData, [name]: checked });
-  //     return;
-  //   }
-
-  //   switch (name) {
-  //     case 'buyerName':
-  //     case 'shortName':
-  //     case 'contactPerson':
-  //       if (!nameRegex.test(value)) {
-  //         errorMessage = 'Only Alphabet are allowed';
-  //       }
-  //       break;
-  //     case 'mobile':
-  //       if (!numericRegex.test(value)) {
-  //         errorMessage = 'Only Numbers are allowed';
-  //       } else if (value.length > 10) {
-  //         errorMessage = 'max Length is 10';
-  //       }
-  //       break;
-  //     case 'pan':
-  //       if (!alphanumericRegex.test(value)) {
-  //         errorMessage = 'Only AlphaNumeric are allowed';
-  //       } else if (value.length > 10) {
-  //         errorMessage = 'max Length is 10';
-  //       }
-  //       break;
-  //     case 'pincode':
-  //       if (!alphanumericRegex.test(value)) {
-  //         errorMessage = 'Only AlphaNumeric are allowed';
-  //       } else if (value.length > 6) {
-  //         errorMessage = 'max Length is 6';
-  //       }
-  //       break;
-  //     case 'gstNo':
-  //       if (formData.gst === 'YES') {
-  //         if (!alphanumericRegex.test(value)) {
-  //           errorMessage = 'Only AlphaNumeric are allowed';
-  //         } else if (value.length > 15) {
-  //           errorMessage = 'Max Length is 15';
-  //         }
-  //       }
-  //       break;
-  //     case 'eccNo':
-  //       if (!alphanumericRegex.test(value)) {
-  //         errorMessage = 'Only AlphaNumeric are allowed';
-  //       } else if (value.length > 15) {
-  //         errorMessage = 'max Length is 15';
-  //       }
-  //       break;
-  //     default:
-  //       break;
-  //   }
-
-  //   if (errorMessage) {
-  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-  //   } else {
-  //     if (name === 'gst' && value === 'NO') {
-  //       setFormData({ ...formData, [name]: value, gstNo: '' });
-  //     } else {
-  //       // setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '', gst: '' }));
-  //       const updatedValue = name === 'email' ? value.toLowerCase() : value.toUpperCase();
-  //       setFormData({ ...formData, [name]: updatedValue });
-  //       setFieldErrors({ ...fieldErrors, [name]: '' });
-  //     }
-  //   }
-  // };
 
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd, type, checked } = e.target;
@@ -503,6 +430,24 @@ export const BuyerMaster = () => {
       active: true
     });
   };
+
+  const handleBulkUploadOpen = () => {
+    setUploadOpen(true); // Open dialog
+  };
+
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false); // Close dialog
+  };
+
+  const handleFileUpload = (event) => {
+    console.log(event.target.files[0]);
+  };
+
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
+
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -511,9 +456,24 @@ export const BuyerMaster = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} />
+            <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} />
           </div>
         </div>
+        {uploadOpen && (
+          <CommonBulkUpload
+            open={uploadOpen}
+            handleClose={handleBulkUploadClose}
+            title="Upload Files"
+            uploadText="Upload file"
+            downloadText="Sample File"
+            onSubmit={handleSubmit}
+            sampleFileDownload={sampleFile}
+            handleFileUpload={handleFileUpload}
+            apiUrl={`warehousemastercontroller/BuyerUpload?branch=${branch}&branchCode=${branchCode}&client=${client}&createdBy=${loginUserName}&customer=${customer}&orgId=${orgId}&warehouse=${warehouse}`}
+            screen="Buyer"
+          ></CommonBulkUpload>
+        )}
         {listView ? (
           <div className="mt-4">
             <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getBuyerById} />
@@ -634,11 +594,12 @@ export const BuyerMaster = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.country}>
                   <InputLabel id="country-label">Country</InputLabel>
                   <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
-                    {countryList?.map((row) => (
-                      <MenuItem key={row.id} value={row.countryName}>
-                        {row.countryName}
-                      </MenuItem>
-                    ))}
+                    {countryList.length > 0 &&
+                      countryList?.map((row) => (
+                        <MenuItem key={row.id} value={row.countryName}>
+                          {row.countryName}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
                 </FormControl>
@@ -648,11 +609,12 @@ export const BuyerMaster = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
                   <InputLabel id="state-label">State</InputLabel>
                   <Select labelId="state-label" label="State" value={formData.state} onChange={handleInputChange} name="state">
-                    {stateList?.map((row) => (
-                      <MenuItem key={row.id} value={row.stateName}>
-                        {row.stateName}
-                      </MenuItem>
-                    ))}
+                    {stateList.length > 0 &&
+                      stateList?.map((row) => (
+                        <MenuItem key={row.id} value={row.stateName}>
+                          {row.stateName}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.state && <FormHelperText>{fieldErrors.state}</FormHelperText>}
                 </FormControl>
@@ -661,11 +623,12 @@ export const BuyerMaster = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.state}>
                   <InputLabel id="city-label">City</InputLabel>
                   <Select labelId="city-label" label="City" value={formData.city} onChange={handleInputChange} name="city">
-                    {cityList?.map((row) => (
-                      <MenuItem key={row.id} value={row.cityName}>
-                        {row.cityName}
-                      </MenuItem>
-                    ))}
+                    {cityList.length &&
+                      cityList?.map((row) => (
+                        <MenuItem key={row.id} value={row.cityName}>
+                          {row.cityName}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.city && <FormHelperText>{fieldErrors.city}</FormHelperText>}
                 </FormControl>

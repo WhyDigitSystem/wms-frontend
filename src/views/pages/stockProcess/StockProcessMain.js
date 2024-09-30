@@ -6,6 +6,7 @@ import CodeConversion from './CodeConversion';
 import CycleCount from './CycleCount';
 import LocationMovement from './LocationMovement';
 import StockRestate from './StockRestate';
+import OpeningStock from './OpeningStock';
 
 const StockProcessMain = () => {
   const [value, setValue] = React.useState(0);
@@ -22,6 +23,7 @@ const StockProcessMain = () => {
             <Tab value={1} label="Stock Restate" />
             <Tab value={2} label="Code Conversion" />
             <Tab value={3} label="Cycle Count" />
+            <Tab value={4} label="Opening Stock" />
           </Tabs>
         </Box>
         <Box sx={{ padding: 2 }}>
@@ -29,6 +31,7 @@ const StockProcessMain = () => {
           {value === 1 && <StockRestate />}
           {value === 2 && <CodeConversion />}
           {value === 3 && <CycleCount />}
+          {value === 4 && <OpeningStock />}
         </Box>
       </div>
     </>
