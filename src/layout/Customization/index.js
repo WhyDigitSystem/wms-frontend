@@ -1,6 +1,7 @@
 import { Button, Drawer, Fab, Grid, IconButton, Tab, Tabs, TextField, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { IconHelp } from '@tabler/icons-react';
+import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import { useDispatch, useSelector } from 'react-redux';
@@ -24,6 +25,17 @@ const Customization = () => {
   const [open, setOpen] = useState(false);
   const [sendMail, setSendMail] = useState(false);
   const [newMess, setNewMess] = useState(false);
+  const [listViewData, setListViewData] = useState([]);
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [loginUserId, setLoginUserId] = useState(localStorage.getItem('userId'));
+  const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [branch, setLoginBranch] = useState(localStorage.getItem('branch'));
+  const [customer, setLoginCustomer] = useState(localStorage.getItem('customer'));
+  const [client, setLoginClient] = useState(localStorage.getItem('client'));
+  const [warehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
+  const [finYear, setLoginFinYear] = useState(localStorage.getItem('finYear'));
+
   const handleToggle = () => {
     setOpen(!open);
   };
@@ -39,6 +51,10 @@ const Customization = () => {
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
   };
+
+  useEffect(() => {
+    getAllTickets();
+  }, []);
 
   useEffect(() => {
     dispatch({ type: SET_BORDER_RADIUS, borderRadius });
@@ -121,35 +137,108 @@ const Customization = () => {
     }
   };
 
+  // const handleHelpSubmit = async (event) => {
+  //   event.preventDefault();
+  //   // Add your submit logic here
+
+  //   console.log('help', helpFormData);
+
+  //   // Corrected template literals
+  //   const newMessage = `
+  //     You have a new message from: ${helpFormData.name}
+  //     Message: ${helpFormData.message}
+  //     Email: ${helpFormData.email}
+  //   `;
+
+  //   // Setting the new message
+  //   setNewMess(newMessage);
+
+  //   // Indicating that an email needs to be sent
+  //   setSendMail(true);
+
+  //   // Delay the handleToggle function by 2 seconds
+  //   setTimeout(() => {
+  //     handleToggle();
+  //     setHelpFormData({
+  //       name: '',
+  //       email: '',
+  //       message: ''
+  //     });
+  //     showToast('success', 'Ticket Created Successfully');
+  //   }, 1000); // 2000 milliseconds = 2 seconds
+  // };
+
   const handleHelpSubmit = async (event) => {
     event.preventDefault();
-    // Add your submit logic here
+    const errors = {};
+    if (!helpFormData.name) {
+      errors.name = 'Name is required';
+    }
+    if (!helpFormData.email) {
+      errors.email = 'Email is required';
+    }
+    if (!helpFormData.message) {
+      errors.message = 'Message is required';
+    }
 
-    console.log('help', helpFormData);
+    if (Object.keys(errors).length === 0) {
+      const saveData = {
+        branch: branch,
+        branchCode: branchCode,
+        client: client,
+        customer: customer,
+        email: helpFormData.email,
+        finYear: finYear,
+        issueDesc: helpFormData.message,
+        name: helpFormData.name,
+        orgId: orgId,
+        warehouse: warehouse,
+        createdBy: loginUserId
+      };
 
-    // Corrected template literals
-    const newMessage = `
-      You have a new message from: ${helpFormData.name}
-      Message: ${helpFormData.message}
-      Email: ${helpFormData.email}
-    `;
+      console.log('DATA TO SAVE', saveData);
 
-    // Setting the new message
-    setNewMess(newMessage);
+      try {
+        const response = await apiCalls('put', `ticket/createUpdateTicket`, saveData);
+        if (response.status === true) {
+          setSendMail(true);
+          console.log('Response:', response);
+          showToast('success', ' Ticket Created Successfully');
+          getAllTickets();
+          handleToggle();
+          setHelpFormData({
+            name: '',
+            email: '',
+            message: ''
+          });
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Ticket creation failed');
+          // setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'City creation failed');
+        // setIsLoading(false);
+      }
+    } else {
+      // setFieldErrors(errors);
+    }
+  };
 
-    // Indicating that an email needs to be sent
-    setSendMail(true);
+  const getAllTickets = async () => {
+    try {
+      const response = await apiCalls('get', `ticket/getAllTicketByOrgIdAndUserId?orgId=${orgId}&userId=${loginUserId}`);
+      console.log('API Response:', response);
 
-    // Delay the handleToggle function by 2 seconds
-    setTimeout(() => {
-      handleToggle();
-      setHelpFormData({
-        name: '',
-        email: '',
-        message: ''
-      });
-      showToast('success', 'Ticket Created Successfully');
-    }, 1000); // 2000 milliseconds = 2 seconds
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.ticketVO);
+        console.log('Test===>', response.paramObjectsMap.ticketVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   };
 
   const handleRemoveImage = () => {
@@ -215,7 +304,7 @@ const Customization = () => {
 
               {selectedTab === 0 && (
                 <SubCard title="Leave us a message">
-                  <form onSubmit={handleHelpSubmit}>
+                  <form onSubmit={(event) => handleHelpSubmit(event)}>
                     <Grid container spacing={gridSpacing}>
                       <Grid item xs={12}>
                         <TextField
@@ -301,7 +390,7 @@ const Customization = () => {
                 </SubCard>
               )}
 
-              {selectedTab === 1 && <TicketList />}
+              {selectedTab === 1 && <TicketList listViewData={listViewData} />}
 
               {/* {selectedTab === 2 && (
                 <Grid item xs={12}>

@@ -1,11 +1,11 @@
 import { Chip, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import SubCard from 'ui-component/cards/SubCard';
 
-const ticketData = [
-  { id: 1, issue: 'Unable to login', status: 'Open' },
-  { id: 2, issue: 'Page not loading', status: 'In Progress' },
-  { id: 3, issue: 'Error on checkout', status: 'Resolved' }
-];
+// const ticketData = [
+//   { id: 1, issue: 'Unable to login', status: 'Open' },
+//   { id: 2, issue: 'Page not loading', status: 'In Progress' },
+//   { id: 3, issue: 'Error on checkout', status: 'Resolved' }
+// ];
 
 // Function to determine the color of the Chip based on the status
 const getStatusChipColor = (status) => {
@@ -21,7 +21,7 @@ const getStatusChipColor = (status) => {
   }
 };
 
-const TicketList = () => {
+const TicketList = ({listViewData}) => {
   return (
     <SubCard title="List of Created Tickets">
       <TableContainer component={Paper}>
@@ -34,13 +34,13 @@ const TicketList = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {ticketData.map((ticket) => (
+            {listViewData?.map((ticket) => (
               <TableRow key={ticket.id}>
                 <TableCell>{ticket.id}</TableCell>
-                <TableCell>{ticket.issue}</TableCell>
+                <TableCell>{ticket.issueDesc}</TableCell>
                 <TableCell>
                   {/* Render status as a Chip with dynamic color */}
-                  <Chip label={ticket.status} color={getStatusChipColor(ticket.status)} />
+                  <Chip label={ticket.ticketStatus} color={getStatusChipColor(ticket.ticketStatus)} />
                 </TableCell>
               </TableRow>
             ))}
