@@ -1,7 +1,7 @@
 import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
-import DeleteIcon from '@mui/icons-material/Delete';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
@@ -38,12 +38,12 @@ import Draggable from 'react-draggable';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
 import { initCaps } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
+import sampleFile from '../../../assets/sample-files/sample_Putaway.xls';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
 import GeneratePdfTemp from './PutawayPdf';
-import CommonBulkUpload from 'utils/CommonBulkUpload';
-import sampleFile from '../../../assets/sample-files/sample_Putaway.xls';
 
 function PaperComponent(props) {
   return (
@@ -1535,14 +1535,22 @@ export const Putaway = () => {
                   <RadioGroup
                     row
                     aria-labelledby="demo-radio-buttons-group-label"
-                    defaultValue="fixed"
                     name="binClass"
-                    disabled={formData.freeze}
                     value={formData.binClass}
                     onChange={handleInputChange}
                   >
-                    <FormControlLabel value="Fixed" control={<Radio size="small" />} label="Fixed" />
-                    <FormControlLabel value="Open" control={<Radio size="small" />} label="Open" />
+                    <FormControlLabel
+                      value="Fixed"
+                      control={<Radio size="small" />}
+                      label="Fixed"
+                      disabled={formData.freeze} // Disabling individual FormControlLabel
+                    />
+                    <FormControlLabel
+                      value="Open"
+                      control={<Radio size="small" />}
+                      label="Open"
+                      disabled={formData.freeze} // Disabling individual FormControlLabel
+                    />
                   </RadioGroup>
                 </FormControl>
               </div>
@@ -1555,12 +1563,11 @@ export const Putaway = () => {
                     defaultValue="Empty"
                     name="binPick"
                     value={formData.binPick}
-                    disabled={formData.freeze}
                     onChange={handleInputChange}
                   >
-                    <FormControlLabel value="Empty" control={<Radio size="small" />} label="Empty" />
-                    <FormControlLabel value="Occupied" control={<Radio size="small" />} label="Occupied" />
-                    <FormControlLabel value="Both" control={<Radio size="small" />} label="Both" />
+                    <FormControlLabel value="Empty" control={<Radio size="small" />} label="Empty" disabled={formData.freeze} />
+                    <FormControlLabel value="Occupied" control={<Radio size="small" />} label="Occupied" disabled={formData.freeze} />
+                    <FormControlLabel value="Both" control={<Radio size="small" />} label="Both" disabled={formData.freeze} />
                   </RadioGroup>
                 </FormControl>
               </div>

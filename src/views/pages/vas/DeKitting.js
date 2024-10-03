@@ -14,13 +14,12 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import React, { useRef } from 'react';
 
 export const DeKitting = () => {
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId')));
@@ -117,6 +116,12 @@ export const DeKitting = () => {
       qty: ''
     }
   ]);
+
+  const formatDate = (date) => {
+    return dayjs(date).format('DD/MM/YYYY'); // Format to DD/MM/YYYY
+  };
+
+  const today = formatDate(new Date());
 
   const handleAddRow = () => {
     if (isLastRowEmpty(parentTable)) {
@@ -1482,12 +1487,13 @@ export const DeKitting = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="date"
-                                          value={row.grnDate}
-                                          // disabled
+                                          type="text"
+                                          style={{ width: '130px' }}
+                                          value={row.grnDate || today} // Set the default value to today's date if grnDate is not set
+                                          disabled
                                           onChange={(e) => {
                                             const value = e.target.value;
-                                            setChildTable((prev) => prev.map((r, i) => (i === index ? { ...r, grnDate: value } : r)));
+                                            setChildTable((prev) => prev.map((r, i) => (i === index ? { ...r, grnDate: today } : r)));
                                             setChildTableErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {

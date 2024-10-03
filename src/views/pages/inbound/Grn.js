@@ -1,5 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
@@ -15,23 +16,20 @@ import Select from '@mui/material/Select';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
-import apiCalls from 'apicall';
-import { useEffect, useState } from 'react';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import React, { useRef } from 'react';
-import { getAllActiveCarrier, getAllActivePartDetails, getAllActiveSupplier, getAllShipmentModes } from 'utils/CommonFunctions';
-import sampleGrnExcelFile from '../../../assets/sample-files/Sample_Grn_Upload.xls';
+import React, { useEffect, useRef, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/ActionButton';
 import CommonBulkUpload from 'utils/CommonBulkUpload';
-import sampleFile from '../../../assets/sample-files/Sample_Grn_Upload.xls';
+import { getAllActiveCarrier, getAllActivePartDetails, getAllActiveSupplier, getAllShipmentModes } from 'utils/CommonFunctions';
+import { showToast } from 'utils/toast-component';
+import { default as sampleFile, default as sampleGrnExcelFile } from '../../../assets/sample-files/Sample_Grn_Upload.xls';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 export const Grn = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -233,10 +231,12 @@ export const Grn = () => {
 
         setLrTableData(
           gridDetails.map((row) => ({
-            // id: row.id,
+            id: row.id,
             lr_Hawb_Hbl_No: row.lrNoHaw,
             invNo: row.invoiceNo,
             invDate: row.invoiceDate ? dayjs(row.invoiceDate).format('YYYY-MM-DD') : null,
+            batchDate: row.batchDate ? dayjs(row.batchDate).format('YYYY-MM-DD') : null,
+            expDate: row.expDate ? dayjs(row.expDate).format('YYYY-MM-DD') : null,
             partNo: row.partNo,
             partDesc: row.partDesc,
             sku: row.sku,
@@ -388,7 +388,7 @@ export const Grn = () => {
             grnQty: row.grnQty,
             subStockQty: row.subStockQty,
             batch_PalletNo: row.batchNo,
-            batchDate: dayjs(row.batchDt).format('DD-MM-YYYY'),
+            batchDate: dayjs(row.batchDate).format('DD-MM-YYYY'),
             expDate: dayjs(row.expDate).format('DD-MM-YYYY'),
             // batchDate: row.batchDt,
             // expDate: row.expDate,
@@ -1676,7 +1676,7 @@ export const Grn = () => {
                                                 type="date"
                                                 value={row.invDate}
                                                 disabled={formData.freeze}
-                                                format="DD-MM-YYYY"
+                                                // format="DD-MM-YYYY"
                                                 onChange={(e) => {
                                                   const value = e.target.value;
                                                   setLrTableData((prev) =>

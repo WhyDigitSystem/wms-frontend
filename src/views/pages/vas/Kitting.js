@@ -4,7 +4,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Checkbox, FormControlLabel } from '@mui/material';
 import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import Tab from '@mui/material/Tab';
@@ -15,13 +14,12 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import React, { useRef } from 'react';
 
 export const Kitting = () => {
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId')));
@@ -37,6 +35,12 @@ export const Kitting = () => {
   // const [finYear, setFinYear] = useState(localStorage.getItem('finYear') ? localStorage.getItem('finYear') : '2024');
   const [finYear, setFinYear] = useState('2024');
   const [warehouse, setWarehouse] = useState(localStorage.getItem('warehouse'));
+
+  const formatDate = (date) => {
+    return dayjs(date).format('DD/MM/YYYY'); // Format to DD/MM/YYYY
+  };
+
+  const today = formatDate(new Date());
 
   const [formData, setFormData] = useState({
     docId: docId,
@@ -222,6 +226,22 @@ export const Kitting = () => {
     const formattedDate = dayjs(date).format('YYYY-MM-DD');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
+
+  const formatDateToDDMMYYYY = (date) => {
+    const today = new Date(date);
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const year = today.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  // Function to convert DD-MM-YYYY to a valid Date object for further processing if needed
+  const parseDateFromDDMMYYYY = (dateString) => {
+    const [day, month, year] = dateString.split('-');
+    return new Date(`${year}-${month}-${day}`);
+  };
+
+  const currentFormattedDate = formatDateToDDMMYYYY(new Date());
 
   useEffect(() => {
     getAllKitting();
@@ -622,7 +642,8 @@ export const Kitting = () => {
         setParentTableData((prevParentTableData) =>
           prevParentTableData.map((row) => ({
             ...row,
-            grnNo: modifiedDocId // Ensure this line correctly sets grnNo
+            grnNo: modifiedDocId, // Ensure this line correctly sets grnNo
+            grnDate: today
           }))
         );
       } else {
@@ -1200,6 +1221,11 @@ export const Kitting = () => {
   //   }
   // };
 
+  const convertToYYYYMMDD = (dateString) => {
+    const [day, month, year] = dateString.split('/');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleSave = async () => {
     const errors = {};
     let firstInvalidFieldRef = null;
@@ -1327,7 +1353,7 @@ export const Kitting = () => {
         pqty: parseInt(row.qty),
         pbin: row.bin,
         pgrnNo: row.grnNo,
-        pgrnDate: row.grnDate,
+        pgrnDate: row.grnDate ? convertToYYYYMMDD(row.grnDate) : '',
         pexpDate: row.expDate,
         pqcflag: true,
         pbinType: row.binType,
@@ -1489,12 +1515,12 @@ export const Kitting = () => {
                   </LocalizationProvider>
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControlLabel
                   control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" color="primary" />}
                   label="Active"
                 />
-              </div>
+              </div> */}
             </div>
             <div className="row mt-2">
               <Box sx={{ width: '100%' }}>
@@ -1620,7 +1646,7 @@ export const Kitting = () => {
                                       <input
                                         type="date"
                                         value={row.grnDate}
-                                        disabled
+                                        // disabled
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setChildTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, grnDate: value } : r)));
@@ -1899,11 +1925,13 @@ export const Kitting = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        type="date"
-                                        value={row.grnDate}
-                                        // disabled
+                                        type="text" // Changed to text to allow DD-MM-YYYY format
+                                        value={row.grnDate ? formatDateToDDMMYYYY(row.grnDate) : currentFormattedDate} // Display the date in DD-MM-YYYY
+                                        disabled
+                                        style={{ width: '130px' }}
                                         onChange={(e) => {
                                           const value = e.target.value;
+                                          const parsedDate = parseDateFromDDMMYYYY(value); // Optionally convert it back to Date for internal logic if needed
                                           setParentTableData((prev) => prev.map((r, i) => (i === index ? { ...r, grnDate: value } : r)));
                                           setParentTableErrors((prev) => {
                                             const newErrors = [...prev];
