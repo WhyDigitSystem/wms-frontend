@@ -1493,7 +1493,7 @@ export const DeKitting = () => {
                                           disabled
                                           onChange={(e) => {
                                             const value = e.target.value;
-                                            setChildTable((prev) => prev.map((r, i) => (i === index ? { ...r, grnDate: today } : r)));
+                                            setChildTable((prev) => prev.map((r, i) => (i === index ? { ...r, grnDate: value } : r)));
                                             setChildTableErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
