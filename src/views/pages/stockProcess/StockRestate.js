@@ -1658,7 +1658,11 @@ export const StockRestate = () => {
                           <thead>
                             <tr style={{ backgroundColor: '#673AB7' }}>
                               <th className="table-header">
-                                <Checkbox checked={selectAll} onChange={handleSelectAll} />
+                                <Checkbox checked={selectAll} onChange={handleSelectAll}  sx={{
+                                  color: 'white', // Unchecked color
+                                  '&.Mui-checked': {
+                                    color: 'white' // Checked color
+                                  }}}/>
                               </th>
                               <th className="table-header">S.No</th>
                               <th className="table-header">From Bin</th>

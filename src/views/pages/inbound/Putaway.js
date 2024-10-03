@@ -2080,7 +2080,16 @@ export const Putaway = () => {
                           <thead>
                             <tr style={{ backgroundColor: '#673AB7' }}>
                               <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                <Checkbox checked={checkAll} onChange={handleCheckAllChange} />
+                                <Checkbox
+                                  checked={checkAll}
+                                  onChange={handleCheckAllChange}
+                                  sx={{
+                                    color: 'white', // Unchecked color
+                                    '&.Mui-checked': {
+                                      color: 'white' // Checked color
+                                    }
+                                  }}
+                                />
                               </th>
                               <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                 S.No

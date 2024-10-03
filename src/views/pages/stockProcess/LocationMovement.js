@@ -1,5 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import GridOnIcon from '@mui/icons-material/GridOn';
@@ -17,17 +18,15 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Draggable from 'react-draggable';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import { showToast } from 'utils/toast-component';
-import CommonListViewTable from '../basic-masters/CommonListViewTable';
-import React, { useRef } from 'react';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CommonBulkUpload from 'utils/CommonBulkUpload';
+import { showToast } from 'utils/toast-component';
 import sampleFile from '../../../assets/sample-files/sample_Location_movement.xls';
+import CommonListViewTable from '../basic-masters/CommonListViewTable';
 
 function PaperComponent(props) {
   return (
@@ -1574,7 +1573,16 @@ export const LocationMovement = () => {
                                 <thead>
                                   <tr style={{ backgroundColor: '#673AB7' }}>
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                      <Checkbox checked={selectAll} onChange={handleSelectAll} />
+                                      <Checkbox
+                                        sx={{
+                                          color: 'white', // Unchecked color
+                                          '&.Mui-checked': {
+                                            color: 'white' // Checked color
+                                          }
+                                        }}
+                                        checked={selectAll}
+                                        onChange={handleSelectAll}
+                                      />
                                     </th>
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                       S.No
