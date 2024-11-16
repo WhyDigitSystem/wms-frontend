@@ -145,7 +145,7 @@ export const EmployeeMaster = () => {
   };
 
   const handleDateChange = (field, date) => {
-    const formattedDate = dayjs(date).format('DD-MM-YYYY');
+    const formattedDate = dayjs(date).format('YYYY-MM-DD');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
 
@@ -417,7 +417,7 @@ export const EmployeeMaster = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Date of Birth"
-                      value={formData.dob ? dayjs(formData.dob, 'DD-MM-YYYY') : null}
+                      value={formData.dob ? dayjs(formData.dob, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('dob', date)}
                       maxDate={maxDate}
                       slotProps={{
@@ -435,7 +435,7 @@ export const EmployeeMaster = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Date of Join"
-                      value={formData.doj ? dayjs(formData.doj, 'DD-MM-YYYY') : null}
+                      value={formData.doj ? dayjs(formData.doj, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('doj', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }

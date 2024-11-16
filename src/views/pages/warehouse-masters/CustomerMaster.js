@@ -315,7 +315,7 @@ export const CustomerMaster = () => {
         if (!alphaNumericRegex.test(value)) {
           errorMessage = 'Only alphanumeric characters are allowed';
         } else if (value.length > 10) {
-          errorMessage = 'Invalid Format';
+          errorMessage = 'PAN must be ten digit';
         }
         break;
       case 'branchName':
@@ -327,7 +327,14 @@ export const CustomerMaster = () => {
         if (!numericRegex.test(value)) {
           errorMessage = 'Only numeric characters are allowed';
         } else if (value.length > 10) {
-          errorMessage = 'Invalid Format';
+          errorMessage = 'Mobile no must be ten digit';
+        }
+        break;
+      case 'tanNo':
+        if (!alphaNumericRegex.test(value)) {
+          errorMessage = 'Only alphanumeric characters are allowed';
+        } else if (value.length > 15) {
+          errorMessage = 'TAN must be fifteen digit';
         }
         break;
       case 'gst':
@@ -335,7 +342,7 @@ export const CustomerMaster = () => {
           if (!alphaNumericRegex.test(value)) {
             errorMessage = 'Only alphanumeric characters are allowed';
           } else if (value.length > 15) {
-            errorMessage = 'Invalid Format';
+            errorMessage = 'GST must be fifteen digit';
           }
         }
         break;
