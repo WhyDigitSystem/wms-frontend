@@ -45,6 +45,9 @@ export const StockBinBatchStatusWiseReport = () => {
   const reportColumns = [
     { accessorKey: 'partNo', header: 'Part No', size: 140 },
     { accessorKey: 'partDesc', header: 'Part Desc', size: 140 },
+    { accessorKey: 'batch', header: 'Batch', size: 140 },
+    { accessorKey: 'bin', header: 'Bin', size: 140 },
+    { accessorKey: 'status', header: 'Status', size: 140 },
     { accessorKey: 'avlQty', header: 'QTY', size: 140 }
   ];
 
@@ -230,7 +233,7 @@ export const StockBinBatchStatusWiseReport = () => {
                     textField: { size: 'small', clearable: true }
                   }}
                   format="DD-MM-YYYY"
-                  disabled
+                  // disabled
                 />
               </LocalizationProvider>
             </FormControl>

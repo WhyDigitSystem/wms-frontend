@@ -212,6 +212,7 @@ const NotificationSection = () => {
           </Transitions>
         )}
       </Popper>
+     
     </>
   );
 };

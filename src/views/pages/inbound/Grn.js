@@ -199,6 +199,7 @@ export const Grn = () => {
       console.error('Error fetching gate passes:', error);
     }
   };
+  
   const getAllGatePassId = async () => {
     try {
       const response = await apiCalls(
