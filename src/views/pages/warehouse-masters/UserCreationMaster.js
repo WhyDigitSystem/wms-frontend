@@ -340,7 +340,7 @@ export const UserCreationMaster = () => {
         if (!numericRegex.test(value)) {
           errorMessage = 'Only numeric characters are allowed';
         } else if (value.length > 10) {
-          errorMessage = 'Invalid Format';
+          errorMessage = 'Mobile No must be ten digit';
         }
         break;
 
@@ -636,7 +636,7 @@ export const UserCreationMaster = () => {
     if (!formData.mobileNo) {
       errors.mobileNo = 'Mobile No is required';
     } else if (formData.mobileNo.length < 10) {
-      errors.mobileNo = ' Mobile No must be in 10 digit';
+      errors.mobileNo = ' Mobile No must be ten digit';
     }
 
     if (!formData.email) {

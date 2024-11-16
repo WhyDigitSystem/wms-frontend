@@ -465,15 +465,15 @@ export const CustomerMaster = () => {
     if (!formData.mobile) {
       errors.mobile = 'Mobile is required';
     } else if (formData.mobile.length < 10) {
-      errors.mobile = 'Invalid Mobile Format';
+      errors.mobile = 'Mobile no must be ten digit';
     }
     if (formData.pan.length > 0 && formData.pan.length < 10) {
-      errors.pan = 'Invalid PAN Format';
+      errors.pan = 'PAN must be ten digit';
     }
     if (formData.gstReg === 'YES' && !formData.gst) {
       errors.gst = 'GST is Required';
     } else if (formData.gstReg === 'YES' && formData.gst.length < 15) {
-      errors.gst = 'Invalid GST Format';
+      errors.gst = 'GST must be fifteen digit';
     }
 
     let clientTableDataValid = true;

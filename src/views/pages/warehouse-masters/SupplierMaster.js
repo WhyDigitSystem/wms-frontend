@@ -215,35 +215,35 @@ export const SupplierMaster = () => {
         if (!numericRegex.test(value)) {
           errorMessage = 'Only Numbers are allowed';
         } else if (value.length > 10) {
-          errorMessage = 'max Length is 10';
+          errorMessage = 'Mobile No must be ten digit';
         }
         break;
       case 'pan':
         if (!alphanumericRegex.test(value)) {
           errorMessage = 'Only AlphaNumeric are allowed';
         } else if (value.length > 10) {
-          errorMessage = 'max Length is 10';
+          errorMessage = 'PAN must be ten digit';
         }
         break;
       case 'tanNo':
         if (!alphanumericRegex.test(value)) {
           errorMessage = 'Only AlphaNumeric are allowed';
-        } else if (value.length > 10) {
-          errorMessage = 'max Length is 10';
+        } else if (value.length > 15) {
+          errorMessage = 'TAN must be fifteen digit';
         }
         break;
       case 'pincode':
-        if (!alphanumericRegex.test(value)) {
-          errorMessage = 'Only AlphaNumeric are allowed';
+        if (!numericRegex.test(value)) {
+          errorMessage = 'Only Numbers are allowed';
         } else if (value.length > 6) {
-          errorMessage = 'max Length is 6';
+          errorMessage = 'Pincode must be six digit';
         }
         break;
       case 'eccNo':
         if (!alphanumericRegex.test(value)) {
           errorMessage = 'Only AlphaNumeric are allowed';
         } else if (value.length > 15) {
-          errorMessage = 'max Length is 15';
+          errorMessage = 'ECC No must be fifteen digit';
         }
         break;
       default:
@@ -349,7 +349,7 @@ export const SupplierMaster = () => {
     if (!formData.mobile) {
       errors.mobile = 'Mobile is required';
     } else if (formData.mobile.length < 10) {
-      errors.mobile = 'Invalid Mobile Format';
+      errors.mobile = 'Mobile No must be ten digit';
     }
 
     if (!formData.address) {
@@ -365,10 +365,10 @@ export const SupplierMaster = () => {
       errors.city = 'City is required';
     }
     if (formData.pincode.length > 0 && formData.pincode.length < 6) {
-      errors.pincode = 'Invalid Pincode Format';
+      errors.pincode = 'Pincode must be six digit';
     }
     if (formData.pan.length > 0 && formData.pan.length < 10) {
-      errors.pan = 'Invalid PAN Format';
+      errors.pan = 'PAN must be ten digit';
     }
     if (!formData.email) {
       errors.email = 'Email is required';
